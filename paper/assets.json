@@ -1,0 +1,69 @@
+{
+  "_about": "Figures and tables the manuscript includes, referenced as #fig(\"<id>\") / #tbl(\"<id>\"). Written by the scripts in analysis/scripts/; see analysis/scripts/_assets.py.",
+  "values": {
+    "tbl.calibration": {
+      "path": "si/calibration.typ",
+      "kind": "table",
+      "desc": "First fixed-policy development sweep, not held-out performance",
+      "hash": "sha256:84e0df7eef2bd1638a9310b36f26d2d8c63c2fd5385e6e4cded2ff830518fe66",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-05T23:07:36Z"
+      },
+      "inputs": {
+        "analysis/inputs/decision-suite-v044-development.json": "sha256:5104fa15020abb986f01c21ae3aa87e990fd857253e396b3ac49c056527bb3d8",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.catalog": {
+      "path": "si/catalog.typ",
+      "kind": "table",
+      "desc": "Current task inventory with historical scoring status",
+      "hash": "sha256:fca1d0919fca8d9e36eb8338e3a6801c0b7d6c59d7bf6fc0de44acff54234d1f",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-05T23:09:14Z"
+      },
+      "inputs": {
+        "analysis/inputs/pokebench-development.json": "sha256:15966edcb8bb3e8f2be69d2b78a2a1c1fdf090e008a26436db8be411be925911",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.models": {
+      "path": "si/models.typ",
+      "kind": "table",
+      "desc": "Registered prospective release models, not completed result coverage",
+      "hash": "sha256:bcca16cd499f28f8b1f898038538db217c9f2d3772a6a2c86a0372ed43f66dbe",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-05T23:17:57Z"
+      },
+      "inputs": {
+        "analysis/inputs/pokebench-v1-protocol.json": "sha256:16934deb82ac0209c31dacef31c729067f90cb36437e62cd851198280e853ae9",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.pilot": {
+      "path": "si/pilot.typ",
+      "kind": "table",
+      "desc": "Single-start development pilot, not release results",
+      "hash": "sha256:a22bb6453f951e5acca97f4c71ec04dbba407317f13605d2aa8f569fac79a3ac",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-05T23:07:36Z"
+      },
+      "inputs": {
+        "analysis/inputs/pokebench-development.json": "sha256:15966edcb8bb3e8f2be69d2b78a2a1c1fdf090e008a26436db8be411be925911",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    }
+  }
+}

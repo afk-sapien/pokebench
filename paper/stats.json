@@ -1,0 +1,480 @@
+{
+  "_about": "Numbers the manuscript states in prose, read as #s(\"<id>\"). Scripts own each entry's value; fmt, unit, desc and expect are the author's to edit here. Entries with origin.by = \"hand\" are entirely yours.",
+  "sources": {
+    "analysis/scripts/gen_stats.py": {
+      "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+      "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae",
+      "analysis/scripts/gen_stats.py": "sha256:4d35c821d6b99bd79c2636c6faeb17bee3eb02cf89fda9df5e57583777117e97",
+      "analysis/inputs/pokebench-development.json": "sha256:15966edcb8bb3e8f2be69d2b78a2a1c1fdf090e008a26436db8be411be925911",
+      "analysis/inputs/tactical-reliability-v042.json": "sha256:47394ee0a91f23c32505cbf0657f64b3cbfb496ac7beb3b4dc03090ce98efbc9",
+      "analysis/inputs/pokebench-v1-protocol.json": "sha256:16934deb82ac0209c31dacef31c729067f90cb36437e62cd851198280e853ae9"
+    }
+  },
+  "values": {
+    "calibration.attack-first": {
+      "value": 0,
+      "fmt": ",",
+      "unit": "",
+      "desc": "calibration attack-first",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:5feceb66ffc86f38",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "calibration.starts": {
+      "value": 32,
+      "fmt": ",",
+      "unit": "",
+      "desc": "calibration starts",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e29c9c180c6279b0",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "calibration.tactical": {
+      "value": 31,
+      "fmt": ",",
+      "unit": "",
+      "desc": "calibration tactical",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:eb1e33e8a81b697b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "calibration.type-aware-attacker": {
+      "value": 0,
+      "fmt": ",",
+      "unit": "",
+      "desc": "calibration type-aware-attacker",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:5feceb66ffc86f38",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "catalog.active": {
+      "value": 28,
+      "fmt": ",",
+      "unit": "",
+      "desc": "catalog active",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:59e19706d51d39f6",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "catalog.experimental": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "catalog experimental",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "catalog.retired": {
+      "value": 5,
+      "fmt": ",",
+      "unit": "",
+      "desc": "catalog retired",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:ef2d127de37b942b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "catalog.scored": {
+      "value": 22,
+      "fmt": ",",
+      "unit": "",
+      "desc": "catalog scored",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:785f3ec7eb32f30b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "models.historical": {
+      "value": 7,
+      "fmt": ",",
+      "unit": "",
+      "desc": "models historical",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:7902699be42c8a8e",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.astra.trials": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot astra trials",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.astra.wins": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot astra wins",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.attempts": {
+      "value": 18,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot attempts",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:4ec9599fc203d176",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.luna.trials": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot luna trials",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.luna.wins": {
+      "value": 2,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot luna wins",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:d4735e3a265e16ee",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.models": {
+      "value": 3,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot models",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:4e07408562bedb8b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.tasks": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot tasks",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.terra.trials": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot terra trials",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.terra.wins": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "pilot terra wins",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "pilot.tokens": {
+      "value": 4985443,
+      "fmt": ",",
+      "unit": "",
+      "desc": "Reported input and output tokens across the audited decision-task pilot",
+      "expect": {
+        "min": 0,
+        "max": 1000000000
+      },
+      "checksum": "v2:2946abd0dd49f37a",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "release.budget": {
+      "value": 50000000,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release budget",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:c5460c4a38f89b6f",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.claude_output": {
+      "value": 4096,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release claude_output",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:8b926d75599a618e",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.context": {
+      "value": 12000,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release context",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:c5d1866aabc15dda",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.eligible": {
+      "value": 22,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release eligible",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:785f3ec7eb32f30b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.maximum": {
+      "value": 1260000000,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release maximum",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:1f71babe7ec70ec9",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.models": {
+      "value": 16,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release models",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:b17ef6d19c7a5b1e",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.planned": {
+      "value": 1344,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release planned",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:aa13fda43018c393",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.reserve": {
+      "value": 100000,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release reserve",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:3bb78535cc9555ff",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.summaries": {
+      "value": 0,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release summaries",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:5feceb66ffc86f38",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.tasks": {
+      "value": 28,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release tasks",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:59e19706d51d39f6",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.turns": {
+      "value": 8,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release turns",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:2c624232cdd22177",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "release.variants": {
+      "value": 3,
+      "fmt": ",",
+      "unit": "",
+      "desc": "release variants",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:4e07408562bedb8b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-05T23:17:57Z"
+      }
+    }
+  }
+}

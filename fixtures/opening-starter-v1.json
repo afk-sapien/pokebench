@@ -1,0 +1,633 @@
+{
+  "name": "opening-starter-v1",
+  "objective": {
+    "description": "Obtain your first starter Pokemon from Professor Oak. Begin at home and find your own way.",
+    "kind": "opening",
+    "target": "starter"
+  },
+  "setup_actions": [
+    {
+      "button": "wait",
+      "hold_frames": 1800,
+      "release_frames": 0
+    },
+    {
+      "button": "start",
+      "hold_frames": 8,
+      "release_frames": 120
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 120
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 30
+    },
+    {
+      "button": "start",
+      "hold_frames": 8,
+      "release_frames": 120
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "down",
+      "hold_frames": 8,
+      "release_frames": 30
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 60
+    },
+    {
+      "button": "up",
+      "hold_frames": 100,
+      "release_frames": 24
+    },
+    {
+      "button": "right",
+      "hold_frames": 80,
+      "release_frames": 60
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 90
+    }
+  ],
+  "reference_actions": [
+    {
+      "button": "right",
+      "hold_frames": 64,
+      "release_frames": 24
+    },
+    {
+      "button": "up",
+      "hold_frames": 90,
+      "release_frames": 60
+    },
+    {
+      "button": "right",
+      "hold_frames": 40,
+      "release_frames": 60
+    },
+    {
+      "button": "left",
+      "hold_frames": 90,
+      "release_frames": 24
+    },
+    {
+      "button": "down",
+      "hold_frames": 110,
+      "release_frames": 90
+    },
+    {
+      "button": "left",
+      "hold_frames": 32,
+      "release_frames": 24
+    },
+    {
+      "button": "down",
+      "hold_frames": 90,
+      "release_frames": 90
+    },
+    {
+      "button": "right",
+      "hold_frames": 80,
+      "release_frames": 24
+    },
+    {
+      "button": "up",
+      "hold_frames": 120,
+      "release_frames": 180
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "down",
+      "hold_frames": 16,
+      "release_frames": 24
+    },
+    {
+      "button": "right",
+      "hold_frames": 32,
+      "release_frames": 24
+    },
+    {
+      "button": "up",
+      "hold_frames": 1,
+      "release_frames": 30
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "down",
+      "hold_frames": 16,
+      "release_frames": 24
+    },
+    {
+      "button": "right",
+      "hold_frames": 32,
+      "release_frames": 24
+    },
+    {
+      "button": "up",
+      "hold_frames": 8,
+      "release_frames": 24
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "a",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    },
+    {
+      "button": "b",
+      "hold_frames": 8,
+      "release_frames": 150
+    }
+  ],
+  "description": "Fresh English Pokemon Red, player at home before obtaining a starter. No memory edits."
+}

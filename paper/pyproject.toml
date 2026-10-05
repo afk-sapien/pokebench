@@ -1,0 +1,17 @@
+[project]
+name = "paper"
+# Not the toolchain release: that is the paper-scaffold pin below, and
+# `paper version` / .paper/scaffold.lock.json say which one is installed.
+version = "0.0.0"
+requires-python = ">=3.10"
+# The toolchain (docs/package.md). Move the pin with `uv add`, then run
+# `uv run paper sync`.
+dependencies = [
+  "paper-scaffold @ git+https://github.com/pgarrett-scripps/paper-scaffold@c9cb1046d710b3fab851e9984b23254b82a031bc",
+]
+
+[dependency-groups]
+audio = ["piper-tts>=1.6", "imageio-ffmpeg", "pillow", "matplotlib"]
+
+[tool.uv]
+package = false

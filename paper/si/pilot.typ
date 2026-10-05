@@ -1,0 +1,1 @@
+#table(columns: 4, inset: 6pt, align: left, "Model identifier", "Passed", "Reported tokens", "Replay and delivery", "gpt-5.6-luna", "2/6", "1,580,120", "All verified", "gpt-5.6-terra", "6/6", "1,941,325", "All verified", "gpt-6-astra", "6/6", "1,463,998", "All verified")

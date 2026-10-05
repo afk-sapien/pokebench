@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "pokemon-benchmark": {
+      "command": "uv",
+      "args": [
+        "run", "--directory", "/absolute/path/pokeagent-bench", "pokeagent", "mcp",
+        "--rom", "/absolute/path/red.gb",
+        "--scenario", "/absolute/path/pokeagent-bench/scenarios/red-opening",
+        "--output", "/absolute/path/pokeagent-bench/runs/mcp-trial-1"
+      ]
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "benchmark": "red-v0.42-experimental",
+  "candidate_reports": [
+    {
+      "attempts_per_policy": 32,
+      "candidate": "wrath50",
+      "criterion": "32 holdout starts. Tactical wins at least 29. Gap over each attack baseline at least 13 wins. No invalid actions or missing trials.",
+      "invalid_actions": 0,
+      "message": "Did not pass the tactical reliability gate. Excluded from model rankings.",
+      "model_calls": 0,
+      "paired_win_gaps": {
+        "attack-first": 28,
+        "type-aware-attacker": 10
+      },
+      "policy_sha256": "1538c8a8fa95d93b64b1929f7b7752ef88795be78cb9d97ed694eddd6839c88c",
+      "qualification": "Observed timing robustness, not proof of optimal play or independent random samples.",
+      "registration_sha256": "35103f4cb0c2f4f6240c07e2ab79addd65cd263f84ed39d5701489315a38c48d",
+      "status": "experimental",
+      "unique_tactical_trajectories": 32,
+      "wins": {
+        "attack-first": 4,
+        "tactical": 32,
+        "type-aware-attacker": 22
+      }
+    },
+    {
+      "attempts_per_policy": 32,
+      "candidate": "wrath50-thundershock",
+      "criterion": "32 holdout starts. Tactical wins at least 29. Gap over each attack baseline at least 13 wins. No invalid actions or missing trials.",
+      "invalid_actions": 0,
+      "message": "Passed the preregistered offline tactical reliability gate.",
+      "model_calls": 0,
+      "paired_win_gaps": {
+        "attack-first": 31,
+        "type-aware-attacker": 31
+      },
+      "policy_sha256": "322930b34909ad0ef816fd2769e9ce22b0989592313207090ff4c40b1b3d8008",
+      "qualification": "Observed timing robustness, not proof of optimal play or independent random samples.",
+      "registration_sha256": "f1bcd23ae49339d7dc3aefc68acec544040c2184c8b1027dbaceec5ebf935a8f",
+      "status": "validated",
+      "unique_tactical_trajectories": 32,
+      "wins": {
+        "attack-first": 0,
+        "tactical": 31,
+        "type-aware-attacker": 0
+      }
+    }
+  ],
+  "earlier_candidate_retained": true,
+  "holdouts_disjoint": true,
+  "kind": "offline-calibration",
+  "model_calls": 0,
+  "model_trials_started": false,
+  "posthoc_diagnostic": {
+    "calibration_score_unchanged": "31/32",
+    "eligible_for_calibration_score": false,
+    "interpretation": "The start is winnable with earlier paralysis recovery. This is not a perfect-policy claim or a clean causal test of luck.",
+    "result": {
+      "completed": true,
+      "decisions": 36,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 691,
+        "frames": 22538,
+        "score": 1,
+        "trace_head": "6671013ed89fc8569531c93c7c443c4f0d6a19d80fba6c154ad8673e3ae94839",
+        "verified": true
+      },
+      "scenario": "start-031"
+    }
+  },
+  "published_pilot_reference_wins": 5,
+  "published_pilot_starts": 5,
+  "same_tactical_policy_behavior": true
+}

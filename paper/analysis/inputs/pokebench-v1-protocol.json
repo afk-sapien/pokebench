@@ -1,0 +1,728 @@
+{
+  "budget_policy": "No paid fallback or automatic credit purchases. Stop at decision boundaries. One in-flight response may exceed its threshold. Incomplete accounting stops the sweep.",
+  "catalog_sha256": "bb17729d3474f876a4e475934406e0d694e49832123980aa2030fb875e1ac985",
+  "compact_at": 12000,
+  "context_turns": 8,
+  "core": {
+    "direct_url": {
+      "archive_info": {},
+      "url": "https://github.com/afk-sapien/pokesim-core/releases/download/v0.1.4/pokesim_core-0.1.4-py3-none-any.whl"
+    },
+    "source_sha256": "066b1dcf0ba1c6741247856804d7f311e160ee62dfc03f13c064f948eeed99e5",
+    "version": "0.1.4"
+  },
+  "effort_policy": "Requested medium. Haiku has no adjustable effort and records effective effort as null.",
+  "fixture_registration_sha256": "b10fb78ddd3e1e0a080595d3b016d33bc449e84def0acb48783245b3468b4470",
+  "frozen_at": "2026-10-05T23:16:11.321050+00:00",
+  "history_policy": "No development attempt is imported into prospective results.",
+  "id": "pokebench-v1-beta",
+  "in_flight_reserve": 100000,
+  "maximum_planned_tokens": 1260000000,
+  "models": [
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-6-astra",
+      "provider": "codex"
+    },
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-5.6-sol",
+      "provider": "codex"
+    },
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-6-sol",
+      "provider": "codex"
+    },
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-5.5",
+      "provider": "codex"
+    },
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-5.6-terra",
+      "provider": "codex"
+    },
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-5.6-luna",
+      "provider": "codex"
+    },
+    {
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "gpt-6-luna",
+      "provider": "codex"
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-opus-5-5",
+      "provider": "claude",
+      "smoke_verified": true
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-sonnet-5-5",
+      "provider": "claude",
+      "smoke_verified": true
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": null,
+      "effort": "medium",
+      "model": "claude-haiku-4-5-20251001",
+      "provider": "claude",
+      "smoke_verified": true
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-sonnet-5",
+      "provider": "claude",
+      "smoke_verified": false
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-opus-5",
+      "provider": "claude",
+      "smoke_verified": false
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-opus-4-8",
+      "provider": "claude",
+      "smoke_verified": false
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-opus-4-7",
+      "provider": "claude",
+      "smoke_verified": false
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-opus-4-6",
+      "provider": "claude",
+      "smoke_verified": false
+    },
+    {
+      "access_evidence": "official-cli-initialize-list",
+      "effective_effort": "medium",
+      "effort": "medium",
+      "model": "claude-sonnet-4-6",
+      "provider": "claude",
+      "smoke_verified": false
+    }
+  ],
+  "paid_summaries": 0,
+  "planned_attempts": 1344,
+  "retry_policy": "No gameplay retries. Infrastructure errors remain errors and stop the sweep. All raw attempts preserved.",
+  "rom_sha256": "5ca7ba01642a3b27b0cc0b5349b52792795b62d3ed977e98a09390659af96b7b",
+  "schedule": "Task first, all paired variants next, rotated models within each variant.",
+  "scoring": "Equal weights per eligible task. Only identical completed variant coverage across all registered models enters the aggregate.",
+  "sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+  "source_sha256": "b14c0f641700d105559370eb7cd31fae9a97ee9f9bcecd666c5e461f0fb958d8",
+  "tasks": [
+    {
+      "difficulty": "easy",
+      "id": "starter",
+      "name": "Get a starter",
+      "objective": {
+        "kind": "opening",
+        "target": "starter"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "9e788141db63c79c5ecc7221bf776900b20b3b7c6b84f206f63d052daff042f8",
+        "9757d19911eca80a9968a418b35a6300f81aa831b929086d7c3f46b0dc8f86e3",
+        "e130c577e896b63c833c936b7c6e45c7fc30e64de70b33138b875c645bd1a287"
+      ],
+      "tokens": 1000000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "easy",
+      "id": "heal",
+      "name": "Heal the party",
+      "objective": {
+        "kind": "heal",
+        "map_id": 41
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "c4e6c0bf6d356494d7ad88fe2520ec004eb5aa24fa3e57acae17fd85456dcbb0",
+        "0a92685d8311e536230b1917504888416acd1c9ebac71893899aed1441094040",
+        "b36566a165b9ce4b29768b6f0740a7b1d9522941b36eca647f7e4c600f365e28"
+      ],
+      "tokens": 500000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "parcel",
+      "name": "Collect and deliver Oak's Parcel",
+      "objective": {
+        "kind": "opening",
+        "target": "parcel-roundtrip"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "f6f4cf80a1b221d95bb0dd73451f3cfb97af02bac1d98dcded505ecd8eab545e",
+        "c4e48e389a1e27e5584618bc501c48f7baafbc015ca7cda1c222e508cfda4ae7",
+        "8ece9cbd9214d4a983fda76f3655776dcbc67abafce570462684fafdc4c8a96c"
+      ],
+      "tokens": 1500000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "item-recovery",
+      "name": "Recover the party with items",
+      "objective": {
+        "kind": "heal",
+        "map_id": 113
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "a57a7ecdb90001c7c4a68cf1c3af894c4b429da93ad06c12eb20770094bfb0df",
+        "2c982828795a275d541a5a85727320182df281dd589ca1d3a302c31fb2b8a3a4",
+        "57b5f5fc57701ba1fc1fd5da509f77525b744e3906d8f636fdca032aea926fb7"
+      ],
+      "tokens": 250000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "agatha",
+      "name": "Defeat Agatha",
+      "objective": {
+        "kind": "milestone",
+        "target": "elite:agatha"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "d40b7a5504a57ce402b20c171bfbc1f9b199587169795cb72d5deffaf1401aef",
+        "9a559796a822c330f8106cc844eaa144171c43acc30c6f3ffe9598725505391f",
+        "477f69adccffe65fc4f1bbaa25f58fa796598ca8a7e44345b44cae9ef2e649ca"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "lance",
+      "name": "Defeat Lance",
+      "objective": {
+        "kind": "milestone",
+        "target": "elite:lance"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "a417550fbb6b895cae89daf39a674dd59f0d06cbf733aaac4d5eaa64579cce7d",
+        "685825cac1188f25033f9e6fb616e40512a547db27abd353f8da0507bb61d02b",
+        "50493a0df8e04c7fdfebb920ea7f13e67d707c56b340735e46ff23d53836666f"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "league",
+      "name": "Become Champion",
+      "objective": {
+        "kind": "milestone",
+        "target": "champion"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "7c084298f9e56dcc815746645bd479b542acf7af9dc96bf8ecac5d7cdaa2a47c",
+        "456d93ac1b6a5da6beffaf3ce59edbf7a3964a87fa14d002a7a417cab409fd2c",
+        "aead6c35762a6d46bac46ae67ed18a4259571ffacbc5a4ed4f2d1352885126ca"
+      ],
+      "tokens": 3000000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "parcel-delivery",
+      "name": "Return Oak's Parcel from Viridian",
+      "objective": {
+        "kind": "opening",
+        "target": "parcel"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "5fce3b01bbcc3c4521db1c0cbfb8ba5f9339e48050e87e995b9b084b184148e3",
+        "4bca00fb7e70bfb2849169c9d41e5bba9ca45426785e85692fc0ee37c6266f91",
+        "2d05eaf207eebc59cc3f66261b251af5b9c7652e7194b45867ba01d6ba559f7d"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "lorelei",
+      "name": "Defeat Lorelei",
+      "objective": {
+        "kind": "milestone",
+        "target": "elite:lorelei"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "a1b7aaba5cd028487aadfc854501f599c56c47c55201c531550b78e836175bdf",
+        "5852e423aca20eb445ef51b43e4c35060ba147ef6795f2f2b9a6731eeaf43a2a",
+        "8543513932ff98e37629144e549af20137215ad311c0dafabd13d6f0798a28aa"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "bruno",
+      "name": "Defeat Bruno",
+      "objective": {
+        "kind": "milestone",
+        "target": "elite:bruno"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "65daa907dd73aa7578d108b65fa1f92bee07fd5c1b4a5f997b7e57e6ba821278",
+        "d0becede95c6a6b64dd067d27f2ae569bb5ac8611a4101c10f559b3a7f323ccc",
+        "25ddf452217bf48136a3586c53826dd03d46cf6cec6a27d5152d6694b4479e25"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "champion-duel",
+      "name": "Win the final Champion battle",
+      "objective": {
+        "kind": "milestone",
+        "target": "champion"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "7c2251d1c30999b41973ed222c835eb2a267ee015d2965e24a2b4f3eea8c915a",
+        "91efff6191b48bafb72d0ba161be34f4dead362f9c3107474ce6aa2650dd7c0b",
+        "e2173ca08729a609b14c8bf697c0994529a6335d23f7684efb350ede60c863c8"
+      ],
+      "tokens": 1000000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "easy",
+      "id": "buy-pokeballs",
+      "name": "Buy ten Poke Balls",
+      "objective": {
+        "item_id": 4,
+        "kind": "purchase",
+        "map_id": 42,
+        "quantity": 10,
+        "unit_price": 200
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "eee5a4fd8e2105e13a6edd70fad24248b91b1b74985de4296d0e124c8c48dc9e",
+        "03f02e61a1306953493a915b025d2cde59f9df697cd6ef7e789f80aefc56b9fe",
+        "d53218728f36ac081ea97d7f11bf224308b20599496816eedece7043b9c77f7c"
+      ],
+      "tokens": 500000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "viridian-forest",
+      "name": "Cross Viridian Forest to Pewter",
+      "objective": {
+        "kind": "reach-map",
+        "map_id": 2
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "1c21e1e9d241dc3ec52bb2674b5e24124fd499278786a7f0828de8eeebfe6eaf",
+        "6b990ba689c26e1a5d38c54e03eedf0de11fa826837e1632c36a25086c771c11",
+        "6b2f2b65e0536de1916a9ead55e2cf8f90dd5a46a838c5ec7b834e742707f268"
+      ],
+      "tokens": 1000000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "mt-moon",
+      "name": "Reach Cerulean through Mt. Moon",
+      "objective": {
+        "kind": "reach-map",
+        "map_id": 3
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "ce10cc3df660114f2151a3eaf7663657b8dd60d992023d1d46c4ba3f6b46336a",
+        "353c2c5963d17d884a1fe4da31c27175ff2c338eb79b9d7cc15f6de2867d2487",
+        "be2a3f3e950f1dce2a77729c85831b86a18da1692f068a9046d8219c6f949b3e"
+      ],
+      "tokens": 1500000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "fossil",
+      "name": "Win a fossil in Mt. Moon",
+      "objective": {
+        "item_ids": [
+          41,
+          42
+        ],
+        "kind": "obtain-item"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "f4b012690b777904658c70729a927e51bd0d4e1bf5c28831ac56bffffdb13b1b",
+        "8da2ff3f83c594f36047484143a5aa00040d540622a5fc252c4e4b00ed14e5ed",
+        "3cd5e57a1e36a5ccf08aea8535ba0f4fa6bcf1722d46cbeca8b325f09ffba2a5"
+      ],
+      "tokens": 500000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "misty",
+      "name": "Defeat Misty",
+      "objective": {
+        "kind": "milestone",
+        "target": "badge:cascade"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "0d2a833d88e834a3121678f4965d32c81f5835a039c72e97ef6d40226d74b0fd",
+        "2388f7c3fce40b897b6629af075f271b24e8c946e968da941ae48bf7cd74251b",
+        "e9e602ffb7a5aa3573c40646c899a499cc81466a76eb19039f7944aae31dfa46"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "surge",
+      "name": "Defeat Lt. Surge",
+      "objective": {
+        "kind": "milestone",
+        "target": "badge:thunder"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "88cf85f263eb27293f1a183a821b5acb4369ae24ed7a7260e4b10648d2c20801",
+        "684c0b212a25856c42637861efa64892a9c60726fb022bea3dd7d1831614f688",
+        "9066cf789cbf14e38c3da69ab50a7f821db7caa961c2a915121de9a543451e93"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "koga",
+      "name": "Defeat Koga",
+      "objective": {
+        "kind": "milestone",
+        "target": "badge:soul"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "2f9500c6050a618ef979ec922dd35368594a89b682abbac036333dd31c89dd37",
+        "b96357cf5c02779c9ba4c6d2674ee66702d1d08650bb456402f1618dfd8091c6",
+        "eb9ca8b1e7ce8ccc197e889dd252d8d421417ec8b8b4df6cce266897fe115a47"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "blaine",
+      "name": "Defeat Blaine",
+      "objective": {
+        "kind": "milestone",
+        "target": "badge:volcano"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "ae68b62f3eb85b84663b8705497c231c77b5466f2076e045e747fa44bba35565",
+        "82d3cb3ccc533c5c562d82824522e4999852becd701d6bba026fc37b23c045d4",
+        "0c5328120340c22fbf93c186708b6db5f9a00821160064ad9fb0e8e8c900af4e"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "giovanni",
+      "name": "Defeat Giovanni",
+      "objective": {
+        "kind": "milestone",
+        "target": "badge:earth"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "3d4af3bcea891d55a0ce893e4170cf6e6ac277e6f0f4558f5c51b1098f17be15",
+        "836421ff550246b46332f3739569e22293ec7bc87719c304b2874bd53c68e8d8",
+        "59df03c8786d7245066515be5d72179a0b5c06bd97065032e9b4c3c8c6f2dd61"
+      ],
+      "tokens": 750000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "league-hard",
+      "name": "Become Champion with a difficult team",
+      "objective": {
+        "kind": "milestone",
+        "target": "champion"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "408d72f17aae5d860d8f9cbbbe2bdbcf67b9ae3535938cb63618ee390ff04b4d",
+        "8d9e5d24a40b566329716a7d37abfc71681757c6f502fc907c04def120ca5186",
+        "ec48dfae5be614d655d2244c8948dc85f714720cb03a978c82212a9b5bed24a8"
+      ],
+      "tokens": 3000000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "lorelei-tactics",
+      "name": "Lorelei with a tactical control team",
+      "objective": {
+        "kind": "battle-milestone",
+        "target": "elite:lorelei"
+      },
+      "score_eligible": true,
+      "starting_state_sha256": [
+        "ade8d0467c7179524310bcc3939b63ba1b7373d2c4c65efde833194637a6e250",
+        "3b925b01714e1dfcf2c3705400209dbaa00e6caac43f62ff1b23b26b9beff344",
+        "8237b9c6e595b6297f5954e76eeb7dca3f6f3c98033bef62d80045c56267441e"
+      ],
+      "team_version": 2,
+      "tokens": 500000,
+      "validation_status": "development-qualified",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "bad-matchup",
+      "name": "Recover from a bad matchup",
+      "objective": {
+        "kind": "guarded-milestones",
+        "no_faints": true,
+        "targets": [
+          "elite:lorelei"
+        ]
+      },
+      "score_eligible": false,
+      "starting_state_sha256": [
+        "c6caa330231211235f93c4bef682ed3be696f898988a47bf26bbb5f68486a631",
+        "3481ecdd799152283c252d1f83b7e86aaec7ec3d913966f12ac14f81e30aeb3e",
+        "2d749c97a531cda08933f6e72378b6672838ab068ae6c8b88347813b18b83d29"
+      ],
+      "tokens": 500000,
+      "validation_status": "experimental",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "healthy-capture",
+      "name": "Capture a healthy Snorlax",
+      "objective": {
+        "kind": "encounter-capture"
+      },
+      "score_eligible": false,
+      "starting_state_sha256": [
+        "f9fbaaf430ce8cb2266db2043846d6c39fbc4b70c0c12341114792af20af41f6",
+        "23b1abe6f3c6aebab607cec3a33a48e9840750ce285d7d67d1d0d122e29e53fe",
+        "4a6181ae2bff5b75d797e055effd48ceb1a43a7829ca8880bcdf2e9c9f53fb25"
+      ],
+      "tokens": 500000,
+      "validation_status": "experimental",
+      "variants": 3
+    },
+    {
+      "difficulty": "medium",
+      "id": "team-rescue",
+      "name": "Rescue a damaged team before Lance",
+      "objective": {
+        "kind": "guarded-milestones",
+        "no_faints": false,
+        "targets": [
+          "elite:lance"
+        ]
+      },
+      "score_eligible": false,
+      "starting_state_sha256": [
+        "edb0b0f312135f25e9d951b6aeeb2a9c33170910803b07e9efb5089f3ae5b92e",
+        "eaa0198d40cff00e63e345ed96715219a1b3c3288ac3135c3fac392faffc9194",
+        "ac9d4b772ec6ca8a51f260b0b0388527c2cb286005e7c9146c9c46417276bf82"
+      ],
+      "tokens": 750000,
+      "validation_status": "experimental",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "pp-gauntlet",
+      "name": "Win Lorelei and Bruno with limited PP",
+      "objective": {
+        "kind": "guarded-milestones",
+        "no_faints": false,
+        "targets": [
+          "elite:lorelei",
+          "elite:bruno"
+        ]
+      },
+      "score_eligible": false,
+      "starting_state_sha256": [
+        "221dffa8e2713cdf5f68981848236c62b8e994e6b1f193e652c96d313d190aa6",
+        "fc40d95abfe0a51ccb9dbf6600d46c10feaf2c26c741301c5cb9ef0644df08d0",
+        "2504d1953b0172f38bd52c669884b7ff10a602841b857f2cb138bdc4ffc8b1ed"
+      ],
+      "tokens": 1000000,
+      "validation_status": "experimental",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "adaptive-champion",
+      "name": "Defeat the Champion with a specialist team",
+      "objective": {
+        "kind": "guarded-milestones",
+        "no_faints": false,
+        "targets": [
+          "champion"
+        ]
+      },
+      "score_eligible": false,
+      "starting_state_sha256": [
+        "4ffe26684cdf043f3be6d9815235817124ea3b65a23ece6c9747099cc5a222e9",
+        "d47106810b50dcc959826b60db070f72961e158e0e6d5a31b225e05d5070c1ff",
+        "284746c9a210269a48b36b7e37ddf94f8b3beff7d500e04d21c92e7f7bf26071"
+      ],
+      "tokens": 750000,
+      "validation_status": "experimental",
+      "variants": 3
+    },
+    {
+      "difficulty": "hard",
+      "id": "recovery-detour",
+      "name": "Reach Viridian Forest with a poisoned partner",
+      "objective": {
+        "kind": "resource-route",
+        "map_id": 51
+      },
+      "score_eligible": false,
+      "starting_state_sha256": [
+        "3ba7039372c868f0fa8b915e0c7774fd7ccd28fb392cb9db1c7e4af2f74549c0",
+        "5336037d09e13086ca2a892392440b99bda1b82615ee5516f53d165c4fc3772a",
+        "225990c08fdef80863f94232c6fedc1178b738c4864fe0915d37196a17b858aa"
+      ],
+      "tokens": 1000000,
+      "validation_status": "experimental",
+      "variants": 3
+    }
+  ],
+  "total_token_budget": 50000000,
+  "track": "gameplay",
+  "transports": {
+    "claude": {
+      "cli_version": "2.1.289 (Claude Code)",
+      "configuration": {
+        "allowed_writing_policy_sha256": "70a4ca34d487912d4cf511d1033abbce1bce95ab94c305a28912e406c6e4aae3",
+        "automatic_compaction": false,
+        "compact_at": 12000,
+        "compaction_protocol": "deterministic-checkpoint-no-summary-v1",
+        "context_persistence": "retained-segments-cli-session-resume",
+        "context_turns": 8,
+        "continuity": true,
+        "controller_timing": "bounded-gameplay-menus-v036",
+        "inspection_packet_bytes": 64000,
+        "observation_format": "text",
+        "observation_policy": "player-information-v036",
+        "ordinary_packet_bytes": 32000,
+        "presentation": "current",
+        "response_contract": "simple",
+        "subscription_only": true,
+        "text_presentation": "bounded-gameplay-context-v1",
+        "tools": "none",
+        "transport": "claude-code-stream-json-v1",
+        "usage_accounting": "cumulative-model-usage-delta-including-cache-v1"
+      },
+      "harness": "claude-code-bounded-gameplay-v1",
+      "max_output_tokens": 4096,
+      "memory_protocol": "bounded-segments-deltas-v1",
+      "prompt_sha256": "093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371",
+      "schema_sha256": "c52f1af8f59fc2fadc5814240fbcfb8f766a5c1faf47e6ccd2f0d9f4003c4c52"
+    },
+    "codex": {
+      "cli_version": "codex-cli 0.157.0",
+      "configuration": {
+        "allowed_writing_policy_sha256": "70a4ca34d487912d4cf511d1033abbce1bce95ab94c305a28912e406c6e4aae3",
+        "compact_at": 12000,
+        "compaction_protocol": "deterministic-checkpoint-no-summary-v1",
+        "context_turns": 8,
+        "continuity": true,
+        "controller_timing": "bounded-gameplay-menus-v036",
+        "inspection_packet_bytes": 64000,
+        "observation_format": "text",
+        "observation_policy": "player-information-v036",
+        "ordinary_packet_bytes": 32000,
+        "presentation": "current",
+        "response_contract": "simple",
+        "text_presentation": "bounded-gameplay-context-v1"
+      },
+      "harness": "codex-app-server-gameplay-v036",
+      "max_output_tokens": null,
+      "memory_protocol": "bounded-segments-deltas-v1",
+      "prompt_sha256": "093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371",
+      "schema_sha256": "c52f1af8f59fc2fadc5814240fbcfb8f766a5c1faf47e6ccd2f0d9f4003c4c52"
+    }
+  },
+  "uncertainty": "Per-task Wilson intervals are descriptive. Timing variants are paired conditions, not independent random samples.",
+  "variants": 3
+}

@@ -1,0 +1,1009 @@
+{
+  "caveats": [
+    "The route reference is the simulation policy with privileged access. It is not a model result.",
+    "Capture baseline throws balls immediately. Other battle baselines use direct damaging moves.",
+    "Route baseline replays the successful travel suffix from the same position but skips recovery.",
+    "Post-hoc winning-path searches prove feasibility only and are excluded from these win rates.",
+    "Five timing variants are paired starting conditions, not five guarantees of success or independent RNG streams."
+  ],
+  "method": "First fixed-policy sweep on five registered starts. Development data, not a held-out reliability estimate.",
+  "status": "experimental",
+  "tasks": [
+    {
+      "baseline_trials": 5,
+      "baseline_wins": 0,
+      "id": "bad-matchup",
+      "name": "Recover from a bad matchup",
+      "reference_trials": 5,
+      "reference_wins": 3,
+      "replays_verified": true
+    },
+    {
+      "baseline_trials": 5,
+      "baseline_wins": 3,
+      "id": "healthy-capture",
+      "name": "Capture a healthy Snorlax",
+      "reference_trials": 5,
+      "reference_wins": 5,
+      "replays_verified": true
+    },
+    {
+      "baseline_trials": 5,
+      "baseline_wins": 0,
+      "id": "team-rescue",
+      "name": "Rescue a damaged team before Lance",
+      "reference_trials": 5,
+      "reference_wins": 2,
+      "replays_verified": true
+    },
+    {
+      "baseline_trials": 5,
+      "baseline_wins": 0,
+      "id": "pp-gauntlet",
+      "name": "Win Lorelei and Bruno with limited PP",
+      "reference_trials": 5,
+      "reference_wins": 4,
+      "replays_verified": true
+    },
+    {
+      "baseline_trials": 5,
+      "baseline_wins": 0,
+      "id": "adaptive-champion",
+      "name": "Defeat the Champion with a specialist team",
+      "reference_trials": 5,
+      "reference_wins": 5,
+      "replays_verified": true
+    },
+    {
+      "baseline_trials": 5,
+      "baseline_wins": 0,
+      "id": "recovery-detour",
+      "name": "Reach Viridian Forest with a poisoned partner",
+      "reference_trials": 5,
+      "reference_wins": 5,
+      "replays_verified": true
+    }
+  ],
+  "trials": [
+    {
+      "completed": true,
+      "decisions": 27,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 535,
+        "frames": 17236,
+        "score": 1,
+        "trace_head": "81b22e765f0ec37eb0d17877cb4f9ff9a1f753dbadc31a59d5079d2c273f2e2e",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 1,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 13,
+        "frames": 485,
+        "score": 0,
+        "trace_head": "76dbac81bfe34ad12fc557ca0597746a8f51405cc0b4a4cfdbe460f09b11f25d",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 43,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 828,
+        "frames": 27348,
+        "score": 0,
+        "trace_head": "fb94ca5e91db05a4966ee032e7f5e659995b33520ed4c8e00c424dfab3d63852",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-02"
+    },
+    {
+      "completed": false,
+      "decisions": 1,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 12,
+        "frames": 455,
+        "score": 0,
+        "trace_head": "752257a281ba0eb0a0b4d83987c8de4f324e7896ec7fc6bd234c1c723b4a8b80",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-02"
+    },
+    {
+      "completed": true,
+      "decisions": 28,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 652,
+        "frames": 20806,
+        "score": 1,
+        "trace_head": "45364029c67100d9f0f63b634eb14b085fe0776c0a07582d186bc49d63f83f94",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-03"
+    },
+    {
+      "completed": false,
+      "decisions": 1,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 12,
+        "frames": 455,
+        "score": 0,
+        "trace_head": "bd337a09148c61d2aa7ebb5bb9fec81e60d5e10d5879529ff9d8ef6b9ef55321",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-03"
+    },
+    {
+      "completed": false,
+      "decisions": 35,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 709,
+        "frames": 23243,
+        "score": 0,
+        "trace_head": "5f10405890f0598d0398b93030a5b8794d1521ac63c7cbd9dcf51860c844c453",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "decisions": 1,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 12,
+        "frames": 455,
+        "score": 0,
+        "trace_head": "7c0ca5b482c316dd3e7a4b1d56e08d0a2ffc997a8b46f65f306ae7b214127737",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-04"
+    },
+    {
+      "completed": true,
+      "decisions": 31,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 658,
+        "frames": 21390,
+        "score": 1,
+        "trace_head": "58f577aac3d9f777f45761e557c822cebd4b9e969f93078f1fa4e3cb90e913b0",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-05"
+    },
+    {
+      "completed": false,
+      "decisions": 1,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 12,
+        "frames": 455,
+        "score": 0,
+        "trace_head": "1bb996db6798e42d01e025503b77eece386f84f9ae83c8ad1bf5fc7b4165bdec",
+        "verified": true
+      },
+      "task": "bad-matchup",
+      "variant": "variant-05"
+    },
+    {
+      "completed": true,
+      "decisions": 15,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 200,
+        "frames": 6797,
+        "score": 1,
+        "trace_head": "6dafafa5c015615b405d2d3f1f9da6a923bb96e15b27b477cc1e2ffb4546a555",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 21,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 161,
+        "frames": 5594,
+        "score": 0,
+        "trace_head": "fd48016bdecbae95b5afb63cbd6ec7d7089d4aad1eddc259ebf421b94c320350",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-01"
+    },
+    {
+      "completed": true,
+      "decisions": 15,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 190,
+        "frames": 6431,
+        "score": 1,
+        "trace_head": "97b2d9f19125fe9ceb9f3da176d44616c637deef6c3bd5ccfd7627854b122b76",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-02"
+    },
+    {
+      "completed": true,
+      "decisions": 17,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "completed",
+      "replay": {
+        "actions": 156,
+        "frames": 5131,
+        "score": 1,
+        "trace_head": "e2c638ccc407dfbe49472ab54f708a0af228cf111c47deb24b6f9aedf80136d5",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-02"
+    },
+    {
+      "completed": true,
+      "decisions": 29,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 347,
+        "frames": 11893,
+        "score": 1,
+        "trace_head": "90013ae8d0be990fd2f2eaab3ff2222e16419dd03fb1a2344ad7b947dcdb1cdb",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-03"
+    },
+    {
+      "completed": true,
+      "decisions": 7,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "completed",
+      "replay": {
+        "actions": 71,
+        "frames": 2215,
+        "score": 1,
+        "trace_head": "d3c023a478706b4c897531e9c73fda1d6889e75cdb1bc008a45434c808868aa9",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-03"
+    },
+    {
+      "completed": true,
+      "decisions": 28,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 343,
+        "frames": 11773,
+        "score": 1,
+        "trace_head": "dc171a18a9baacdf09cb345cc74a670de9c708c7c5a6c59b440be161bb96c0db",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "decisions": 9,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 74,
+        "frames": 2632,
+        "score": 0,
+        "trace_head": "a40e1fdf248c56c1f7d514ccfacc528f8d1a967322f0cb7fbec5db9edc0578e1",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-04"
+    },
+    {
+      "completed": true,
+      "decisions": 16,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 201,
+        "frames": 6829,
+        "score": 1,
+        "trace_head": "2f91bb8fe3206dcb606c4ca59c3c470c24a521417bb5623ad55f50884c7ba26b",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-05"
+    },
+    {
+      "completed": true,
+      "decisions": 23,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "completed",
+      "replay": {
+        "actions": 194,
+        "frames": 6475,
+        "score": 1,
+        "trace_head": "2f22a1df958d1852600a7d0b4e265010fb942b94e6d966dc7ae1c191adf3e82b",
+        "verified": true
+      },
+      "task": "healthy-capture",
+      "variant": "variant-05"
+    },
+    {
+      "completed": true,
+      "decisions": 18,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 451,
+        "frames": 12425,
+        "score": 1,
+        "trace_head": "054551a4f2472f6b95060fbf6f26882156f857255b8851a66970a05afafaa1c8",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 3,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 99,
+        "frames": 2750,
+        "score": 0,
+        "trace_head": "f947af0df86988dac3280d46ab7168f93079d414b68a5c06049792ce0c136510",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 19,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 452,
+        "frames": 12765,
+        "score": 0,
+        "trace_head": "160d99ae478a06899411bb51aec854da5209d41cb1e212065e7169d69a324513",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-02"
+    },
+    {
+      "completed": false,
+      "decisions": 3,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 103,
+        "frames": 2842,
+        "score": 0,
+        "trace_head": "e2a4b8533f97d5011a5a0737ec46b92c6db42a9c364d414b3025356dfccec906",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-02"
+    },
+    {
+      "completed": false,
+      "decisions": 16,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 384,
+        "frames": 10659,
+        "score": 0,
+        "trace_head": "9eed2c60fbd89e8980d2f7f5350198cb0de685d5c45bfba7f93eee82163f42ae",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-03"
+    },
+    {
+      "completed": false,
+      "decisions": 2,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 87,
+        "frames": 2306,
+        "score": 0,
+        "trace_head": "fe7e9ae64a1112359d99fc11d234b19905df33e5458896a86e4b415084ba5661",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-03"
+    },
+    {
+      "completed": true,
+      "decisions": 21,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 529,
+        "frames": 14912,
+        "score": 1,
+        "trace_head": "33b1794d68b0d76a94791cfb3178b6bf068b04b672a539b6578d91b166cafb0c",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "decisions": 2,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 84,
+        "frames": 2218,
+        "score": 0,
+        "trace_head": "d631b10c883d87dedfeb9baf4ccc13991155875b19082ddb78778f73de1590fd",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "decisions": 20,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 489,
+        "frames": 13873,
+        "score": 0,
+        "trace_head": "7e61a2cbdf04d4517b1aac43136e1f75213ce1c219199babd17b4d1421ab5f7d",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-05"
+    },
+    {
+      "completed": false,
+      "decisions": 2,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 91,
+        "frames": 2389,
+        "score": 0,
+        "trace_head": "0a4a21bff3a955c5a65174161c6f2d58ee2f7bd83d1e147b33485b41fa39e1fe",
+        "verified": true
+      },
+      "task": "team-rescue",
+      "variant": "variant-05"
+    },
+    {
+      "completed": true,
+      "decisions": 53,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 1105,
+        "frames": 34956,
+        "score": 1,
+        "trace_head": "7f6d8ed492a3e54847c51547108630bad3d85b9c4f50084081a265f846f9170d",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 78,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 1203,
+        "frames": 41129,
+        "score": 0,
+        "trace_head": "8da6f05b606c7e8108fa815fc3d1d1a8f760d9bea652adf07ab12f8a97391e3a",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 96,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 1738,
+        "frames": 57087,
+        "score": 0,
+        "trace_head": "1048ea8b003b1024a0b9f2f98341a849eebf4755d69c46b2108160aed1cf9ec0",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-02"
+    },
+    {
+      "completed": false,
+      "decisions": 164,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 2338,
+        "frames": 80687,
+        "score": 0,
+        "trace_head": "68921bbde114ce36113b6625672d71f162cc4802bf31ff6a1513686bb228c217",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-02"
+    },
+    {
+      "completed": true,
+      "decisions": 54,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 1097,
+        "frames": 35184,
+        "score": 1,
+        "trace_head": "afaeb4fcd252685cca3c3244fa0fd7dca1ec72750a1bb4ec8073b98847a11ee7",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-03"
+    },
+    {
+      "completed": false,
+      "decisions": 153,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 2182,
+        "frames": 75719,
+        "score": 0,
+        "trace_head": "b51061a343cbb68ee43108267633ab0fbc648ca30f4ac4a7f3b06e2c45b83b6b",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-03"
+    },
+    {
+      "completed": true,
+      "decisions": 43,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 955,
+        "frames": 29504,
+        "score": 1,
+        "trace_head": "7e640c0d9f287ab48ddd24e2f8ac92f237404a90a099bf0186597bde2e28b258",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "decisions": 53,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 989,
+        "frames": 32685,
+        "score": 0,
+        "trace_head": "18160292456384851a46d728bac48aa2d2de70de24688d1afb1d003101a3d6d0",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-04"
+    },
+    {
+      "completed": true,
+      "decisions": 39,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 742,
+        "frames": 22982,
+        "score": 1,
+        "trace_head": "29fff3db1d801b82143f743911216cdd832ecf0d4019aef2f2c7bf54f04aac89",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-05"
+    },
+    {
+      "completed": false,
+      "decisions": 48,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 900,
+        "frames": 30200,
+        "score": 0,
+        "trace_head": "3839c4884e5d55cac3e3aee781d7341c07fbec10644a27b54a08951c34ba2185",
+        "verified": true
+      },
+      "task": "pp-gauntlet",
+      "variant": "variant-05"
+    },
+    {
+      "completed": true,
+      "decisions": 23,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 709,
+        "frames": 20092,
+        "score": 1,
+        "trace_head": "4bb3f6b053142372b2dac49af20271ff17c534159e0486901d62846439eaa6a0",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "decisions": 33,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 600,
+        "frames": 20021,
+        "score": 0,
+        "trace_head": "d7a15e291678aed828fb8f679fb746beba0413a49091180146e76d0697cbd647",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-01"
+    },
+    {
+      "completed": true,
+      "decisions": 23,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 668,
+        "frames": 18926,
+        "score": 1,
+        "trace_head": "e876e6a6524673cf0670605254f287b44c2676aef856be10f303fa7d948afab7",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-02"
+    },
+    {
+      "completed": false,
+      "decisions": 24,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 507,
+        "frames": 16099,
+        "score": 0,
+        "trace_head": "6e65cc887c87385f844a0d110ec97da50e521b3a4b44d2fc116cef2131d15909",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-02"
+    },
+    {
+      "completed": true,
+      "decisions": 25,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 777,
+        "frames": 22040,
+        "score": 1,
+        "trace_head": "5cf0fe5eceb6e74a461b593d2af2f499b0ffc1f218618628336d9e9c3f980f8e",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-03"
+    },
+    {
+      "completed": false,
+      "decisions": 20,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 431,
+        "frames": 13603,
+        "score": 0,
+        "trace_head": "54ba4a1274d08b5d0fea0c274ec3d38525e3ce11999789098a23b645cb83d1da",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-03"
+    },
+    {
+      "completed": true,
+      "decisions": 21,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 619,
+        "frames": 17402,
+        "score": 1,
+        "trace_head": "9da16bdde2113fd63fc4adf1de72474e2602cfc43aaf6bda7146bad5d9572def",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "decisions": 25,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 493,
+        "frames": 15831,
+        "score": 0,
+        "trace_head": "ca536ec27d3c13284160e7c29dc728a4c291546620f566af5d91451f64c6201f",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-04"
+    },
+    {
+      "completed": true,
+      "decisions": 23,
+      "invalid_actions": 0,
+      "mode": "tactical",
+      "reason": "completed",
+      "replay": {
+        "actions": 681,
+        "frames": 19490,
+        "score": 1,
+        "trace_head": "0acd0a864054ccec3022db2939dcfff2e86b15b2f046f69ca79a62f4d0f8cbf5",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-05"
+    },
+    {
+      "completed": false,
+      "decisions": 27,
+      "invalid_actions": 0,
+      "mode": "attack-first",
+      "reason": "battle_loss",
+      "replay": {
+        "actions": 535,
+        "frames": 17519,
+        "score": 0,
+        "trace_head": "38148377dea2ff135dae960f5b28feb8b0650f2322298f2b47158fd8b23b96fd",
+        "verified": true
+      },
+      "task": "adaptive-champion",
+      "variant": "variant-05"
+    },
+    {
+      "completed": true,
+      "mode": "simulation-reference",
+      "reason": "completed",
+      "replay": {
+        "actions": 194,
+        "frames": 4301,
+        "score": 1,
+        "trace_head": "1f43575adc6166a66a33115feda7b0363f208f340e20c36e8e6f1e60a493c974",
+        "verified": true
+      },
+      "task": "recovery-detour",
+      "variant": "variant-01"
+    },
+    {
+      "completed": false,
+      "mode": "skip-recovery-path",
+      "reason": "battle_loss",
+      "reference_suffix_index": 54,
+      "replay": {
+        "actions": 17,
+        "frames": 328,
+        "score": 0,
+        "trace_head": "6b260ff25147e52faaf8b366757eff54b7a3b47887524a14df18141bfd7aece0",
+        "verified": true
+      },
+      "task": "recovery-detour"
+    },
+    {
+      "completed": true,
+      "mode": "simulation-reference",
+      "reason": "completed",
+      "replay": {
+        "actions": 149,
+        "frames": 3030,
+        "score": 1,
+        "trace_head": "bbca1c3f663838cfd015d17750b028e42a2dc82ed5351ff460e927b05bb292d5",
+        "verified": true
+      },
+      "task": "recovery-detour",
+      "variant": "variant-02"
+    },
+    {
+      "completed": false,
+      "mode": "skip-recovery-path",
+      "reason": "battle_loss",
+      "reference_suffix_index": 54,
+      "replay": {
+        "actions": 17,
+        "frames": 329,
+        "score": 0,
+        "trace_head": "cf091ed55a410863b53aff97dfc89613c286071f9effae30006263528e94dcd0",
+        "verified": true
+      },
+      "task": "recovery-detour"
+    },
+    {
+      "completed": true,
+      "mode": "simulation-reference",
+      "reason": "completed",
+      "replay": {
+        "actions": 194,
+        "frames": 4304,
+        "score": 1,
+        "trace_head": "2d970856bd284874c0ebb418520a5b176d5acd376b4063d92ddea0110c979fc0",
+        "verified": true
+      },
+      "task": "recovery-detour",
+      "variant": "variant-03"
+    },
+    {
+      "completed": false,
+      "mode": "skip-recovery-path",
+      "reason": "battle_loss",
+      "reference_suffix_index": 54,
+      "replay": {
+        "actions": 17,
+        "frames": 329,
+        "score": 0,
+        "trace_head": "47394c06cd1ca10f0af8d186693dfb31943747bf273b8d67d1ce6ab04ce591e9",
+        "verified": true
+      },
+      "task": "recovery-detour"
+    },
+    {
+      "completed": true,
+      "mode": "simulation-reference",
+      "reason": "completed",
+      "replay": {
+        "actions": 149,
+        "frames": 3030,
+        "score": 1,
+        "trace_head": "0a6404a9b4de55e0664bcd33baf392bfdc83d377839f2e25194ee767d96cd536",
+        "verified": true
+      },
+      "task": "recovery-detour",
+      "variant": "variant-04"
+    },
+    {
+      "completed": false,
+      "mode": "skip-recovery-path",
+      "reason": "battle_loss",
+      "reference_suffix_index": 54,
+      "replay": {
+        "actions": 17,
+        "frames": 329,
+        "score": 0,
+        "trace_head": "de0d933cf4751663ade1d96962714c0e7246d69f5d1b2e488bca3352dd4ca7ab",
+        "verified": true
+      },
+      "task": "recovery-detour"
+    },
+    {
+      "completed": true,
+      "mode": "simulation-reference",
+      "reason": "completed",
+      "replay": {
+        "actions": 195,
+        "frames": 4334,
+        "score": 1,
+        "trace_head": "99a974e17923225f5d43e5bf3420d6cbc8f469e43e5ad0cfb7ca1b40499d781e",
+        "verified": true
+      },
+      "task": "recovery-detour",
+      "variant": "variant-05"
+    },
+    {
+      "completed": false,
+      "mode": "skip-recovery-path",
+      "reason": "battle_loss",
+      "reference_suffix_index": 54,
+      "replay": {
+        "actions": 17,
+        "frames": 329,
+        "score": 0,
+        "trace_head": "e8884fb9e3fb2b8409c1d7f7a5c1af739be42bdae3a1ed5a5b1b25a6ece61736",
+        "verified": true
+      },
+      "task": "recovery-detour"
+    }
+  ]
+}

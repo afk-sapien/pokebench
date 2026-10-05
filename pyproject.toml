@@ -1,0 +1,44 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pokeagent-bench"
+version = "0.31.0"
+description = "Controlled Pokemon Red benchmarks for AI agents"
+requires-python = ">=3.11"
+readme = "README.md"
+license = "MIT"
+dependencies = [
+  "pokesim-core[emulator] @ https://github.com/afk-sapien/pokesim-core/releases/download/v0.1.4/pokesim_core-0.1.4-py3-none-any.whl#sha256=8984ad4f2ac5012ca6a2d1f0501866f3194cf182b42686122e3edbc7a09c10cb",
+  "pillow>=10,<13",
+  "numpy>=1.26,<3",
+  "httpx>=0.28,<0.29",
+  "mcp>=1.26,<2",
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
+
+[project.scripts]
+pokebench = "pokeagent_bench.cli:main"
+pokeagent = "pokeagent_bench.cli:main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["paper/analysis/scripts/_*.py", "paper/analysis/scripts/_toolchain", "paper/audio"]
+
+[tool.ruff.lint]
+select = ["E9", "F"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.sdist]
+include = ["src/", "tests/", "scripts/", "docs/", "examples/", "fixtures/", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "pyproject.toml", "uv.lock", ".python-version"]
+exclude = ["**/__pycache__", "**/*.pyc", "**/.pytest_cache"]

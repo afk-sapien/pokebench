@@ -1,0 +1,43 @@
+{
+  "schema": 1,
+  "status": "proposed-fixtures-not-collected",
+  "families": [
+    {
+      "id": "gym-segments",
+      "objective": "next-badge",
+      "variants": [
+        "after-brock",
+        "after-misty",
+        "after-surge",
+        "after-erika",
+        "after-koga",
+        "after-sabrina",
+        "after-blaine"
+      ]
+    },
+    {
+      "id": "trainer-battle",
+      "objective": "curated-victory-flag",
+      "variants": [
+        "balanced-party",
+        "weak-party",
+        "low-pp",
+        "low-hp"
+      ]
+    },
+    {
+      "id": "navigation-recovery",
+      "objective": "reach-exit-tile",
+      "variants": [
+        "ordinary-route",
+        "resource-constrained",
+        "apparent-trap"
+      ]
+    },
+    {
+      "id": "soft-lock-diagnosis",
+      "objective": "separate-diagnosis-rubric",
+      "status": "planned-not-implemented"
+    }
+  ]
+}

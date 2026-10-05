@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "scaffold": {
+    "version": "5.3.2",
+    "pin": "paper-scaffold @ git+https://github.com/pgarrett-scripps/paper-scaffold@c9cb1046d710b3fab851e9984b23254b82a031bc"
+  },
+  "files": {
+    "analysis/scripts/_assets.py": "6aa754f865e4f203d84d41c355194241b68223adbee9ea40488d090ef5c549d6",
+    "analysis/scripts/_provenance.py": "a6cd2609bc87557f3bf6a61d6f679b9c26e4a28a6e636e68e4ea1bb032bae897",
+    "analysis/scripts/_stats.py": "3cbebe8bd3cbf77029fb58a54f4859a6d448806b118c1ec6880929a4385001e4",
+    "analysis/scripts/_toolchain/atomic_io.py": "de383d0fe50c4cc7221a48f0d18451503deb3bdfd82a47da4aa42ef528d9eee4",
+    "analysis/scripts/_toolchain/evidence.py": "eb15acab4169ef6948c613cbeef9ab5d06d42ccebb9e92b84d2e60f99cf830e7",
+    "analysis/scripts/_toolchain/hashcache.py": "654fa3dfb5e0c57c0fe175b382d7e4d94c480749d6c2a7cf797195381dd238b7",
+    "analysis/scripts/_toolchain/manifest_validation.py": "84fd7913ba46131937fc34906493dba2b7eda269278ae5f8e37ca45989c5ee1c",
+    "analysis/scripts/_toolchain/paths.py": "e57845d577adf463c7ee5366e7a04e91cb49d5c08b87e3917e33b6ddc678ccca",
+    "assets.typ": "4be3ecc12c7c661ff95885b74c70ba60cf0f414744863d490907f7b179af96af",
+    "code.typ": "db036db7575a0dbb3776bc07acbc08cd9aaf0df5d65c0ff06903fae47ca52934",
+    "justfile": "816c4fd1af815fc46091886e5564088b7c60b326ad87642753e5c0d495249f64",
+    "stats.typ": "ecf9e578d2792df5efcb84bf1e8471bc65b2c4f0a37fb528f0f116c37b9f84d7",
+    "wordcount-sections.typ": "eeb238aedce247fc12d4a048277b634d895abaf0e5cc7366b4269e69baadef39",
+    "wordcount.typ": "ac1b6170837cbb31d2a692bf6f126f9f821c5b003866eae38b15409db053095f"
+  },
+  "overrides": {}
+}

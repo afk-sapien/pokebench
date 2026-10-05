@@ -1,0 +1,24 @@
+# Local build environments and caches
+.venv/
+analysis/.venv/
+__pycache__/
+*.pyc
+.build-state/
+.hash-cache.json
+.paper/docs/
+stats-rendered.json
+paper.docx
+paper.resolved.typ
+*.review.txt
+submission/
+viz/
+# Private historical development artifacts are not part of this package.
+archive/
+analysis/data/
+analysis/results/
+# Only reviewed sanitized inputs belong in the public source package.
+analysis/inputs/*
+!analysis/inputs/pokebench-v1-protocol.json
+!analysis/inputs/pokebench-development.json
+!analysis/inputs/tactical-reliability-v042.json
+!analysis/inputs/decision-suite-v044-development.json

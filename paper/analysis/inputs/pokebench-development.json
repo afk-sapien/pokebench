@@ -1,0 +1,519 @@
+{
+  "evidence_status": "development-only",
+  "historical_models": [
+    {
+      "model": "gpt-6-astra",
+      "score": 95.45454545454545,
+      "scored_tasks": 22,
+      "tokens": 10333228
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "score": 90.9090909090909,
+      "scored_tasks": 22,
+      "tokens": 12175856
+    },
+    {
+      "model": "gpt-6-sol",
+      "score": 90.9090909090909,
+      "scored_tasks": 22,
+      "tokens": 12080464
+    },
+    {
+      "model": "gpt-5.5",
+      "score": 90.0,
+      "scored_tasks": 22,
+      "tokens": 12204138
+    },
+    {
+      "model": "gpt-5.6-terra",
+      "score": 61.81818181818182,
+      "scored_tasks": 22,
+      "tokens": 14150398
+    },
+    {
+      "model": "gpt-5.6-luna",
+      "score": 50.0,
+      "scored_tasks": 22,
+      "tokens": 18298699
+    },
+    {
+      "model": "gpt-6-luna",
+      "score": 45.45454545454545,
+      "scored_tasks": 22,
+      "tokens": 18887701
+    }
+  ],
+  "notes": [
+    "Historical ranking combines declared development cohorts and is not a frozen release comparison.",
+    "The pilot has one attempt per task and model. It cannot estimate within-task reliability.",
+    "No screenshots, save states, prompts, responses, local paths, or credentials are exported."
+  ],
+  "pilot": [
+    {
+      "calls": 22,
+      "conversation_order_verified": true,
+      "id": "cell-0001",
+      "input_delivery_verified": true,
+      "model": "gpt-6-astra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "bad-matchup",
+      "tokens": 236789
+    },
+    {
+      "calls": 32,
+      "conversation_order_verified": true,
+      "id": "cell-0002",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-terra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "bad-matchup",
+      "tokens": 338099
+    },
+    {
+      "calls": 1,
+      "conversation_order_verified": true,
+      "id": "cell-0003",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-luna",
+      "passed": false,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "bad-matchup",
+      "tokens": 5453
+    },
+    {
+      "calls": 13,
+      "conversation_order_verified": true,
+      "id": "cell-0004",
+      "input_delivery_verified": true,
+      "model": "gpt-6-astra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "healthy-capture",
+      "tokens": 129243
+    },
+    {
+      "calls": 32,
+      "conversation_order_verified": true,
+      "id": "cell-0005",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-terra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "healthy-capture",
+      "tokens": 316619
+    },
+    {
+      "calls": 13,
+      "conversation_order_verified": true,
+      "id": "cell-0006",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-luna",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "healthy-capture",
+      "tokens": 119142
+    },
+    {
+      "calls": 16,
+      "conversation_order_verified": true,
+      "id": "cell-0007",
+      "input_delivery_verified": true,
+      "model": "gpt-6-astra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "team-rescue",
+      "tokens": 170148
+    },
+    {
+      "calls": 15,
+      "conversation_order_verified": true,
+      "id": "cell-0008",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-terra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "team-rescue",
+      "tokens": 159685
+    },
+    {
+      "calls": 14,
+      "conversation_order_verified": true,
+      "id": "cell-0009",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-luna",
+      "passed": false,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "team-rescue",
+      "tokens": 142971
+    },
+    {
+      "calls": 46,
+      "conversation_order_verified": true,
+      "id": "cell-0010",
+      "input_delivery_verified": true,
+      "model": "gpt-6-astra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "pp-gauntlet",
+      "tokens": 492948
+    },
+    {
+      "calls": 48,
+      "conversation_order_verified": true,
+      "id": "cell-0011",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-terra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "pp-gauntlet",
+      "tokens": 505637
+    },
+    {
+      "calls": 99,
+      "conversation_order_verified": true,
+      "id": "cell-0012",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-luna",
+      "passed": false,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "pp-gauntlet",
+      "tokens": 973477
+    },
+    {
+      "calls": 14,
+      "conversation_order_verified": true,
+      "id": "cell-0013",
+      "input_delivery_verified": true,
+      "model": "gpt-6-astra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "adaptive-champion",
+      "tokens": 146940
+    },
+    {
+      "calls": 18,
+      "conversation_order_verified": true,
+      "id": "cell-0014",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-terra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "adaptive-champion",
+      "tokens": 186675
+    },
+    {
+      "calls": 25,
+      "conversation_order_verified": true,
+      "id": "cell-0015",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-luna",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "adaptive-champion",
+      "tokens": 241970
+    },
+    {
+      "calls": 29,
+      "conversation_order_verified": true,
+      "id": "cell-0016",
+      "input_delivery_verified": true,
+      "model": "gpt-6-astra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "recovery-detour",
+      "tokens": 287930
+    },
+    {
+      "calls": 43,
+      "conversation_order_verified": true,
+      "id": "cell-0017",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-terra",
+      "passed": true,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "recovery-detour",
+      "tokens": 434610
+    },
+    {
+      "calls": 10,
+      "conversation_order_verified": true,
+      "id": "cell-0018",
+      "input_delivery_verified": true,
+      "model": "gpt-5.6-luna",
+      "passed": false,
+      "repeat": 1,
+      "replay_verified": true,
+      "state_updates_verified": true,
+      "task": "recovery-detour",
+      "tokens": 97107
+    }
+  ],
+  "ranking_version": "ability-ranking-v2",
+  "retired": [
+    {
+      "id": "wild-battle",
+      "name": "Win a wild battle",
+      "reason": "A full-health starter wins by repeating its only damaging move. All seven models used three decisions."
+    },
+    {
+      "id": "brock",
+      "name": "Defeat Brock with a healthy team",
+      "reason": "The supplied healthy Squirtle can repeatedly use Bubble. Little adaptation is needed."
+    },
+    {
+      "id": "first-capture",
+      "name": "Catch your first wild Pokemon",
+      "reason": "The opponent is already weakened and plentiful Poke Balls make repeated capture attempts sufficient."
+    },
+    {
+      "id": "erika",
+      "name": "Defeat Erika",
+      "reason": "The supplied level-39 Charizard can repeatedly use Ember against the Grass team."
+    },
+    {
+      "id": "sabrina",
+      "name": "Defeat Sabrina",
+      "reason": "The supplied level-48 Charizard can repeatedly use Slash without meaningful resource tradeoffs."
+    }
+  ],
+  "schema_version": 1,
+  "sources": {
+    "combined_sha256": "00d152947833560a872aa9fe9f2725a9fb1c17aaa14e2f5734bce5eafcb44cdb",
+    "pilot_audit_sha256": "7c018738b1c923b77b5b6137758c2b5ddb817f16e0666c330931d8f80d72c3ce"
+  },
+  "tasks": [
+    {
+      "category": "Navigation",
+      "difficulty": "easy",
+      "id": "starter",
+      "included_in_score": true,
+      "name": "Get a starter"
+    },
+    {
+      "category": "Recovery",
+      "difficulty": "easy",
+      "id": "heal",
+      "included_in_score": true,
+      "name": "Heal the party"
+    },
+    {
+      "category": "Navigation",
+      "difficulty": "medium",
+      "id": "parcel",
+      "included_in_score": true,
+      "name": "Collect and deliver Oak's Parcel"
+    },
+    {
+      "category": "Recovery",
+      "difficulty": "medium",
+      "id": "item-recovery",
+      "included_in_score": true,
+      "name": "Recover the party with items"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "agatha",
+      "included_in_score": true,
+      "name": "Defeat Agatha"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "lance",
+      "included_in_score": true,
+      "name": "Defeat Lance"
+    },
+    {
+      "category": "Campaign",
+      "difficulty": "hard",
+      "id": "league",
+      "included_in_score": true,
+      "name": "Become Champion"
+    },
+    {
+      "category": "Navigation",
+      "difficulty": "medium",
+      "id": "parcel-delivery",
+      "included_in_score": true,
+      "name": "Return Oak's Parcel from Viridian"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "lorelei",
+      "included_in_score": true,
+      "name": "Defeat Lorelei"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "bruno",
+      "included_in_score": true,
+      "name": "Defeat Bruno"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "champion-duel",
+      "included_in_score": true,
+      "name": "Win the final Champion battle"
+    },
+    {
+      "category": "Shopping",
+      "difficulty": "easy",
+      "id": "buy-pokeballs",
+      "included_in_score": true,
+      "name": "Buy ten Poke Balls"
+    },
+    {
+      "category": "Navigation",
+      "difficulty": "medium",
+      "id": "viridian-forest",
+      "included_in_score": true,
+      "name": "Cross Viridian Forest to Pewter"
+    },
+    {
+      "category": "Navigation",
+      "difficulty": "hard",
+      "id": "mt-moon",
+      "included_in_score": true,
+      "name": "Reach Cerulean through Mt. Moon"
+    },
+    {
+      "category": "Collection",
+      "difficulty": "medium",
+      "id": "fossil",
+      "included_in_score": true,
+      "name": "Win a fossil in Mt. Moon"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "medium",
+      "id": "misty",
+      "included_in_score": true,
+      "name": "Defeat Misty"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "medium",
+      "id": "surge",
+      "included_in_score": true,
+      "name": "Defeat Lt. Surge"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "medium",
+      "id": "koga",
+      "included_in_score": true,
+      "name": "Defeat Koga"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "medium",
+      "id": "blaine",
+      "included_in_score": true,
+      "name": "Defeat Blaine"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "medium",
+      "id": "giovanni",
+      "included_in_score": true,
+      "name": "Defeat Giovanni"
+    },
+    {
+      "category": "Campaign",
+      "difficulty": "hard",
+      "id": "league-hard",
+      "included_in_score": true,
+      "name": "Become Champion with a difficult team"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "lorelei-tactics",
+      "included_in_score": true,
+      "name": "Lorelei with a tactical control team"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "medium",
+      "id": "bad-matchup",
+      "included_in_score": false,
+      "name": "Recover from a bad matchup"
+    },
+    {
+      "category": "Collection",
+      "difficulty": "medium",
+      "id": "healthy-capture",
+      "included_in_score": false,
+      "name": "Capture a healthy Snorlax"
+    },
+    {
+      "category": "Recovery",
+      "difficulty": "medium",
+      "id": "team-rescue",
+      "included_in_score": false,
+      "name": "Rescue a damaged team before Lance"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "pp-gauntlet",
+      "included_in_score": false,
+      "name": "Win Lorelei and Bruno with limited PP"
+    },
+    {
+      "category": "Battles",
+      "difficulty": "hard",
+      "id": "adaptive-champion",
+      "included_in_score": false,
+      "name": "Defeat the Champion with a specialist team"
+    },
+    {
+      "category": "Navigation",
+      "difficulty": "hard",
+      "id": "recovery-detour",
+      "included_in_score": false,
+      "name": "Reach Viridian Forest with a poisoned partner"
+    }
+  ]
+}

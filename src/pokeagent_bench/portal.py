@@ -1,0 +1,555 @@
+"""Publish a compact, read-only portal over separately versioned comparison reports."""
+import base64
+import csv
+import io
+import json
+from pathlib import Path
+from datetime import datetime, timezone
+
+from .core import digest, write_json
+from .suite import read, validate
+from .combined_analysis import combine_reports, summarize
+from .costs import RATE_CARD, efficiency, enrich
+
+
+def category(task):
+    if task.get('objective', {}).get('kind') in ('reach-map', 'resource-route'):
+        return 'Navigation'
+    if task.get('objective', {}).get('kind') == 'purchase':
+        return 'Shopping'
+    if task['id'] in ('starter', 'parcel', 'parcel-delivery'):
+        return 'Navigation'
+    if task['id'] in ('heal', 'item-recovery', 'team-rescue'):
+        return 'Recovery'
+    if task.get('objective', {}).get('kind') in ('capture', 'encounter-capture', 'obtain-item'):
+        return 'Collection'
+    if task['id'] in ('league', 'league-hard'):
+        return 'Campaign'
+    if task['objective']['kind'] in ('wild-battle', 'trainer', 'milestone', 'battle-milestone', 'guarded-milestones'):
+        return 'Battles'
+    return 'Other'
+
+
+def publish(config, output):
+    """Keep each registered comparison separate and only link recorded replays."""
+    output = Path(output)
+    cohorts = []
+    for entry in config:
+        report_path = Path(entry['report'])
+        report = read(report_path)
+        suite_root = Path(entry['suite'])
+        suite = validate(suite_root, require_runtime=False)
+        if report['configuration']['suite_sha256'] != digest((suite_root/'suite.json').read_bytes()):
+            raise ValueError('Portal report does not match its fixture suite')
+        validation = read(entry['validation']) if entry.get('validation') else None
+        tasks = []
+        for task in suite['definition']['tasks']:
+            fixture = suite['fixtures'][task['id']]
+            folder = suite_root/fixture['scenario']
+            manifest = read(folder/'scenario.json')
+            tasks.append({**task, 'category':category(task), 'description':manifest['objective']['description'],
+                          'state_hash':fixture['state_sha256'],
+                          'variant_state_hashes':[v['state_sha256'] for v in fixture.get('variants', [fixture])],
+                          'preview':'data:image/png;base64,'+base64.b64encode((folder/'preview.png').read_bytes()).decode()})
+        if validation:
+            for task in tasks:
+                task['validation'] = validation
+        versions = set()
+        attempts = report['attempts']
+        batch_path = Path(entry['batch'])/'batch.json'
+        batch = read(batch_path) if batch_path.exists() else {}
+        report['interrupted_attempts'] = [
+            {key: value for key, value in item.items() if key in (
+                'id', 'retry_cell_id', 'model', 'task', 'recorded_tokens',
+                'accounting_complete', 'reserved_tokens', 'reason', 'result_sha256')}
+            for item in batch.get('interrupted_attempts', [])]
+        for attempt in attempts:
+            attempt['replay'] = None
+            attempt['prior_interruptions'] = [h for h in report['interrupted_attempts'] if h['retry_cell_id'] == attempt['id']]
+            run = Path(entry['batch'])/attempt['id']
+            enrich(attempt, run)
+            if (run/'manifest.json').exists():
+                version = read(run/'manifest.json').get('benchmark')
+                if version:
+                    versions.add(version)
+                    attempt['benchmark'] = version
+            if attempt['status'] == 'finished' and (run/'manifest.json').exists():
+                revision = digest((run/'manifest.json').read_bytes()+(run/'result.json').read_bytes())[:16]
+                target = report_path.parent/(report_path.stem+'-'+attempt['id']+'-'+revision+'.html')
+                if target.exists():
+                    attempt['replay'] = target.name
+        models = [m['model'] for m in report.get('models', [])]
+        shared, _ = summarize(tasks, attempts, models) if models else ([], [])
+        report['cost_analysis'] = efficiency(attempts, models, shared)
+        report['cost_rate_card'] = RATE_CARD
+        cohorts.append({**report, 'id':entry['id'], 'label':entry['label'], 'tasks':tasks,
+                        'benchmark_versions':sorted(versions),
+                        'downloads':{'json':report_path.name,'csv':report_path.with_suffix('.csv').name}})
+    output.parent.mkdir(parents=True, exist_ok=True)
+    def validation_key(task):
+        return (task['id'], task['state_hash'], tuple(task['variant_state_hashes']))
+    task_validations = {validation_key(t):t['validation'] for c in reversed(cohorts) for t in c['tasks'] if t.get('validation')}
+    for cohort in cohorts:
+        for task in cohort['tasks']:
+            if validation_key(task) in task_validations:
+                task['validation'] = task_validations[validation_key(task)]
+        models = [row['model'] for row in cohort.get('models', [])]
+        shared, _ = summarize(cohort['tasks'], cohort['attempts'], models) if models else ([], [])
+        cohort['cost_analysis'] = efficiency(cohort['attempts'], models, shared)
+    combined = combine_reports(cohorts)
+    if combined:
+        stem = output.stem+'-combined'
+        combined['downloads'] = {'json':stem+'.json', 'csv':stem+'.csv'}
+        write_json(output.parent/(stem+'.json'), combined)
+        stream = io.StringIO()
+        fields = ['id','task','model','repeat','variant','status','completed','tokens','replay_verified',
+                  'source_cohort','source_run_id','benchmark','included_in_score','replay',
+                  'input_tokens','cached_input_tokens','output_tokens','estimated_credits',
+                  'cost_complete','cost_rate_card','cost_note']
+        writer = csv.DictWriter(stream, fieldnames=fields, extrasaction='ignore')
+        writer.writeheader()
+        writer.writerows({**a, 'included_in_score':a['task'] in combined['scored_task_ids']} for a in combined['attempts'])
+        temporary_csv = output.parent/(stem+'.csv.tmp')
+        temporary_csv.write_text(stream.getvalue())
+        temporary_csv.replace(output.parent/(stem+'.csv'))
+        cohorts.insert(0, combined)
+    data = {'updated_at':datetime.now(timezone.utc).isoformat(), 'cohorts':cohorts}
+    output.parent.mkdir(parents=True, exist_ok=True)
+    write_json(output.with_suffix('.json'), data)
+    html = HTML.replace('__FEED__', json.dumps(output.with_suffix('.json').name))
+    temporary = output.with_suffix('.html.tmp')
+    temporary.write_text(html)
+    temporary.replace(output)
+    return data
+
+
+HTML = '''<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PokeBench | Agent benchmark rankings</title>
+<style>
+:root { color-scheme: light }
+:root { --ink: #202623 }
+:root { --muted: #64716a }
+:root { --line: #dde3de }
+:root { --accent: #186645 }
+* { box-sizing: border-box }
+body { margin: 0 }
+body { background: #fff }
+body { color: var(--ink) }
+body { font: 16px/1.5 system-ui, sans-serif }
+a { color: var(--accent) }
+button, input, select { font: inherit }
+button, select { cursor: pointer }
+button, select, input { border: 1px solid var(--line) }
+button, select, input { border-radius: 5px }
+button, select, input { padding: 9px 12px }
+button, select, input { background: white }
+button { color: inherit }
+button:hover { background: #f1f6f2 }
+:focus-visible { outline: 3px solid #8ab99c }
+:focus-visible { outline-offset: 3px }
+header, main, footer { max-width: 1120px }
+header, main, footer { margin: auto }
+header, main, footer { padding: 0 28px }
+header { height: 76px }
+header { display: flex }
+header { align-items: center }
+header { justify-content: space-between }
+.brand { font: bold 22px Georgia, serif }
+.brand { color: var(--ink) }
+.brand { text-decoration: none }
+.brand span { color: var(--muted) }
+header nav { display: flex }
+header nav { gap: 22px }
+header nav a { font-size: 14px }
+h1 { font: 36px/1.15 Georgia, serif }
+h1 { margin: 20px 0 12px }
+h2 { font: 24px/1.2 Georgia, serif }
+h2 { margin: 0 }
+h3 { font: bold 18px Georgia, serif }
+p { margin: 8px 0 }
+.muted { color: var(--muted) }
+.small { font-size: 14px }
+.mono { font-family: ui-monospace, monospace }
+.intro { max-width: 740px }
+.topline { display: flex }
+.topline { justify-content: space-between }
+.topline { align-items: center }
+.topline { gap: 16px }
+.topline { margin-top: 30px }
+.status { font-size: 14px }
+.status { color: var(--muted) }
+.live { color: var(--accent) }
+.categories { display: flex }
+.categories { flex-wrap: wrap }
+.categories { gap: 20px }
+.categories { border-bottom: 1px solid var(--line) }
+.categories { margin-top: 26px }
+.categories button { border: 0 }
+.categories button { border-radius: 0 }
+.categories button { padding: 12px 0 }
+.categories button { background: none }
+.categories button { color: var(--muted) }
+.categories button { font: 14px ui-monospace, monospace }
+.categories button[aria-pressed=true] { border-bottom: 2px solid var(--ink) }
+.categories button[aria-pressed=true] { color: var(--ink) }
+.section-head { display: flex }
+.section-head { justify-content: space-between }
+.section-head { align-items: baseline }
+.section-head { gap: 16px }
+.section-head { margin: 28px 0 12px }
+#score-note { max-width: 800px }
+.board { margin: 18px 0 }
+.board-head, .model-row { display: grid }
+.board-head, .model-row { grid-template-columns: 44px minmax(160px, 1.1fr) minmax(160px, 1.7fr) 110px 100px }
+.board-head, .model-row { gap: 16px }
+.board-head, .model-row { align-items: center }
+.board-head { font: 13px ui-monospace, monospace }
+.board-head { color: var(--muted) }
+.board-head { padding: 12px 0 }
+.model-row { border-top: 1px solid var(--line) }
+.model-row { padding: 20px 0 }
+.model-name { border: 0 }
+.model-name { padding: 0 }
+.model-name { text-align: left }
+.model-name { background: none }
+.model-name { font-weight: 600 }
+.model-name:hover { text-decoration: underline }
+.model-id { font: 12px ui-monospace, monospace }
+.model-id { color: var(--muted) }
+.rail { height: 8px }
+.rail { background: #edf0ed }
+.rail { border-radius: 4px }
+.fill { height: 100% }
+.fill { border-radius: 4px }
+.fill { background: var(--accent) }
+.fill.pending { background: #afb9b2 }
+.score-label { display: flex }
+.score-label { justify-content: space-between }
+.score-label { margin-bottom: 7px }
+.score-label { font-size: 14px }
+.right { text-align: right }
+.pill { display: inline-block }
+.pill { font: 12px ui-monospace, monospace }
+.pill { border: 1px solid var(--line) }
+.pill { border-radius: 4px }
+.pill { padding: 3px 7px }
+.pill.passed { color: #16603e }
+.pill.failed { color: #a94337 }
+.pill.running { color: #946114 }
+section { scroll-margin-top: 20px }
+#benchmarks { margin-top: 44px }
+.toolbar { display: flex }
+.toolbar { flex-wrap: wrap }
+.toolbar { gap: 12px }
+.toolbar { margin: 20px 0 12px }
+.toolbar input { flex: 1 }
+.toolbar input { min-width: 180px }
+.task-row { width: 100% }
+.task-row { display: grid }
+.task-row { grid-template-columns: minmax(0, 1fr) 110px 130px 22px }
+.task-row { gap: 20px }
+.task-row { align-items: center }
+.task-row { text-align: left }
+.task-row { padding: 19px 4px }
+.task-row { border: 0 }
+.task-row { border-top: 1px solid var(--line) }
+.task-row { border-radius: 0 }
+.task-title { font-weight: 550 }
+.task-meta { color: var(--muted) }
+.task-meta { font: 13px ui-monospace, monospace }
+.pager { display: flex }
+.pager { align-items: center }
+.pager { justify-content: space-between }
+.pager { gap: 12px }
+.pager { padding: 16px 0 }
+.pager button:disabled { opacity: .4 }
+.pager button:disabled { cursor: default }
+#methodology { margin-top: 40px }
+#methodology { border-top: 1px solid var(--line) }
+#methodology { padding-top: 24px }
+#methodology p { max-width: 850px }
+footer { margin: 40px auto }
+footer { color: var(--muted) }
+footer { font-size: 13px }
+.error { color: #a94337 }
+.empty { padding: 30px 0 }
+.empty { color: var(--muted) }
+.error:empty { display: none }
+dialog { width: min(900px, 94vw) }
+dialog { max-height: 88vh }
+dialog { border: 1px solid var(--line) }
+dialog { border-radius: 10px }
+dialog { padding: 28px }
+dialog { color: var(--ink) }
+dialog::backdrop { background: #12221888 }
+.dialog-head { display: flex }
+.dialog-head { justify-content: space-between }
+.dialog-head { gap: 20px }
+.dialog-head { align-items: start }
+.detail { display: grid }
+.detail { grid-template-columns: 240px minmax(0, 1fr) }
+.detail { gap: 28px }
+.detail { margin: 24px 0 }
+.detail img { width: 240px }
+.detail img { image-rendering: pixelated }
+.detail img { border-radius: 6px }
+.attempt { display: grid }
+.attempt { grid-template-columns: minmax(120px,1fr) 105px 100px 100px }
+.attempt { gap: 16px }
+.attempt { padding: 14px 0 }
+.attempt { border-top: 1px solid var(--line) }
+.attempt { align-items: center }
+.detail-list { max-height: 55vh }
+.detail-list { overflow-y: auto }
+.detail-list .task-row { grid-template-columns: minmax(0,1fr) 90px 90px }
+@media (max-width: 760px) {
+ header, main, footer { padding: 0 18px }
+ h1 { font-size: 30px }
+ header nav { gap: 12px }
+ .topline { align-items: start }
+ .topline { flex-direction: column }
+ .categories { gap: 15px }
+ .board-head, .model-row { grid-template-columns: 24px minmax(110px,1fr) minmax(100px,1.2fr) }
+ .optional { display: none }
+ .model-id { overflow-wrap: anywhere }
+ .task-row { grid-template-columns: minmax(0,1fr) 85px 16px }
+ .task-completion { display: none }
+ .detail { grid-template-columns: 1fr }
+ .attempt { grid-template-columns: minmax(100px,1fr) 90px 80px }
+ .attempt .optional { display: none }
+ .attempt > :last-child { grid-column: 1 / -1 }
+ dialog { padding: 18px }
+}
+.cost-scroll { overflow-x: auto }
+.cost-table { width: 100% }
+.cost-table { border-collapse: collapse }
+.cost-table th, .cost-table td { padding: 12px 8px }
+.cost-table th, .cost-table td { text-align: right }
+.cost-table th, .cost-table td { border-bottom: 1px solid var(--line) }
+.cost-table th:first-child, .cost-table td:first-child { text-align: left }
+.cost-table th { font-size: 13px }
+.cost-table th { color: var(--muted) }
+.cost-table td { font-variant-numeric: tabular-nums }
+</style></head><body>
+<header><a class="brand" href="#">Poke<span>Bench</span></a><nav><a href="#benchmarks">Benchmarks</a><a href="#methodology">Methodology</a></nav></header>
+<main>
+<h1>How well can AI agents play Pokemon?</h1>
+<p class="intro muted">Real game checkpoints. The same tools, saves and budgets for every model. Compare overall ability, then explore the individual tests.</p>
+<div class="topline"><div id="status" class="status" role="status">Loading saved results…</div></div>
+<nav id="categories" class="categories" aria-label="Benchmark category"></nav>
+<section aria-labelledby="board-title"><div class="section-head"><h2 id="board-title">Overall leaderboard</h2><a id="download" class="small" download>Download results</a></div>
+<p id="score-note" class="muted small"></p><p id="error" class="error small" role="alert"></p>
+<div class="board"><div class="board-head"><span>#</span><span>MODEL / HARNESS</span><span>SCORE / COVERAGE</span><span class="optional right">COMPLETED</span><span class="optional right">TOKENS</span></div><div id="models"></div></div></section>
+<section id="efficiency"><div class="section-head"><h2>Cost efficiency</h2><label class="small">Sort by <select id="cost-sort"><option value="value">Credits per success</option><option value="score">Success rate</option></select></label></div>
+<p id="cost-note" class="muted small"></p><div class="cost-scroll"><table class="cost-table"><thead><tr><th>Model</th><th>Success rate</th><th>Credits / attempt</th><th>Credits / success ↓</th></tr></thead><tbody id="cost-models"></tbody></table></div>
+<p class="muted small">Standard-rate Codex credit estimates with cache discounts. Includes failed attempts. Lower credits per success means better value. Not an invoice or a measure of included subscription quota. <a href="https://learn.chatgpt.com/docs/pricing" target="_blank" rel="noreferrer">Rate card: October 3, 2026</a>.</p></section>
+<section id="benchmarks"><div class="section-head"><h2>Benchmark explorer</h2><span id="task-count" class="muted small"></span></div>
+<div class="toolbar"><input id="search" type="search" aria-label="Search benchmarks" placeholder="Search benchmarks…"><select id="difficulty" aria-label="Difficulty"><option value="all">All difficulties</option><option>easy</option><option>medium</option><option>hard</option></select><select id="sort" aria-label="Sort benchmarks"><option value="default">Suite order</option><option value="name">Name</option><option value="difficulty">Difficulty</option></select></div>
+<div id="tasks"></div><div class="pager"><span id="page-info" class="muted small"></span><div><button id="previous">Previous</button> <button id="next">Next</button></div></div></section>
+<section id="methodology"><h2>What the score means</h2><p id="curation-note" class="small muted"></p><details id="retired-details" hidden><summary class="small">Removed from the main ranking</summary><div id="retired-list" class="small"></div></details><p class="small muted">The leaderboard uses the latest comparable results for each benchmark. Each benchmark has equal weight, with repeats averaged. Scores use only benchmarks completed by every model with matching repeats and verified replays. Coverage is shown beside the score. Pending attempts and infrastructure errors remain visible and are not failures. Tokens include all selected attempts, including unscored tasks.</p><p class="small muted">The combined score is exploratory because tool versions differ across tasks. Each task records its source comparison, version and replay. Earlier runs and pilot results are available inside each benchmark. A clean controlled comparison would rerun all models on one frozen version. One attempt per task does not establish reliability.</p><p class="small"><a id="download-json" download>Download full comparison JSON</a></p><details><summary class="small">Runtime and data provenance</summary><p id="provenance" class="small mono"></p></details></section>
+</main><footer>Updated <span id="updated">when results load</span>. Results refresh in place. Search and open details stay where you left them.</footer>
+<dialog id="detail"><div class="dialog-head"><h2 id="detail-title"></h2><button id="close" aria-label="Close details">Close</button></div><div id="detail-content"></div></dialog>
+<script>
+const feed = __FEED__
+const $ = id => document.getElementById(id)
+const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => `&#${ch.charCodeAt(0)}${String.fromCharCode(59)}`)
+const compact = value => new Intl.NumberFormat('en', {notation:'compact',maximumFractionDigits:1}).format(value || 0)
+const label = name => name.replace(/^gpt-/, 'GPT ').replace(/-(luna|terra|sol|astra)$/, (_, value) => ' '+value[0].toUpperCase()+value.slice(1))
+let state = {data:null,category:'Overall',page:0,detail:null,detailKey:null}
+const size = 10
+function current() { return state.data.cohorts.find(c => c.analysis) || state.data.cohorts[0] }
+function scoped() { return current().tasks.filter(t => state.category === 'Overall' || t.category === state.category) }
+function savedRuns(id) {
+  const primary = current().attempts.filter(a=>a.task===id)
+  const selected = new Set(primary.map(a=>`${a.source_cohort || current().id}/${a.source_run_id || a.id}`))
+  const groups = primary.length ? [{label:'Comparison used for ranking',attempts:primary}] : []
+  for (const c of state.data.cohorts) {
+    if (c===current() || c.analysis) continue
+    const rows=c.attempts.filter(a=>a.task===id && !selected.has(`${c.id}/${a.id}`))
+    if (rows.some(a=>a.status!=='pending')) groups.push({label:c.label || c.id,attempts:rows})
+  }
+  return groups
+}
+function visibleAttempts(id) { return savedRuns(id)[0]?.attempts || [] }
+function rowsFor(model, task) { return (task ? visibleAttempts(task) : current().tasks.flatMap(t=>visibleAttempts(t.id))).filter(a=>a.model===model) }
+function metrics(cohort, tasks) {
+  const ids = new Set(tasks.map(t => t.id))
+  const shared = tasks.filter(t => {
+    if (t.validation && t.validation.status!=='validated') return false
+    const groups = cohort.models.map(m => cohort.attempts.filter(a=>a.model===m.model && a.task===t.id))
+    const repeats = groups.map(g=>g.map(a=>String(a.repeat)+':'+String(a.variant || 1)).sort())
+    return groups.length>0 && groups.every(g=>g.length>0 && g.every(a=>a.status==='finished' && a.replay_verified)) && repeats.every(r=>new Set(r).size===r.length && JSON.stringify(r)===JSON.stringify(repeats[0]))
+  })
+  const aggregate = Boolean(cohort.analysis)
+  const scoreTasks = aggregate ? shared : tasks
+  const models = cohort.models.map(m => {
+    const rows = cohort.attempts.filter(a => a.model === m.model && ids.has(a.task))
+    const done = rows.filter(a => a.status === 'finished' && a.replay_verified)
+    const complete = tasks.length>0 && shared.length===tasks.length
+    const canScore = aggregate ? shared.length>0 : complete
+    const score = canScore ? scoreTasks.reduce((sum,t) => {
+      const r = done.filter(a => a.task === t.id)
+      return sum + r.filter(a => a.completed).length / r.length
+    },0) / scoreTasks.length * 100 : null
+    return {name:m.model,rows,done:done.length,total:rows.length,score,complete,tokens:rows.reduce((n,a)=>n+(a.tokens||0),0)}
+  })
+  const ready = models.length>0 && models.every(m=>m.score!==null)
+  models.sort((a,b) => (b.score ?? -1) - (a.score ?? -1) || a.name.localeCompare(b.name))
+  return {ready,models,shared,scored:shared.length,total:tasks.length}
+}
+
+function outcome(a) {
+  if (a.status === 'finished') return a.completed ? 'Passed' : 'Failed'
+  return a.status[0].toUpperCase()+a.status.slice(1)
+}
+function renderBoard() {
+  const c = current()
+  const selection = metrics(c, scoped())
+  $('board-title').textContent = state.category+' leaderboard'
+  $('score-note').textContent = c.analysis ? `Exploratory ranking across ${selection.scored} of ${selection.total} benchmarks with matching completed coverage. Tool versions vary across tasks. Missing and unfinished results are excluded equally for every model.${c.retired_tasks?.length ? ` ${c.retired_tasks.length} trivial checkpoints are archived under Methodology.` : ''}` : !c.attempts.length ? 'Checkpoints verified. Model evaluations have not been run for this suite.' : selection.ready ? `${scoped().length} benchmarks. Equal completion scores share a rank.` : `Collection in progress. Grey bars show completed attempts, not an ability score. Ranks appear after matching coverage is complete.`
+  $('models').innerHTML = selection.models.map(m => {
+    const rank = selection.ready ? 1+selection.models.filter(other => other.score > m.score).length : '·'
+    const width = m.score ?? (m.total ? m.done/m.total*100 : 0)
+    const title = m.score === null ? 'In progress' : m.score.toFixed(1)+'%'
+    const subtitle = m.score === null ? `${m.done}/${m.total} attempts` : c.analysis ? `${selection.scored}/${selection.total} benchmarks` : 'completion rate'
+    return `<div class="model-row"><span class="mono muted">${rank}</span><div><button class="model-name" data-model="${esc(m.name)}">${esc(label(m.name))}</button><div class="model-id">Codex · bounded context</div></div><div><div class="score-label"><strong>${title}</strong><span class="muted">${subtitle}</span></div><div class="rail"><div class="fill ${m.score === null ? 'pending':''}" style="width:${width}%"></div></div></div><span class="optional mono muted right">${c.analysis ? selection.scored+'/'+selection.total+' tasks' : m.done+'/'+m.total}</span><span class="optional mono right">${compact(m.tokens)}</span></div>`
+  }).join('') || '<p class="empty">No model attempts have been registered for this comparison.</p>'
+}
+function renderCosts() {
+  const c = current()
+  const shared = metrics(c, scoped()).shared
+  const tasks = shared.filter(t => c.attempts.filter(a=>a.task===t.id).every(a=>a.cost_complete && a.estimated_credits!==null))
+  const number = n => n===null ? 'Unavailable' : new Intl.NumberFormat('en',{maximumFractionDigits:2,minimumFractionDigits:2}).format(n)
+  const models = c.models.map(m => {
+    let cost = 0
+    let wins = 0
+    for (const t of tasks) {
+      const rows = c.attempts.filter(a=>a.model===m.model && a.task===t.id)
+      cost += rows.reduce((sum,a)=>sum+a.estimated_credits,0)/rows.length
+      wins += rows.filter(a=>a.completed).length/rows.length
+    }
+    return {model:m.model,score:tasks.length ? wins/tasks.length*100 : null,average:tasks.length ? cost/tasks.length : null,value:wins ? cost/wins : null}
+  })
+  models.sort((a,b)=>$('cost-sort').value==='score' ? (b.score ?? -1)-(a.score ?? -1) : (a.value ?? Infinity)-(b.value ?? Infinity))
+  $('cost-note').textContent = `Matched cost comparison: ${tasks.length} of ${scoped().length} benchmarks. Every model is compared on these same tasks. Incomplete usage and interrupted calls exclude a task from this comparison for all models.`
+  $('cost-models').innerHTML = models.map(m=>`<tr><td>${esc(label(m.model))}</td><td>${m.score===null ? 'Pending' : m.score.toFixed(1)+'%'}</td><td>${number(m.average)}</td><td><strong>${m.value===null && tasks.length ? 'No successes' : number(m.value)}</strong></td></tr>`).join('')
+}
+function renderTasks() {
+  const q = $('search').value.trim().toLowerCase()
+  const difficulty = $('difficulty').value
+  let tasks = scoped().filter(t => (difficulty === 'all' || t.difficulty === difficulty) && `${t.name} ${t.category} ${t.description}`.toLowerCase().includes(q))
+  if ($('sort').value === 'name') tasks.sort((a,b) => a.name.localeCompare(b.name))
+  if ($('sort').value === 'difficulty') tasks.sort((a,b) => ['easy','medium','hard'].indexOf(a.difficulty)-['easy','medium','hard'].indexOf(b.difficulty))
+  state.page = Math.min(state.page, Math.max(0,Math.ceil(tasks.length/size)-1))
+  const start = state.page*size
+  $('tasks').innerHTML = tasks.slice(start,start+size).map(t => {
+    const attempts = visibleAttempts(t.id)
+    const done = attempts.filter(a => a.status === 'finished' && a.replay_verified)
+    return `<button class="task-row" data-task="${esc(t.id)}"><div><div class="task-title">${esc(t.name)}</div><div class="task-meta">${esc(t.category)} · ${compact(t.tokens)} token limit</div></div><span class="pill">${esc(t.difficulty)}</span><span class="task-completion small muted">${t.validation && t.validation.status!=='validated' ? 'Experimental'+(attempts.length ? ' · '+done.length+'/'+attempts.length : '') : current().analysis && t.included_in_score ? 'Scored' : attempts.length ? done.length+'/'+attempts.length+' complete' : 'Ready for trials'}</span><span aria-hidden="true">↗</span></button>`
+  }).join('') || '<p class="empty">No benchmarks match these filters.</p>'
+  $('task-count').textContent = `${tasks.length} benchmarks`
+  $('page-info').textContent = tasks.length ? `${start+1}–${Math.min(start+size,tasks.length)} of ${tasks.length}` : '0 benchmarks'
+  $('previous').disabled = state.page === 0
+  $('next').disabled = start+size >= tasks.length
+}
+function attemptCard(a) { return `<div class="attempt"><div><strong>${esc(label(a.model))}</strong><div class="small muted">Attempt ${a.repeat}${a.variant ? ' · starting variant '+a.variant : ''}</div>${a.retained_from ? `<div class="small muted">Retained earlier completed evaluation (${esc(a.retained_from.benchmark)})</div>` : ''}${a.prior_interruptions?.length ? `<div class="small muted">Retry after a pre-action timeout. Original attempt preserved. Earlier call usage is unreported.</div>` : ''}</div><span class="pill ${outcome(a).toLowerCase()}">${outcome(a)}</span><div class="small mono">${compact(a.tokens)} tokens<div class="muted">${a.decisions ?? 'n/a'} decisions</div><div class="muted">${a.estimated_credits == null ? 'Cost unavailable' : a.estimated_credits.toFixed(2)+' est. credits'+(a.cost_complete ? '' : ' (partial)')}</div></div><div>${a.replay ? `<a href="${esc(a.replay)}">Watch replay ↗</a>` : '<span class="small muted">Replay pending</span>'}</div></div>${a.stop_reason ? `<p class="small muted">${esc(a.stop_reason.replaceAll('_',' '))}</p>`:''}` }
+function detailContent() {
+  if (!state.detail) return
+  const key = JSON.stringify([state.detail,state.category,current().id,state.data.cohorts.map(c=>c.attempts)])
+  if (key === state.detailKey) return
+  state.detailKey = key
+  const earlierOpen = document.getElementById('earlier-runs')?.open
+  const scroll = $('detail').scrollTop
+  const listScroll = document.querySelector('.detail-list')?.scrollTop || 0
+  const [kind,id] = state.detail
+  if (kind === 'task') {
+    const t = current().tasks.find(t=>t.id===id) || state.data.cohorts.flatMap(c=>c.tasks).find(t=>t.id===id)
+    if (!t) return
+    $('detail-title').textContent = t.name
+    const groups = savedRuns(id)
+    const attempts = groups[0]?.attempts || []
+    const source = t.source ? `<p class="small muted">Saved comparison: ${esc(t.source.label)}. ${esc(t.source.benchmark_versions.join(', '))}. Core ${esc(t.source.configuration.core?.version ?? 'recorded')}. Source ${esc(t.source.configuration.source_sha256?.slice(0,12) ?? 'recorded')}.</p><p class="small muted">${t.included_in_score ? 'Included in the shared model score.' : 'Excluded from scores until every model has matching, verified results.'}</p>` : ''
+    $('detail-content').innerHTML = `<div class="detail"><img src="${esc(t.preview)}" alt="${esc(t.name)} starting screen"><div><span class="pill">${esc(t.category)} · ${esc(t.difficulty)}</span><p>${esc(t.description)}</p>${t.validation ? `<p class="small muted"><strong>${esc(t.validation.status)}</strong>: ${esc(t.validation.message)}${t.validation.report ? ` <a href="${esc(t.validation.report)}">Calibration evidence ↗</a>` : ''}</p>` : ''}<p class="small muted">${t.tokens.toLocaleString()} token ceiling per attempt</p><p class="small muted">Starting save ${esc(t.state_hash.slice(0,12))}</p>${t.variants ? `<p class="small muted">${t.variants} fixed starting variants. One battle attempt each. Party wipe ends the attempt. Every result counts.</p>` : ''}${source}</div></div><h3>Model attempts</h3>${!current().attempts.some(a=>a.task===id) && attempts.length ? '<p class="small muted">Latest saved attempts. These pilot or earlier results are not included in the ability score.</p>' : ''}`+(attempts.length ? '' : '<p class="muted small">This checkpoint is verified. No model attempts have been run yet.</p>')+attempts.map(attemptCard).join('')+(groups.length>1 ? '<details id="earlier-runs"><summary>Earlier runs ('+groups.slice(1).reduce((n,g)=>n+g.attempts.length,0)+')</summary>'+groups.slice(1).map(g=>'<p class="small muted">'+esc(g.label)+'</p>'+g.attempts.map(attemptCard).join('')).join('')+'</details>' : '')
+  } else {
+    $('detail-title').textContent = label(id)
+    $('detail-content').innerHTML = '<p class="muted small">Select a benchmark to inspect the attempt and its replay.</p><div class="detail-list">'+scoped().map(t=>{
+      const rows=rowsFor(id,t.id)
+      const done=rows.filter(a=>a.status==='finished' && a.replay_verified)
+      return `<button class="task-row" data-task="${esc(t.id)}"><span>${esc(t.name)}</span><span class="small">${done.length ? done.filter(a=>a.completed).length+'/'+done.length+' passed':'Pending'}</span><span class="small mono">${compact(rows.reduce((n,a)=>n+(a.tokens||0),0))}</span></button>`
+    }).join('')+'</div>'
+  }
+  if (earlierOpen && document.getElementById('earlier-runs')) document.getElementById('earlier-runs').open=true
+  $('detail').scrollTop = scroll
+  const list = document.querySelector('.detail-list')
+  if (list) list.scrollTop = listScroll
+}
+function openDetail(kind,id) {
+  state.detailKey=null
+  state.detail=[kind,id]
+  detailContent()
+  if (!$('detail').open) $('detail').showModal()
+}
+function render() {
+  const c=current()
+  $('categories').innerHTML=['Overall',...new Set(c.tasks.map(t=>t.category))].map(name=>`<button aria-pressed="${state.category===name}" data-category="${esc(name)}">${esc(name.toUpperCase())}</button>`).join('')
+  const visible=c.tasks.flatMap(t=>visibleAttempts(t.id))
+  const done=visible.filter(a=>a.status==='finished' && a.replay_verified).length
+  const running=visible.filter(a=>a.status==='running').length
+  const errors = visible.filter(a=>a.status==='error').length
+  const phase = (running ? ' · '+running+' running' : '')+(errors ? ' · '+errors+' evaluation error' : '')
+  $('status').textContent=visible.length ? `${done}/${visible.length} attempts complete${phase} · ${compact(visible.reduce((n,a)=>n+(a.tokens||0),0))} recorded tokens${(c.interrupted_attempts || []).some(h=>h.accounting_complete===false) ? ' · '+c.interrupted_attempts.filter(h=>h.accounting_complete===false).length+' interrupted call(s) with unreported usage' : ''}` : `${c.tasks.length} verified benchmarks · ready for model trials`
+  $('status').className='status'+(running?' live':'')
+  $('download').href=c.downloads.csv
+  $('download-json').href=c.downloads.json
+  $('provenance').textContent=c.analysis ? c.configuration.selection_policy : `${c.suite} · Core ${c.configuration.core?.version ?? 'recorded in export'} · Source ${c.configuration.source_sha256 ?? 'recorded in export'}`
+  $('curation-note').textContent=c.analysis ? c.configuration.curation_policy || '' : ''
+  const retired=c.retired_tasks || []
+  $('retired-details').hidden=!retired.length
+  $('retired-list').innerHTML=retired.map(t=>`<p><strong>${esc(t.name)}</strong>: ${esc(t.reason)}${t.source ? ` <button data-task="${esc(t.id)}">Saved results</button>` : ''}</p>`).join('')
+  $('updated').textContent=new Date(state.data.updated_at).toLocaleString()
+  renderBoard()
+  renderCosts()
+  renderTasks()
+  if ($('detail').open) detailContent()
+}
+async function refresh() {
+  try {
+    const response=await fetch(feed,{cache:'no-store'})
+    if (!response.ok) throw new Error('Results unavailable')
+    const data=await response.json()
+    if (!data.cohorts?.length) throw new Error('No comparisons available')
+    state.data=data
+    $('error').textContent=''
+    render()
+  } catch (error) {
+    $('error').textContent=state.data ? 'Live update unavailable. Showing the last saved results.' : 'Unable to load saved results. Please refresh when the local results service is available.'
+  }
+}
+$('cost-sort').addEventListener('change',renderCosts)
+document.addEventListener('click',event=>{
+  const category=event.target.closest('[data-category]')
+  const task=event.target.closest('[data-task]')
+  const model=event.target.closest('[data-model]')
+  if (category) {state.category=category.dataset.category
+    state.page=0
+    render()
+  }
+  if (task) openDetail('task',task.dataset.task)
+  if (model) openDetail('model',model.dataset.model)
+})
+for (const id of ['search','difficulty','sort']) $(id).addEventListener(id==='search'?'input':'change',()=>{state.page=0
+  renderTasks()
+})
+$('previous').addEventListener('click',()=>{state.page-=1
+  renderTasks()
+})
+$('next').addEventListener('click',()=>{state.page+=1
+  renderTasks()
+})
+$('close').addEventListener('click',()=>{$('detail').close()
+  state.detail=null
+})
+refresh()
+setInterval(refresh,15000)
+</script></body></html>'''

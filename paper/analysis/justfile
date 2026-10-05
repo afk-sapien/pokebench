@@ -1,0 +1,3 @@
+assets:
+    uv run python scripts/gen_stats.py
+    uv run python scripts/gen_results_table.py
