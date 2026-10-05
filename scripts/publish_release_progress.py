@@ -9,7 +9,7 @@ import tempfile
 import time
 
 from pokeagent_bench.public_site import export_public
-from pokeagent_bench.release import report
+from pokeagent_bench.release import read
 
 EXPECTED = 'afk-sapien <327645577+afk-sapien@users.noreply.github.com>'
 REMOTE = 'https://github.com/afk-sapien/pokebench.git'
@@ -45,7 +45,7 @@ def publish_checkout(path):
 
 
 def refresh(args):
-    summary = report(args.root)
+    summary = read(args.root / 'release-summary.json')
     with tempfile.TemporaryDirectory(prefix='pokebench-site-') as temporary:
         output = Path(temporary) / 'site'
         export_public(args.feed, args.config, output, args.report, args.root)
@@ -70,7 +70,7 @@ def main():
     args = parser.parse_args()
     previous = None
     while True:
-        summary = report(args.root)
+        summary = read(args.root / 'release-summary.json')
         # Publish when a trial finishes or the sweep changes phase, not every decision.
         signature = hashlib.sha256(json.dumps([summary['status'], summary['finished']], sort_keys=True).encode()).hexdigest()
         if signature != previous:
