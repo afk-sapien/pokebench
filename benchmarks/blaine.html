@@ -1,0 +1,156 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Defeat Blaine | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Defeat Blaine</h1><p>Defeat Blaine and earn the Volcano Badge using the current party and supplies. You start at the battle menu. Keep existing Pokemon names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 750000 tokens per attempt. Starting save SHA-256: <code>b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f</code>.</p><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-5.6-luna</td><td>Passed</td><td>183082</td><td><a href="../replays/2b6162344ba7563a9a11.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>189925</td><td><a href="../replays/c4cf01ee8e3bbc5b6ea8.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>189824</td><td><a href="../replays/bfc833778040312c5d48.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>101413</td><td><a href="../replays/14100d7a32ca9286639f.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>211413</td><td><a href="../replays/58900aecbf8face97d67.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Passed</td><td>301756</td><td><a href="../replays/47cd92767718d25f5312.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>269854</td><td><a href="../replays/42092613f1bc6abacd99.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
+  {
+    &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-02T05:35:13.130746+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;94fa47c24602e2136664e790072190d70632c3298616f11cf48941824c90ec3a&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;c28f966a6826bcb96569092db72f454bdf89b094f1aecf74b658b156fd9a05e7&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.6-terra&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-02T05:36:22.505762+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;94fa47c24602e2136664e790072190d70632c3298616f11cf48941824c90ec3a&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;3a47de1a35d293d7c9be2334cbd7dbc0091653f4ff92c7c2354132c94edc86c9&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.6-sol&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-02T05:37:25.874645+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;94fa47c24602e2136664e790072190d70632c3298616f11cf48941824c90ec3a&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;d57b9c53b35b405e090d9d9abf30ac04236703132b4f7b2a0e0d97d546bd5c5e&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-6-astra&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T17:36:28.972762+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;07bdc82c2bdc68e9233b4b4e4a2b43579fb83cff63764b379af2b6848e4e698c&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;884b7e90cf24c172b7abdc15870c9a4894182880a60d43559b2b4e2aa5f6236e&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-6-sol&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T17:37:40.202294+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;07bdc82c2bdc68e9233b4b4e4a2b43579fb83cff63764b379af2b6848e4e698c&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;c38f26f119c3b13e2a7b4ab8949eb31c93a13c938f8fb78d190e8f4932b82d76&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-6-luna&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T17:39:26.697889+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;07bdc82c2bdc68e9233b4b4e4a2b43579fb83cff63764b379af2b6848e4e698c&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;29d3c9fddba190f94fb570cc248bb89b28267e00dab63cc2c6cef63709e9ce9d&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.5&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T17:41:14.097161+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.27.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;07bdc82c2bdc68e9233b4b4e4a2b43579fb83cff63764b379af2b6848e4e698c&quot;,
+    &quot;initial_sha256&quot;: &quot;b1f0b20ed532b693f2721b4a66828c534d72c84e31c7ef84a22cf2f7d3a2dc0f&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;4cba6a0e3c4e8b8e542e0ffdae239b6983e3d7512fded18366a098d69c42586d&quot;
+  }
+]</pre></html>

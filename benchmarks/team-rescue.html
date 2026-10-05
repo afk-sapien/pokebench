@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rescue a damaged team before Lance | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Rescue a damaged team before Lance</h1><p>Prepare your damaged party with the limited supplies, then defeat Lance. You may choose which Pokemon to restore. Do not black out. Keep default names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 750000 tokens per attempt. Starting save SHA-256: <code>56c0f0a94a1ecc5b0675ccda55e04bc80ebb08f22be832d31d63609a6b13f29a</code>.</p><p>experimental: Six new decision tasks. Replay feasibility verified. Difficulty and model separation remain under calibration. One-start pilots are reported separately and do not affect the main ranking.</p><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>Passed</td><td>170148</td><td><a href="../replays/ab2826e5bb05011c4678.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>159685</td><td><a href="../replays/17d10319790a32491204.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>142971</td><td><a href="../replays/0f886fd26114ba8a4763.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
+  {
+    &quot;model&quot;: &quot;gpt-6-astra&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T23:10:36.524437+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.30.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;45468eb0e1202e6072e51f19b3f079bf5fb77b492fa1df1edc3cd96b784b35c3&quot;,
+    &quot;initial_sha256&quot;: &quot;56c0f0a94a1ecc5b0675ccda55e04bc80ebb08f22be832d31d63609a6b13f29a&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;a0fbdc87cf7af4b48ded616d551016a7d8f483b7a86a9def552a28382c66ad89&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.6-terra&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T23:12:32.867018+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.30.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;45468eb0e1202e6072e51f19b3f079bf5fb77b492fa1df1edc3cd96b784b35c3&quot;,
+    &quot;initial_sha256&quot;: &quot;56c0f0a94a1ecc5b0675ccda55e04bc80ebb08f22be832d31d63609a6b13f29a&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;a706b3be720ba79635ec2b1a04c880e5e140ae5e5c37afcd4254b6a0ff330640&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T23:13:48.520336+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.30.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;45468eb0e1202e6072e51f19b3f079bf5fb77b492fa1df1edc3cd96b784b35c3&quot;,
+    &quot;initial_sha256&quot;: &quot;56c0f0a94a1ecc5b0675ccda55e04bc80ebb08f22be832d31d63609a6b13f29a&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;ea5008f19f8db28129e430a1e2675d032de94de1b9620787cd4e88844610687a&quot;
+  }
+]</pre></html>

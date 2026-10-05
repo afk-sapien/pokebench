@@ -1,0 +1,68 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recover from a bad matchup | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Recover from a bad matchup</h1><p>Defeat Lorelei without letting any of your Pokemon faint. Use the supplied team. No resets. Keep default names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 500000 tokens per attempt. Starting save SHA-256: <code>b82946aea4213dc3090829476181583be249efad50ec4eb0bcc0e981408f3f98</code>.</p><p>experimental: Six new decision tasks. Replay feasibility verified. Difficulty and model separation remain under calibration. One-start pilots are reported separately and do not affect the main ranking.</p><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>Passed</td><td>236789</td><td><a href="../replays/d08f4826c757f93e08b7.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>338099</td><td><a href="../replays/589de45d6064b6321797.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>5453</td><td><a href="../replays/472c3b8806f942a591ef.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
+  {
+    &quot;model&quot;: &quot;gpt-6-astra&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T22:59:55.256064+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.30.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;45468eb0e1202e6072e51f19b3f079bf5fb77b492fa1df1edc3cd96b784b35c3&quot;,
+    &quot;initial_sha256&quot;: &quot;b82946aea4213dc3090829476181583be249efad50ec4eb0bcc0e981408f3f98&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;b6cf430c10d9fb1391ae53a9249d365bc26fb684d26d757a694e47c1ee4e3436&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.6-terra&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T23:02:47.949621+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.30.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;45468eb0e1202e6072e51f19b3f079bf5fb77b492fa1df1edc3cd96b784b35c3&quot;,
+    &quot;initial_sha256&quot;: &quot;b82946aea4213dc3090829476181583be249efad50ec4eb0bcc0e981408f3f98&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;3d9343cd7b03cb1a0c0339a0e6e4e512ee484d35a9fb028c9ee152798a259e4e&quot;
+  },
+  {
+    &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
+    &quot;provider&quot;: &quot;codex&quot;,
+    &quot;harness&quot;: &quot;codex-app-server-gameplay-v036&quot;,
+    &quot;reasoning_effort&quot;: &quot;medium&quot;,
+    &quot;cli_version&quot;: &quot;codex-cli 0.157.0&quot;,
+    &quot;created_at&quot;: &quot;2026-10-03T23:05:44.463753+00:00&quot;,
+    &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+    &quot;package_version&quot;: &quot;0.30.0&quot;,
+    &quot;track&quot;: &quot;gameplay&quot;,
+    &quot;observation_policy&quot;: &quot;player-information-v036&quot;,
+    &quot;source_sha256&quot;: &quot;45468eb0e1202e6072e51f19b3f079bf5fb77b492fa1df1edc3cd96b784b35c3&quot;,
+    &quot;initial_sha256&quot;: &quot;b82946aea4213dc3090829476181583be249efad50ec4eb0bcc0e981408f3f98&quot;,
+    &quot;prompt_sha256&quot;: &quot;093c750afd5d7a41d6c472f31d935b78414d1089094cb67b80ff2d170ffc2371&quot;,
+    &quot;context&quot;: {
+      &quot;context_turns&quot;: 8,
+      &quot;compact_at&quot;: 12000,
+      &quot;continuity&quot;: true
+    },
+    &quot;core_version&quot;: &quot;0.1.4&quot;,
+    &quot;manifest_sha256&quot;: &quot;fac88ec3b5a791994b1c06a3948086f7604d81f65571ba95142a616b8c52979a&quot;
+  }
+]</pre></html>
