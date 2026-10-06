@@ -10,6 +10,7 @@ import html
 import io
 import json
 from datetime import datetime, timezone
+from fractions import Fraction
 from pathlib import Path
 import re
 import tempfile
@@ -163,6 +164,46 @@ def document(title, content):
     return '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+html.escape(title)+' | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="index.html">PokeBench</a>'+content+'</html>'
 
 
+def provisional_ranking(protocol, attempts):
+    """Compare all registered models on identical verified task and start pairs."""
+    models = protocol['models']
+    index = {(a['model'], a['task'], a['variant']): a for a in attempts}
+    shared = []
+    for task in protocol['tasks']:
+        if not task['score_eligible']:
+            continue
+        variants = []
+        for variant in range(1, protocol['variants'] + 1):
+            rows = [index[(model['model'], task['id'], variant)] for model in models]
+            if all(a['status'] == 'finished' and a['replay_verified'] is True
+                   and a['accounting_complete'] is True and type(a['completed']) is bool for a in rows):
+                variants.append(variant)
+        if variants:
+            shared.append({'task': task['id'], 'name': task['name'], 'variants': variants})
+    ranking = []
+    for model in models:
+        task_scores = []
+        wins = 0
+        for task in shared:
+            passed = sum(index[(model['model'], task['task'], v)]['completed'] for v in task['variants'])
+            wins += passed
+            task_scores.append(Fraction(passed, len(task['variants'])))
+        value = sum(task_scores, Fraction()) / len(task_scores) if task_scores else None
+        ranking.append({**model, 'value': value, 'wins': wins,
+                        'starts': sum(len(t['variants']) for t in shared)})
+    ranking.sort(key=lambda row: (-(row['value'] or 0), row['model']))
+    previous = None
+    rank = None
+    for position, row in enumerate(ranking, 1):
+        value = row.pop('value')
+        if value is not None and value != previous:
+            rank = position
+        row['rank'] = rank if value is not None else None
+        row['score'] = float(100 * value) if value is not None else None
+        previous = value
+    return {'policy': 'shared-starts-equal-task-weight-v1', 'tasks': shared, 'models': ranking}
+
+
 def release_snapshot(root):
     """Validate the registered matrix, then allowlist prospective evidence."""
     root = Path(root)
@@ -242,7 +283,8 @@ def release_snapshot(root):
               'errors': sum(a['status'] == 'error' for a in attempts),
               'tokens': sum(a['tokens'] or 0 for a in attempts), 'total_token_budget': p['total_token_budget'],
               'matched_task_ids': matched, 'eligible_task_ids': eligible_ids,
-              'headline_score_ready': ready, 'models': models, 'attempts': attempts}
+              'headline_score_ready': ready, 'models': models, 'attempts': attempts,
+              'provisional': provisional_ranking(p, attempts)}
     return p, result
 
 
@@ -254,16 +296,33 @@ def release_section(protocol, summary):
     status_label = ('Paused at the shared token ceiling' if 'budget' in status
                     else 'Paused for infrastructure review' if 'infrastructure' in status
                     else 'Registered, collection pending' if status == 'ready' else status.capitalize())
-    text = '<section id="controlled-evaluation"><h2>Controlled release evaluation</h2><p><strong>'+e(status_label)+'</strong></p>'
+    text = '<section id="controlled-evaluation"><h2>Overall leaderboard <span class="small muted">Provisional</span></h2>'
+    provisional = summary['provisional']
+    shared = provisional['tasks']
+    starts = sum(len(task['variants']) for task in shared)
+    text += '<p>OpenAI and Claude, compared on the same '+str(len(shared))+' benchmarks and '+str(starts)+' starting positions per model.</p>'
+    text += '<p class="small muted">Only starts finished by every registered model, with verified replays and complete accounting, count here. Each included benchmark has equal weight. Missing tests are excluded for everyone, never scored as losses. This is a partial-suite ranking, not the final overall ability score. Ties share a rank.</p>'
+    text += '<div class="cost-scroll"><table class="cost-table release-board"><caption class="small">Provisional scores across '+str(len(protocol['models']))+' models</caption><thead><tr><th>Rank</th><th>Model</th><th>Provider</th><th>Score</th><th>Matched passes</th><th>Trials finished</th></tr></thead><tbody>'
+    counts = {model['model']: model for model in summary['models']}
+    for row in provisional['models']:
+        score = f"{row['score']:.1f}%" if row['score'] is not None else 'Pending'
+        rank = str(row['rank']) if row['rank'] is not None else ''
+        coverage = counts[row['model']]
+        provider = {'codex': 'OpenAI', 'claude': 'Anthropic'}.get(row['provider'], row['provider'])
+        text += '<tr><td>'+rank+'</td><th scope="row">'+e(row['model'])+'</th><td>'+e(provider)+'</td><td><strong>'+score+'</strong></td><td>'+str(row['wins'])+' / '+str(row['starts'])+'</td><td>'+str(coverage['finished'])+' / '+str(coverage['planned'])+'</td></tr>'
+    text += '</tbody></table></div>'
+    if not shared:
+        text += '<p>No shared verified starts yet. Scores will appear when every model finishes the same start.</p>'
+    text += '<details><summary>Which results count?</summary><p class="small">'+str(len(shared))+' / '+str(len(summary['eligible_task_ids']))+' eligible benchmarks represented. Starts with pending attempts, errors, missing usage, or unverified replays are excluded for every model. Gameplay losses count. Completion-based selection can bias this early view. More starts and tasks are needed to establish reliability.</p><ul>'
+    for task in shared:
+        text += '<li>'+e(task['name'])+': starts '+', '.join(str(v) for v in task['variants'])+'</li>'
+    text += '</ul><p class="small">Average passes over shared starts within each benchmark, then average benchmark scores. The frozen full-suite score is unchanged and stays pending until complete.</p></details>'
+    text += '<h3>Collection progress</h3><p><strong>'+e(status_label)+'</strong></p>'
     text += '<p>'+count(summary['finished'])+' / '+count(summary['planned'])+' verified attempts complete · '+count(summary['pending'])+' pending · '+count(summary['running'])+' running · '+count(summary['errors'])+' errors.</p>'
     text += '<p>'+count(summary['tokens'])+' recorded tokens / '+count(summary['total_token_budget'])+' shared execution ceiling. The full registered matrix has '+str(len(protocol['models']))+' models × '+str(len(protocol['tasks']))+' benchmarks × '+str(protocol['variants'])+' starts.</p>'
     text += '<p class="muted small">The registered per-attempt ceilings total '+count(protocol['maximum_planned_tokens'])+' tokens. Registration is not a commitment to spend that amount. Only a staged subset fits the shared ceiling. Pending or budget-paused attempts are not failures. One in-flight response can exceed a boundary, as specified in the protocol.</p>'
-    text += '<p class="small">Matched coverage: '+str(len(summary['matched_task_ids']))+' / '+str(len(summary['eligible_task_ids']))+' score-eligible benchmarks. '+('The complete registered comparison is ready.' if summary['headline_score_ready'] else 'No controlled headline score or rank is published until every eligible benchmark has all registered models and starts completed with verified replays.')+'</p>'
-    text += '<div class="cost-scroll"><table class="cost-table"><thead><tr><th>Exact model</th><th>Provider</th><th>Verified coverage</th><th>Observed passes</th><th>Controlled score</th></tr></thead><tbody>'
-    for model in summary['models']:
-        score = f"{model['score']:.1f}%" if model['score'] is not None else 'Pending'
-        text += '<tr><td>'+e(model['model'])+'</td><td>'+e(model['provider'])+'</td><td>'+str(model['finished'])+' / '+str(model['planned'])+'</td><td>'+str(model['wins'])+' / '+str(model['finished'])+'</td><td>'+score+'</td></tr>'
-    text += '</tbody></table></div><p class="small muted">Observed passes describe finished attempts only. Models may currently have different task coverage. These counts are not a ranking.</p><p class="small"><a href="release-protocol.json">Frozen protocol</a> · <a href="release-summary.json">Controlled results JSON</a></p></section>'
+    text += '<p class="small">Complete benchmark coverage: '+str(len(summary['matched_task_ids']))+' / '+str(len(summary['eligible_task_ids']))+'. '+('The complete registered comparison is ready.' if summary['headline_score_ready'] else 'Full-suite score: Pending.')+'</p>'
+    text += '<p class="small"><a href="release-protocol.json">Frozen protocol</a> · <a href="release-summary.json">Leaderboard and results JSON</a> · <a href="release-leaderboard.csv" download>Leaderboard CSV</a></p></section>'
     return text
 
 
@@ -375,7 +434,16 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
         release_protocol, release_info = release_snapshot(release_root)
         write_json(output/'release-protocol.json', release_protocol)
         write_json(output/'release-summary.json', release_info)
-        page = page.replace('<h1>How well can AI agents play Pokemon?</h1>', '<h1>PokeBench</h1>'+release_section(release_protocol, release_info)+'<h2>Development leaderboard</h2>')
+        with (output/'release-leaderboard.csv').open('w') as stream:
+            writer = csv.DictWriter(stream, fieldnames=['rank', 'model', 'provider', 'effort', 'score', 'wins', 'starts'])
+            writer.writeheader()
+            writer.writerows(release_info['provisional']['models'])
+        page = page.replace('<h1>How well can AI agents play Pokemon?</h1>', '<h1>PokeBench</h1>'+release_section(release_protocol, release_info)+'<details id="development-results"><summary>Earlier development results and cost estimates</summary>')
+        page = page.replace('<section id="benchmarks">', '</details><section id="benchmarks"><p class="small muted">Development benchmark archive. The current OpenAI and Claude ranking is <a href="#controlled-evaluation">above</a>.</p>')
+        page = page.replace('<nav><a href="#benchmarks">', '<nav><a href="#controlled-evaluation">Leaderboard</a><a href="#benchmarks">')
+        page = page.replace('</style>', '.release-board th:nth-child(2) {text-align:left} .release-board tbody th {font-size:15px} .release-board tbody th {color:var(--ink)} .release-board th:first-child {width:48px} .release-board caption {text-align:left} .release-board {min-width:650px}</style>')
+        page = page.replace('<h2>What the score means</h2>', '<h2>About the development archive</h2>')
+        page = page.replace('Updated <span id="updated">', 'Development archive updated <span id="updated">')
         page = page.replace("$('board-title').textContent = state.category+' leaderboard'", "$('board-title').textContent = state.category+' development leaderboard'")
     (output/'index.html').write_text(page)
     for task in public['cohorts'][0]['tasks']:
@@ -423,6 +491,7 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
 
 
 METHODOLOGY = '''<h1>How PokeBench works</h1>
+<h2>Provisional release leaderboard</h2><p>The main leaderboard compares all registered OpenAI and Claude models using the frozen release protocol. A task and starting variant enters the provisional score only when every model has a finished attempt, verified replay and complete accounting for that same start. Average success across the shared starts within each task, then average those task scores with equal weight. Ties share rank. Pending attempts and infrastructure errors exclude that start for everyone. Experimental tasks do not count. This descriptive subset ranking is not the frozen full-suite score. Coverage is selected by completion, which can bias early results. The page and JSON enumerate the exact included tasks and starts. The reporting policy is shared-starts-equal-task-weight-v1.</p>
 <p><strong>Development preview, not a frozen release leaderboard.</strong> Historical runs used multiple harness versions. Results characterize a model together with its recorded agent framework. They do not isolate raw model ability.</p>
 <h2>Tasks and agent interface</h2><p>Tasks begin from recorded Pokemon Red checkpoints. The assisted gameplay track exposes player information and menu shortcuts. The model chooses the strategy and actions. Exact model, harness, prompt checksum, source checksum, starting state checksum and collection time are retained in each attempt's public metadata.</p>
 <h2>Scoring</h2><p>Each scored task has equal weight. Repeated starts are averaged within a task. The exploratory leaderboard uses only tasks with matching completed coverage and verified replays for every compared model. Experimental tasks are visible but excluded. Infrastructure errors are not scored as gameplay losses. Original failed gameplay attempts count.</p>

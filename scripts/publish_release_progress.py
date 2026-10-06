@@ -5,8 +5,12 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
+
+# Publishing uses current presentation code, independently of the frozen gameplay runtime.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from pokeagent_bench.public_site import export_public, public_text
 from pokeagent_bench.core import digest, encoded
@@ -71,7 +75,7 @@ def execution_note(root, output):
             ('Reviewed error holds retain ' + format(holds, ',') + ' tokens against that allowance. Missing usage remains unreported. ' if holds else '') +
             '<a href="execution-amendments.json">Execution amendments</a>.</p>')
     target = output / 'index.html'
-    target.write_text(target.read_text().replace('<h2>Controlled release evaluation</h2>', '<h2>Controlled release evaluation</h2>' + note))
+    target.write_text(target.read_text().replace('<h3>Collection progress</h3>', '<h3>Collection progress</h3>' + note))
     (output / 'execution-amendments.json').write_text(json.dumps(amendments, indent=2) + '\n')
     manifest = read(output / 'manifest.json')
     manifest['files'] = [{'path': str(p.relative_to(output)), 'bytes': p.stat().st_size, 'sha256': digest(p.read_bytes())}

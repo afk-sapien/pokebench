@@ -74,17 +74,39 @@ It publishes allowlisted derivatives as `release-protocol.json` and
 `release-summary.json`. The original protocol checksum identifies the source,
 while the export manifest hashes the sanitized public derivative.
 
-The controlled evaluation panel appears above the clearly labeled development
-leaderboard on the same page. There is still no suite selector. It displays
+The controlled evaluation is the main leaderboard. The earlier development
+ranking and cost estimates are collapsed below it. There is still no suite selector. It displays
 verified coverage, observed passes, pending work, infrastructure errors and the
 shared execution ceiling. Budget-paused attempts remain pending, never losses.
 The full registered per-attempt maximum is shown separately from the execution
 ceiling. Registering a large matrix does not authorize spending its full maximum.
 
-Controlled headline scores and ranks remain unavailable until every eligible
+The frozen full-suite score remains unavailable until every eligible
 task has every registered model and starting variant finished with a verified
 replay. Scores are recomputed from attempts rather than trusted from a summary
-score field. Experimental tasks remain excluded. Per-model observed pass counts
-are explicitly descriptive because coverage can differ during collection.
+score field. Experimental tasks remain excluded.
+
+The reporting policy `shared-starts-equal-task-weight-v1` adds a provisional
+partial-suite rank without changing the frozen protocol or its final score.
+Include a task and start pair only when every registered model has a finished
+attempt with a verified replay, boolean outcome and complete token accounting.
+Average outcomes across those shared starts within each task, then average
+included task scores equally. Do not weight tasks by their number of shared
+starts. Equal scores share a rank with no token-based tiebreaker. If no starts
+qualify, show every model with pending scores and no rank.
+
+Missing, errored and unverified attempts exclude that start for every model.
+Actual gameplay losses count. Selection depends on completion, never outcome,
+but completion patterns can still bias early rankings. Show the exact tasks and
+start numbers alongside the coverage and label the result provisional. This is
+not evidence of overall ability across the unrun suite or a statistically
+established difference. Export the subset and scores under `provisional` in
+`release-summary.json` and provide `release-leaderboard.csv`.
+
+The progress publisher loads presentation code from its source checkout while
+the evaluation workers retain the immutable gameplay runtime. Restart the
+publisher after a reporting change. Never edit the frozen runtime to change
+the website.
+
 Development task links and replays remain available until controlled replay
 publication is added.

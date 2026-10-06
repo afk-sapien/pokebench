@@ -157,7 +157,7 @@ def test_controlled_results_require_full_registered_matched_coverage(tmp_path):
     _, summary = release_files(root)
     for attempt in summary['attempts']:
         if attempt['task'] == 'first':
-            attempt.update(status='finished', completed=True, replay_verified=True, tokens=100)
+            attempt.update(status='finished', completed=True, replay_verified=True, accounting_complete=True, tokens=100)
     (root/'release-summary.json').write_text(json.dumps(summary))
     protocol, public = release_snapshot(root)
     assert public['matched_task_ids'] == ['first']
@@ -171,11 +171,74 @@ def test_controlled_results_require_full_registered_matched_coverage(tmp_path):
     assert '50,000,000 shared execution ceiling' in page
     assert 'Pending' in page
     for attempt in summary['attempts']:
-        attempt.update(status='finished', completed=attempt['model'] == 'gpt-6-astra', replay_verified=True)
+        attempt.update(status='finished', completed=attempt['model'] == 'gpt-6-astra', replay_verified=True, accounting_complete=True)
     (root/'release-summary.json').write_text(json.dumps(summary))
     _, public = release_snapshot(root)
     assert public['headline_score_ready'] is True
     assert [m['score'] for m in public['models']] == [100.0, 0.0]
+
+
+def test_provisional_ranking_shares_starts_and_weights_tasks_equally(tmp_path):
+    from pokeagent_bench.public_site import release_snapshot
+    root = tmp_path/'release'
+    _, summary = release_files(root)
+    for a in summary['attempts']:
+        # Two starts on the first task and only one on the second are shared.
+        if a['task'] == 'first' or a['variant'] == 1:
+            a.update(status='finished', replay_verified=True, accounting_complete=True,
+                     completed=(a['task'] == 'first') == (a['model'] == 'gpt-6-astra'))
+        elif a['model'] == 'gpt-6-astra':
+            a.update(status='finished', replay_verified=True, accounting_complete=True, completed=True)
+    (root/'release-summary.json').write_text(json.dumps(summary))
+    _, result = release_snapshot(root)
+    assert result['headline_score_ready'] is False
+    assert all(m['score'] is None for m in result['models'])
+    provisional = result['provisional']
+    assert [t['variants'] for t in provisional['tasks']] == [[1, 2], [1]]
+    assert [m['score'] for m in provisional['models']] == [50, 50]
+    assert [m['rank'] for m in provisional['models']] == [1, 1]
+    assert [m['starts'] for m in provisional['models']] == [3, 3]
+    assert sorted(m['wins'] for m in provisional['models']) == [1, 2]
+
+
+@pytest.mark.parametrize('invalid', [
+    {'status': 'pending'}, {'status': 'error'}, {'status': 'running'},
+    {'replay_verified': False}, {'accounting_complete': False}, {'completed': None},
+])
+def test_provisional_ranking_excludes_unusable_start_for_every_model(tmp_path, invalid):
+    from pokeagent_bench.public_site import release_snapshot
+    root = tmp_path/'release'
+    _, summary = release_files(root)
+    for a in summary['attempts']:
+        if a['task'] == 'first' and a['variant'] == 1:
+            a.update(status='finished', completed=True, replay_verified=True, accounting_complete=True)
+    summary['attempts'][0].update(invalid)
+    (root/'release-summary.json').write_text(json.dumps(summary))
+    _, result = release_snapshot(root)
+    assert result['provisional']['tasks'] == []
+    assert all(m['score'] is None and m['rank'] is None for m in result['provisional']['models'])
+
+
+def test_provisional_ranking_ignores_experiments_and_counts_losses(tmp_path):
+    from pokeagent_bench.core import digest, encoded
+    from pokeagent_bench.public_site import release_snapshot, release_section
+    root = tmp_path/'release'
+    protocol, summary = release_files(root)
+    protocol['tasks'][1]['score_eligible'] = False
+    protocol['sha256'] = digest(encoded({k:v for k,v in protocol.items() if k != 'sha256'}))
+    summary['protocol_sha256'] = protocol['sha256']
+    for a in summary['attempts']:
+        a.update(status='finished', completed=a['model'] == 'claude-sonnet-4-6',
+                 replay_verified=True, accounting_complete=True)
+    (root/'protocol.json').write_text(json.dumps(protocol))
+    (root/'release-summary.json').write_text(json.dumps(summary))
+    public_protocol, result = release_snapshot(root)
+    assert [t['task'] for t in result['provisional']['tasks']] == ['first']
+    assert [m['score'] for m in result['provisional']['models']] == [100, 0]
+    assert [m['rank'] for m in result['provisional']['models']] == [1, 2]
+    page = release_section(public_protocol, result)
+    assert 'OpenAI' in page and 'Anthropic' in page
+    assert 'Provisional' in page and 'starts 1, 2' in page
 
 
 def test_controlled_export_rejects_duplicate_or_mismatched_registration(tmp_path):
