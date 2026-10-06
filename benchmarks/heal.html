@@ -1,4 +1,378 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heal the party | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Heal the party</h1><p>Visit the nearby Viridian Pokemon Center and restore every current party member to full HP with no status conditions. Keep the same Pokemon and do not black out.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 500000 tokens per attempt. Starting save SHA-256: <code>972f50e3499d4d160b2435977caf7396d199c152e8e4eb57bb9be3107bf56970</code>.</p><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-5.6-luna</td><td>Passed</td><td>148719</td><td><a href="../replays/dab60dc1dc7bb11ee98c.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>99563</td><td><a href="../replays/5551d36fef776252dbbb.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>31249</td><td><a href="../replays/43803141254e525b3a09.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>32941</td><td><a href="../replays/6b6aeacc4edb832a1d44.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>83320</td><td><a href="../replays/f70d2d61de9731350039.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Passed</td><td>118747</td><td><a href="../replays/dcb9d1112251f0f58ce3.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>58252</td><td><a href="../replays/ba97563fb94ba0c22475.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heal the party | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Heal the party</h1><p>Visit the nearby Viridian Pokemon Center and restore every current party member to full HP with no status conditions. Keep the same Pokemon and do not black out.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 500000 tokens per attempt. Starting save SHA-256: <code>972f50e3499d4d160b2435977caf7396d199c152e8e4eb57bb9be3107bf56970</code>.</p><h2>Current combined results</h2><p>Verified current release outcomes take priority per model. Earlier development outcomes fill gaps. These sources use different starts and framework versions. Missing tests are not failures. Current release controller replays are not yet published. <a href="../available-results.json">Download selected evidence</a>.</p><table><thead><tr><th>Model</th><th>Passes / trials</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-5.6-sol</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-6-sol</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-5.5</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-5.6-terra</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-5.6-luna</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-6-luna</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-5-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-sonnet-5-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-haiku-4-5-20251001</td><td>0 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-sonnet-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-4-8</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-4-7</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-4-6</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-sonnet-4-6</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr></tbody></table><details><summary>Result provenance and original repeat plan</summary><pre>[
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-6-astra&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 32941,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0018&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 32941,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/6b6aeacc4edb832a1d44.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-sol&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 31249,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0017&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 31249,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.37-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/43803141254e525b3a09.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-6-sol&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 83320,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0019&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 83320,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/f70d2d61de9731350039.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-5.5&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 58252,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0021&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 58252,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/ba97563fb94ba0c22475.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-terra&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 99563,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0016&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 99563,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.37-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/5551d36fef776252dbbb.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 148719,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0015&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 148719,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.37-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/dab60dc1dc7bb11ee98c.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;gpt-6-luna&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 118747,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;all-models-v1/cell-0020&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 118747,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.40-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/dcb9d1112251f0f58ce3.html&quot;,
+        &quot;source_cohort&quot;: &quot;all-models-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 29522,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0870&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 29522,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-5-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 31421,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0871&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 31421,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-haiku-4-5-20251001&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 0.0,
+    &quot;tokens&quot;: 489856,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0872&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 489856,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 44442,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0873&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 44442,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-opus-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 33011,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0874&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 33011,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-8&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 34082,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0875&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 34082,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-7&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 34413,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0876&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 34413,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-6&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 27022,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0877&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 27022,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;heal&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-4-6&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 34154,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0878&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 34154,
+        &quot;variant&quot;: 1
+      }
+    ]
+  }
+]</pre></details><h2>Development attempts and replays</h2><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-5.6-luna</td><td>Passed</td><td>148719</td><td><a href="../replays/dab60dc1dc7bb11ee98c.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>99563</td><td><a href="../replays/5551d36fef776252dbbb.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>31249</td><td><a href="../replays/43803141254e525b3a09.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>32941</td><td><a href="../replays/6b6aeacc4edb832a1d44.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>83320</td><td><a href="../replays/f70d2d61de9731350039.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Passed</td><td>118747</td><td><a href="../replays/dcb9d1112251f0f58ce3.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>58252</td><td><a href="../replays/ba97563fb94ba0c22475.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
   {
     &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
     &quot;provider&quot;: &quot;codex&quot;,

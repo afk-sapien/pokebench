@@ -77,5 +77,373 @@
     "sha256": "97cee26f9b8248ff4415a6a4b70de873690bad4521bfd7a2b72b262b4d6dfaae",
     "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
     "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T04:51:42.023634+00:00",
+    "effective_after_finished": 104,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection now prioritizes missing Claude model and task pairs, lowest token ceilings first, with no repeated starts or OpenAI reruns. Existing development evidence remains usable on the website. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve. Gameplay and total budget are unchanged. The original full-suite scoring remains separate from exploratory reporting.",
+    "previous_batch_sha256": "a868f4025a768d26205f16832915c3004b74063b09932e7ba04055cf335092e7",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [],
+    "resumed_cells": [],
+    "scheduler_sha256": "c5ca8048e6b499500a7489a97a75388ffcf5faabe8803a5b0c214069c034b610",
+    "sha256": "38cb04fdca39875e5e2225beb0acf757626d28e6ec32b7d6d31c06b1e8b52466",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T05:08:29.288919+00:00",
+    "effective_after_finished": 113,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "c24460baeacc3ba34c01f42d738f498026eab9f31d5a4b934e61204ec73666a6",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 600000,
+        "cell": "cell-0149",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "7b817f9fb1e1e0307ad07fc979951197a498ee177aaa7777067c451633097115"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "7660e3cc1011e88dee70526667410f2c1ad37486cd6af298c513c499e828e256",
+    "sha256": "2ae0fb6a435d70891e19f3254b05d919648b6a6125f808442025e2cc9f53337e",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T05:43:33.110346+00:00",
+    "effective_after_finished": 130,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "8a1c5e4eeaec0822de960d487c21e3436c5a0709bf75e11972778724875c813e",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 600000,
+        "cell": "cell-0344",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "30fb50ba7fea848f163c8efb8887fb31c7a48e34c329596fb9569e12471c05d4"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "34f1afdd5cb6f5024ee2aa5dad6057dd77eeac2c40e56cacf3946591a0a8ff01",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T06:12:03.306676+00:00",
+    "effective_after_finished": 162,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "9e55e67cd8cbdc24c4ab31fb3ccf8b42f42895107ce5d4683088122c53cb5d9c",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-0199",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "0ae90e722c868b4dbca8d32d4adfc66507d2b206bac7ff9add3deaf751b294ca"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "4af8c9e9162480bcf5e7f2f4f32df77528344695cca74199cbed7075cf03ee26",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T06:43:37.866914+00:00",
+    "effective_after_finished": 187,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "7523d86dbb2bc21e8e66db07362561723623476c18256b4804d38863dee29557",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-0544",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "e2d2844d5136d8d72adad732a2f9870a65a68f6a60d56db2da1c954917391f2c"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "96e73407be61489a8370dbeef70ee817b9a450aa4d66c2d685c2ee424b5e741f",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T07:15:58.203114+00:00",
+    "effective_after_finished": 202,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "e256e1d72cb409309ae4fe7d1f9fd0fb2365120a88584b3ef9879495293f271b",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-0824",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "ef91e60e24e8d56d9ed73dbb4572ce9d1ae4f47c221bba77d87aeda3d3906cc1"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "c700d69e71ac3f9e84d4727370aaab717b496b62afa98b6e97f9e7e755166246",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T07:48:30.146401+00:00",
+    "effective_after_finished": 205,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "8c27837f2644166f06dce9906d3c45d22dbe105b02837b9cd982d38b7461d895",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-0826",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "ab90b64fd2779aa8a182f4b0b5f1d559dd666913ccabedeedf6220c6764b4200"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "6ec615cad75a16bd44c55cc7c57e1ffad10fb498e46bbf0785882aacd9621028",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T08:20:07.240802+00:00",
+    "effective_after_finished": 222,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "51a91bf326d69bf32bd3622c8829ec42749a3ed5829f6c73ec89a809bf2a07b5",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-1014",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "4f02c03370583f39d7aef4868f701e9214757116304717d2571a3fc855301b5a"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "1108543b6192bc2a35ff7046f2bedfadec8a4ac7361db77a4d41fcd61de1b1c2",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T09:23:31.837726+00:00",
+    "effective_after_finished": 265,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "de63d13c75e8146daeb9c17b988480a13c143fcee473ba2c4486bad721b73a79",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0107",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "d33cd8083e2449b43b8d3c34a96d08a2ef3bd90cc1874d985406648ed62cfa6e"
+      },
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0108",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "b095130876d0780bd7ea1e3ab5da2fecf0e80de9d07dd43e081d063fe33d28e3"
+      },
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0109",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "15d612ec3d8ceff0e2225c12252385403f07bba2809a36f7d91a30751a7009dd"
+      },
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-1029",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "1b2ece28aa7867c71fdb86b20e764ca0b15f2ef3a3782dfeeb8d8d566871b3ba"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "c8686d23c8e6c90ec2fe487b417a0a796cab8ab88074f1a9fd5da1f346a5f2e9",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T09:55:55.965464+00:00",
+    "effective_after_finished": 269,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "0fcfe3f1be0f0c32fd492212e82939a5a0450bd80d991fcd232a85f23062f505",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0110",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "b9c899c413894d2bb7d44ed840e4069cb6d616d23058d5b853452f70b657e223"
+      },
+      {
+        "budget_hold_tokens": 850000,
+        "cell": "cell-1044",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "0250ce8b68dccf9d7890598bd8c573aaead5d031d8a27b5fa2d770626c75cbd3"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "97d73156849a850ecf1ea50a49886b188db6fcad6c4e7918e39cd9a60303c608",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T10:35:32.154005+00:00",
+    "effective_after_finished": 273,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "bedd8ca595f4aeb613cb465504f6197c7907d7183fd3ef38415e79ae2da7a9df",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0249",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "7134667b8170352ef16d7516bdad21d45e778f7da8da3c13b2dc6867578f9f5d"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "9e8d42a95e033a1f33dfa6f50455a8c83c91756258ec3f7d1c6289e3e6fff480",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T12:02:29.716121+00:00",
+    "effective_after_finished": 298,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "bf053fd8ab7fe8f4b4eb2a2dc37f8b27448165ff11c6784c7de92114b97f1886",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0125",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "8e8944e406e7395fcc6a60c903813e0990f36220c5e319a7764037ea6c37e848"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "2449b93614af6713138175f0947de68b44a89a3f7655f76077b53e14354b5ac2",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T12:40:53.373996+00:00",
+    "effective_after_finished": 301,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "be75f7806827a8f97b4c5b32db1287fb31fdf28db515989bf422d035c274773f",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0140",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "afc3f6079ed1a3a17f091aab8c610ac67eb08c564031fb0b2a34936a86271cce"
+      },
+      {
+        "budget_hold_tokens": 1600000,
+        "cell": "cell-0494",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "739062f291fde09104b1d8fba4029b2bbbb88693a4c8e39345fed73de47a4a6c"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "542d7c593e23924104b6621809e13743991addd41e4ef5f2e3f42e5e67113573",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T13:06:29.817750+00:00",
+    "effective_after_finished": 304,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "c2dd1b99e5130db07d279a99b8a2b4645e3b0f87b6753ee07d73838f901482c1",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1600000,
+        "cell": "cell-0495",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "9dc0a3f3be69e4968318a376ba9313009a3eb4dc1961cdaa58c0ccc6dadadace"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "d5bff76d09516b5cdf4a988ba95f1c2664fc90e0dfe690bd6241dcea37cb8a2e",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T14:31:33.843225+00:00",
+    "effective_after_finished": 316,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 4,
+    "policy": "Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of 300000000 tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.",
+    "previous_batch_sha256": "c4b55cd4cac45e4115de3440801da07b076edba6f75b3a8a0314db1265957ae2",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 3100000,
+        "cell": "cell-0434",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "5d8da15fc4b713079ed36b45f413612c3abee151ff979b10a28ee38576f2a539"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "e6f240766b89ff6fadaf069f799e70ec47910aa3cbd8d696ea96fb6e9506c394",
+    "sha256": "b67aabb6d6a09f86852434bbbd769f86eb65393d046293a254ac950405041f56",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.",
+    "workers": 4
   }
 ]

@@ -1,4 +1,341 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Defeat the Champion with a specialist team | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Defeat the Champion with a specialist team</h1><p>Defeat the Champion and complete the Hall of Fame registration with the supplied specialist team and limited supplies. Do not black out. Keep default names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 750000 tokens per attempt. Starting save SHA-256: <code>b99a027f3a3b408027bb6477e35be812254f91997449fcf7e53ba6c35471a83e</code>.</p><p>experimental: Six new decision tasks. Replay feasibility verified. Difficulty and model separation remain under calibration. One-start pilots are reported separately and do not affect the main ranking.</p><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>Passed</td><td>146940</td><td><a href="../replays/381d2a0798fedb75f618.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>186675</td><td><a href="../replays/f435377f3370606bc15e.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Passed</td><td>241970</td><td><a href="../replays/fbace675ec9bdb5423c2.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Defeat the Champion with a specialist team | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Defeat the Champion with a specialist team</h1><p>Defeat the Champion and complete the Hall of Fame registration with the supplied specialist team and limited supplies. Do not black out. Keep default names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 750000 tokens per attempt. Starting save SHA-256: <code>b99a027f3a3b408027bb6477e35be812254f91997449fcf7e53ba6c35471a83e</code>.</p><p>experimental: Six new decision tasks. Replay feasibility verified. Difficulty and model separation remain under calibration. One-start pilots are reported separately and do not affect the main ranking.</p><h2>Current combined results</h2><p>Verified current release outcomes take priority per model. Earlier development outcomes fill gaps. These sources use different starts and framework versions. Missing tests are not failures. Current release controller replays are not yet published. <a href="../available-results.json">Download selected evidence</a>.</p><table><thead><tr><th>Model</th><th>Passes / trials</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-5.6-sol</td><td>0 / 0</td><td>Not tested</td><td>Not evaluated</td></tr><tr><td>gpt-6-sol</td><td>0 / 0</td><td>Not tested</td><td>Not evaluated</td></tr><tr><td>gpt-5.5</td><td>0 / 0</td><td>Not tested</td><td>Not evaluated</td></tr><tr><td>gpt-5.6-terra</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-5.6-luna</td><td>1 / 1</td><td>development</td><td>Evaluated · 1 completed trial</td></tr><tr><td>gpt-6-luna</td><td>0 / 0</td><td>Not tested</td><td>Not evaluated</td></tr><tr><td>claude-opus-5-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-sonnet-5-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-haiku-4-5-20251001</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-sonnet-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-5</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-4-8</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-4-7</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-opus-4-6</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr><tr><td>claude-sonnet-4-6</td><td>1 / 1</td><td>release</td><td>Evaluated · 1 completed trial</td></tr></tbody></table><details><summary>Result provenance and original repeat plan</summary><pre>[
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-6-astra&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 146940,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0013&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 146940,
+        &quot;variant&quot;: 1,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/381d2a0798fedb75f618.html&quot;,
+        &quot;source_cohort&quot;: &quot;decisions-pilot-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-sol&quot;,
+    &quot;source&quot;: null,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 0,
+    &quot;score&quot;: null,
+    &quot;tokens&quot;: 0,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: []
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-6-sol&quot;,
+    &quot;source&quot;: null,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 0,
+    &quot;score&quot;: null,
+    &quot;tokens&quot;: 0,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: []
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-5.5&quot;,
+    &quot;source&quot;: null,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 0,
+    &quot;score&quot;: null,
+    &quot;tokens&quot;: 0,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: []
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-terra&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 186675,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0014&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 186675,
+        &quot;variant&quot;: 1,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/f435377f3370606bc15e.html&quot;,
+        &quot;source_cohort&quot;: &quot;decisions-pilot-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
+    &quot;source&quot;: &quot;development&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 241970,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0015&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 241970,
+        &quot;variant&quot;: 1,
+        &quot;repeat&quot;: 1,
+        &quot;benchmark&quot;: &quot;red-v0.44-experimental&quot;,
+        &quot;replay&quot;: &quot;replays/fbace675ec9bdb5423c2.html&quot;,
+        &quot;source_cohort&quot;: &quot;decisions-pilot-v1&quot;
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;gpt-6-luna&quot;,
+    &quot;source&quot;: null,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 0,
+    &quot;score&quot;: null,
+    &quot;tokens&quot;: 0,
+    &quot;release_finished&quot;: 0,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 3,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: []
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 280015,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0290&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 280015,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-5-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 252910,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0291&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 252910,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-haiku-4-5-20251001&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 261326,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0292&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 261326,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 245186,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0293&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 245186,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-opus-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 301496,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0294&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 301496,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-8&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 262810,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0295&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 262810,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-7&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 243803,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0296&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 243803,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-6&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 271653,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0297&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 271653,
+        &quot;variant&quot;: 1
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;adaptive-champion&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-4-6&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 1,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 204257,
+    &quot;release_finished&quot;: 1,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 2,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0298&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 204257,
+        &quot;variant&quot;: 1
+      }
+    ]
+  }
+]</pre></details><h2>Development attempts and replays</h2><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>Passed</td><td>146940</td><td><a href="../replays/381d2a0798fedb75f618.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>186675</td><td><a href="../replays/f435377f3370606bc15e.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Passed</td><td>241970</td><td><a href="../replays/fbace675ec9bdb5423c2.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
   {
     &quot;model&quot;: &quot;gpt-6-astra&quot;,
     &quot;provider&quot;: &quot;codex&quot;,

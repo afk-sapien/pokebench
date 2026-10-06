@@ -1,4 +1,543 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lorelei with a tactical control team | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Lorelei with a tactical control team</h1><p>Defeat Lorelei with the supplied party and one Elixer. No resets. Keep default Pokemon names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 500000 tokens per attempt. Starting save SHA-256: <code>b175d2643e7155a821bb4bb17fd1b7bfff47a292cb16e31529c84cca45d47251</code>.</p><p>validated: One frozen tactical policy won 31/32 fresh timing variants. Basic attacking won 0/32 and type-aware attacking won 0/32. Offline calibration only, not model results or a guaranteed win probability.</p><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-5.6-luna</td><td>Failed</td><td>487377</td><td><a href="../replays/df69a2611e4519984b33.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>333426</td><td><a href="../replays/c2d6f345897700370611.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>257326</td><td><a href="../replays/eda4e9de7fc12cbe5abf.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>223461</td><td><a href="../replays/442f0d618fec597e9f83.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>269828</td><td><a href="../replays/1e42aa64ca9808fd92df.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>482794</td><td><a href="../replays/5655ed989bdf2a4a8e02.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Failed</td><td>482625</td><td><a href="../replays/8de75178efff9ec97265.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>346676</td><td><a href="../replays/ef6751bad7379a6b626c.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>222690</td><td><a href="../replays/7f88cfc29cb51240063d.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>247724</td><td><a href="../replays/69db4f2a43b4d3a8cc24.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>228324</td><td><a href="../replays/66ae9fb1fdd9c0ff47c0.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>483992</td><td><a href="../replays/911aedfe9e8d59fdfdaa.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>260079</td><td><a href="../replays/708cdc676214f73eabf0.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>479306</td><td><a href="../replays/6496cd823e1207467de6.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>210889</td><td><a href="../replays/a0710acee07c6b4f2399.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>259320</td><td><a href="../replays/8229a6c0e30bc28512d2.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>224419</td><td><a href="../replays/eda0baf190daac9ef3e2.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>487077</td><td><a href="../replays/fb6bdf720613de019237.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>184480</td><td><a href="../replays/8cd7a5dc3d6081c06b43.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>478592</td><td><a href="../replays/eab7ff10b800fe970ef1.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Failed</td><td>483473</td><td><a href="../replays/0c3b45b74edb969dcd6e.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>282731</td><td><a href="../replays/117e69a5342706a7a80d.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>383611</td><td><a href="../replays/e51209359b56b4f5b3a8.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>484034</td><td><a href="../replays/189bbde639ce0e591f46.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>394700</td><td><a href="../replays/2a6b12f5c6d69ad119ce.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>430624</td><td><a href="../replays/f0014a2da0fffd20cc3d.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>406517</td><td><a href="../replays/e8c4c117f91bae8d937a.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>348559</td><td><a href="../replays/679b0c318369a19e70b6.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>228105</td><td><a href="../replays/58e3f2ed4e5239812731.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>485865</td><td><a href="../replays/2ea0dc78d3ff732bb7d5.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>311829</td><td><a href="../replays/1f6198e3ff57e20042bf.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>485539</td><td><a href="../replays/8cb91d7ab074f87ebcdd.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Failed</td><td>484738</td><td><a href="../replays/119cd9bb0263b3fe7e7e.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>402724</td><td><a href="../replays/cbb60f6a57f1a610cd09.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>373588</td><td><a href="../replays/c5cf61319791c45831ba.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lorelei with a tactical control team | PokeBench</title><style>body {max-width:900px} body {margin:40px auto} body {padding:0 24px} body {font:17px/1.6 system-ui} a {color:#186645} td,th {padding:10px} table {border-collapse:collapse} td {border-bottom:1px solid #ddd} code {overflow-wrap:anywhere}</style><a href="../index.html">PokeBench</a><h1>Lorelei with a tactical control team</h1><p>Defeat Lorelei with the supplied party and one Elixer. No resets. Keep default Pokemon names.</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: 500000 tokens per attempt. Starting save SHA-256: <code>b175d2643e7155a821bb4bb17fd1b7bfff47a292cb16e31529c84cca45d47251</code>.</p><p>validated: One frozen tactical policy won 31/32 fresh timing variants. Basic attacking won 0/32 and type-aware attacking won 0/32. Offline calibration only, not model results or a guaranteed win probability.</p><h2>Current combined results</h2><p>Verified current release outcomes take priority per model. Earlier development outcomes fill gaps. These sources use different starts and framework versions. Missing tests are not failures. Current release controller replays are not yet published. <a href="../available-results.json">Download selected evidence</a>.</p><table><thead><tr><th>Model</th><th>Passes / trials</th><th>Evidence</th><th>Status</th></tr></thead><tbody><tr><td>gpt-6-astra</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>gpt-5.6-sol</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>gpt-6-sol</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>gpt-5.5</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>gpt-5.6-terra</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>gpt-5.6-luna</td><td>0 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>gpt-6-luna</td><td>0 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-opus-5-5</td><td>2 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-sonnet-5-5</td><td>0 / 2</td><td>release</td><td>Evaluated · 2 completed trials · 1 recorded error</td></tr><tr><td>claude-haiku-4-5-20251001</td><td>0 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-sonnet-5</td><td>0 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-opus-5</td><td>2 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-opus-4-8</td><td>2 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-opus-4-7</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-opus-4-6</td><td>3 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr><tr><td>claude-sonnet-4-6</td><td>1 / 3</td><td>release</td><td>Evaluated · 3 completed trials</td></tr></tbody></table><details><summary>Result provenance and original repeat plan</summary><pre>[
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-6-astra&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 895026,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0001&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 329328,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0032&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 304714,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0047&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 260984,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-sol&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 968839,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0002&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 454856,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0017&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 236291,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0048&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 277692,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-6-sol&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 1005596,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0003&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 373545,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0018&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 248950,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0033&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 383101,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-5.5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 898313,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0004&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 364152,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0019&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 317978,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0034&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 216183,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-terra&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 1144118,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0005&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 418932,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0020&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 330729,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0035&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 394457,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 0.0,
+    &quot;tokens&quot;: 1447357,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0006&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 485476,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0021&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 479674,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0036&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 482207,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;gpt-6-luna&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 0.0,
+    &quot;tokens&quot;: 1459088,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0007&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 485365,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0022&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 484507,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0037&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 489216,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-opus-5-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 2,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 66.66666666666667,
+    &quot;tokens&quot;: 1071807,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0008&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 324418,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0023&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 264140,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0038&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 483249,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-5-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 2,
+    &quot;score&quot;: 0.0,
+    &quot;tokens&quot;: 966782,
+    &quot;release_finished&quot;: 2,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 1,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0009&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 483145,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0039&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 483637,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-haiku-4-5-20251001&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 0.0,
+    &quot;tokens&quot;: 1452992,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0010&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 488792,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0025&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 484447,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0040&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 479753,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 0,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 0.0,
+    &quot;tokens&quot;: 1447310,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0011&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 486202,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0026&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 478924,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0041&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 482184,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-opus-5&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 2,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 66.66666666666667,
+    &quot;tokens&quot;: 1059269,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0012&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 297866,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0027&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 479430,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0042&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 281973,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-8&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 2,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 66.66666666666667,
+    &quot;tokens&quot;: 1192074,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0013&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 364573,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0028&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 490453,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0043&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 337048,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-7&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 1168653,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0014&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 453127,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0029&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 397773,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0044&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 317753,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-opus-4-6&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 3,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 100.0,
+    &quot;tokens&quot;: 1015580,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0015&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 345814,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0030&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 324784,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0045&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 344982,
+        &quot;variant&quot;: 3
+      }
+    ]
+  },
+  {
+    &quot;task&quot;: &quot;lorelei-tactics&quot;,
+    &quot;model&quot;: &quot;claude-sonnet-4-6&quot;,
+    &quot;source&quot;: &quot;release&quot;,
+    &quot;wins&quot;: 1,
+    &quot;finished&quot;: 3,
+    &quot;score&quot;: 33.333333333333336,
+    &quot;tokens&quot;: 1218032,
+    &quot;release_finished&quot;: 3,
+    &quot;release_planned&quot;: 3,
+    &quot;release_running&quot;: 0,
+    &quot;release_pending&quot;: 0,
+    &quot;release_errors&quot;: 0,
+    &quot;attempts&quot;: [
+      {
+        &quot;id&quot;: &quot;cell-0016&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 402724,
+        &quot;variant&quot;: 1
+      },
+      {
+        &quot;id&quot;: &quot;cell-0031&quot;,
+        &quot;completed&quot;: true,
+        &quot;tokens&quot;: 334906,
+        &quot;variant&quot;: 2
+      },
+      {
+        &quot;id&quot;: &quot;cell-0046&quot;,
+        &quot;completed&quot;: false,
+        &quot;tokens&quot;: 480402,
+        &quot;variant&quot;: 3
+      }
+    ]
+  }
+]</pre></details><h2>Development attempts and replays</h2><table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody><tr><td>gpt-5.6-luna</td><td>Failed</td><td>487377</td><td><a href="../replays/df69a2611e4519984b33.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>333426</td><td><a href="../replays/c2d6f345897700370611.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>257326</td><td><a href="../replays/eda4e9de7fc12cbe5abf.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>223461</td><td><a href="../replays/442f0d618fec597e9f83.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>269828</td><td><a href="../replays/1e42aa64ca9808fd92df.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>482794</td><td><a href="../replays/5655ed989bdf2a4a8e02.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Failed</td><td>482625</td><td><a href="../replays/8de75178efff9ec97265.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>346676</td><td><a href="../replays/ef6751bad7379a6b626c.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>222690</td><td><a href="../replays/7f88cfc29cb51240063d.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>247724</td><td><a href="../replays/69db4f2a43b4d3a8cc24.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>228324</td><td><a href="../replays/66ae9fb1fdd9c0ff47c0.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>483992</td><td><a href="../replays/911aedfe9e8d59fdfdaa.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>260079</td><td><a href="../replays/708cdc676214f73eabf0.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>479306</td><td><a href="../replays/6496cd823e1207467de6.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>210889</td><td><a href="../replays/a0710acee07c6b4f2399.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>259320</td><td><a href="../replays/8229a6c0e30bc28512d2.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>224419</td><td><a href="../replays/eda0baf190daac9ef3e2.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>487077</td><td><a href="../replays/fb6bdf720613de019237.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>184480</td><td><a href="../replays/8cd7a5dc3d6081c06b43.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>478592</td><td><a href="../replays/eab7ff10b800fe970ef1.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Failed</td><td>483473</td><td><a href="../replays/0c3b45b74edb969dcd6e.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>282731</td><td><a href="../replays/117e69a5342706a7a80d.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>383611</td><td><a href="../replays/e51209359b56b4f5b3a8.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>484034</td><td><a href="../replays/189bbde639ce0e591f46.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>394700</td><td><a href="../replays/2a6b12f5c6d69ad119ce.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>430624</td><td><a href="../replays/f0014a2da0fffd20cc3d.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Passed</td><td>406517</td><td><a href="../replays/e8c4c117f91bae8d937a.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>348559</td><td><a href="../replays/679b0c318369a19e70b6.html">Watch replay</a></td></tr><tr><td>gpt-6-sol</td><td>Passed</td><td>228105</td><td><a href="../replays/58e3f2ed4e5239812731.html">Watch replay</a></td></tr><tr><td>gpt-6-luna</td><td>Failed</td><td>485865</td><td><a href="../replays/2ea0dc78d3ff732bb7d5.html">Watch replay</a></td></tr><tr><td>gpt-5.5</td><td>Passed</td><td>311829</td><td><a href="../replays/1f6198e3ff57e20042bf.html">Watch replay</a></td></tr><tr><td>gpt-5.6-luna</td><td>Failed</td><td>485539</td><td><a href="../replays/8cb91d7ab074f87ebcdd.html">Watch replay</a></td></tr><tr><td>gpt-5.6-terra</td><td>Failed</td><td>484738</td><td><a href="../replays/119cd9bb0263b3fe7e7e.html">Watch replay</a></td></tr><tr><td>gpt-5.6-sol</td><td>Passed</td><td>402724</td><td><a href="../replays/cbb60f6a57f1a610cd09.html">Watch replay</a></td></tr><tr><td>gpt-6-astra</td><td>Passed</td><td>373588</td><td><a href="../replays/c5cf61319791c45831ba.html">Watch replay</a></td></tr></tbody></table><h2>Attempt provenance</h2><pre>[
   {
     &quot;model&quot;: &quot;gpt-5.6-luna&quot;,
     &quot;provider&quot;: &quot;codex&quot;,

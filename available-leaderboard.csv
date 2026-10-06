@@ -1,0 +1,17 @@
+model,provider,score,tested,eligible,wins,finished,release_tasks,development_tasks
+gpt-6-astra,codex,95.45454545454545,22,22,25,26,2,20
+claude-opus-5-5,claude,93.65079365079364,21,22,23,25,21,0
+gpt-5.5,codex,90.9090909090909,22,22,24,26,3,19
+gpt-5.6-sol,codex,90.9090909090909,22,22,24,26,2,20
+gpt-6-sol,codex,90.9090909090909,22,22,24,26,3,19
+claude-sonnet-5-5,claude,85.0,20,22,19,23,20,0
+claude-opus-4-8,claude,84.12698412698413,21,22,21,25,21,0
+claude-opus-5,claude,84.12698412698413,21,22,21,25,21,0
+claude-opus-4-7,claude,80.0,20,22,20,24,20,0
+claude-sonnet-4-6,claude,75.43859649122807,19,22,17,23,19,0
+claude-sonnet-5,claude,71.9298245614035,19,22,15,23,19,0
+claude-opus-4-6,claude,71.42857142857143,21,22,19,25,21,0
+gpt-5.6-terra,codex,63.63636363636363,22,22,18,26,3,19
+gpt-5.6-luna,codex,50.0,22,22,11,26,3,19
+gpt-6-luna,codex,45.45454545454545,22,22,10,25,3,19
+claude-haiku-4-5-20251001,claude,42.857142857142854,21,22,9,25,21,0
