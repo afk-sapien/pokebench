@@ -1,0 +1,17 @@
+rank,model,provider,effort,score,wins,starts
+1,claude-opus-4-6,claude,medium,100.0,3,3
+1,claude-opus-4-7,claude,medium,100.0,3,3
+1,claude-opus-4-8,claude,medium,100.0,3,3
+1,claude-opus-5,claude,medium,100.0,3,3
+1,gpt-5.5,codex,medium,100.0,3,3
+1,gpt-5.6-sol,codex,medium,100.0,3,3
+1,gpt-5.6-terra,codex,medium,100.0,3,3
+1,gpt-6-astra,codex,medium,100.0,3,3
+1,gpt-6-sol,codex,medium,100.0,3,3
+10,claude-opus-5-5,claude,medium,75.0,2,3
+11,claude-sonnet-4-6,claude,medium,50.0,1,3
+11,claude-sonnet-5,claude,medium,50.0,1,3
+11,claude-sonnet-5-5,claude,medium,50.0,1,3
+14,claude-haiku-4-5-20251001,claude,medium,0.0,0,3
+14,gpt-5.6-luna,codex,medium,0.0,0,3
+14,gpt-6-luna,codex,medium,0.0,0,3
