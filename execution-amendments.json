@@ -1,0 +1,42 @@
+[
+  {
+    "created_at": "2026-10-06T00:37:46.294221+00:00",
+    "effective_after_finished": 18,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 2,
+    "policy": "One coordinator reserves full per-trial ceilings plus the registered in-flight reserve. Task and variant barriers retain paired coverage. Provider lanes may dispatch out of original model order. Gameplay, scoring and total budget are unchanged.",
+    "previous_batch_sha256": "b6fd85cd4195dc04d889bcfa5e7883c5909197a17bac093bab08a671e2591106",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "resumed_cells": [
+      "cell-0019"
+    ],
+    "scheduler_sha256": "69c2143fe42208c7fa654b43a9c04dd82a047165ba8366198f23b7b0c0542312",
+    "sha256": "3b639f9129d42a7fb2eb927b0970b2d9c2323b157d2bcf5c42de3e26d200fb88",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
+    "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T00:43:13.089667+00:00",
+    "effective_after_finished": 21,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 2,
+    "policy": "One coordinator reserves full per-trial ceilings plus the registered in-flight reserve. Task and variant barriers retain paired coverage. Provider lanes may dispatch out of original model order. Gameplay, scoring and total budget are unchanged.",
+    "previous_batch_sha256": "72aa4ff73e350587e9ab0003ef39ef73d068722f4aca89056b9e590679091e6d",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 600000,
+        "cell": "cell-0024",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "900f148f05fba9e5fffd41fba454ed7bdf9a828642c21a78db767f026bd99356"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "ee2e28287a26f72a98c6bdecaf19812c7483724a88f153942a0f29b7722a72f2",
+    "sha256": "e89057e5886fda12ec585b1bd084d6450ec47f4d5903c2bab444088d6c4a4314",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
+    "workers": 4
+  }
+]
