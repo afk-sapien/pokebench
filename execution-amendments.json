@@ -38,5 +38,28 @@
     "sha256": "e89057e5886fda12ec585b1bd084d6450ec47f4d5903c2bab444088d6c4a4314",
     "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
     "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T03:15:26.373481+00:00",
+    "effective_after_finished": 72,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 2,
+    "policy": "One coordinator reserves full per-trial ceilings plus the registered in-flight reserve. Task and variant barriers retain paired coverage. Provider lanes may dispatch out of original model order. Gameplay, scoring and total budget are unchanged.",
+    "previous_batch_sha256": "8207c3fe0fe751d43b91b92782050edcc821d429153af393fc94140d9a38530c",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [
+      {
+        "budget_hold_tokens": 1100000,
+        "cell": "cell-0069",
+        "reason": "Reviewed failed attempt excluded from scoring. Its full trial allowance plus reserve stays charged to the global ledger. Missing usage remains disclosed and is not presented as measured usage.",
+        "result_sha256": "6649bbf507f296e3558d0fd2a9678d012b954eb65bf715a8a0f5d205efb47279"
+      }
+    ],
+    "resumed_cells": [],
+    "scheduler_sha256": "ee2e28287a26f72a98c6bdecaf19812c7483724a88f153942a0f29b7722a72f2",
+    "sha256": "51df518dd1e4ced187092fb74b619ea6281b554e4646473ed6f7c570935a60e1",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
+    "workers": 4
   }
 ]
