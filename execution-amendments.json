@@ -61,5 +61,21 @@
     "sha256": "51df518dd1e4ced187092fb74b619ea6281b554e4646473ed6f7c570935a60e1",
     "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
     "workers": 4
+  },
+  {
+    "created_at": "2026-10-06T03:54:38.588609+00:00",
+    "effective_after_finished": 76,
+    "failure_policy": "Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.",
+    "format": 1,
+    "per_provider_limit": 2,
+    "policy": "One coordinator reserves full per-trial ceilings plus the registered in-flight reserve. Task and variant barriers retain paired coverage. Provider lanes may dispatch out of original model order. Gameplay, scoring and total budget are unchanged.",
+    "previous_batch_sha256": "e0a06d66b15fd01333ec366e0aa4aa6ab34d17123bca86c325142cd1b450c7fc",
+    "protocol_sha256": "99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05",
+    "quarantined_cells": [],
+    "resumed_cells": [],
+    "scheduler_sha256": "ee2e28287a26f72a98c6bdecaf19812c7483724a88f153942a0f29b7722a72f2",
+    "sha256": "97cee26f9b8248ff4415a6a4b70de873690bad4521bfd7a2b72b262b4d6dfaae",
+    "timing": "Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.",
+    "workers": 4
   }
 ]
