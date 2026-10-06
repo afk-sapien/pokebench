@@ -46,3 +46,19 @@ PYTHONPATH=src uv run python scripts/pokebench_release.py run \
 ## Release status
 
 The immutable machine-readable protocol and sanitized release summary are the authority for planned coverage, completed attempts, consumed tokens and pause reasons. The technical report labels the controlled evaluation pending until those results are available. Development and prospective results must never be silently pooled.
+
+## Parallel execution amendment
+
+At the owner's request, execution can switch to four isolated trial processes, with at most two per provider. A single coordinator retains the release lock, writes shared status, and reserves each active trial's entire token ceiling plus the registered in-flight reserve. Previously spent tokens remain in the same 50-million-token ledger. Unused reservations return only after a worker finishes with valid accounting and verified replay.
+
+Trials stay within the first unfinished task and starting variant. The earliest pending model with a free provider lane starts next. This changes dispatch order and wall-clock conditions, so the coordinator records a hashed `execution-amendment-001.json` alongside the untouched original protocol. Gameplay prompts, model settings, starts, scoring and per-trial limits remain frozen. Timing comparisons across the switch are not controlled because provider throttling can affect concurrent runs.
+
+The serial trial is checkpointed at a complete decision boundary and resumed with its original conversation and accumulated usage. Completed attempts are retained. Any infrastructure failure stops new admissions while already reserved workers finish. There are no automatic model retries. The frozen runtime stays in the release folder and the external scheduling script has its own recorded hash.
+
+```sh
+uv run python scripts/parallel_release.py run \
+  --root /private/release --rom /private/red.gb --game-data /private/game-data \
+  --workers 4 --per-provider 2
+```
+
+A reviewed failed attempt may be quarantined explicitly with `--quarantine-cell CELL_ID`. It stays an evaluation error, is never retried automatically, and contributes no success or failure score. Its entire trial ceiling plus the in-flight reserve remains charged against the shared authorization. Missing usage stays marked incomplete, and the conservative budget hold is separate from measured token counts. Each reviewed continuation receives a new hashed execution amendment. Any new unreviewed error still stops admission.

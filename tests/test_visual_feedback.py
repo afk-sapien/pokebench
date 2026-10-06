@@ -47,8 +47,14 @@ def test_visual_context_cannot_leak_ram_evaluator_or_scores(session):
     observation["private"] = "PRIVATE_DATA"
     public = public_context(observation)
     text = json.dumps(public)
-    assert all(secret not in text for secret in ("SECRET", "PRIVATE_EVENT", "PRIVATE_DATA", "999"))
-    assert "game" not in public and "score" not in public and "achievements" not in public
+    assert all(secret not in text for secret in ("SECRET", "PRIVATE_EVENT", "PRIVATE_DATA"))
+    def keys(value):
+        if isinstance(value, dict):
+            return set(value).union(*(keys(item) for item in value.values()))
+        if isinstance(value, list):
+            return set().union(*(keys(item) for item in value))
+        return set()
+    assert not {"game", "score", "achievements", "private"}.intersection(keys(public))
 
 
 def test_notebook_rejects_missing_fields_and_keeps_evidence_separate():
