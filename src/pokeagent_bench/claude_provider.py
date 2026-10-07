@@ -19,7 +19,7 @@ def subscription_environment():
     excluded = ('ANTHROPIC_', 'CLAUDE_CODE_', 'CLAUDE_CONFIG_DIR', 'CLAUDE_AGENT_', 'CLAUDE_SESSION_', 'CLAUDECODE')
     env = {key: value for key, value in os.environ.items() if not key.startswith(excluded)}
     env.update(CLAUDE_CODE_DISABLE_AUTO_COMPACT='1', CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC='1',
-               CLAUDE_CODE_MAX_OUTPUT_TOKENS='4096')
+               CLAUDE_CODE_MAX_OUTPUT_TOKENS='8192')
     return env
 
 
@@ -89,8 +89,8 @@ class ClaudeStream:
 
 class ClaudeCodeProvider(BoundedGameplayProvider):
     provider = 'claude-code'
-    harness = 'claude-code-bounded-gameplay-v1'
-    max_output_tokens = 4096
+    harness = 'claude-code-bounded-gameplay-v2'
+    max_output_tokens = 8192
 
     def __init__(self, model, *, executable='claude', **kwargs):
         if not re.fullmatch(r'claude-[a-z]+-[0-9][a-z0-9-]*', model):
@@ -176,3 +176,9 @@ class ClaudeCodeProvider(BoundedGameplayProvider):
                 if not isinstance(event.get('structured_output'), dict):
                     raise ProviderError('Claude returned no structured decision. Usage may be unreported')
                 return json.dumps(event['structured_output']), usage
+
+
+# Keep the shared gameplay schema unchanged and adapt only the CLI boundary.
+from . import claude_interface as _interface
+import sys as _sys
+_interface.install(_sys.modules[__name__])

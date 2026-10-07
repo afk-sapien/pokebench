@@ -635,6 +635,7 @@ source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
+    { name = "jsonschema" },
     { name = "mcp" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
@@ -653,6 +654,7 @@ dev = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "httpx", specifier = ">=0.28,<0.29" },
+    { name = "jsonschema", specifier = ">=4.23,<5" },
     { name = "mcp", specifier = ">=1.26,<2" },
     { name = "numpy", specifier = ">=1.26,<3" },
     { name = "pillow", specifier = ">=10,<13" },

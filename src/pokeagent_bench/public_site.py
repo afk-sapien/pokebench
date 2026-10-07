@@ -17,7 +17,9 @@ import tempfile
 
 from PIL import Image
 
+from .core import digest
 from .portal import HTML
+from .available_results import available_snapshot, available_section, benchmark_section, evaluation_status
 
 
 PRIVATE = re.compile(r'(/home/|/Users/|file://|localhost|127\.0\.0\.1|[A-Za-z]:\\|sk-[A-Za-z0-9]{12}|session[_ -]?id|api[_ -]?key|authorization\s*:)', re.I)
@@ -212,6 +214,16 @@ def release_snapshot(root):
     canonical = json.dumps({k: v for k, v in protocol.items() if k != 'sha256'}, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
     if hashlib.sha256(canonical).hexdigest() != protocol.get('sha256') or summary.get('protocol_sha256') != protocol['sha256']:
         raise ValueError('Release summary does not match its frozen protocol')
+    effective_budget = protocol['total_token_budget']
+    budget_path = root/'budget-authorization.json'
+    if budget_path.exists():
+        authorization = read(budget_path)
+        canonical_budget = json.dumps({k:v for k,v in authorization.items() if k != 'sha256'}, sort_keys=True, separators=(',', ':'), allow_nan=False).encode()
+        effective_budget = authorization.get('total_token_budget')
+        if (hashlib.sha256(canonical_budget).hexdigest() != authorization.get('sha256')
+                or authorization.get('protocol_sha256') != protocol['sha256']
+                or type(effective_budget) is not int or effective_budget < protocol['total_token_budget']):
+            raise ValueError('Invalid budget authorization')
     p = {key: public_text(protocol[key]) for key in ('id', 'frozen_at', 'track', 'scoring', 'uncertainty', 'budget_policy', 'retry_policy', 'history_policy')}
     p.update({key: number(protocol[key]) for key in ('variants', 'total_token_budget', 'maximum_planned_tokens', 'planned_attempts', 'context_turns', 'compact_at', 'paid_summaries')})
     p.update({key: sha(protocol[key]) for key in ('source_sha256', 'fixture_registration_sha256', 'rom_sha256', 'catalog_sha256')})
@@ -239,16 +251,45 @@ def release_snapshot(root):
     if len(set(model_ids)) != len(model_ids) or len(set(task_ids)) != len(task_ids) or not model_ids or not task_ids:
         raise ValueError('Release matrix must have unique models and tasks')
     expected = {(model, task, variant) for model in model_ids for task in task_ids for variant in range(1, variants+1)}
+    recoveries = {}
+    batch_path = root / 'batch.json'
+    if batch_path.exists():
+        batch = read(batch_path)
+        if batch.get('recovery_attempts'):
+            from .release import validate_batch, validate_result
+            validate_batch(protocol, batch)
+            recoveries = {r['id']:r for r in batch['recovery_attempts']}
+            for record in recoveries.values():
+                source = root / 'runs' / record['source_cell']
+                for name, key in [('error.json', 'original_error_sha256'), ('result.json', 'original_result_sha256')]:
+                    if digest((source / name).read_bytes()) != record[key]:
+                        raise ValueError('Original recovery failure changed')
+            for cell in batch['cells']:
+                if cell['id'] in recoveries and cell['status'] == 'finished':
+                    result_path = root / 'runs' / cell['id'] / 'result.json'
+                    validate_result(read(result_path))
+                    if digest(result_path.read_bytes()) != cell.get('result_sha256') or cell.get('replay', {}).get('verified') is not True:
+                        raise ValueError('Recovery result proof changed')
     attempts = []
     observed = set()
+    observed_recoveries = set()
     states = ('pending', 'running', 'finished', 'error', 'paused')
     for item in summary['attempts']:
         if type(item.get('variant')) is not int:
             raise ValueError('Invalid attempt variant')
         key = (item['model'], item['task'], item['variant'])
-        if key not in expected or key in observed or item['status'] not in states:
+        is_recovery = item['id'] in recoveries
+        if key not in expected or (key in observed and not is_recovery) or item['status'] not in states:
             raise ValueError('Release attempt matrix differs from registration')
-        observed.add(key)
+        if is_recovery:
+            if item['id'] in observed_recoveries:
+                raise ValueError('Duplicate recovery attempt')
+            actual = next(c for c in batch['cells'] if c['id'] == item['id'])
+            if any(actual[k] != item[k] for k in ('model', 'task', 'variant', 'status', 'provider', 'effort', 'token_limit')):
+                raise ValueError('Recovery summary differs from batch')
+            observed_recoveries.add(item['id'])
+        else:
+            observed.add(key)
         a = {field: identifier(item[field]) for field in ('id', 'model', 'task', 'provider', 'effort', 'status')}
         a.update({field: number(item.get(field)) for field in ('variant', 'token_limit', 'tokens', 'completed', 'decisions', 'wall_seconds', 'accounting_complete', 'replay_verified')})
         registered_model = next(m for m in p['models'] if m['model'] == a['model'])
@@ -259,8 +300,12 @@ def release_snapshot(root):
             raise ValueError('Invalid recorded release tokens')
         if item.get('stop_reason'):
             a['stop_reason'] = identifier(item['stop_reason'])
+        if is_recovery:
+            a['recovery_of'] = identifier(recoveries[item['id']]['source_cell'])
+            if recoveries[item['id']].get('adapter'):
+                a['recovery_adapter'] = identifier(recoveries[item['id']]['adapter']['id'])
         attempts.append(a)
-    if observed != expected or len(expected) != p['planned_attempts'] or summary['planned'] != len(expected):
+    if observed != expected or observed_recoveries != set(recoveries) or len(expected) != p['planned_attempts'] or summary['planned'] != len(expected) + len(recoveries):
         raise ValueError('Release coverage does not match registered matrix')
     eligible_ids = [t['id'] for t in p['tasks'] if t['score_eligible']]
     matched = [task for task in eligible_ids if all(a['status'] == 'finished' and a['replay_verified'] is True
@@ -281,7 +326,8 @@ def release_snapshot(root):
               'pending': sum(a['status'] == 'pending' for a in attempts),
               'running': sum(a['status'] == 'running' for a in attempts),
               'errors': sum(a['status'] == 'error' for a in attempts),
-              'tokens': sum(a['tokens'] or 0 for a in attempts), 'total_token_budget': p['total_token_budget'],
+              'tokens': sum(a['tokens'] or 0 for a in attempts), 'total_token_budget': effective_budget,
+              'registered_token_budget': p['total_token_budget'],
               'matched_task_ids': matched, 'eligible_task_ids': eligible_ids,
               'headline_score_ready': ready, 'models': models, 'attempts': attempts,
               'provisional': provisional_ranking(p, attempts)}
@@ -296,7 +342,7 @@ def release_section(protocol, summary):
     status_label = ('Paused at the shared token ceiling' if 'budget' in status
                     else 'Paused for infrastructure review' if 'infrastructure' in status
                     else 'Registered, collection pending' if status == 'ready' else status.capitalize())
-    text = '<section id="controlled-evaluation"><h2>Overall leaderboard <span class="small muted">Provisional</span></h2>'
+    text = '<section id="matched-evaluation"><h2>Matched-start comparison <span class="small muted">Provisional</span></h2>'
     provisional = summary['provisional']
     shared = provisional['tasks']
     starts = sum(len(task['variants']) for task in shared)
@@ -430,18 +476,29 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
     page = page.replace('Results refresh in place. Search and open details stay where you left them.', 'Immutable development snapshot. <a href="manifest.json">Download provenance manifest</a>.')
     page = page.replace('setInterval(refresh,15000)', '')
     release_info = None
+    available_data = None
     if release_root:
         release_protocol, release_info = release_snapshot(release_root)
         write_json(output/'release-protocol.json', release_protocol)
         write_json(output/'release-summary.json', release_info)
+        available_data = available_snapshot(release_protocol, release_info, public['cohorts'][0], public['cohorts'][1:])
+        write_json(output/'available-results.json', available_data)
+        with (output/'available-leaderboard.csv').open('w') as stream:
+            writer = csv.DictWriter(stream, fieldnames=['model', 'provider', 'score', 'tested', 'eligible', 'wins', 'finished', 'release_tasks', 'development_tasks'], extrasaction='ignore')
+            writer.writeheader()
+            writer.writerows(available_data['models'])
         with (output/'release-leaderboard.csv').open('w') as stream:
             writer = csv.DictWriter(stream, fieldnames=['rank', 'model', 'provider', 'effort', 'score', 'wins', 'starts'])
             writer.writeheader()
             writer.writerows(release_info['provisional']['models'])
-        page = page.replace('<h1>How well can AI agents play Pokemon?</h1>', '<h1>PokeBench</h1>'+release_section(release_protocol, release_info)+'<details id="development-results"><summary>Earlier development results and cost estimates</summary>')
-        page = page.replace('<section id="benchmarks">', '</details><section id="benchmarks"><p class="small muted">Development benchmark archive. The current OpenAI and Claude ranking is <a href="#controlled-evaluation">above</a>.</p>')
+        page = page.replace('<section id="benchmarks">', '<section id="development-benchmarks">')
+        main = available_section(available_data, release_info)+benchmark_section(available_data)
+        main += '<details id="matched-comparison"><summary>Matched-start comparison and collection details</summary>'+release_section(release_protocol, release_info)+'</details>'
+        page = page.replace('<h1>How well can AI agents play Pokemon?</h1>', '<h1>PokeBench</h1>'+main+'<details id="development-results"><summary>Earlier development analysis and cost estimates</summary>')
+        page = page.replace('</main>', '</details></main>')
         page = page.replace('<nav><a href="#benchmarks">', '<nav><a href="#controlled-evaluation">Leaderboard</a><a href="#benchmarks">')
         page = page.replace('</style>', '.release-board th:nth-child(2) {text-align:left} .release-board tbody th {font-size:15px} .release-board tbody th {color:var(--ink)} .release-board th:first-child {width:48px} .release-board caption {text-align:left} .release-board {min-width:650px}</style>')
+        page = page.replace('</style>', '.available-board {min-width:720px} .available-board tbody th {font-size:14px} .available-board tbody th {color:var(--ink)} .available-board th:first-child {text-align:left} .suite-task {border-bottom:1px solid var(--line)} .suite-task {padding:16px 0} .suite-task summary {cursor:pointer} #suite-search {width:100%} #suite-search {padding:12px} #matched-comparison {margin:32px 0}</style>')
         page = page.replace('<h2>What the score means</h2>', '<h2>About the development archive</h2>')
         page = page.replace('Updated <span id="updated">', 'Development archive updated <span id="updated">')
         page = page.replace("$('board-title').textContent = state.category+' leaderboard'", "$('board-title').textContent = state.category+' development leaderboard'")
@@ -451,6 +508,12 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
         body = '<h1>'+html.escape(task['name'])+'</h1><p>'+html.escape(task['description'])+'</p><p>Development evidence. Difficulty and experimental status are provisional.</p><p>Budget: '+str(task['tokens'])+' tokens per attempt. Starting save SHA-256: <code>'+task['state_hash']+'</code>.</p>'
         if task.get('validation'):
             body += '<p>'+html.escape(task['validation']['status']+': '+task['validation']['message'])+'</p>'
+        if available_data:
+            evidence = [c for c in available_data['cells'] if c['task'] == task['id']]
+            body += '<h2>Current combined results</h2><p>Verified current release outcomes take priority per model. Earlier development outcomes fill gaps. These sources use different starts and framework versions. Missing tests are not failures. Current release controller replays are not yet published. <a href="../available-results.json">Download selected evidence</a>.</p><table><thead><tr><th>Model</th><th>Passes / trials</th><th>Evidence</th><th>Status</th></tr></thead><tbody>'
+            for cell in evidence:
+                body += '<tr><td>'+html.escape(cell['model'])+'</td><td>'+str(cell['wins'])+' / '+str(cell['finished'])+'</td><td>'+html.escape(cell['source'] or 'Not tested')+'</td><td>'+html.escape(evaluation_status(cell))+'</td></tr>'
+            body += '</tbody></table><details><summary>Result provenance and original repeat plan</summary><pre>'+html.escape(json.dumps(evidence, indent=2))+'</pre></details><h2>Development attempts and replays</h2>'
         body += '<table><thead><tr><th>Exact model</th><th>Result</th><th>Tokens</th><th>Replay</th></tr></thead><tbody>'
         for a in rows:
             result = ('Passed' if a['completed'] else 'Failed') if a['status'] == 'finished' else a['status']
@@ -491,7 +554,8 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
 
 
 METHODOLOGY = '''<h1>How PokeBench works</h1>
-<h2>Provisional release leaderboard</h2><p>The main leaderboard compares all registered OpenAI and Claude models using the frozen release protocol. A task and starting variant enters the provisional score only when every model has a finished attempt, verified replay and complete accounting for that same start. Average success across the shared starts within each task, then average those task scores with equal weight. Ties share rank. Pending attempts and infrastructure errors exclude that start for everyone. Experimental tasks do not count. This descriptive subset ranking is not the frozen full-suite score. Coverage is selected by completion, which can bias early results. The page and JSON enumerate the exact included tasks and starts. The reporting policy is shared-starts-equal-task-weight-v1.</p>
+<h2>All available results</h2><p>The main page keeps every benchmark and every model visible. For each model and task, use all verified, fully accounted current release outcomes when any exist. Otherwise use verified outcomes from the curated development comparison. Never choose by success or combine old and new attempts within a model and task. Average success over selected attempts within each tested eligible task, then average those task rates equally for that model. Experimental tasks remain visible but unscored. Untested tasks are missing, not losses. Coverage and source counts appear beside every score. Sort by observed score with broader coverage first on ties, without assigning comparative ranks. This descriptive ordering mixes task coverage and historical framework versions and is not a fair head-to-head ranking. The reporting policy is available-results-equal-task-weight-v1. The separate matched-start comparison remains available for identical coverage.</p>
+<h2>Provisional release leaderboard</h2><p>The secondary matched-start comparison uses the frozen release protocol for all registered OpenAI and Claude models. A task and starting variant enters the provisional score only when every model has a finished attempt, verified replay and complete accounting for that same start. Average success across the shared starts within each task, then average those task scores with equal weight. Ties share rank. Pending attempts and infrastructure errors exclude that start for everyone. Experimental tasks do not count. This descriptive subset ranking is not the frozen full-suite score. Coverage is selected by completion, which can bias early results. The page and JSON enumerate the exact included tasks and starts. The reporting policy is shared-starts-equal-task-weight-v1.</p>
 <p><strong>Development preview, not a frozen release leaderboard.</strong> Historical runs used multiple harness versions. Results characterize a model together with its recorded agent framework. They do not isolate raw model ability.</p>
 <h2>Tasks and agent interface</h2><p>Tasks begin from recorded Pokemon Red checkpoints. The assisted gameplay track exposes player information and menu shortcuts. The model chooses the strategy and actions. Exact model, harness, prompt checksum, source checksum, starting state checksum and collection time are retained in each attempt's public metadata.</p>
 <h2>Scoring</h2><p>Each scored task has equal weight. Repeated starts are averaged within a task. The exploratory leaderboard uses only tasks with matching completed coverage and verified replays for every compared model. Experimental tasks are visible but excluded. Infrastructure errors are not scored as gameplay losses. Original failed gameplay attempts count.</p>

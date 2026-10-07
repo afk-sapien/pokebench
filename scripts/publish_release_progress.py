@@ -69,9 +69,10 @@ def execution_note(root, output):
     if type(latest['workers']) is not int or not 1 <= latest['workers'] <= 4:
         raise ValueError('Invalid worker count')
     holds = sum(c['budget_hold_tokens'] for a in amendments for c in a.get('quarantined_cells', []))
+    budget = read(output / 'release-summary.json')['total_token_budget']
     note = ('<p><strong>Parallel execution:</strong> Up to ' + str(latest['workers']) +
             ' trials at once, with at most ' + str(latest['per_provider_limit']) +
-            ' per provider. One shared 50M token allowance. Timing is not directly comparable across the scheduling change. ' +
+            ' per provider. One shared ' + format(budget, ',') + ' token allowance. Timing is not directly comparable across the scheduling change. ' +
             ('Reviewed error holds retain ' + format(holds, ',') + ' tokens against that allowance. Missing usage remains unreported. ' if holds else '') +
             '<a href="execution-amendments.json">Execution amendments</a>.</p>')
     target = output / 'index.html'

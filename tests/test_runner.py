@@ -169,3 +169,14 @@ def test_disabled_area_budget_preserves_existing_limits(tmp_path, engine):
     result = run(session, StubProvider({"button": "wait", "hold_frames": 2, "release_frames": 0, "notes": None}))
     assert result["stop_reason"] == "model_call_budget"
     assert not (session.output / "area_budget.json").exists()
+
+
+def test_metered_interface_rejection_stops_after_three_without_game_actions(session):
+    value = {'actions': [], 'notes': None, 'goal_plan': None,
+             'interface_error': 'Response format correction required'}
+    result = run(session, StubProvider(value))
+    assert result['stop_reason'] == 'invalid_model_response'
+    assert result['actions'] == result['frames'] == 0
+    assert result['usage']['calls'] == 3
+    assert result['usage']['input_tokens'] + result['usage']['output_tokens'] == 45
+    assert result['usage']['accounting_complete'] is True

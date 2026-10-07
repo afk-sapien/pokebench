@@ -187,7 +187,7 @@ def freeze(root, models, budget, game_data):
     return protocol
 
 
-def validate_batch(protocol, batch):
+def _validate_registered_batch(protocol, batch):
     unhashed = {key:value for key,value in protocol.items() if key != 'sha256'}
     if digest(encoded(unhashed)) != protocol.get('sha256'):
         raise ValueError('Release protocol checksum mismatch')
@@ -201,6 +201,15 @@ def validate_batch(protocol, batch):
             raise ValueError('Batch schedule or cell configuration changed')
         if actual.get('status') not in ('pending', 'running', 'finished', 'error'):
             raise ValueError('Invalid batch cell status')
+
+
+
+def validate_batch(protocol, batch):
+    from .replacement import validate_extended_batch
+    validate_extended_batch(protocol, batch, _validate_registered_batch)
+
+
+validate_batch.recovery_aware = True
 
 
 def accounted_usage(result):

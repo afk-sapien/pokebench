@@ -10,6 +10,59 @@ import time
 import traceback
 
 
+def execution_budget(root, protocol):
+    """Read the user's explicit budget amendment without changing old results."""
+    from pokeagent_bench import release as api
+    path = root / 'budget-authorization.json'
+    if not path.exists():
+        return protocol['total_token_budget']
+    record = api.read(path)
+    payload = {k:v for k,v in record.items() if k != 'sha256'}
+    limit = record.get('total_token_budget')
+    if (api.digest(api.encoded(payload)) != record.get('sha256')
+            or record.get('protocol_sha256') != protocol['sha256']
+            or type(limit) is not int or limit < protocol['total_token_budget']):
+        raise ValueError('Invalid budget authorization')
+    return limit
+
+
+
+def diagnostic_holds(root, protocol):
+    """Keep separately logged provider diagnostics inside the same token ceiling."""
+    from pokeagent_bench import release as api
+    path = root / 'diagnostic-reservations.json'
+    if not path.exists():
+        return 0
+    record = api.read(path)
+    payload = {k:v for k,v in record.items() if k != 'sha256'}
+    if api.digest(api.encoded(payload)) != record.get('sha256') or record.get('protocol_sha256') != protocol['sha256']:
+        raise ValueError('Invalid diagnostic reservations checksum')
+    holds = record.get('holds')
+    if not isinstance(holds, list):
+        raise ValueError('Invalid diagnostic reservation list')
+    seen = set()
+    total = 0
+    for hold in holds:
+        key = hold.get('id')
+        amount = hold.get('token_hold')
+        if not isinstance(key, str) or not key or key in seen or type(amount) is not int or amount <= 0:
+            raise ValueError('Invalid diagnostic reservation')
+        seen.add(key)
+        total += amount
+    return total
+
+
+def progress_report(api, root, protocol, limit):
+    summary = api.report(root)
+    summary['diagnostic_token_holds'] = diagnostic_holds(root, protocol)
+    summary['registered_token_budget'] = protocol['total_token_budget']
+    summary['total_token_budget'] = limit
+    if (root / 'budget-authorization.json').exists():
+        summary['budget_authorization_sha256'] = api.read(root / 'budget-authorization.json')['sha256']
+    api.write_json(root / 'release-summary.json', summary)
+    return summary
+
+
 def reservation_ledger(cells, results, reserve):
     """Reserve full ceilings for running trials, including already consumed tokens once."""
     spent = 0
@@ -38,8 +91,22 @@ def reservation_ledger(cells, results, reserve):
     return spent, reserved
 
 
-def next_cell(cells, workers, provider_limit):
+def next_cell(cells, workers, provider_limit, selection='registered', only_cell=None):
     """Keep a task and starting-variant barrier, then admit earliest eligible models."""
+    if selection == 'claude-missing':
+        running = [c for c in cells if c['status'] == 'running']
+        if len(running) >= workers or sum(c['provider'] == 'claude' for c in running) >= provider_limit:
+            return None
+        covered = {(c['model'], c['task']) for c in cells if c['status'] in ('finished', 'running')
+                   or (c['status'] == 'error' and not c.get('budget_hold_tokens'))}
+        candidates = [c for c in cells if c['provider'] == 'claude' and c['status'] == 'pending'
+                      and (c['model'], c['task']) not in covered and (only_cell is None or c['id'] == only_cell)]
+        # Cover new model and task pairs before spending tokens on repeated starts.
+        return min(candidates, key=lambda c: (c['token_limit'], c['variant'], cells.index(c))) if candidates else None
+    if only_cell is not None:
+        raise ValueError('A named trial requires Claude missing selection')
+    if selection != 'registered':
+        raise ValueError('Unknown selection policy')
     outstanding = [c for c in cells if c['status'] != 'finished'
                    and not (c['status'] == 'error' and c.get('budget_hold_tokens'))]
     if not outstanding:
@@ -58,12 +125,58 @@ def next_cell(cells, workers, provider_limit):
     return None
 
 
+
+def install_recovery_validation(root, api):
+    """Load the checksummed validator without editing the frozen gameplay source."""
+    if getattr(api.validate_batch, 'recovery_aware', False):
+        return
+    import importlib.util
+    path = root / 'execution-schedulers' / 'replacement-722cb45eac3ce075bfb51c7ffc35d9febf585c739bbd787bdeb58b4da12ce9dd.py'
+    if api.digest(path.read_bytes()) != '722cb45eac3ce075bfb51c7ffc35d9febf585c739bbd787bdeb58b4da12ce9dd':
+        raise ValueError('Recovery validator checksum mismatch')
+    spec = importlib.util.spec_from_file_location('pokebench_replacement_validation', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    original = api.validate_batch
+    def validate(protocol, batch):
+        module.validate_extended_batch(protocol, batch, original)
+    validate.recovery_aware = True
+    api.validate_batch = validate
+
+
 def preflight(root, rom, game_data):
     from pokeagent_bench import release as api
     from pokeagent_bench.gameplay import load_catalog, catalog_hash
+    install_recovery_validation(root, api)
     protocol = api.read(root / 'protocol.json')
     batch = api.read(root / 'batch.json')
     api.validate_batch(protocol, batch)
+    for record in batch.get('recovery_attempts', []):
+        original = root / 'runs' / record['source_cell']
+        if any(api.digest((original / name).read_bytes()) != record[key] for name, key in
+               [('error.json', 'original_error_sha256'), ('result.json', 'original_result_sha256')]):
+            raise ValueError('Original recovery failure changed')
+        message = api.read(original / 'error.json').get('message', '').lower()
+        if record.get('failure_kind') == 'interface_v4':
+            if not any(text in message for text in ('attempted an outside tool', 'did not complete a decision')):
+                raise ValueError('Recovery source is not a reviewed interface failure')
+            adapter_path = root / 'execution-schedulers' / ('interface-' + record['adapter_source_sha256'] + '.py')
+            if api.digest(adapter_path.read_bytes()) != record['adapter_source_sha256']:
+                raise ValueError('Interface adapter changed')
+        elif 'timed out' not in message:
+            raise ValueError('Recovery source is not a provider timeout')
+        if record.get('failure_kind') in ('response_truncation', 'response_budget_v3'):
+            proof_path = root / 'diagnostics' / record['diagnostic_id'] / 'result.json'
+            if api.digest(proof_path.read_bytes()) != record['diagnostic_result_sha256']:
+                raise ValueError('Response headroom diagnostic changed')
+            proof = api.read(proof_path)
+            if (proof.get('status') != 'valid_structured_response' or proof.get('accounting_complete') is not True
+                    or proof.get('model') != 'claude-sonnet-4-6' or proof.get('max_output_tokens') != record['adapter']['max_output_tokens']
+                    or proof.get('actions_executed') is not False or proof.get('scored') is not False):
+                raise ValueError('Response headroom diagnostic is not valid')
+            if record.get('failure_kind') == 'response_budget_v3' and (
+                    proof.get('deadline_seconds') != 600 or proof.get('original_conversation_unchanged') is not True):
+                raise ValueError('V3 diagnostic conditions do not match')
     if api.source_hash() != protocol['source_sha256']:
         raise ValueError('Frozen runtime checksum mismatch')
     if not 0 < protocol['total_token_budget'] <= api.MAX_RELEASE_TOKENS:
@@ -77,6 +190,89 @@ def preflight(root, rom, game_data):
     if api.digest((root / 'fixture-registration.json').read_bytes()) != protocol['fixture_registration_sha256']:
         raise ValueError('Fixture registration changed')
     return api, protocol, batch
+
+
+def install_storage_read_fix():
+    """Avoid emulator slices for empty boxes without changing nonempty reads."""
+    from pokesim_core import gen1_ui, storage
+    def memory_bytes(memory, bank, start, size):
+        if size == 0:
+            return b''
+        return storage.memory_bytes(memory, bank, start, size)
+    gen1_ui.memory_bytes = memory_bytes
+
+
+
+def install_response_headroom():
+    """Apply the diagnosed response allowance only to an authorized v2 recovery."""
+    from pokeagent_bench import claude_provider
+    cls = claude_provider.ClaudeCodeProvider
+    if cls.harness == 'claude-code-bounded-gameplay-v2':
+        return
+    original_environment = claude_provider.subscription_environment
+    def environment():
+        result = original_environment()
+        result['CLAUDE_CODE_MAX_OUTPUT_TOKENS'] = '8192'
+        return result
+    original_estimate = cls.estimate_next_tokens
+    def estimate(self, *args, **kwargs):
+        return original_estimate(self, *args, **kwargs) + 4096
+    claude_provider.subscription_environment = environment
+    cls.max_output_tokens = 8192
+    cls.harness = 'claude-code-bounded-gameplay-v2'
+    cls.estimate_next_tokens = estimate
+
+
+
+def install_response_budget_v3():
+    """Allow a validated long response while respecting the remaining trial wall time."""
+    from pokeagent_bench import claude_provider
+    cls = claude_provider.ClaudeCodeProvider
+    if cls.harness == 'claude-code-bounded-gameplay-v3':
+        return
+    install_response_headroom()
+    original_environment = claude_provider.subscription_environment
+    original_init = cls.__init__
+    original_estimate = cls.estimate_next_tokens
+    original_decide = cls.decide
+    original_complete = cls._complete
+    def environment():
+        result = original_environment()
+        result['CLAUDE_CODE_MAX_OUTPUT_TOKENS'] = '32000'
+        return result
+    def initialize(self, *args, **kwargs):
+        original_init(self, *args, **kwargs)
+        self.config_identity.update(max_response_tokens=32000, max_decision_seconds=600)
+    def estimate(self, *args, **kwargs):
+        return original_estimate(self, *args, **kwargs) + 23808
+    def decide(self, observation, notes, recent, limits, timeout):
+        self.response_deadline = time.monotonic() + min(timeout, 600)
+        return original_decide(self, observation, notes, recent, limits, timeout)
+    def complete(self, method, params, deadline):
+        return original_complete(self, method, params, self.response_deadline)
+    claude_provider.subscription_environment = environment
+    cls.max_output_tokens = 32000
+    cls.harness = 'claude-code-bounded-gameplay-v3'
+    cls.__init__ = initialize
+    cls.estimate_next_tokens = estimate
+    cls.decide = decide
+    cls._complete = complete
+
+
+def install_interface_v4(root, record):
+    """Load only the reviewed response boundary, leaving game code frozen."""
+    import importlib.util
+    from pokeagent_bench import claude_provider, release as api
+    expected = 'cabab8d0e530944c38db724b6bf394e5e9b808533abb76328503e5b52797b544'
+    if record['adapter_source_sha256'] != expected:
+        raise ValueError('Unreviewed interface adapter')
+    path = root / 'execution-schedulers' / ('interface-' + expected + '.py')
+    if api.digest(path.read_bytes()) != expected:
+        raise ValueError('Interface adapter checksum mismatch')
+    spec = importlib.util.spec_from_file_location('pokebench_interface_v4', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    module.install(claude_provider)
 
 
 def execute_cell(root, rom, game_data, cell_id, resume=False):
@@ -107,7 +303,26 @@ def execute_cell(root, rom, game_data, cell_id, resume=False):
                    '--goal', 'challenge']
         for key, value in api.limits(task).items():
             command.extend(['--' + key.replace('_', '-'), str(value)])
-    returned = execute(parser().parse_args(command))
+    install_storage_read_fix()
+    recovery_record = next((r for r in batch.get('recovery_attempts', []) if r['id'] == cell_id), None)
+    if recovery_record and recovery_record.get('failure_kind') == 'response_truncation':
+        install_response_headroom()
+    if recovery_record and recovery_record.get('failure_kind') == 'response_budget_v3':
+        install_response_budget_v3()
+    if recovery_record and recovery_record.get('failure_kind') == 'interface_v4':
+        install_interface_v4(root, recovery_record)
+    try:
+        returned = execute(parser().parse_args(command))
+    finally:
+        if target.exists():
+            recovery = next((r for r in batch.get('recovery_attempts', []) if r['id'] == cell_id), None)
+            if recovery:
+                api.write_json(target / 'recovery-attempt.json', recovery)
+            api.write_json(target / 'runtime-adapter.json', {
+                'id': 'empty-storage-read-v1',
+                'response_adapter': recovery_record.get('adapter') if recovery_record else None,
+                'scheduler_sha256': api.digest(Path(__file__).read_bytes()),
+                'description': 'Empty box storage reads return empty bytes without querying an invalid zero-length emulator slice. Nonempty reads, gameplay and scoring are unchanged.'})
     result = api.read(target / 'result.json')
     api.validate_result(returned)
     api.validate_result(result)
@@ -136,7 +351,7 @@ def launch(root, rom, game_data, cell, resume=False):
         return subprocess.Popen(args, stdout=log, stderr=subprocess.STDOUT, env=dict(os.environ))
 
 
-def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cells=()):
+def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cells=(), selection='registered', only_cell=None):
     from pokeagent_bench.recovery import lock_run
     if not 1 <= workers <= 4 or not 1 <= provider_limit <= workers:
         raise ValueError('At most four workers, with an explicit per-provider limit')
@@ -144,6 +359,14 @@ def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cel
     active = {}
     try:
         api, protocol, batch = preflight(root, rom, game_data)
+        limit = execution_budget(root, protocol)
+        if only_cell is not None:
+            if workers != 1 or provider_limit != 1 or selection != 'claude-missing':
+                raise ValueError('A named recovery must use one Claude worker')
+            if only_cell not in {r['id'] for r in batch.get('recovery_attempts', [])}:
+                raise ValueError('Named trial must have a recovery authorization')
+            if any(c['status'] == 'error' and not c.get('budget_hold_tokens') for c in batch['cells']):
+                raise ValueError('Named recovery requires all previous errors held')
         amendment_number = len(list(root.glob('execution-amendment-*.json'))) + 1
         amendment_path = root / f'execution-amendment-{amendment_number:03d}.json'
         if amendment_path.exists():
@@ -182,8 +405,8 @@ def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cel
             'workers': workers, 'per_provider_limit': provider_limit,
             'effective_after_finished': sum(c['status'] == 'finished' for c in batch['cells']),
             'resumed_cells': [c['id'] for c in paused], 'quarantined_cells': quarantined,
-            'policy': 'One coordinator reserves full per-trial ceilings plus the registered in-flight reserve. Task and variant barriers retain paired coverage. Provider lanes may dispatch out of original model order. Gameplay, scoring and total budget are unchanged.',
-            'timing': 'Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable.',
+            'policy': ('Exploratory collection prioritizes missing Claude pairs, lowest token ceilings first, with no OpenAI reruns or retries of scored gameplay losses. Reviewed infrastructure errors may use a remaining start while retaining the failed attempt and its token hold. Existing development evidence remains usable. ' if selection == 'claude-missing' else 'Task and variant barriers retain paired coverage. ') + f'One coordinator reserves full per-trial ceilings plus the registered in-flight reserve against the user-authorized total of {limit} tokens. Gameplay is unchanged. Original full-suite scoring stays separate from exploratory reporting.',
+            'timing': 'Concurrent trials can encounter shared provider rate limits. Wall times before and after this amendment are not directly comparable. Runtime adapter empty-storage-read-v1 fixes zero-length storage reads. Each affected run records the adapter and scheduler checksum.',
             'failure_policy': 'Stop new admissions on any infrastructure error or unknown usage. Already reserved trials drain. No automatic model retries.'}
         amendment['sha256'] = api.digest(api.encoded(amendment))
         api.write_json(amendment_path, amendment)
@@ -195,7 +418,8 @@ def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cel
             cell['status'] = 'running'
             cell['execution_mode'] = 'parallel-resumed'
         spent, reserved = reservation_ledger(batch['cells'], outcomes(root, batch['cells']), protocol['in_flight_reserve'])
-        if spent + reserved > protocol['total_token_budget']:
+        spent += diagnostic_holds(root, protocol)
+        if spent + reserved > limit:
             raise ValueError('Insufficient remaining allowance for paused trials')
         batch['phase'] = 'running'
         api.write_json(root / 'batch.json', batch)
@@ -223,12 +447,13 @@ def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cel
                 del active[cell_id]
             try:
                 spent, reserved = reservation_ledger(batch['cells'], outcomes(root, batch['cells']), protocol['in_flight_reserve'])
+                spent += diagnostic_holds(root, protocol)
             except ValueError:
                 stop = 'stopped for incomplete accounting'
             if stop is None:
-                while (cell := next_cell(batch['cells'], workers, provider_limit)) is not None:
+                while (cell := next_cell(batch['cells'], workers, provider_limit, selection, only_cell)) is not None:
                     allowance = cell['token_limit'] + protocol['in_flight_reserve']
-                    if spent + reserved + allowance > protocol['total_token_budget']:
+                    if spent + reserved + allowance > limit:
                         break
                     cell.update(status='running', execution_mode='parallel')
                     reserved += allowance
@@ -240,11 +465,15 @@ def coordinate(root, rom, game_data, workers=4, provider_limit=2, quarantine_cel
                         stop = 'stopped for infrastructure review'
                         break
             batch['budget_reservations'] = {'completed_tokens': spent, 'reserved_tokens': reserved,
-                'active_workers': len(active), 'limit': protocol['total_token_budget']}
+                'active_workers': len(active), 'limit': limit}
             if not active:
                 batch['phase'] = stop or ('finished' if all(c['status'] == 'finished' for c in batch['cells']) else 'finished with evaluation errors' if all(c['status'] in ('finished', 'error') for c in batch['cells']) else 'paused at total token budget')
+                if not stop and selection == 'claude-missing' and next_cell(batch['cells'], workers, provider_limit, selection, only_cell) is None:
+                    expected = {(c['model'], c['task']) for c in batch['cells'] if c['provider'] == 'claude'}
+                    done = {(c['model'], c['task']) for c in batch['cells'] if c['provider'] == 'claude' and c['status'] == 'finished'}
+                    batch['phase'] = 'completed Claude coverage' if expected <= done else 'stopped with unresolved Claude errors'
             api.write_json(root / 'batch.json', batch)
-            api.report(root)
+            progress_report(api, root, protocol, limit)
             if not active:
                 return batch['phase']
             time.sleep(5)
@@ -268,13 +497,15 @@ def main():
     parser.add_argument('--per-provider', type=int, default=2)
     parser.add_argument('--cell')
     parser.add_argument('--resume', action='store_true')
+    parser.add_argument('--only-cell', help='Restrict collection to one authorized recovery trial')
+    parser.add_argument('--selection', choices=['registered', 'claude-missing'], default='registered')
     parser.add_argument('--quarantine-cell', action='append', default=[], help='Reviewed failed trial whose full allowance stays reserved, with no retry')
     args = parser.parse_args()
     args.root = args.root.resolve()
     sys.path.insert(0, str(args.root / 'runtime'))
     from pokeagent_bench import release as api
     if args.mode == 'run':
-        print(coordinate(args.root, args.rom, args.game_data, args.workers, args.per_provider, args.quarantine_cell), flush=True)
+        print(coordinate(args.root, args.rom, args.game_data, args.workers, args.per_provider, args.quarantine_cell, args.selection, args.only_cell), flush=True)
     else:
         try:
             result = execute_cell(args.root, args.rom, args.game_data, args.cell, args.resume)

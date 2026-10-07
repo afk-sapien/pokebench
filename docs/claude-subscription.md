@@ -30,7 +30,7 @@ The model can emit at most 4,096 output tokens per request through the CLI envir
 
 Claude's `modelUsage` counters accumulate within a session, including across process resumption. PokeBench subtracts the previous counters once per decision. Total input tokens include uncached input, cache reads and cache creation. Cache tokens are charged against the benchmark token budget once. Cache read and creation counts are retained separately in decision logs.
 
-The subscription price is not allocated to individual runs. CLI dollar estimates are API-equivalent estimates, not subscription charges. The runner uses conservative admission estimates and checks reported usage between decisions. A timeout, malformed response or missing usage ends the trial with incomplete accounting. It is not counted as a model failure. Automatic provider retries may consume tokens before a failed CLI response, which the CLI may not fully report.
+The subscription price is not allocated to individual runs. CLI dollar estimates are API-equivalent estimates, not subscription charges. The runner uses conservative admission estimates and checks reported usage between decisions. A timeout or missing usage ends the trial with incomplete accounting. The version 4 response boundary handles malformed decisions as metered invalid model responses when complete usage is available. It is not counted as a model failure. Automatic provider retries may consume tokens before a failed CLI response, which the CLI may not fully report.
 
 ## Local model inventory
 
@@ -59,3 +59,29 @@ CLI 2.1.289 successfully completed two Sonnet 5.5 transport tests. Two turns in 
 - [Authentication](https://code.claude.com/docs/en/authentication)
 
 The installed CLI `--help` and read-only initialize response were used to verify current flags and local model inventory. `--bare` is deliberately not used because it disables subscription OAuth authentication.
+
+
+## Response interface version 4
+
+The CLI response schema allows omitted `notes`, `goal_plan` and `look_back`.
+Omission means JSON null, preserving existing memory. An initial goal is still
+required by the shared gameplay validator. No plan or action is invented.
+The canonical gameplay schema and action validation remain unchanged.
+
+The CLI exposes only StructuredOutput. A request for an unavailable game tool,
+such as `use_move`, is never executed or translated into an action. The adapter
+waits for the CLI result and accepts a valid structured decision if the model
+corrects itself. Shell, file, network and other outside tool requests still abort.
+
+A malformed response with complete usage returns a zero-action invalid decision.
+The next normal decision receives bounded formatting feedback. Its token budget
+is checked before another call, and three consecutive invalid decisions end the
+trial under the existing runner policy. Every CLI result, including failed schema
+attempts, contributes its cumulative usage delta once. Unknown usage still fails
+closed. Repeated invalid responses are model-format failures, not battle losses.
+
+Six previously incomplete Claude pairs have explicit version 4 replacement
+registrations. Each retains its original checkpoint, prompt, 4,096-token response
+cap, 180-second decision deadline and trial budget. The replacement records bind
+the adapter and original errors by checksum. Historical outcomes and failed-call
+budget holds are retained. No completed gameplay outcome is retried.

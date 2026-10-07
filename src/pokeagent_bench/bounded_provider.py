@@ -60,7 +60,8 @@ Agent notes and plans are unverified. Do not confuse a requested action with its
         _, _, _, text, rotate = self.prepare_packet(observation, notes, recent)
         history = len(self.prompt.encode()) if rotate else self.context_tokens
         images = 2 if self.look_back is not None else 1
-        return max(8000, history + len(text.encode()) + 2048 * images + 4096)
+        output_allowance = max(4096, self.max_output_tokens or 0)
+        return max(8000, history + len(text.encode()) + 2048 * images + output_allowance)
 
     def decide(self, observation, notes, recent, limits, timeout):
         if observation['status']['track'] != self.allowed_track:
