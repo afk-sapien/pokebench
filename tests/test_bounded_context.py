@@ -343,8 +343,10 @@ def test_party_delta_removes_fields_and_empty_roster_replaces():
     (BoundedGameplayProvider, 'test-model'),
     (None, 'claude-sonnet-5-5'),
 ])
-def test_current_screenshot_is_default_and_pair_is_explicit(provider_class, model):
+def test_current_screenshot_is_default_and_pair_is_explicit(provider_class, model, monkeypatch):
     from pokeagent_bench.claude_provider import ClaudeCodeProvider
+    monkeypatch.setattr(CodexProvider, '_initialize_cli', lambda self: None)
+    monkeypatch.setattr(ClaudeCodeProvider, '_initialize_cli', lambda self: None)
     provider_class = provider_class or ClaudeCodeProvider
     current = provider_class(model)
     pair = provider_class(model, presentation='before-after')
