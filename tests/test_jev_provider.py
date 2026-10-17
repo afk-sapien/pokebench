@@ -112,3 +112,51 @@ def test_runner_executes_jev_choices_and_counts_tokens(session, engine):
     assert session.usage["input_tokens"] == 100
     manifest = json.loads((session.output / "manifest.json").read_text())
     assert manifest["agent"]["provider"] == "jev" and manifest["agent"]["harness"] == "jev-choice-v1"
+
+
+def shortcut_answer(choice, menu, tokens=100):
+    payload = answer(tokens=tokens)
+    payload["answers"]["action"].update(choice=choice, probabilities={key: float(key == choice) for key in menu})
+    return payload
+
+
+def test_every_shortcut_is_a_valid_gameplay_command():
+    from pokeagent_bench.gameplay_commands import validate
+    from pokeagent_bench.jev_provider import shortcut_menu
+    for command, argument, count, _ in shortcut_menu(True).values():
+        validate({"command": command, "argument": argument, "count": count}, Limits())
+
+
+def test_screenshot_shortcuts_offer_no_inspection(session):
+    seen = []
+
+    def handle(request):
+        seen.append(request.read())
+        return httpx.Response(200, json=shortcut_answer("super_potion_2", provider.menu))
+    provider = JevProvider(shortcuts=True, client=client(handle))
+    assert not any(name.startswith("inspect") for name in provider.menu)
+    decision, _, record = provider.decide(session.observe(), "", [], Limits(), 10)
+    assert decision == {"actions": [{"command": "use_item", "argument": "Super Potion:2", "count": 1}], "notes": None}
+    assert provider.gameplay_commands and provider.harness == "jev-choice-shortcuts-v1"
+    assert b"move_up_4" in seen[0] and b"use_move_1" in seen[0]
+
+
+def test_runner_executes_jev_shortcuts_on_gameplay_track(tmp_path, engine):
+    from test_gameplay import setup
+    session = setup(tmp_path, engine)
+    session.limits = Limits(max_action_frames=60, max_model_calls=2)
+    bodies = []
+
+    def handle(request):
+        bodies.append(json.loads(request.content))
+        return httpx.Response(200, json=shortcut_answer("inspect_map" if len(bodies) == 1 else "wait", provider.menu))
+    provider = JevProvider(observation="state", shortcuts=True, client=client(handle))
+    result = run(session, provider)
+    assert result["stop_reason"] == "model_call_budget"
+    assert bodies[0]["state"]["game_state"] and "inspect_party" in bodies[0]["questions"]["action"]["criteria"]
+    first = bodies[1]["state"]["recent_actions"][0]
+    assert first["command"] == {"command": "inspect", "argument": "map", "count": 1}
+    assert "No frames advanced" in first["outcome"]
+    manifest = json.loads((session.output / "manifest.json").read_text())
+    assert manifest["agent"]["harness"] == "jev-choice-shortcuts-v1"
+    assert manifest["agent"]["configuration"]["shortcuts"] is True

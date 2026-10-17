@@ -74,6 +74,8 @@ def parser():
             command.add_argument("--reasoning-effort", choices=("low", "medium", "high", "xhigh"), default="low")
             command.add_argument("--jev-observation", choices=("images", "state", "both"), default="images",
                                  help="Jev input. State and both send the track's allowlisted game fields")
+            command.add_argument("--jev-shortcuts", action="store_true",
+                                 help="Gameplay track only. Jev chooses fixed gameplay commands instead of raw buttons")
             command.add_argument("--seed", type=int, default=7)
             command.add_argument("--max-output-tokens", type=int, default=2048, help="Per-response API cap, not supported by Codex CLI")
             command.add_argument("--input-price", type=float, help="USD per million input tokens")
@@ -266,7 +268,9 @@ def execute(args):
             from .jev_provider import JevProvider
             if args.jev_observation != "images" and args.track == "visual":
                 raise ValueError("Jev state observations require the structured or gameplay track")
-            provider = JevProvider(args.model, observation=args.jev_observation)
+            if args.jev_shortcuts and args.track != "gameplay":
+                raise ValueError("Jev shortcuts require the gameplay track")
+            provider = JevProvider(args.model, observation=args.jev_observation, shortcuts=args.jev_shortcuts)
         elif args.provider == "codex":
             from .codex_provider import CodexProvider
             if args.input_price is not None or args.output_price is not None:

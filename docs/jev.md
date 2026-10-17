@@ -56,6 +56,39 @@ reports input and output tokens, and both count toward `--max-total-tokens`. A
 screenshot decision used about 2,200 tokens in the first trial, so the default
 100,000-token budget allows roughly 45 decisions.
 
+## Shortcuts on the gameplay track
+
+By default Jev presses raw buttons. That is a fair comparison only on manual-input
+tasks. For decision tasks and campaigns, where Claude and Codex use bounded gameplay
+commands, add `--jev-shortcuts`:
+
+```sh
+uv run pokebench run --provider jev --jev-shortcuts --jev-observation both \
+  --track gameplay --game-data /private/game-data \
+  --rom /private/red.gb --scenario /private/validated-fixture \
+  --output runs/jev-shortcuts-01 --max-model-calls 100
+```
+
+Jev then picks one fixed command per decision from this menu. The runner validates
+and executes each one through the same `gameplay_commands` code as other agents.
+
+| Choices | Command |
+| --- | --- |
+| `move_<direction>`, `move_<direction>_4` | Walk 1 or up to 4 tiles, stopping at obstacles, maps, dialogue and battles |
+| `press_<button>` | One tap of any button, for menus |
+| `interact`, `advance_dialogue`, `wait` | Tap A at the facing tile, collect open dialogue, wait 60 frames |
+| `choose_yes`, `choose_no`, `choose_run` | Select that visible menu option |
+| `use_move_1` to `use_move_4` | Fight with that move slot |
+| `switch_pokemon_1` to `switch_pokemon_6` | Send in or lead with that party slot |
+| `potion_1` and so on to `revive_6` | One Potion, Super Potion, Hyper Potion, Full Restore or Revive on a slot |
+| `inspect_party`, `inspect_bag`, `inspect_map`, `inspect_memory` | State and both modes only |
+
+Dialogue collected after a command is returned in the recent action outcomes.
+Choice answers come from a fixed list, so free-text `choose` and other items are not
+offered. Jev still has no notebook or goal plan. The manifest records
+`harness: jev-choice-shortcuts-v1` and `shortcuts: true`, so these runs stay a separate
+condition from button runs. The live player below uses buttons only.
+
 ## Watch it play
 
 The live player is a local toy for watching Jev and taking over. It is not scored.
@@ -83,6 +116,9 @@ with `--steps` and `--max-input-tokens`. The server binds only to localhost.
 - With the real Red ROM and a mocked Jev API, a five-decision run executed real
   presses and `pokebench replay` verified it. The live player advanced the real game,
   saved, and resumed from that save.
+- Shortcut mode, October 17, 2026: unit tests cover the menu, the request and the
+  runner executing shortcuts. A six-command mocked run on the real ROM executed press,
+  interact, inspect, dialogue, move and wait, and replay verified it. Not yet run live.
 - First live trial, October 17, 2026: 20 screenshot-only decisions from the opening
   save. Jev pressed A and waited through the title screen into Professor Oak's
   introduction. It used 42,747 input and 2,240 output tokens, with a median of about
