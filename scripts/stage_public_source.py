@@ -5,7 +5,7 @@ import json
 from pathlib import Path
 import shutil
 
-DIRECTORIES = ('src', 'tests', 'scripts', 'docs', 'examples', 'fixtures', '.github')
+DIRECTORIES = ('src', 'tests', 'scripts', 'docs', 'examples', 'fixtures', '.github', 'vendor')
 FILES = ('README.md', 'LICENSE', 'THIRD_PARTY_NOTICES.md', 'AGENTS.md',
          'pyproject.toml', 'uv.lock', '.python-version', '.gitignore')
 BLOCKED = {'.gb', '.gbc', '.gba', '.ram', '.sav', '.state', '.log', '.pyc'}
