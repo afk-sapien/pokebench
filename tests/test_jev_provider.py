@@ -180,3 +180,12 @@ def test_rounded_shortcut_probabilities_are_accepted():
     payload = shortcut_answer("wait", menu)
     payload["answers"]["action"]["probabilities"].update(wait=0.81, press_a=0.18)
     assert parse_answer(payload, menu)["choice"] == "wait"
+
+
+def test_choice_need_not_be_most_probable():
+    from pokeagent_bench.jev_provider import parse_answer, shortcut_menu
+    menu = shortcut_menu(True)
+    payload = shortcut_answer("press_a", menu)
+    probabilities = payload["answers"]["action"]["probabilities"]
+    probabilities.update(press_a=0.49, press_left=0.51)
+    assert parse_answer(payload, menu)["choice"] == "press_a"

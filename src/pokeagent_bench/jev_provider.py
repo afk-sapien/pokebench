@@ -113,7 +113,8 @@ def parse_answer(payload, choices=ACTIONS):
         if any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in values):
             raise ValueError
         # Jev rounds each probability to two decimals, so the error grows with the menu size.
-        if not math.isclose(sum(probabilities.values()), 1, abs_tol=max(0.01, 0.005 * len(choices))) or probabilities[choice] < max(probabilities.values()):
+        # Its choice need not be the most probable option; the choice is Jev's decision.
+        if not math.isclose(sum(probabilities.values()), 1, abs_tol=max(0.01, 0.005 * len(choices))):
             raise ValueError
         if type(tokens) is not int or tokens < 0 or not isinstance(payload["model"], str) or not payload["model"]:
             raise ValueError
