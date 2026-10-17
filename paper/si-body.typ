@@ -1,46 +1,48 @@
 #import "assets.typ": tbl
 = Supporting Information
 
-== Current development catalog
+== Recorded model identifiers
 
-The task inventory appears in @tbl:catalog.
+@tbl:focused-identifiers lists provider identifiers saved with these runs.
+Leaderboard display names are shorthand for these identifiers.
 
-#figure(tbl("tbl.catalog"), caption: [Task inventory at the frozen development
-  snapshot. Scored means included in the historical development ranking. It does
-  not imply that fresh release trials are complete. Experimental candidates
-  remain outside that ranking.]) <tbl:catalog>
+#figure(tbl("tbl.focused-identifiers"), caption: [Provider identifiers recorded
+  for models in the focused pass.]) <tbl:focused-identifiers>
 
-== Reproduction and disclosure
+== Task inventory and budgets
 
-The report statistics and tables are generated from sanitized inputs under
-`analysis/inputs`. Run `just assets`, `just paper`, and `just verify` from the
-manuscript directory. The export script records hashes of its source summaries
-and selects an explicit set of public fields. Re-exporting data changes those
-hashes and requires a new build.
+Navigation appears in @tbl:focused-navigation, battle in @tbl:focused-battle,
+manual operations in @tbl:focused-operations, preparation in
+@tbl:focused-preparation, and objectives in @tbl:focused-objectives.
 
-The archived pre-release manuscript contains earlier observations of visual
-perception, navigation, memory, and budget failures. Those studies used
-different framework versions and are not pooled into the current pilot. The
-upstream Paper Scaffold license and pinned toolchain revision are preserved in
-the paper directory. Reported results do not imply endorsement by the game
-publisher or model providers.
+These tables list tasks represented in the focused pass, not every proposed or
+historical task. Token limits are expressed in millions per attempt. Preparation
+uses a constrained submission followed by offline battle grading.
 
+#figure(tbl("tbl.focused-navigation"), caption: [Navigation tasks and
+  budgets.]) <tbl:focused-navigation>
+#figure(tbl("tbl.focused-battle"), caption: [Battle tasks and
+  budgets.]) <tbl:focused-battle>
+#figure(tbl("tbl.focused-operations"), caption: [Manual menu tasks and
+  budgets.]) <tbl:focused-operations>
+#figure(tbl("tbl.focused-preparation"), caption: [Preparation tasks and
+  budgets.]) <tbl:focused-preparation>
+#figure(tbl("tbl.focused-objectives"), caption: [Quest and combined-objective
+  tasks and budgets.]) <tbl:focused-objectives>
 
-#pagebreak()
+== Reproduction
 
-== Registered release models
+The snapshot is `analysis/inputs/focused-v060.json`. It records aggregate
+scores, selected attempts, starting-state checksums, budgets, usage, audit
+counts, and repeat outcomes. Replay paths are relative to the local preview
+site. They do not imply that private game assets are publicly distributable.
 
-@tbl:models lists the prospective matrix. Registration is distinct from
-completed evaluation and from a successful provider-access smoke test.
+Run `scripts/export_focused_analysis.py` with the initial directory as `--run`,
+the local website as `--web`, and the repeat directory as `--repeats`. The
+`--paper-input` option refreshes this report's input. From the manuscript
+directory, run `just assets`, `just paper`, and `just verify`. Numeric prose and
+tables are generated through the existing Paper Scaffold.
 
-#figure(tbl("tbl.models"), caption: [Registered identifiers and effort settings
-  in the prospective beta protocol. These are planned participants, not
-  results.]) <tbl:models>
-
-The complete frozen protocol is supplied as
-`analysis/inputs/pokebench-v1-protocol.json`. Its canonical checksum is #text(
-  size: 8pt,
-)[`99c4e3a7dfbc0598d2be7c2f75201a08efeb7c63ba7b617da30bc4c7ad2a6d05`]. It
-records exact task thresholds, starting-state hashes, runtime identifiers,
-transport settings, and scoring rules. The source protocol was checked against
-this checksum before inclusion in the public paper inputs.
+Earlier report sources and historical analysis inputs remain archived. Future
+publication can reuse this comparison with its evaluation conditions stated.
+This report implies no endorsement by the game publisher or model providers.

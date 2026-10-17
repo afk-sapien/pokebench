@@ -1,0 +1,1 @@
+#table(columns: 2, inset: 6pt, align: left, "Display name", "Recorded provider identifier", "Opus", "claude-opus-5-5", "Sol", "gpt-5.6-sol", "Terra", "gpt-5.6-terra", "Sonnet", "claude-sonnet-5-5", "Haiku", "claude-haiku-5-5", "Luna", "gpt-5.6-luna")

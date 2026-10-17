@@ -24,6 +24,10 @@ FILES = (
     "analysis/inputs/pokebench-development.json",
     "analysis/inputs/tactical-reliability-v042.json",
     "analysis/inputs/decision-suite-v044-development.json",
+    "analysis/inputs/focused-v060.json",
+    "si/focused-sensitivity.typ", "si/focused-ranking.typ", "si/focused-categories.typ", "si/focused-repeats.typ",
+    "si/focused-navigation.typ", "si/focused-battle.typ", "si/focused-operations.typ",
+    "si/focused-preparation.typ", "si/focused-objectives.typ", "si/focused-identifiers.typ",
     "export_public.py", "paper.pdf",
 )
 
@@ -47,6 +51,7 @@ analysis/data/
 analysis/results/
 # Only reviewed sanitized inputs belong in the public source package.
 analysis/inputs/*
+!analysis/inputs/focused-v060.json
 !analysis/inputs/pokebench-v1-protocol.json
 !analysis/inputs/pokebench-development.json
 !analysis/inputs/tactical-reliability-v042.json
@@ -84,7 +89,7 @@ def stage(source, output):
         "kind": "PokeBench public paper package",
         "files": hashes,
         "excluded": ["archives", "private audit inputs", "game assets", "save states", "images", "account logs", "build caches"],
-        "evidence_status": "development-only, controlled release results pending",
+        "evidence_status": "completed exploratory focused pass, repeat coverage recorded in focused-v060.json",
     }
     (output / "PUBLIC-FILES.json").write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
     return manifest

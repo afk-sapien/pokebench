@@ -42,6 +42,41 @@ def main():
     write_table(root, "catalog", ["Task", "Category", "Development status"], rows,
                 [source], "Current task inventory with historical scoring status")
 
+    focused_source = "analysis/inputs/focused-v060.json"
+    focused = json.loads((root / focused_source).read_text())
+    rows = [[m["label"], f'{100*m["score"]:.1f}', f'{m["tokens"]/1e6:.2f}',
+             str(m["finished"]) + "/" + str(m["planned"])] for m in focused["models"]]
+    write_table(root, "focused-ranking", ["Model", "Score (%)", "Tokens (M)", "Finished"],
+                rows, [focused_source], "Initial pass scores and selected-attempt token totals")
+    rows = []
+    for model in focused["models"]:
+        rows.append([model["label"]] + [f'{100*model["categories"][c]:.1f}' for c in focused["categories"]])
+    write_table(root, "focused-categories", ["Model", "Nav.", "Battle", "Menus", "Prep.", "Quests"],
+                rows, [focused_source], "Per-category scores in percent")
+    names = {m["model"]: m["label"] for m in focused["models"]}
+    sensitivity = {row["model"]: row for row in focused["task_sensitivity"]["rows"]}
+    rows = [[m["label"], str(sensitivity[m["model"]]["best_rank"]),
+             str(sensitivity[m["model"]]["worst_rank"])] for m in focused["models"]]
+    write_table(root, "focused-sensitivity", ["Model", "Best rank", "Worst rank"], rows,
+                [focused_source], "Ranks after omitting each task group once, not confidence intervals")
+    short_tasks = {"navigation-forest-crossing": "Forest", "battle-underleveled-status-setup": "Lorelei",
+                   "preparation-move-replacement-across-fights": "Move prep."}
+    rows = []
+    for row in focused["repeats"]["rows"]:
+        scores = [f'{100*r["value"]:.0f}' if r["state"] == "finished" and r["value"] is not None else r["state"]
+                  for r in row["repeats"]]
+        rows.append([names[row["model"]], short_tasks[row["task_id"]], f'{100*row["initial"]:.0f}'] + scores)
+    write_table(root, "focused-repeats", ["Model", "Task", "Initial (%)", "Repeat 2 (%)", "Repeat 3 (%)"],
+                rows, [focused_source], "Post hoc matched repeats, pending attempts explicitly labeled")
+    for category in focused["categories"]:
+        rows = [[row["title"], str(row["decision_limit"]), f'{row["token_limit"]/1e6:g}']
+                for row in focused["tasks"] if row["category"] == category]
+        write_table(root, "focused-" + category, ["Task", "Decisions", "Tokens (M)"], rows,
+                    [focused_source], "Current " + category + " tasks and actual trial budgets")
+    rows = [[m["label"], m["model"]] for m in focused["models"]]
+    write_table(root, "focused-identifiers", ["Display name", "Recorded provider identifier"], rows,
+                [focused_source], "Provider identifiers recorded in attempt manifests")
+
 
 if __name__ == "__main__":
     main()

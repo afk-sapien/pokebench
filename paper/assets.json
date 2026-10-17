@@ -13,7 +13,7 @@
       "inputs": {
         "analysis/inputs/decision-suite-v044-development.json": "sha256:5104fa15020abb986f01c21ae3aa87e990fd857253e396b3ac49c056527bb3d8",
         "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
-        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
         "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
       }
     },
@@ -29,7 +29,167 @@
       "inputs": {
         "analysis/inputs/pokebench-development.json": "sha256:15966edcb8bb3e8f2be69d2b78a2a1c1fdf090e008a26436db8be411be925911",
         "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
-        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-battle": {
+      "path": "si/focused-battle.typ",
+      "kind": "table",
+      "desc": "Current battle tasks and actual trial budgets",
+      "hash": "sha256:5d0e65ec47484cba7a1093de742836c11295e939e7428d02aab41b6d4929bb7d",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-categories": {
+      "path": "si/focused-categories.typ",
+      "kind": "table",
+      "desc": "Per-category scores in percent",
+      "hash": "sha256:bf2e4a64cd657b2870e460790d68f7c8b505d247b6ece45f75b1f34a3302d8eb",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-identifiers": {
+      "path": "si/focused-identifiers.typ",
+      "kind": "table",
+      "desc": "Provider identifiers recorded in attempt manifests",
+      "hash": "sha256:6234e60085de3b906b40d0f9bb452a0ae05edffe89db46cb694b4c502141801c",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-navigation": {
+      "path": "si/focused-navigation.typ",
+      "kind": "table",
+      "desc": "Current navigation tasks and actual trial budgets",
+      "hash": "sha256:444d4af5f716773510735607d3ae40088e0c54481432c9c638583e2636df7783",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-objectives": {
+      "path": "si/focused-objectives.typ",
+      "kind": "table",
+      "desc": "Current objectives tasks and actual trial budgets",
+      "hash": "sha256:bf8b2664a14fc78e3e18a940374b97e6d8aa94cd4a71058d4f1a94ff27b96c49",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-operations": {
+      "path": "si/focused-operations.typ",
+      "kind": "table",
+      "desc": "Current operations tasks and actual trial budgets",
+      "hash": "sha256:ac31df8cbee6f9c199c22a35ff8119d9aaef23f778cebea85a6d5c8a5bda4b4d",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-preparation": {
+      "path": "si/focused-preparation.typ",
+      "kind": "table",
+      "desc": "Current preparation tasks and actual trial budgets",
+      "hash": "sha256:ad93b9cbbf6c45f5908af7d839de4a1a681506267e5e8d98fc3e21aa12c4146c",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-ranking": {
+      "path": "si/focused-ranking.typ",
+      "kind": "table",
+      "desc": "Initial pass scores and selected-attempt token totals",
+      "hash": "sha256:924f81bb6fed60e00ca2d35ba61c8e416aaae65469ee809524366cb6d00f3856",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:12:47Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-repeats": {
+      "path": "si/focused-repeats.typ",
+      "kind": "table",
+      "desc": "Post hoc matched repeats, pending attempts explicitly labeled",
+      "hash": "sha256:0a7ba75addd17be9fd95de9e53affd18bef38ce9546ac0d9e75be8329ce3210a",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T10:44:32Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
+        "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
+      }
+    },
+    "tbl.focused-sensitivity": {
+      "path": "si/focused-sensitivity.typ",
+      "kind": "table",
+      "desc": "Ranks after omitting each task group once, not confidence intervals",
+      "hash": "sha256:aaa7c079b871af03856e6a4da6c06e7e941fd652dea88019e2233d6c8a9e341a",
+      "origin": {
+        "by": "analysis/scripts/gen_results_table.py",
+        "at": "2026-10-13T03:23:41Z"
+      },
+      "inputs": {
+        "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
+        "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
         "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
       }
     },
@@ -45,7 +205,7 @@
       "inputs": {
         "analysis/inputs/pokebench-v1-protocol.json": "sha256:16934deb82ac0209c31dacef31c729067f90cb36437e62cd851198280e853ae9",
         "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
-        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
         "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
       }
     },
@@ -61,7 +221,7 @@
       "inputs": {
         "analysis/inputs/pokebench-development.json": "sha256:15966edcb8bb3e8f2be69d2b78a2a1c1fdf090e008a26436db8be411be925911",
         "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
-        "analysis/scripts/gen_results_table.py": "sha256:63fb8de24328c5e3a7c5c8642a2b552c956afe872d0504985c5be338b1a27e49",
+        "analysis/scripts/gen_results_table.py": "sha256:b53050192e182f371ce743d5cdc5b7142fd4aee07c70a66bac9914ef14139f4e",
         "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae"
       }
     }

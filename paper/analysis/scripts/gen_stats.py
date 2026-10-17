@@ -44,9 +44,33 @@ def main():
     values["calibration.starts"] = candidate["attempts_per_policy"]
     for key, value in candidate["wins"].items():
         values["calibration." + key] = value
+    focused_source = "analysis/inputs/focused-v060.json"
+    focused = json.loads((root / focused_source).read_text())
+    values.update({"focused." + key: value for key, value in focused["counts"].items()})
+    values.update({"focused." + key: value for key, value in focused["usage"].items()})
+    values.update({"focused." + key: focused["audit"][key] for key in
+                   ("format_error_decisions", "runs_with_format_errors", "trace_decisions")})
+    for setting in ("context_turns", "compact_at"):
+        observed = focused["conditions"][setting]
+        if len(observed) != 1:
+            raise ValueError("Report prose assumes one common gameplay setting: " + setting)
+        values["focused." + setting] = int(next(iter(observed)))
+    values["focused.budget_stops"] = focused["audit"]["stop_reasons"].get("model_call_budget", 0)
+    values["focused.challenge_failures"] = focused["audit"]["stop_reasons"].get("challenge_failed", 0)
+    values["focused.warp_errors"] = sum(row["audit"]["format_error_decisions"] for row in focused["cells"]
+                                        if row["task_id"] == "navigation-warp-puzzle")
+    values["repeat.planned"] = focused["repeats"]["planned"]
+    values["repeat.finished"] = focused["repeats"]["finished"]
+    values["repeat.tokens"] = focused["repeats"]["reported_tokens"]
+    values["repeat.changed"] = sum(row["changed"] for row in focused["repeats"]["rows"])
+    values["repeat.pairs"] = len(focused["repeats"]["rows"])
+    values["repeat.tasks"] = len({row["task_id"] for row in focused["repeats"]["rows"]})
+    for model in focused["models"]:
+        stats.add("focused.score." + model["label"].lower(), model["score"] * 100,
+                  fmt=".1f", desc="Equal-category overall score for " + model["label"], between=(0, 100))
     for key, value in values.items():
         stats.add(key, value, fmt=",", desc=key.replace(".", " "), between=(0, 2000000000))
-    return stats.write(inputs=["analysis/inputs/pokebench-development.json", "analysis/inputs/tactical-reliability-v042.json", "analysis/inputs/pokebench-v1-protocol.json"])
+    return stats.write(inputs=[focused_source, "analysis/inputs/pokebench-development.json", "analysis/inputs/tactical-reliability-v042.json", "analysis/inputs/pokebench-v1-protocol.json"])
 
 
 if __name__ == "__main__":

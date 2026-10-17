@@ -1,6 +1,6 @@
 #let paper-title = "PokeBench: Reproducible Decision-Making Benchmarks in Pokemon Red"
 #let paper-wordmark = "PokeBench"
-#let paper-cover-subtitle = "A technical report on the benchmark and its development evidence"
+#let paper-cover-subtitle = "Focused evaluation, failure review, and matched repeat trials"
 #let paper-authors = (
   (
     name: "afk-sapien",
@@ -19,19 +19,19 @@
 #let paper-institution = "Independent project"
 #let paper-bib-style = "american-chemical-society"
 #let paper-abstract = [
-  PokeBench evaluates language-model agents through reproducible checkpoint
-  challenges in Pokemon Red. The gameplay track exposes structured player
-  information and controller-backed shortcuts so that item selection, resource
-  management, and navigation decisions matter more than repeated menu inputs.
-  Private objective checks determine completion, while recorded controller
-  traces support deterministic replay. We describe task curation, bounded
-  context, usage accounting, paired starting conditions, and release evaluation
-  controls. Audited development trials show differences between models, but they
-  also show ceiling effects and sensitivity to the surrounding agent framework.
-  Historical comparisons are therefore reported as development evidence, not as
-  results of a newly frozen release. The report identifies the remaining
-  requirements for a fair cross-provider comparison and publishes the analysis
-  inputs separately from game assets and private model logs.
+  PokeBench compares language-model agents on checkpoint tasks in Pokemon Red.
+  Tasks cover navigation, battle tactics, manual menu operation, team
+  preparation, and quests. Structured player information and mechanical
+  shortcuts support strategy tasks, while menu tasks require manual inputs. This
+  report presents a completed cross-provider pass, its token usage, a review of
+  failure traces, and a targeted repeatability check. Opus obtained the highest
+  equal-category score in the initial pass, while category results exposed
+  different strengths across models. Many tasks reached a ceiling or floor, and
+  response-format failures clustered in the warp-navigation task. The results
+  describe agents within this framework, not model ability independent of tools.
+  All original attempts remain recorded, including repaired infrastructure
+  failures. Repeat outcomes are reported separately so that selected tasks do
+  not receive extra weight in the main ranking.
 ]
 
 #let paper-affiliations = {

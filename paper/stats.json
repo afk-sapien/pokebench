@@ -4,7 +4,8 @@
     "analysis/scripts/gen_stats.py": {
       "analysis/pyproject.toml": "sha256:1ec85704fd5a7ba4015c2602637f3c44af09478ef0d017925d63fee5228ed899",
       "analysis/uv.lock": "sha256:ae3594afe455148dc345e97db49ca8d1049a492bc534ae632bfd775e81be51ae",
-      "analysis/scripts/gen_stats.py": "sha256:4d35c821d6b99bd79c2636c6faeb17bee3eb02cf89fda9df5e57583777117e97",
+      "analysis/scripts/gen_stats.py": "sha256:7ee5ebaf28f475380fa3a9894ecd64f1b10e1ec8ee25486db7410c862849e5d9",
+      "analysis/inputs/focused-v060.json": "sha256:2541f30703ab4062d06b434a45374c7e2e11317252989f1c158d039cd0d08cb4",
       "analysis/inputs/pokebench-development.json": "sha256:15966edcb8bb3e8f2be69d2b78a2a1c1fdf090e008a26436db8be411be925911",
       "analysis/inputs/tactical-reliability-v042.json": "sha256:47394ee0a91f23c32505cbf0657f64b3cbfb496ac7beb3b4dc03090ce98efbc9",
       "analysis/inputs/pokebench-v1-protocol.json": "sha256:16934deb82ac0209c31dacef31c729067f90cb36437e62cd851198280e853ae9"
@@ -129,6 +130,426 @@
       "origin": {
         "by": "analysis/scripts/gen_stats.py",
         "at": "2026-10-05T23:07:36Z"
+      }
+    },
+    "focused.all_full_score_tasks": {
+      "value": 20,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused all_full_score_tasks",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:f5ca38f748a1d6ea",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.all_zero_tasks": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused all_zero_tasks",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.archived_tokens": {
+      "value": 10910493,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused archived_tokens",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:51da061068a8da09",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.attempts": {
+      "value": 300,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused attempts",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:983bd614bb5afece",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.budget_stops": {
+      "value": 51,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused budget_stops",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:031b4af5197ec30a",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.challenge_failures": {
+      "value": 26,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused challenge_failures",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:5f9c4ab08cac7457",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.combined_ceiling": {
+      "value": 552000000,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused combined_ceiling",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:f693ca22f5d2d344",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.compact_at": {
+      "value": 12000,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused compact_at",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:c5d1866aabc15dda",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:23:41Z"
+      }
+    },
+    "focused.context_turns": {
+      "value": 8,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused context_turns",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:2c624232cdd22177",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:23:41Z"
+      }
+    },
+    "focused.evaluation_errors": {
+      "value": 0,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused evaluation_errors",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:5feceb66ffc86f38",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.finished": {
+      "value": 300,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused finished",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:983bd614bb5afece",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.format_error_decisions": {
+      "value": 124,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused format_error_decisions",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:6affdae3b3c1aa6a",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.models": {
+      "value": 6,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused models",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:e7f6c011776e8db7",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.reported_tokens": {
+      "value": 289195307,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused reported_tokens",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:adef9a5673356a83",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.runs_with_format_errors": {
+      "value": 11,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused runs_with_format_errors",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:4fc82b26aecb47d2",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score.haiku": {
+      "value": 60.73333333333333,
+      "fmt": ".1f",
+      "unit": "",
+      "desc": "Equal-category overall score for Haiku",
+      "expect": {
+        "min": 0,
+        "max": 100
+      },
+      "checksum": "v2:118f321dc6294dac",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score.luna": {
+      "value": 52.04444444444445,
+      "fmt": ".1f",
+      "unit": "",
+      "desc": "Equal-category overall score for Luna",
+      "expect": {
+        "min": 0,
+        "max": 100
+      },
+      "checksum": "v2:a8b64480ce134561",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score.opus": {
+      "value": 73.66666666666666,
+      "fmt": ".1f",
+      "unit": "",
+      "desc": "Equal-category overall score for Opus",
+      "expect": {
+        "min": 0,
+        "max": 100
+      },
+      "checksum": "v2:d3748853b205c8e9",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score.sol": {
+      "value": 66.04444444444445,
+      "fmt": ".1f",
+      "unit": "",
+      "desc": "Equal-category overall score for Sol",
+      "expect": {
+        "min": 0,
+        "max": 100
+      },
+      "checksum": "v2:976d036843358d13",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score.sonnet": {
+      "value": 62.17777777777778,
+      "fmt": ".1f",
+      "unit": "",
+      "desc": "Equal-category overall score for Sonnet",
+      "expect": {
+        "min": 0,
+        "max": 100
+      },
+      "checksum": "v2:23bdcde7c0fab954",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score.terra": {
+      "value": 63.99999999999999,
+      "fmt": ".1f",
+      "unit": "",
+      "desc": "Equal-category overall score for Terra",
+      "expect": {
+        "min": 0,
+        "max": 100
+      },
+      "checksum": "v2:7311e22ff5aff5e6",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.score_groups": {
+      "value": 47,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused score_groups",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:31489056e0916d59",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.selected_tokens": {
+      "value": 278284814,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused selected_tokens",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:52e47cfe410deee4",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.starts": {
+      "value": 50,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused starts",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:1a6562590ef19d10",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.tasks": {
+      "value": 48,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused tasks",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:98010bd9270f9b10",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.trace_decisions": {
+      "value": 23702,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused trace_decisions",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:386daf6f775b5dcd",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.unknown_reserve": {
+      "value": 6273189,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused unknown_reserve",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:11b4434e1765b564",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "focused.warp_errors": {
+      "value": 112,
+      "fmt": ",",
+      "unit": "",
+      "desc": "focused warp_errors",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:b1556dea32e9d0cd",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
       }
     },
     "models.historical": {
@@ -474,6 +895,96 @@
       "origin": {
         "by": "analysis/scripts/gen_stats.py",
         "at": "2026-10-05T23:17:57Z"
+      }
+    },
+    "repeat.changed": {
+      "value": 10,
+      "fmt": ",",
+      "unit": "",
+      "desc": "repeat changed",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:4a44dc15364204a8",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T10:44:32Z"
+      }
+    },
+    "repeat.finished": {
+      "value": 36,
+      "fmt": ",",
+      "unit": "",
+      "desc": "repeat finished",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:76a50887d8f1c2e9",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T10:44:32Z"
+      }
+    },
+    "repeat.pairs": {
+      "value": 18,
+      "fmt": ",",
+      "unit": "",
+      "desc": "repeat pairs",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:4ec9599fc203d176",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "repeat.planned": {
+      "value": 36,
+      "fmt": ",",
+      "unit": "",
+      "desc": "repeat planned",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:76a50887d8f1c2e9",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "repeat.tasks": {
+      "value": 3,
+      "fmt": ",",
+      "unit": "",
+      "desc": "repeat tasks",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:4e07408562bedb8b",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T03:12:47Z"
+      }
+    },
+    "repeat.tokens": {
+      "value": 26241010,
+      "fmt": ",",
+      "unit": "",
+      "desc": "repeat tokens",
+      "expect": {
+        "min": 0,
+        "max": 2000000000
+      },
+      "checksum": "v2:0031528c17a267e8",
+      "origin": {
+        "by": "analysis/scripts/gen_stats.py",
+        "at": "2026-10-13T10:44:32Z"
       }
     }
   }

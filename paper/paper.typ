@@ -11,7 +11,7 @@
   #parbreak()
   #paper-authors.map(a => a.name).join(", ")
   #parbreak()
-  #paper-date | Development technical report | Not peer reviewed
+  #paper-date | Exploratory technical report | Not peer reviewed
 ]
 #v(8pt)
 *Abstract*
@@ -19,277 +19,236 @@
 // >>> BODY START
 = Introduction
 
-A game-playing agent must choose useful actions, remember their consequences,
-and recover when its plan fails. A full Pokemon campaign combines navigation,
-team management, battles, and long-term objectives. It also creates an
-evaluation problem: an early navigation failure prevents observation of later
-battle skills. PokeBench uses checkpoint tasks to expose these skills
-independently, alongside longer tasks that retain their dependencies.
+Playing Pokemon requires navigation, resource management, menu operation, battle
+tactics, and quest completion. A full campaign tests these skills together, but
+early navigation failure can hide later battle ability. PokeBench uses
+checkpoints to test them separately. PokeBench Long measures progress through a
+full campaign and is outside this report.
 
-The intended construct is decision making within a specified agent framework.
-Structured observations and menu shortcuts reduce the burden of reading pixels
-and navigating repetitive menus. They also change the task. Results from this
-track cannot establish unaided visual gameplay ability or the intrinsic ability
-of a model independent of its tools. The benchmark must publish those tools,
-observation rules, and budgets with every result.
+The focused pass covered #s("focused.tasks") tasks and #s("focused.starts")
+registered starts per model. It produced #s("focused.finished") finished
+attempts across #s("focused.models") models. The analysis retains useful results
+through routine infrastructure repairs. It records changed conditions and
+archived charges rather than discarding the earlier evidence.
 
-Historical development evidence covers #s("models.historical") models. This
-report describes the current implementation and that evidence. The active
-catalog contains #s("catalog.active") tasks, of which #s(
-  "catalog.scored",
-) contribute to the historical development ranking. The remaining #s(
-  "catalog.experimental",
-) are experimental candidates. A separate archive preserves #s(
-  "catalog.retired",
-) retired tasks. The public presentation can show one catalog without pretending
-that every task has the same validation status.
+The measured ability is agent performance within a declared framework.
+Structured observations and mechanical shortcuts reduce the cost of reading
+pixels and navigating repetitive menus. Those tools are part of the task.
+Results do not establish unaided visual gameplay or model ability independent of
+the interface.
 
 = Methods
 
-== Environment and checkpoints
+== Tasks and starting states
 
-Each task starts from an emulator state with a declared objective. Fixture
-metadata record the game checksum, emulator and core versions, save checksum,
-setup procedure, and reference controller trace. Evaluation checks use private
-state and are kept outside the agent observation allowlist. A badge already
-present in the starting save does not count as new progress.
+The categories were navigation, battle, operations, preparation, and objectives.
+Operations measured manual menu use. Preparation measured choices made before
+battle. Objectives combined gameplay skills to complete a quest. Every model
+received the same registered save and task limits for each starting condition.
+The Supporting Information lists task descriptions and actual budgets. The
+companion analysis records starting-state and evaluation-specification
+checksums.
 
-Curated battle tasks may deliberately alter the player's initial team, move
-power points, health, or inventory. These changes occur during offline fixture
-construction and are recorded in provenance. Opponent behavior remains game
-behavior. A reference replay proves that a particular controller trajectory can
-win from the checkpoint. It does not prove that a fixed strategy always wins,
-that the task is easy, or that the reference is optimal.
+Curated battle checkpoints specify the player's team, health, moves, and
+inventory. Preparation tasks accept a constrained plan and grade the resulting
+team with a fixed battle controller. The model does not play those grading
+battles. Preparation scores depend on both the plan and reference controller.
+They do not estimate the win probability of an optimal player.
 
-Only controller actions advance a scored run. Observations do not advance game
-time. Save loading, setup waits, and offline fixture edits are distinct from
-scored gameplay. A declared runtime and unchanged initial state are required for
-a deterministic replay claim.
+Revised forest, cave, boulder, and blocked-route navigation fixtures have
+trainers already defeated and random wild encounters disabled. This prevents
+incidental battles from becoming the main navigation challenge. Original
+navigation attempts remain archived, and their charges remain in accounting.
+Other tasks retain their declared game mechanics.
 
-== Agent observations and actions
+== Agent interface and budgets
 
-The structured gameplay track supplies the current screen and selected facts
-about the player, local map, visible interaction state, party, moves, inventory,
-and recent actions. Some facts are retrieved through tools instead of being
-repeated in every prompt. The observation contract must enumerate these fields.
-Private victory flags, future random outcomes, and reference policies are not
-agent inputs.
+Gameplay observations included the current screenshot and structured player
+information: local map, party, moves, bag, visible dialogue, and recent actions.
+Agents could request further information through inspection. Private evaluator
+flags and future random outcomes were excluded. Menu-operation tasks disabled
+shortcuts that would solve the tested operation. Strategy tasks allowed
+mechanical commands for items, moves, and switching while leaving those choices
+to the model.
 
-Actions include bounded movement, interaction, dialogue advancement, move
-selection, Pokemon switching, and item use. Shortcuts execute ordinary
-controller inputs and report the observed outcome. They do not choose the best
-item or Pokemon for the agent. Dialogue advancement collects continuation text
-and stops at choices that require a decision. This design tests whether the
-agent chooses a useful action while reducing the cost of issuing each
-intermediate button.
+The pass used current-image presentation and requested low reasoning effort.
+Recent context was bounded by #s("focused.context_turns") turns and a configured
+#s(
+  "release.context",
+) token threshold. Context rebuilding avoided paid summarization calls. These
+settings do not establish identical hidden computation across providers.
+Recorded model identifiers appear in @tbl:focused-identifiers.
 
-Navigation assistance also changes what is being tested. Local map facts make
-spatial planning more accessible than screenshot-only play. These observations
-must be identical across compared models. If a later implementation supplies a
-route plan or automatic battle strategy, it requires a separately identified
-protocol rather than silently replacing the present task.
+Decision limits were the primary task budget, with higher token limits as
+spending backstops. Decisions, controller actions, and emulator frames are
+different quantities. A run reaching its decision limit is a finished scored
+failure, not a pending job. Reported tokens include input and output usage,
+including cached input where the provider reports it. They are not converted to
+subscription dollars.
 
-== Context and stopping rules
+== Scoring and aggregation
 
-The runner maintains bounded interaction context and explicit working memory.
-Recent decisions, current facts, action feedback, and model-authored notes are
-retained according to a declared policy. A context rotation must preserve its
-recorded handoff rather than claim to preserve an unlimited conversation. Memory
-contents remain fallible agent statements. The evaluator must not repair a plan
-by inserting private task knowledge into that memory.
+Gameplay tasks used their recorded completion score. Preparation used the
+reference controller's win rate after the model's submitted changes. Registered
+variants were averaged within score groups. Groups were averaged within
+categories, then categories received equal overall weight. The #s(
+  "focused.tasks",
+) task entries form #s("focused.score_groups") score groups because a related
+operational variant shares a group. Multiple starts do not make one battle count
+more than another.
 
-A token threshold applies to reported input plus output usage. Cached input is
-not added again on top of total input usage. A completed in-flight call can
-cross the threshold, so the threshold is not a guarantee of an exact maximum.
-Another decision is blocked after the threshold is reached. Additional limits on
-decisions, actions, frames, elapsed time, and prolonged lack of progress bound
-trials that would otherwise continue indefinitely.
+Infrastructure errors were tracked separately from model outcomes. Repaired
+attempts replaced affected comparison cells, while original artifacts and
+charges remained archived. There were #s("focused.evaluation_errors") unresolved
+evaluation errors in the initial matrix. This does not prove that every
+interface behavior was correct. Rejected responses can occur inside a completed
+attempt, so the audit reports them separately.
 
-A gameplay failure, budget stop, and infrastructure error are different
-outcomes. An invalid response or unavailable provider does not establish that
-the model lost the battle. Error handling preserves the original attempt and its
-known usage. A retry must have its own identifier and a stated eligibility rule.
-Unreported usage stays unknown rather than being replaced with zero.
+== Failure review and repeats
 
-== Scoring and comparison
+The audit counted rejected response decisions and inspected selected traces. A
+rejected response is an interface symptom, not automatically a parser bug.
+Repeated movement within one map suggests stalled navigation, but the trace
+alone cannot exclude a controller defect.
 
-Task success is a private objective predicate, not a model's claim of success.
-Battle objectives require the relevant victory evidence. Capture objectives
-require the intended encounter to produce the added Pokemon. Resource and
-recovery tasks can forbid blackout, party replacement, or any fainting,
-depending on the declared task. Merely leaving a battle or reaching a map after
-a blackout cannot substitute for the specified objective.
+The repeat check selected #s("repeat.tasks") tasks after examining initial
+results: forest navigation, the underleveled Lorelei battle, and move
+preparation. Models received additional attempts from the same saves with
+unchanged task budgets and the latest repaired runtime. The plan registered #s(
+  "repeat.planned",
+) additional attempts before execution. These repeats measure variability on
+selected conditions. They neither sample all game randomness nor estimate
+reliability across the full suite. Repeats are reported separately rather than
+giving selected tasks extra leaderboard weight.
 
-For a release comparison, compute each model's success fraction within a task
-across the shared starting variants and registered attempts. Average those
-fractions across tasks so that a task with more variants does not receive more
-weight. Report the number of evaluated tasks and missing attempts beside the
-score. Experimental tasks remain visible but do not enter the primary ranking
-until the inclusion rule is satisfied.
+= Results
 
-The historical development ranking selects declared cohorts by task and retains
-matching coverage across models. Its retrospective curation and changing
-framework versions prevent treating that aggregate as a fresh controlled release
-experiment. Publication should preserve the historical table, then present a
-separate frozen release comparison without blending their results.
+== Overall and category scores
 
-== Randomness and calibration
+Opus obtained the highest initial overall score, #s("focused.score.opus")%,
+followed by Sol at #s("focused.score.sol")% (@tbl:focused-ranking). Category
+results showed different strengths. Sol scored highest in battle, while Sonnet
+scored highest in preparation (@tbl:focused-categories). These are descriptive
+comparisons from recorded starts, not statistical claims of superiority.
 
-Paired starts mean that every model receives the same registered checkpoints.
-They do not force identical outcomes after different actions. Action timing can
-change a deterministic emulator's later random sequence. Nearby timing variants
-also need not be independent random samples. A winning path found after a
-failure is evidence of feasibility, not a valid replacement for the failed
-trial.
+#figure(tbl("tbl.focused-ranking"), caption: [Initial focused-pass results.
+  Overall score is the equal-category average in percent. Token totals cover
+  selected current attempts, excluding archived attempts. Finished includes
+  successful and unsuccessful model outcomes.]) <tbl:focused-ranking>
 
-Calibration compares a frozen reference policy with simple attack policies on
-held-out starts. Both reliability and separation matter. A task that a simple
-baseline reliably wins may be a useful basic control but adds little evidence of
-advanced tactical skill. Conversely, failure by every model can indicate a
-useful frontier challenge, an unreliable fixture, or an interface defect. Replay
-and reference checks are needed before interpreting the result.
+#figure(tbl("tbl.focused-categories"), caption: [Category scores in percent.
+  Preparation uses the fixed controller's win rate after a model submission.
+  Other categories use task completion scores. Categories receive equal overall
+  weight.]) <tbl:focused-categories>
 
-== Cost and provenance
+Difficulty was uneven. All models achieved full scores on #s(
+  "focused.all_full_score_tasks",
+) tasks, while all scored zero on #s("focused.all_zero_tasks") tasks. Easy tasks
+provided capability coverage but little separation. Universal failures need
+further feasibility and trace review before being attributed to model limits.
+Neither extreme alone proves that a task should be removed.
 
-Report token usage, decisions, controller actions, game frames, and active wall
-time alongside success. Subscription usage is not a direct cash invoice.
-Provider-rate estimates must carry their rate-card date, cache treatment,
-coverage, and units. Cross-provider token counts and effort settings are not
-necessarily equivalent measures of computation. A cost-to-success comparison
-must use matched tasks and complete accounting, with unknown cost shown
-explicitly.
+== Failure evidence
 
-The analysis consumes sanitized frozen summaries. It excludes game binaries,
-emulator saves, screenshots, prompts, responses, credentials, and local private
-paths. Input and artifact hashes support provenance checks but are not external
-attestation. This manuscript uses Paper Scaffold @scaffold, which generates
-result tables and guards numerical claims against changes in their analysis
-inputs.
+The audit found #s("focused.budget_stops") attempts reaching the decision limit
+and #s("focused.challenge_failures") ending in a failed task condition. Across
+#s("focused.trace_decisions") recorded gameplay decisions, #s(
+  "focused.format_error_decisions",
+) were rejected for providing no controller action or valid history request.
+Errors occurred in #s(
+  "focused.runs_with_format_errors",
+) runs, with #s("focused.warp_errors") concentrated in Saffron Gym navigation.
+This cluster merits focused review rather than attributing every failed task to
+formatting.
 
-= Development results
+Selected traces showed distinct problems. Sol and Opus remained on Mt. Moon's
+entrance floor when their decision limits expired. Opus's boulder trace recorded
+an unsuccessful pushing route and a plan to reset the room. Its species-capture
+attempt reached a Pikachu battle but had not caught it at the limit. These
+observations establish unfinished progress without assigning sole responsibility
+to the model or framework.
 
-== Audited decision-task pilot
+The all-zero league-preparation result also concealed partial progress. Its
+reference controller reached late opponents, including the Champion, before
+losing. This is a limit of the terminal win-rate score, not evidence that the
+submitted teams made no progress.
 
-The decision-task pilot contains #s("pilot.attempts") attempts across #s(
-  "pilot.tasks",
-) tasks and #s("pilot.models") models. The exact provider model identifiers and
-reported usage appear in @tbl:pilot. Each task-model pair has one starting
-condition and one attempt. All included rows passed the replay, input-delivery,
-conversation-order, and state-update audits.
+The Lorelei comparison exposed a tactical difference. Sol used Amnesia
+repeatedly before attacking and won. Opus used Hypnosis, switched early to
+Pikachu, and later lost. Neither attempt recorded a response-format error.
+Strategy and resource use are plausible contributors, but a single battle cannot
+separate strategy from favorable randomness. The local leaderboard links both
+source replays.
 
-Astra completed #s("pilot.astra.wins") of #s("pilot.astra.trials") tasks. Terra
-completed #s("pilot.terra.wins") of #s("pilot.terra.trials"), while Luna
-completed #s("pilot.luna.wins") of #s("pilot.luna.trials"). These outcomes
-support testing the candidates further. They do not distinguish the stronger
-pair or estimate repeated-attempt reliability for an individual task. Aggregate
-pilot usage was #s("pilot.tokens") reported tokens.
+== Usage and repairs
 
-#figure(tbl("tbl.pilot"), caption: [Audited development pilot. The pass
-  denominator is distinct tasks, not repeated trials of one task. Token totals
-  include reported input and output usage. This is not the frozen release
-  evaluation.]) <tbl:pilot>
+The initial pass reported #s("focused.reported_tokens") tokens, including #s(
+  "focused.archived_tokens",
+) from archived attempts. A further #s("focused.unknown_reserve") tokens were
+reserved for interrupted calls with missing usage. This reserve is not measured
+consumption. Selected current attempts accounted for #s(
+  "focused.selected_tokens",
+) tokens.
 
-== Reference-policy evidence
+Recorded repairs included battle-free navigation fixtures, provider timeout and
+response diagnostics, and lossless encoding for an oversized memory inspection.
+The latter continued the affected run from its checkpoint with cumulative usage.
+Routine repairs preserved completed comparisons. The pass nevertheless spans
+recorded backend revisions, limiting causal claims about small ranking gaps.
 
-The initial decision-task calibration sweep is shown in @tbl:calibration.
-Reference wins varied across the shared starts, despite each released fixture
-having a winning reference trajectory. Healthy capture was sometimes successful
-with immediate ball throwing. These observations caution against labeling every
-candidate a difficult reasoning test. The route reference used the simulation's
-privileged offline policy and is not a model result.
+== Matched repeat check
 
-#figure(tbl("tbl.calibration"), caption: [Development calibration of
-  experimental tasks on shared timing variants. Reference strategies and simple
-  baselines were fixed for this sweep. These are development starts, not
-  held-out reliability estimates. Recovery-detour results compare a privileged
-  simulation reference with its travel path without the recovery
-  stop.]) <tbl:calibration>
+At this report snapshot, #s("repeat.finished") of #s("repeat.planned")
+additional attempts were complete, using #s("repeat.tokens") reported tokens.
+The table labels unfinished attempts explicitly (@tbl:focused-repeats). Across
+#s("repeat.pairs") selected model-task pairs, #s("repeat.changed") had a
+completed repeat with a score different from its initial attempt. The full
+pattern is reported rather than replacing an unfavorable initial result with a
+better repeat.
 
-The separate tactical Lorelei candidate had stronger held-out evidence. Its
-frozen reference won #s("calibration.tactical") of #s("calibration.starts")
-starts. The direct attacker won #s("calibration.attack-first"), and the attacker
-using type information won #s("calibration.type-aware-attacker"). The remaining
-reference loss and a later successful diagnostic trajectory are both retained.
-The diagnostic does not change the calibration score or establish perfect play.
+#figure(tbl("tbl.focused-repeats"), caption: [Matched repeat scores in percent.
+  Initial scores are from the main pass. Repeats use the same saves and task
+  budgets. Preparation scores are controller win rates. These selected repeats
+  do not change main leaderboard weights.]) <tbl:focused-repeats>
 
-= Frozen release evaluation
+== Sensitivity to task selection
 
-Controlled release results are pending. The registered protocol
-`pokebench-v1-beta` freezes #s("release.models") model identifiers and #s(
-  "release.tasks",
-) tasks, with #s("release.variants") fresh timing variants per task. This
-creates #s("release.planned") planned attempts. No development attempt is
-imported into these prospective results. The protocol records source,
-checkpoint, game, prompt, response-schema, and fixture-registration hashes.
+Removing each score group in turn left Opus highest and Luna lowest, but changed
+some middle rankings (@tbl:focused-sensitivity). The calculation reused existing
+outcomes with the same category weighting. These ranges describe dependence on
+task selection. They are not confidence intervals and do not measure repeated
+model sampling.
 
-The approved aggregate budget is #s("release.budget") reported tokens. The sum
-of all per-attempt thresholds is #s("release.maximum") tokens, so the registered
-matrix is a staged plan rather than a promise to finish every attempt under the
-approved cap. A task-first schedule evaluates paired variants and rotates model
-order within each variant. Only eligible tasks with identical completed,
-replay-verified and accounted variant coverage across all registered models
-enter the aggregate. Incomplete coverage stays visible. A partial aggregate must
-state which tasks it covers and cannot represent the entire catalog.
+#figure(tbl("tbl.focused-sensitivity"), caption: [Rank ranges after omitting
+  each score group once. Ties share a rank. The main leaderboard is
+  unchanged.]) <tbl:focused-sensitivity>
 
-Both providers use the gameplay track, the same prompt and response-schema
-hashes, and bounded text observations. The context policy retains at most #s(
-  "release.turns",
-) turns per segment and rotates at the declared #s("release.context") context
-threshold. It requests #s("release.summaries") paid summaries. Deterministic
-checkpoint packets carry current state and retained memory between segments. The
-protocol records transport and memory-policy identifiers so that these choices
-can be reproduced.
+= Limitations and next steps
 
-The provider model identifiers appear in @tbl:models. Requested effort is
-medium. Haiku exposes no adjustable effort, which is recorded as unavailable
-rather than medium. Claude Code has a #s("release.claude_output") output-token
-limit per call, while the Codex transport records no adapter output cap. These
-are declared provider differences, not evidence of equal computational effort.
-Claude access was listed by the official client, with representative smoke tests
-recorded separately from task completion.
+The initial ranking supports exploratory comparison. It depends on task
+selection, budgets, observations, tools, and the preparation controller. Equal
+category weights are a design choice. Most tasks initially had one attempt per
+model and registered start. Subscription transports may differ in hidden
+reasoning, caching, latency, and model-version behavior. Token totals describe
+resource use under these conditions, not universal cost efficiency.
 
-No gameplay retries or paid fallback are permitted. Infrastructure errors and
-incomplete accounting stop the sweep, while every raw attempt is retained. The
-controller reserves #s("release.reserve") tokens for an in-flight response, but
-one response can still cross a decision-boundary threshold. Per-task Wilson
-intervals are descriptive because timing variants are paired conditions rather
-than independent random samples. Only #s("release.eligible") tasks are eligible
-for the primary score. Experimental tasks remain excluded. Release outcomes must
-be reported with these limits before making claims about relative ability.
+Follow-up diagnostics found that compact model messages omitted task-completion
+status and visible-object movement details even when the full trace recorded
+them. The message builder has been repaired, but the frozen repair trials and
+Long pilot did not use that correction. Their outcomes therefore do not measure
+the corrected feedback path. The next useful comparison should verify that path
+before another broad pass. Full-game scoring remains a separate PokeBench Long
+evaluation rather than another category here.
 
-= Limitations
+= Availability
 
-PokeBench evaluates a model with an agent framework, not an isolated model.
-Changing summaries, memory retention, menu automation, or map observations can
-change performance. An ablation can measure the effect of a particular change
-only when the other conditions are held fixed. The earlier development sequence
-changed several components together and does not provide that causal evidence.
-
-The tasks sample one game and a curated set of situations. Models may have seen
-Pokemon strategies during training. Success can reflect recalled knowledge,
-online planning, or both. Task selection after observing failures can overfit
-the evaluated model set. Development and final evaluation starts should
-therefore remain distinct, and later task changes should create a new release.
-
-Stochastic outcomes limit the meaning of a single win or loss. Deterministic
-replay verifies execution but does not remove this evaluation uncertainty.
-Ceiling effects remain in the pilot, and several reference policies are not
-reliably successful across candidate starts. The report does not claim that the
-current catalog separates every model tier or proves human-level gameplay.
-
-= Availability and next validation
-
-A release should provide source code, a machine-readable protocol, sanitized
-attempt summaries, analysis commands, and the technical report. The website
-should show one catalog with task status, model coverage, results, and replay
-links where distributable. Users must supply a compatible game ROM. Game assets
-and private account records are not part of the source distribution.
-
-The registered validation is a staged cross-provider run with shared fresh
-starts. Its results can replace the pending release section through the same
-audited export and manuscript build. The earlier manuscript sources and all
-development inputs remain archived so readers can trace how the protocol
-changed.
+The local leaderboard provides task goals, outcomes, budgets, usage, and replay
+links for gameplay attempts. Earlier comparisons remain accessible in its
+archive. The analysis contains summaries and checksums rather than ROMs,
+emulator states, private model text, or account records. Source generators
+reproduce the page and report tables. This revision remains local. The earlier
+manuscript is preserved alongside the existing Paper Scaffold toolchain
+@scaffold.
 // <<< BODY END
 #bibliography("references.bib", style: paper-bib-style)
 #pagebreak()
