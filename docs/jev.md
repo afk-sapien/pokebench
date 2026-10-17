@@ -52,8 +52,9 @@ with the same limits. The manifest records the mode under `agent.configuration`.
 
 Invalid responses, HTTP errors and transport errors stop the run with
 `provider_error` before any input. There are no retries or fallback actions. Jev
-reports input tokens only, so output tokens are recorded as zero. `--max-total-tokens`
-therefore limits reported input tokens.
+reports input and output tokens, and both count toward `--max-total-tokens`. A
+screenshot decision used about 2,200 tokens in the first trial, so the default
+100,000-token budget allows roughly 45 decisions.
 
 ## Watch it play
 
@@ -82,5 +83,8 @@ with `--steps` and `--max-input-tokens`. The server binds only to localhost.
 - With the real Red ROM and a mocked Jev API, a five-decision run executed real
   presses and `pokebench replay` verified it. The live player advanced the real game,
   saved, and resumed from that save.
-- No live TypeSafe calls have been made from PokeBench. Jev's play quality, latency
-  and best observation mode remain unmeasured.
+- First live trial, October 17, 2026: 20 screenshot-only decisions from the opening
+  save. Jev pressed A and waited through the title screen into Professor Oak's
+  introduction. It used 42,747 input and 2,240 output tokens, with a median of about
+  0.19 seconds per call. Score 0, as expected for that distance. This shows the
+  adapter works live. It is not yet a measure of play quality or the best mode.
