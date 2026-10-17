@@ -72,7 +72,7 @@ their original observations, commands and scoring.
 
 No model-generated dialogue summary is used. No memory writes, pathfinding,
 battle policy, automatic recovery or goal-directed planning occur. See the
-[v020 implementation and offline validation](dialogue-v020.md) for the mechanical
+[v020 implementation and offline validation](history/dialogue-v020.md) for the mechanical
 detection contract and comparison limits.
 
 The same commands are exposed through MCP only for the gameplay track.
@@ -110,7 +110,7 @@ and recent command results in the supplied state. It makes no summary calls.
 The v023 comparison explicitly uses this option. Retained mode remains available
 for separate comparisons and longer-task memory experiments.
 
-See [the navigation results](pilots/2026-09-28-navigation-results.md) for model
+See [the navigation results](history/pilots/2026-09-28-navigation-results.md) for model
 outcomes and the limits of the engineering comparison.
 
 ## Run

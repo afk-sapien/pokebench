@@ -68,5 +68,5 @@ with project document bytes set to zero. Its audited checksum is allowlisted.
 Other instruction sources stop the run. Local Codex histories are private run
 dependencies. Do not publish histories, screenshots, ROMs or save states.
 
-[Development protocol](pilots/2026-09-27-continuous-protocol.md) records the capped
+[Development protocol](history/pilots/2026-09-27-continuous-protocol.md) records the capped
 comparisons and the unmetered native-compaction engineering failure.

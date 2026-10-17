@@ -55,4 +55,4 @@ has the same gameplay effect across animations or dialogue states.
 [Starter review](http://127.0.0.1:8942/starter-v011-review.html) and
 [development review](http://127.0.0.1:8942/continuous-development-v011.html).
 [Protocol](2026-09-27-continuous-protocol.md) and
-[implementation guide](../continuous-play.md) describe budgets and recovery.
+[implementation guide](../../continuous-play.md) describe budgets and recovery.

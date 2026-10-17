@@ -59,4 +59,4 @@ a separate benchmark condition and grants no credit for the original task.
 
 [Protocol](2026-09-27-starter-segments-protocol.md).
 [Outside-start review](http://127.0.0.1:8942/starter-outside-v014-review.html).
-[Checkpoint workflow](../challenges.md#verified-starter-segments).
+[Checkpoint workflow](../../challenges.md#verified-starter-segments).

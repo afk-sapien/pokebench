@@ -1,4 +1,4 @@
-> This page records the v0.4 pilot. See the [v0.5 visual protocol](visual-feedback-v05.md) for the current Codex interface.
+> This page records the v0.4 pilot. See the [v0.5 visual protocol](history/visual-feedback-v05.md) for the current Codex interface.
 
 # Gameplay pilot protocol
 
@@ -74,7 +74,7 @@ and the actual game payload. The audit itself made no model calls.
 A subsequent user-authorized live calibration tested Sol and Luna on the starter
 fixture. Both stopped below the 30,000-token threshold without leaving the bedroom.
 The runs used 54,434 reported tokens total. See the
-[starter pilot results](pilots/2026-09-26-starter-v04.md) for exact usage and outcomes.
+[starter pilot results](history/pilots/2026-09-26-starter-v04.md) for exact usage and outcomes.
 Increasing the token allowance is not the fix for the old one-call-per-button design.
 
 Official configuration reference:
@@ -87,11 +87,11 @@ reservation, and supported objectives. Compare it separately from the control
 smoke tests. Existing traces remain local and replayable. The manuscript separates the old
 control smoke tests from the revised starter pilot.
 
-The [extended Luna trial](pilots/2026-09-26-luna-500k.md) used 499,402 of a
+The [extended Luna trial](history/pilots/2026-09-26-luna-500k.md) used 499,402 of a
 500,000-token threshold and remained in the bedroom. Its full trace passed replay.
 
-The matched [Terra trial](pilots/2026-09-27-terra-500k.md) used 496,641 tokens,
+The matched [Terra trial](history/pilots/2026-09-27-terra-500k.md) used 496,641 tokens,
 reached Pallet Town, and failed to obtain a starter. Its full replay passed.
 
-The [visual-feedback pilot](pilots/2026-09-27-visual-v05.md) reran Luna and
+The [visual-feedback pilot](history/pilots/2026-09-27-visual-v05.md) reran Luna and
 Terra with game-only screenshots and structured memory. Neither obtained a starter.

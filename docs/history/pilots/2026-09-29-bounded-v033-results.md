@@ -1,6 +1,6 @@
 # Bounded gameplay pipeline validation
 
-Use the [pipeline design](../design/bounded-gameplay-pipeline.md) as the policy
+Use the [pipeline design](../../design/bounded-gameplay-pipeline.md) as the policy
 specification. Runtime version is red-v0.33-experimental with package 0.23.0 and
 harness codex-app-server-gameplay-v033. Frozen source fingerprint:
 `03e81c886b422b77f4f3d04199058ac60a294d51cf5895d8d156b31e37b6cbad`.

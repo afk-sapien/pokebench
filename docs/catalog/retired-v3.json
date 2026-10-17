@@ -1,0 +1,438 @@
+{
+  "note": "Archived planning entries only. Existing results and runnable suites are unchanged.",
+  "entries": [
+    {
+      "category": "navigation",
+      "reason": "Redundant opening travel. Covered within the starter and parcel tasks and campaign milestones.",
+      "specification": {
+        "id": "navigation-house-to-lab",
+        "title": "Walk from Red's bedroom to Oak's Lab",
+        "difficulty": "easy",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "reach-map",
+          "map_id": 40,
+          "description": "Leave your house and enter Professor Oak's Lab. You do not need to choose a Pokemon."
+        },
+        "start": "Red's bedroom, just after a fresh game grants player control. No starter, no scripted escort.",
+        "success": [
+          "Reach Oak's Lab while outside battle."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 300000,
+        "existing_task": "starter",
+        "requirements": [
+          "Prepare house checkpoints with free movement and no scripted escort.",
+          "Confirm the target map against the current Red labels and validate successful arrival."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Leave home and enter Oak's Lab",
+        "agent_goal": "Leave your house and enter Professor Oak's Lab. You do not need to choose a Pokemon.",
+        "scenario_details": [
+          "Party empty. No badges, Pokedex or prior opening events.",
+          "Bag empty, the bedroom PC Potion has not been withdrawn. Money: 3000.",
+          "Native Red map layout and story scripts."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      }
+    },
+    {
+      "category": "navigation",
+      "reason": "Redundant opening travel. Covered within the starter and parcel tasks and campaign milestones.",
+      "specification": {
+        "id": "navigation-revisit-location",
+        "title": "Return from Viridian Mart to Oak's Lab",
+        "difficulty": "medium",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "reach-map",
+          "map_id": 40,
+          "description": "Return to Professor Oak's Lab in Pallet Town. Entering the Lab completes this task, parcel handover is not required."
+        },
+        "start": "Viridian City, immediately outside the Mart after collecting the parcel, facing south.",
+        "success": [
+          "Reach Oak's Lab outside battle without a blackout."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 600000,
+        "existing_task": "parcel-delivery",
+        "requirements": [
+          "Validate the existing parcel-delivery fixture as a source variant.",
+          "Add route-position variants without changing story flags."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Return from Viridian to Oak's Lab",
+        "agent_goal": "Return to Professor Oak's Lab in Pallet Town. Entering the Lab completes this task, parcel handover is not required.",
+        "scenario_details": [
+          "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+          "Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.",
+          "Oak's Parcel is in the bag. Pokedex handover has not occurred."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      }
+    },
+    {
+      "category": "objectives",
+      "reason": "Framework memory diagnostic only. Excluded from gameplay ranking. No replacement task is required to fill a category quota.",
+      "specification": {
+        "id": "objectives-resume-context-reset",
+        "title": "Deliver Oak's Parcel after one context reset",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Pallet Town, outside Oak's Lab after starter and first rival recovery, before beginning the parcel errand.",
+        "success": [
+          "Collect and deliver the parcel and receive the Pokedex.",
+          "One conversation reset occurs immediately after parcel receipt at the next decision boundary, before any return-trip action."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1100000,
+        "existing_task": null,
+        "requirements": [
+          "Add a one-shot checkpoint at the first decision boundary after parcel acquisition.",
+          "Record reset occurrence alongside parcel-roundtrip completion. Missing goal, notebook or current-state information is an infrastructure error."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Resume an interrupted objective after a context reset",
+        "agent_goal": "Collect Oak's Parcel from Viridian Mart, deliver it to Professor Oak and receive the Pokedex. Your conversation history will reset once after parcel collection. Your own notebook, the goal and current game information will be retained.",
+        "scenario_details": [
+          "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+          "Bag: 5 Potions, no parcel. Money: 3000. Pokedex absent.",
+          "Emulator state and total token budget continue unchanged at reset. Carry over the agent-authored notebook verbatim, the same task goal and a full current observation. No paid summary or added advice."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      }
+    },
+    {
+      "category": "objectives",
+      "reason": "Overlaps the retained Snorlax encounter task and prerequisite quests. Retired from the proposed main catalog.",
+      "specification": {
+        "id": "objectives-key-item-blocker",
+        "title": "Clear the Route 12 Snorlax with the Poke Flute",
+        "difficulty": "medium",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Route 12, the walkable tile immediately north of the sleeping Snorlax.",
+        "success": [
+          "Wake Route 12 Snorlax with the Poke Flute and capture or defeat that encounter. Fleeing does not count.",
+          "Reach a walkable path tile south of its former blocking position without a blackout."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately.",
+          "Flee from the awakened Route 12 Snorlax."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 800000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the sleeping Route 12 encounter with the Poke Flute already owned.",
+          "Bind success to this Snorlax event and the south-side endpoint. A win against another Snorlax does not count."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Use a required key item to clear a blocker",
+        "agent_goal": "Clear the sleeping Snorlax blocking Route 12 and reach the path immediately south of it. You may catch or defeat it.",
+        "scenario_details": [
+          "Party: Wartortle level 35 with Water Gun, Bite, Bubble and Withdraw, full HP and PP.",
+          "Bag: Poke Flute, 10 Great Balls, 5 Super Potions. Route 12 Snorlax still asleep and uncleared.",
+          "No Surf or Fly. Snorlax is the native level 30 encounter. Capturing is optional."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/scripts/Route12.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      }
+    },
+    {
+      "category": "campaign",
+      "reason": "Separate campaign launch removed. Relevant story and badge achievements are observed within the full-game attempt.",
+      "specification": {
+        "id": "campaign-opening-parcel",
+        "title": "From Red's bedroom, deliver Oak's Parcel and receive the Pokedex",
+        "difficulty": "medium",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "opening",
+          "target": "parcel-roundtrip",
+          "description": "Start a new Pokemon Red game, obtain a starter, collect Oak's Parcel, and deliver it to Professor Oak for the Pokedex. Keep default Pokemon names."
+        },
+        "start": "Red's bedroom in Pallet Town before the opening sequence. Red has no Pokemon, no Pokedex, no badges, no Oak's Parcel, and no story flags. The normal new-game inventory is empty and cash is 3000 Pokedollars.",
+        "success": [
+          "Oak's Parcel is delivered to Professor Oak and the Pokedex is received.",
+          "The final state is outside battle with a normal living party."
+        ],
+        "failure": [
+          "The token limit expires before the parcel round trip is completed.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "red-bedroom-parcel-bulbasaur-v1",
+          "red-bedroom-parcel-charmander-v1",
+          "red-bedroom-parcel-squirtle-v1"
+        ],
+        "token_limit": 2500000,
+        "existing_task": "parcel",
+        "requirements": [
+          "Validate a fresh opening fixture for every starter choice and timing variant.",
+          "Keep the existing parcel task only as a reuse candidate because its current fixture need not begin at the bedroom.",
+          "Record starter, parcel, and Pokedex milestones for partial-progress reporting."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Start a new game and complete Oak's Parcel round trip",
+        "scenario_revision": 2,
+        "agent_goal": "You are Red in your Pallet Town bedroom. Choose Bulbasaur, Charmander, or Squirtle, collect Oak's Parcel from Viridian Poke Mart, return it to Professor Oak, and receive the Pokedex. Keep default Pokemon names.",
+        "scenario_details": [
+          "The fresh start has no prior story progress, starter, party, badges, key items, or Pokedex.",
+          "The agent may select Bulbasaur, Charmander, or Squirtle.",
+          "Oak’s Parcel must be collected in Viridian City and delivered at Oak’s Lab in Pallet Town."
+        ],
+        "open_questions": [
+          "Confirm the fresh-start fixture preserves the normal 3000-Pokedollar inventory and all three starter choices."
+        ]
+      }
+    },
+    {
+      "category": "campaign",
+      "reason": "Separate campaign launch removed. Relevant story and badge achievements are observed within the full-game attempt.",
+      "specification": {
+        "id": "campaign-opening-brock",
+        "title": "From Red's bedroom, defeat Brock for the Boulder Badge",
+        "difficulty": "hard",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "milestone",
+          "target": "badge:boulder",
+          "description": "Start a new Pokemon Red game and earn the Boulder Badge by defeating Brock. Keep default Pokemon names."
+        },
+        "start": "Red's bedroom in Pallet Town before the opening sequence. Red has no Pokemon, no Pokedex, no badges, no Oak's Parcel, and no story flags. The normal new-game inventory is empty and cash is 3000 Pokedollars.",
+        "success": [
+          "Brock is defeated and the Boulder Badge is awarded.",
+          "The final state is outside battle with a living party."
+        ],
+        "failure": [
+          "The token limit expires before the Boulder Badge is earned.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "red-bedroom-brock-bulbasaur-v1",
+          "red-bedroom-brock-charmander-v1",
+          "red-bedroom-brock-squirtle-v1"
+        ],
+        "token_limit": 5000000,
+        "existing_task": "brock",
+        "requirements": [
+          "Validate fresh-start fixtures and confirm Brock has not already been defeated.",
+          "Use the existing Brock task only as a source candidate because it begins at a battle checkpoint rather than a full opening.",
+          "Record starter, Pokedex, Viridian Forest arrival, Pewter arrival, and Brock-battle entry as transparent partial milestones."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Start a new game and earn the Boulder Badge",
+        "scenario_revision": 2,
+        "agent_goal": "You are Red in your Pallet Town bedroom. Choose a starter, travel through Viridian City and Viridian Forest to Pewter Gym, defeat Brock, and receive the Boulder Badge. Keep default Pokemon names.",
+        "scenario_details": [
+          "Brock is the required Pewter Gym Leader.",
+          "The fresh start has no prior story progress, starter, party, badges, key items, or Pokedex.",
+          "Any legal training, capture, shopping, and healing is permitted."
+        ],
+        "open_questions": [
+          "Confirm the Boulder Badge flag is not set at each bedroom start."
+        ]
+      }
+    },
+    {
+      "category": "campaign",
+      "reason": "Separate campaign launch removed. Relevant story and badge achievements are observed within the full-game attempt.",
+      "specification": {
+        "id": "campaign-brock-to-misty",
+        "title": "From Pewter City, cross Mt. Moon and defeat Misty",
+        "difficulty": "hard",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "milestone",
+          "target": "badge:cascade",
+          "description": "After earning the Boulder Badge, travel through Mt. Moon and defeat Misty for the Cascade Badge. Keep default Pokemon names."
+        },
+        "start": "Pewter City overworld outside the Pokemon Center. Red has the Boulder Badge, Bulbasaur level 14 with Tackle, Growl, Leech Seed, and Vine Whip at full PP, Pidgey level 12 with Gust, Sand-Attack, and Quick Attack at full PP, Potion x2, Antidote x1, Poke Ball x5, and 1800 Pokedollars. The Cascade Badge, Mt. Moon fossils, and Cerulean Gym victory flag are absent.",
+        "success": [
+          "Misty is defeated and the Cascade Badge is awarded.",
+          "The final state is outside battle with a living party."
+        ],
+        "failure": [
+          "The token limit expires before the Cascade Badge is earned.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "pewter-brock-to-misty-bulbasaur-v1"
+        ],
+        "token_limit": 6000000,
+        "existing_task": "misty",
+        "requirements": [
+          "Validate that every fixture has Boulder but not Cascade progress and begins in overworld control.",
+          "Treat the existing Misty battle task as a candidate only because it does not include travel, cave navigation, or preparation.",
+          "Record Mt. Moon entry, Cerulean arrival, and Misty-battle entry as partial milestones."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Travel from post-Brock Pewter through Mt. Moon and earn the Cascade Badge",
+        "scenario_revision": 2,
+        "agent_goal": "Starting in Pewter City after Brock, travel through Mt. Moon to Cerulean City, defeat Misty in Cerulean Gym, and receive the Cascade Badge. Keep default Pokemon names.",
+        "scenario_details": [
+          "Misty is the required Cerulean Gym Leader.",
+          "Mt. Moon has not been entered and neither Dome Fossil nor Helix Fossil is owned.",
+          "Any legal cave route, fossil choice, capture, training, shopping, and healing is permitted."
+        ],
+        "open_questions": [
+          "Confirm the selected Pewter checkpoint has Boulder only and no Mt. Moon entry flag."
+        ]
+      }
+    },
+    {
+      "category": "campaign",
+      "reason": "Separate campaign launch removed. Relevant story and badge achievements are observed within the full-game attempt.",
+      "specification": {
+        "id": "campaign-gym-travel-prepare-recover",
+        "title": "Travel to Vermilion Gym, defeat Lt. Surge, and heal at Vermilion Center",
+        "difficulty": "hard",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Cerulean City overworld outside the Pokemon Center. Red has Boulder and Cascade Badges, Bulbasaur level 22 with Tackle, Growl, Leech Seed, and Razor Leaf at full PP, Pidgey level 20 with Gust, Sand-Attack, and Quick Attack at full PP, Pikachu level 18 with ThunderShock, Growl, Tail Whip, and Quick Attack at full PP, Potion x2, Antidote x1, Poke Ball x5, and 4200 Pokedollars. Bill has been helped and the S.S. Ticket is owned, but the S.S. Anne rival, HM01 Cut, Lt. Surge, and the Thunder Badge are unbeaten or absent.",
+        "success": [
+          "Lt. Surge is defeated and the Thunder Badge is awarded.",
+          "Afterward every current party member is full HP and healthy at Vermilion City Pokemon Center.",
+          "The evidence ledger orders Vermilion Gym arrival, Thunder Badge award, and Center healing."
+        ],
+        "failure": [
+          "The token limit expires before the required recovery is recorded after the badge.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "cerulean-to-surge-recovery-v1"
+        ],
+        "token_limit": 5000000,
+        "existing_task": null,
+        "requirements": [
+          "Implement a composite grader for ordered travel, badge, and post-victory recovery evidence.",
+          "Validate that recovery remains possible after each designated gym victory.",
+          "Allow ordinary backtracking, healing, shopping, training, and other legal preparation choices."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Travel to a gym, prepare a party, win, and recover afterward",
+        "scenario_revision": 2,
+        "agent_goal": "From Cerulean City, travel to Vermilion Gym, defeat Lt. Surge for the Thunder Badge, then use the Vermilion City Pokemon Center so every current party member is at full HP with no status condition.",
+        "scenario_details": [
+          "Lt. Surge in Vermilion Gym is the required target Gym Leader.",
+          "The required recovery location is Vermilion City Pokemon Center after badge award.",
+          "Any legal route, S.S. Anne progression, training, shopping, capture, and healing is permitted."
+        ],
+        "open_questions": [
+          "Confirm the checkpoint has the required Boulder and Cascade progress but no S.S. Anne or Thunder Badge progress."
+        ]
+      }
+    },
+    {
+      "category": "campaign",
+      "reason": "Separate campaign launch removed. Relevant story and badge achievements are observed within the full-game attempt.",
+      "specification": {
+        "id": "campaign-two-badges",
+        "title": "Earn the Thunder and Rainbow Badges from Cerulean City",
+        "difficulty": "stretch",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Cerulean City overworld outside the Pokemon Center. Red has Boulder and Cascade Badges, Ivysaur level 24 with Tackle, Growl, Leech Seed, and Vine Whip at full PP, Pidgeotto level 23 with Gust, Sand-Attack, and Quick Attack at full PP, Pikachu level 22 with ThunderShock, Growl, Tail Whip, and Quick Attack at full PP, Potion x3, Super Potion x2, Antidote x2, Poke Ball x6, and 7000 Pokedollars. Bill has been helped and the S.S. Ticket is owned, but the S.S. Anne rival, HM01 Cut, Lt. Surge, Erika, Thunder Badge, and Rainbow Badge are unbeaten or absent.",
+        "success": [
+          "Lt. Surge is defeated and the Thunder Badge is awarded.",
+          "Erika is defeated and the Rainbow Badge is awarded.",
+          "The final state is outside battle with a living party."
+        ],
+        "failure": [
+          "The token limit expires before both specified badges are earned.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "cerulean-surge-erika-badges-v1"
+        ],
+        "token_limit": 10000000,
+        "existing_task": null,
+        "requirements": [
+          "Implement a multi-milestone grader that records both named badge flags without requiring a fixed order.",
+          "Validate the Cascade-only start and absence of both target badges.",
+          "Allow any legal route, team changes, shopping, training, and recovery actions."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Earn the Thunder and Rainbow Badges from a shared start",
+        "scenario_revision": 2,
+        "agent_goal": "From Cerulean City, defeat Lt. Surge in Vermilion Gym for the Thunder Badge and Erika in Celadon Gym for the Rainbow Badge, in either order. Keep default Pokemon names.",
+        "scenario_details": [
+          "Target gyms are Vermilion Gym for Lt. Surge and Celadon Gym for Erika.",
+          "The Thunder and Rainbow Badges may be earned in either order.",
+          "Any legal story progression, team changes, shopping, training, and recovery is permitted."
+        ],
+        "open_questions": [
+          "Confirm both gyms are reachable from the selected Cascade-only story checkpoint after legal progression."
+        ]
+      }
+    }
+  ]
+}

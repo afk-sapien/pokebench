@@ -193,10 +193,10 @@ The v024 pilot uses the final state from Sol's verified v023 starter success,
 with one declared setup frame. Rival combat, wild encounters and resource
 management remain part of the segment. No battle or navigation is skipped.
 It uses the v023 gameplay information policy and a new private evaluator target.
-See the [pilot protocol](pilots/2026-09-28-parcel-v024-protocol.md) and
-[results](pilots/2026-09-28-parcel-v024-results.md).
+See the [pilot protocol](history/pilots/2026-09-28-parcel-v024-protocol.md) and
+[results](history/pilots/2026-09-28-parcel-v024-results.md).
 
 
 Sol completed the roundtrip in the subsequent million-token trial. The
-[verified result](pilots/2026-09-28-parcel-v024-1m-results.md) preserves the earlier
+[verified result](history/pilots/2026-09-28-parcel-v024-1m-results.md) preserves the earlier
 failure and supplies a successful controller trace from the same checkpoint.

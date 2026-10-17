@@ -1,0 +1,2751 @@
+{
+  "battle": {
+    "category": "battle",
+    "title": "Gen 1 Red battle strategy",
+    "evals": [
+      {
+        "id": "battle-wild-basics",
+        "title": "Route 1 Rattata battle",
+        "difficulty": "easy",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Battle menu: wild Route 1 Rattata level 3 at full HP.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "Fleeing, catching, or knocking out the player party.",
+          "Ending the attempt without defeating the initial opponent."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 250000,
+        "existing_task": null,
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Win a straightforward wild battle",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat the wild level 3 Rattata on Route 1 without fleeing or catching it.",
+        "scenario_details": [
+          "Battle menu: wild Route 1 Rattata level 3 at full HP.",
+          "Party: Squirtle level 5 with Tackle and Tail Whip, at full HP.",
+          "Bag: Potion x1.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement. The task rule forbids RUN and throwing Pok\u00e9 Balls."
+        ],
+        "open_questions": [
+          "Confirm the private checkpoint has a native Route 1 level 3 Rattata and only timing changes across variants."
+        ]
+      },
+      {
+        "id": "battle-prepared-gym",
+        "title": "Brock with Squirtle and Pidgey",
+        "difficulty": "easy",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Pewter Gym battle menu: Brock leads Geodude level 12, then Onix level 14.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "A blackout before the Boulder Badge is earned.",
+          "Exhausting the attempt without earning the Boulder Badge."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 500000,
+        "existing_task": "brock",
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Defeat a prepared gym leader",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Gym Leader Brock and earn the Boulder Badge with Squirtle level 15 and Pidgey level 12.",
+        "scenario_details": [
+          "Pewter Gym battle menu: Brock leads Geodude level 12, then Onix level 14.",
+          "Party: Squirtle level 15 with Bubble, Tackle, Tail Whip, and Water Gun, plus Pidgey level 12 with Gust, Sand-Attack, and Quick Attack.",
+          "Both party members start at full HP with no status. Bag: Potion x2.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Verify this proposed team against the private Brock fixture and the exact battle-menu state."
+        ]
+      },
+      {
+        "id": "battle-unfavorable-lead",
+        "title": "Lorelei recovery with registered bad-matchup team",
+        "difficulty": "medium",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Lorelei battle menu: Dewgong level 54 is active against Graveler level 45.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "Any supplied party Pokemon faints.",
+          "A blackout occurs before Lorelei is defeated.",
+          "The attempt ends without defeating Lorelei."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 500000,
+        "existing_task": "bad-matchup",
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Recover from an unfavorable lead",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Elite Four member Lorelei without any supplied Pok\u00e9mon fainting.",
+        "scenario_details": [
+          "Lorelei battle menu: Dewgong level 54 is active against Graveler level 45.",
+          "Party: Graveler level 45 with Earthquake, Rock Slide, Defense Curl, and Self-Destruct, Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest, Haunter level 45 with Hypnosis, Dream Eater, Night Shade, and Confuse Ray.",
+          "All three party members begin healthy. Bag: Elixer x1.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Confirm move labels from registered private move IDs and verify all timing variants."
+        ]
+      },
+      {
+        "id": "battle-ineffective-attack-adaptation",
+        "title": "Lorelei adaptation after a missed Hypnosis",
+        "difficulty": "medium",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Lorelei battle menu: Dewgong level 54 is active after Poliwrath has missed Hypnosis.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "Black out before defeating Lorelei.",
+          "Exhaust the attempt without defeating Lorelei."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 500000,
+        "existing_task": null,
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Adapt after an ineffective attack",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Elite Four member Lorelei after Poliwrath misses Hypnosis against Dewgong.",
+        "scenario_details": [
+          "Lorelei battle menu: Dewgong level 54 is active.",
+          "Party: Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest. Pikachu level 45 with ThunderShock, Thunder Wave, Quick Attack, and Agility. Haunter level 45 with Hypnosis, Dream Eater, Night Shade, and Confuse Ray.",
+          "Poliwrath is the lead. The fixture records that Poliwrath used Hypnosis and it missed before this live battle menu. Bag: Elixer x1.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Build and validate the proposed authentic post-miss checkpoint without opponent or RNG editing."
+        ]
+      },
+      {
+        "id": "battle-heal-switch-attack-tradeoff",
+        "title": "Bruno Machamp resource tradeoff",
+        "difficulty": "medium",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Bruno battle menu: Machamp level 58 is active.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "Black out before winning.",
+          "Exhaust the attempt without defeating Elite Four member Bruno."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 750000,
+        "existing_task": null,
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Choose among healing, switching, and attacking",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Elite Four member Bruno from the Machamp battle menu.",
+        "scenario_details": [
+          "Bruno battle menu: Machamp level 58 is active.",
+          "Party: Kadabra level 50 with Psychic, Recover, Disable, and Kinesis, Poliwrath level 50 with Surf, Hypnosis, Amnesia, and Rest, Pidgeot level 50 with Wing Attack, Fly, Quick Attack, and Sand-Attack.",
+          "Kadabra starts at 35/100 HP, Poliwrath and Pidgeot start healthy. Bag: Hyper Potion x1 and Super Potion x1.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement.",
+          "Kadabra has Psychic 6/10 PP, Recover 20/20 PP, Disable 20/20 PP and Kinesis 15/15 PP after clearing Bruno\u2019s first four Pokemon through native battle actions. The party and active Kadabra HP are initialized to 35 before this trial."
+        ],
+        "open_questions": [
+          "Validate legal move sets, HP values, and a fixture whose outcome distinguishes the choices."
+        ]
+      },
+      {
+        "id": "battle-underleveled-status-setup",
+        "title": "Lorelei tactical v2 Poliwrath team",
+        "difficulty": "hard",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Lorelei battle menu: Dewgong level 54 is active.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "A blackout occurs before Lorelei is defeated.",
+          "The attempt ends without defeating Lorelei."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 500000,
+        "existing_task": "lorelei-tactics",
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Win with underleveled status and setup tools",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Elite Four member Lorelei using tactical team version 2.",
+        "scenario_details": [
+          "Lorelei battle menu: Dewgong level 54 is active.",
+          "Tactical team version 2: Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest. Pikachu level 45 with ThunderShock, Thunder Wave, Quick Attack, and Agility. Haunter level 45 with Hypnosis, Dream Eater, Night Shade, and Confuse Ray.",
+          "All party members are healthy. Bag: Elixer x1 and no healing or revival items.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Validate tactical team version 2 at the private Lorelei battle menu."
+        ]
+      },
+      {
+        "id": "battle-preserve-specialist",
+        "title": "Champion preserve Jolteon",
+        "difficulty": "hard",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Champion battle menu: Blue leads Pidgeot level 61.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "Jolteon faints.",
+          "Black out or exhaust the attempt without defeating the Champion."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 750000,
+        "existing_task": null,
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Preserve a specialist for the decisive matchup",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Champion Blue while Jolteon remains unfainted.",
+        "scenario_details": [
+          "Champion battle menu: Blue leads Pidgeot level 61.",
+          "Blue party A: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Arcanine level 61, Exeggutor level 63, Blastoise level 65.",
+          "Party: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, and Pin Missile. Lapras level 55 with Surf, Ice Beam, Confuse Ray, and Body Slam. Snorlax level 55 with Body Slam, Earthquake, Rest, and Amnesia.",
+          "All party members are healthy. Bag: Hyper Potion x2 and Full Restore x1. Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Implement private tracking that records whether Jolteon faints during the attempt."
+        ]
+      },
+      {
+        "id": "battle-losing-midbattle-recovery",
+        "title": "Agatha Gengar recovery",
+        "difficulty": "hard",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Agatha battle menu: Gengar level 56 is active.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "Black out.",
+          "Exhaust the attempt without defeating Elite Four member Agatha."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 500000,
+        "existing_task": null,
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Recover from a losing mid-battle position",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Elite Four member Agatha from a damaged lead state.",
+        "scenario_details": [
+          "Agatha battle menu: Gengar level 56 is active.",
+          "Party: Jynx level 55 with Psychic, Ice Beam, Lovely Kiss, and Rest, Alakazam level 55 with Psychic, Recover, Thunder Wave, and Reflect, Rhydon level 55 with Earthquake, Rock Slide, Body Slam, and Substitute.",
+          "Jynx is the lead at 30 percent HP. Alakazam and Rhydon are healthy. Bag: Hyper Potion x1 and Full Restore x1.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Validate the proposed active HP and whether the encounter produces a real recovery tradeoff."
+        ]
+      },
+      {
+        "id": "battle-restricted-pp",
+        "title": "Lorelei and Bruno PP gauntlet",
+        "difficulty": "hard",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Lorelei battle menu: Dewgong level 54 is active. Bruno follows immediately after Lorelei.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "A blackout occurs before both required victories.",
+          "The attempt ends without defeating both Lorelei and Bruno."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 1000000,
+        "existing_task": "pp-gauntlet",
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Manage restricted PP across a battle gauntlet",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Lorelei and then Bruno without blacking out.",
+        "scenario_details": [
+          "Lorelei battle menu: Dewgong level 54 is active. Bruno follows immediately after Lorelei.",
+          "Party: Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest. Kadabra level 50 with Psychic, Recover, Reflect, and Kinesis.",
+          "Poliwrath begins with Surf PP 4. Kadabra begins with Psychic PP 5. Bag: Elixer x1.",
+          "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement between both battles."
+        ],
+        "open_questions": [
+          "Confirm the private pp-gauntlet party labels and the inter-battle transition."
+        ]
+      },
+      {
+        "id": "battle-uncertain-opponent-lineup",
+        "title": "Champion Blue starter-dependent lineup",
+        "difficulty": "stretch",
+        "difficulty_provisional": true,
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Champion battle menu: Blue leads Pidgeot level 61 from a fixed authentic starter-dependent party.",
+        "success": [
+          "Defeat the named initial opponent or complete the named gauntlet.",
+          "Finish with at least one usable party Pok\u00e9mon and no blackout."
+        ],
+        "failure": [
+          "A blackout occurs.",
+          "The sampled trainer lineup is not defeated."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same opponent, party, bag, and move sets."
+        ],
+        "token_limit": 750000,
+        "existing_task": null,
+        "requirements": [
+          "Create the stated authentic private checkpoint and validate every listed fact.",
+          "Calibrate the evaluator and token limit without model runs in this specification."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Plan for a disclosed set of possible opponent lineups",
+        "scenario_revision": 2,
+        "agent_goal": "Defeat Champion Blue from a fixed authentic starter-dependent Champion lineup.",
+        "scenario_details": [
+          "Champion battle menu: Blue leads Pidgeot level 61.",
+          "Blue party A: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Arcanine level 61, Exeggutor level 63, Blastoise level 65.",
+          "Blue party B: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Gyarados level 61, Arcanine level 63, Venusaur level 65.",
+          "Blue party C: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Exeggutor level 61, Gyarados level 63, Charizard level 65.",
+          "Party: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, and Pin Missile. Lapras level 55 with Surf, Ice Beam, Confuse Ray, and Body Slam. Snorlax level 55 with Body Slam, Earthquake, Rest, and Amnesia.",
+          "Bag: Hyper Potion x2 and Full Restore x1. Each native Blue party is assigned equal weight. Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+        ],
+        "open_questions": [
+          "Validate all three native Blue party branches from authentic Red saves."
+        ]
+      },
+      {
+        "id": "battle-league-balanced",
+        "title": "Become Champion with Snorlax, Graveler, Charizard, Vileplume, Parasect, and Weezing",
+        "difficulty": "hard",
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "milestone",
+          "target": "champion",
+          "description": "Defeat the Elite Four and Champion from the registered League start, then complete Hall of Fame registration. Keep default Pokemon names."
+        },
+        "start": "Indigo Plateau overworld at the League entrance before Lorelei. All eight badges are owned, no Elite Four member or Champion has been defeated, and Hall of Fame entries are 0. The healthy full-PP party is Snorlax level 58, Graveler level 53, Charizard level 55, Vileplume level 31, Parasect level 30, and Weezing level 41. The bag contains Full Restore x5, Revive x5, Max Potion x1, and Elixer x1.",
+        "success": [
+          "Lorelei, Bruno, Agatha, Lance, and the Champion are defeated.",
+          "Hall of Fame registration completes in the Hall of Fame room."
+        ],
+        "failure": [
+          "The token limit expires before Champion and Hall of Fame completion.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "league-first-championship-v1"
+        ],
+        "token_limit": 3000000,
+        "existing_task": "league",
+        "requirements": [
+          "Reuse the League task only after its fixture start check and Hall of Fame completion evidence are replay-validated.",
+          "Confirm the registered party and supplies for every selected variant.",
+          "Record Elite Four victories and Champion battle entry as partial milestones."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Become Champion with the balanced League team",
+        "scenario_revision": 2,
+        "agent_goal": "From Indigo Plateau before Lorelei, defeat Lorelei, Bruno, Agatha, Lance, and the Champion, then complete Hall of Fame registration using the supplied party and bag. Do not nickname Pokemon.",
+        "scenario_details": [
+          "Snorlax knows Double Edge, Hyper Beam, Rest, Surf. Graveler knows Earthquake, Explosion, Rock Throw, Selfdestruct.",
+          "Charizard knows Cut, Slash, Strength, Flamethrower. Vileplume knows Absorb, Poisonpowder, Stun Spore, Sleep Powder.",
+          "Parasect knows Scratch, Stun Spore, Leech Life, Spore. Weezing knows Tackle, Smog, Sludge, Smokescreen.",
+          "This is an isolated battle gauntlet with a supplied team, not a second full-game campaign. Its results are separate from campaign milestones."
+        ],
+        "open_questions": [
+          "Confirm the archived League source still produces the documented party, moves, PP, and bag after its settle frames."
+        ],
+        "previous_catalog_id": "campaign-league-balanced"
+      },
+      {
+        "id": "battle-league-constrained",
+        "title": "Become Champion with Pidgeot, Charizard, Lapras, Vileplume, Raticate, and Beedrill",
+        "difficulty": "stretch",
+        "tested_skill": "battle-strategy",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "milestone",
+          "target": "champion",
+          "description": "Defeat the Elite Four and Champion from the registered difficult-team League start, then complete Hall of Fame registration. Keep default Pokemon names."
+        },
+        "start": "Indigo Plateau overworld at the League entrance before Lorelei. All eight badges are owned, no Elite Four member or Champion has been defeated, and Hall of Fame entries are 0. The healthy full-PP party is Pidgeot level 50, Charizard level 61, Lapras level 58, Vileplume level 44, Raticate level 33, and Beedrill level 38. The bag contains Revive x5, Elixer x1, and no HP-restoring Potions.",
+        "success": [
+          "Lorelei, Bruno, Agatha, Lance, and the Champion are defeated.",
+          "Hall of Fame registration completes in the Hall of Fame room."
+        ],
+        "failure": [
+          "The token limit expires before Champion and Hall of Fame completion.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "league-hard-first-championship-v1"
+        ],
+        "token_limit": 3000000,
+        "existing_task": "league-hard",
+        "requirements": [
+          "Reuse the difficult League task only after fixture start and completion evidence are replay-validated.",
+          "Document the fixed team and resources in the private fixture manifest.",
+          "Record Elite Four victories and Champion battle entry as partial milestones."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Become Champion with the constrained League team",
+        "scenario_revision": 2,
+        "agent_goal": "From Indigo Plateau before Lorelei, defeat Lorelei, Bruno, Agatha, Lance, and the Champion, then complete Hall of Fame registration using the supplied difficult team. Do not nickname Pokemon.",
+        "scenario_details": [
+          "This is the documented natural archived difficult League team.",
+          "All party members start healthy with full PP.",
+          "The required end state is the same first Hall of Fame registration used by the existing Champion predicate.",
+          "This is an isolated battle gauntlet with a supplied team, not a second full-game campaign. Its results are separate from campaign milestones."
+        ],
+        "open_questions": [
+          "Confirm the archived difficult-team source preserves the documented team, full PP, and exactly five Revives plus one Elixer."
+        ],
+        "previous_catalog_id": "campaign-league-constrained"
+      }
+    ]
+  },
+  "campaign": {
+    "category": "campaign",
+    "title": "Gen 1 Red full-game campaign",
+    "evals": [
+      {
+        "id": "campaign-full-game",
+        "title": "One full-game campaign: starter to Champion",
+        "difficulty": "stretch",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "milestone",
+          "target": "champion",
+          "description": "You are Red in your Pallet Town bedroom. Choose a starter, earn the Boulder, Cascade, Thunder, Rainbow, Soul, Marsh, Volcano, and Earth Badges, defeat the Elite Four and Champion, and complete Hall of Fame registration. Keep default Pokemon names."
+        },
+        "start": "Red's bedroom in Pallet Town before the opening sequence. Red has no Pokemon, no Pokedex, no badges, no key items, no story flags, and no Oak's Parcel. The normal new-game inventory is empty and cash is 3000 Pokedollars.",
+        "success": [
+          "Complete Hall of Fame registration after defeating the Champion.",
+          "Retain partial milestone progress even when the complete-game goal is not reached. Partial progress is not a full pass."
+        ],
+        "failure": [
+          "The shared attempt budget expires before Hall of Fame registration. Keep all earned milestones.",
+          "A blackout is an in-game setback. Continue from the game recovery point while budget remains, without restoring an earlier save.",
+          "An infrastructure failure marks the attempt incomplete, with its recorded progress preserved."
+        ],
+        "variants": [
+          "One shared fresh-game checkpoint for the initial comparison. The agent chooses its starter. Any later repeats run the whole campaign under the same registered conditions, not one run per milestone."
+        ],
+        "token_limit": 30000000,
+        "existing_task": null,
+        "requirements": [
+          "Validate the fresh-game checkpoint and bind each of the 50 milestone predicates to native game evidence.",
+          "Integrate a persistent event history for captures, evolution, location visits, purchases and battle outcomes. Retain this history across context resets and process resume.",
+          "Apply the proposed scoring definition only to new evaluated runs or historical traces with sufficient evidence. Existing runtime scoring remains unchanged by this plan.",
+          "Record the party and resources at matched milestones, and join milestone events to cumulative tokens, decisions, frames and time.",
+          "Pilot milestone weights and collection thresholds before using the new score in the leaderboard. No model sweep is launched by editing this plan."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Complete a full Pokemon Red game from a fresh start",
+        "scenario_revision": 4,
+        "agent_goal": "You are Red in your Pallet Town bedroom. Choose a starter, earn the Boulder, Cascade, Thunder, Rainbow, Soul, Marsh, Volcano, and Earth Badges, defeat the Elite Four and Champion, and complete Hall of Fame registration. Keep default Pokemon names.",
+        "scenario_details": [
+          "The target Gym Leaders are Brock, Misty, Lt. Surge, Erika, Koga, Sabrina, Blaine, and Giovanni in Viridian Gym.",
+          "The fresh start has no prior story progress, starter, party, badges, key items, or Pokedex.",
+          "Any legal route, team, shopping, training, capture, and recovery strategy is permitted.",
+          "One continuous game per model attempt, one token budget and one evolving party. Do not restart from the bedroom for each milestone.",
+          "Record the first achievement of each milestone with cumulative tokens, decisions, game frames and elapsed wall time. Milestones are observations from one trajectory, not independent trials.",
+          "Badges need not be earned in the display order. Preserve the actual event order. Use the 50 weighted milestones below, while recording other events as unscored timeline annotations.",
+          "After a budget stop, later milestones are marked not reached in this attempt. An early infrastructure error is incomplete evaluation, not evidence that the model cannot do the remaining tasks.",
+          "Keep isolated checkpoint results separate. A campaign victory cannot be assigned to a battle benchmark with a different supplied team or resources.",
+          "One attempt produces Champion completion, a proposed 1000-point progress breakdown and an unscored run profile. The 50 milestones do not create additional model runs."
+        ],
+        "open_questions": [
+          "Validate the fresh save and evidence hooks against a real replay.",
+          "Choose a practical shared campaign budget after a pilot. The displayed cap is provisional.",
+          "Verify that a resumed attempt preserves milestone history and the original total budget.",
+          "Check that location and item events cannot be awarded from transient menu or battle memory.",
+          "Measure whether the capped collection bonuses induce unnecessary detours. Adjust weights before freezing the comparison, not after seeing preferred model rankings."
+        ],
+        "run_unit": "one-continuous-attempt",
+        "milestones": [
+          {
+            "id": "starter",
+            "label": "Choose a starter",
+            "evidence": "Confirm the starter handover event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "parcel-collected",
+            "label": "Collect Oak's Parcel",
+            "evidence": "Confirm the parcel receipt event, not mere inventory presence in a supplied save.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "parcel",
+            "label": "Deliver Oak's Parcel and receive the Pokedex",
+            "evidence": "Confirm parcel delivery and Pokedex ownership.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "cerulean-rival",
+            "label": "Defeat the rival at Nugget Bridge",
+            "evidence": "Confirm the Cerulean rival victory flag.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "bill-ticket",
+            "label": "Help Bill and receive the S.S. Ticket",
+            "evidence": "Confirm Bill restoration and ticket receipt.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "ss-anne-rival",
+            "label": "Defeat the rival aboard the S.S. Anne",
+            "evidence": "Confirm the S.S. Anne rival victory flag.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "hm-cut",
+            "label": "Obtain HM01 Cut from the captain",
+            "evidence": "Confirm the native HM01 reward event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "lift-key",
+            "label": "Obtain the Rocket Hideout Lift Key",
+            "evidence": "Confirm the Lift Key pickup event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "hideout-giovanni",
+            "label": "Defeat Giovanni in Rocket Hideout",
+            "evidence": "Confirm the Hideout Giovanni victory flag.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "silph-scope",
+            "label": "Collect the Silph Scope",
+            "evidence": "Confirm the post-Giovanni Silph Scope pickup.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "ghost-marowak",
+            "label": "Resolve the ghost Marowak encounter in Pokemon Tower",
+            "evidence": "Confirm the ghost Marowak completion event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "fuji-flute",
+            "label": "Rescue Mr. Fuji and receive the Poke Flute",
+            "evidence": "Confirm the rescue and Poke Flute reward events.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "snorlax-resolved",
+            "label": "Clear either sleeping Snorlax roadblock",
+            "evidence": "Confirm either Route 12 or Route 16 Snorlax removal and resolved encounter. Award once across both locations.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "card-key",
+            "label": "Obtain the Silph Co. Card Key",
+            "evidence": "Confirm the Card Key pickup event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "silph-rival",
+            "label": "Defeat the rival in Silph Co.",
+            "evidence": "Confirm the Silph Co. rival victory event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "silph-giovanni",
+            "label": "Defeat Giovanni and liberate Silph Co.",
+            "evidence": "Confirm the Silph Co. Giovanni victory and liberation events.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "hm-surf",
+            "label": "Obtain HM03 Surf in the Safari Zone",
+            "evidence": "Confirm the native Secret House reward event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "gold-teeth",
+            "label": "Find the Gold Teeth in the Safari Zone",
+            "evidence": "Confirm the Gold Teeth pickup event even if the item is later handed over.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "hm-strength",
+            "label": "Return the Gold Teeth and receive HM04 Strength",
+            "evidence": "Confirm the Warden handover and HM04 reward events.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "secret-key",
+            "label": "Find the Secret Key in Pokemon Mansion",
+            "evidence": "Confirm the Secret Key pickup event.",
+            "group": "story",
+            "points": 5,
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:viridian-city",
+            "label": "Reach Viridian City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:pewter-city",
+            "label": "Reach Pewter City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:cerulean-city",
+            "label": "Reach Cerulean City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:vermilion-city",
+            "label": "Reach Vermilion City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:lavender-town",
+            "label": "Reach Lavender Town",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:celadon-city",
+            "label": "Reach Celadon City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:fuchsia-city",
+            "label": "Reach Fuchsia City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:saffron-city",
+            "label": "Reach Saffron City",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:cinnabar-island",
+            "label": "Reach Cinnabar Island",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "visit:indigo-plateau",
+            "label": "Reach Indigo Plateau",
+            "group": "exploration",
+            "points": 5,
+            "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "badge:boulder",
+            "label": "Earn the Boulder Badge from Brock",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:cascade",
+            "label": "Earn the Cascade Badge from Misty",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:thunder",
+            "label": "Earn the Thunder Badge from Lt. Surge",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:rainbow",
+            "label": "Earn the Rainbow Badge from Erika",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:soul",
+            "label": "Earn the Soul Badge from Koga",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:marsh",
+            "label": "Earn the Marsh Badge from Sabrina",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:volcano",
+            "label": "Earn the Volcano Badge from Blaine",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "badge:earth",
+            "label": "Earn the Earth Badge from Giovanni",
+            "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+            "group": "badges",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "elite:lorelei",
+            "label": "Defeat Lorelei",
+            "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+            "group": "elite",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "elite:bruno",
+            "label": "Defeat Bruno",
+            "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+            "group": "elite",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "elite:agatha",
+            "label": "Defeat Agatha",
+            "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+            "group": "elite",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "elite:lance",
+            "label": "Defeat Lance",
+            "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+            "group": "elite",
+            "points": 50,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "champion",
+            "label": "Defeat the Champion and enter the Hall of Fame",
+            "evidence": "Existing evaluator requires Champion victory and a new Hall of Fame entry.",
+            "group": "champion",
+            "points": 200,
+            "tracking_status": "existing-evidence-new-score-pending"
+          },
+          {
+            "id": "caught-species:1",
+            "label": "Catch 1 distinct wild species",
+            "group": "collection",
+            "points": 5,
+            "evidence": "Confirm 1 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "caught-species:5",
+            "label": "Catch 5 distinct wild species",
+            "group": "collection",
+            "points": 5,
+            "evidence": "Confirm 5 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "caught-species:10",
+            "label": "Catch 10 distinct wild species",
+            "group": "collection",
+            "points": 5,
+            "evidence": "Confirm 10 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "caught-species:20",
+            "label": "Catch 20 distinct wild species",
+            "group": "collection",
+            "points": 10,
+            "evidence": "Confirm 20 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "evolved-lines:1",
+            "label": "Evolve a Pokemon for the first time",
+            "group": "collection",
+            "points": 5,
+            "evidence": "Confirm evolution events in 1 different families. Two evolutions of the same starter family count as one. Evolution cancellations do not count.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "evolved-lines:3",
+            "label": "Evolve Pokemon from 3 distinct evolutionary families",
+            "group": "collection",
+            "points": 10,
+            "evidence": "Confirm evolution events in 3 different families. Two evolutions of the same starter family count as one. Evolution cancellations do not count.",
+            "tracking_status": "integration-pending"
+          },
+          {
+            "id": "party-six-species",
+            "label": "Assemble a party of six distinct species",
+            "group": "collection",
+            "points": 10,
+            "evidence": "Confirm six different species simultaneously in the party through legal acquisitions. This measures roster breadth, not tactical quality. Reordering and repeated assembly do not score again.",
+            "tracking_status": "integration-pending"
+          }
+        ],
+        "scoring_plan": {
+          "version": "campaign-progress-v1-draft",
+          "status": "proposed-not-runtime-scoring",
+          "maximum_points": 1000,
+          "groups": [
+            {
+              "id": "story",
+              "label": "Story and quest progress",
+              "count": 20,
+              "points": 100
+            },
+            {
+              "id": "exploration",
+              "label": "Town and League access",
+              "count": 10,
+              "points": 50
+            },
+            {
+              "id": "badges",
+              "label": "Gym badges",
+              "count": 8,
+              "points": 400
+            },
+            {
+              "id": "elite",
+              "label": "Elite Four",
+              "count": 4,
+              "points": 200
+            },
+            {
+              "id": "champion",
+              "label": "Champion and Hall of Fame",
+              "count": 1,
+              "points": 200
+            },
+            {
+              "id": "collection",
+              "label": "Capture and team development",
+              "count": 7,
+              "points": 50
+            }
+          ],
+          "rules": [
+            "Champion completion is the primary outcome. Show the 0 to 1000 progress score and its category breakdown alongside it, rather than replacing completion with collection totals.",
+            "Each milestone earns its listed points at most once per attempt. Counts are cumulative thresholds, so 20 distinct wild species earns 25 capture points in total, not 20 points per catch.",
+            "Exclude facts already true at the supplied start. The official campaign starts fresh. No resets, repeated purchases, repeated map visits or repeated easy battles generate extra points.",
+            "Milestone points never decrease. Keep blackouts, item waste and current party condition in the run profile so they explain progress without erasing completed achievements.",
+            "The optional collection component is capped at 50 points. Becoming Champion does not require collecting every bonus, and 1000 points is not required for a full-game pass.",
+            "Award progress from verified game evidence. Do not infer completion from the agent notebook or a claimed tool result. Missing telemetry is unknown, not a zero or an automatic failure.",
+            "Record the first achievement time, frame, decision and cumulative token use. These are 50 observations within one trajectory, not 50 independent trials.",
+            "Publish the score definition to agents before an evaluated run. Keep hidden evaluator state private, and give every model the same scoring rules and budget.",
+            "The weights are provisional design choices. Pilot the breakdown before using it for model ranking. Do not relabel historical scores without enough saved evidence to recompute this definition."
+          ]
+        },
+        "run_metrics": [
+          {
+            "id": "party-profile",
+            "label": "Party strength and readiness",
+            "measure": "At the start, each badge, League entry and attempt end, save the roster, levels, total and median level, HP/max HP, nonfainted count, status, remaining move PP, Attack, Defense, Speed and Special. Show stat totals as descriptive proxies, not a calibrated battle-power score.",
+            "points": 0,
+            "availability": "Party levels, HP, status and PP are available in current observations. Full stat snapshots and standardized reporting need integration."
+          },
+          {
+            "id": "move-coverage",
+            "label": "Moves and team coverage",
+            "measure": "Show damaging move types with usable PP, status/setup/recovery moves and field moves. Coverage describes available options. It is not a claim that all matchups are winnable.",
+            "points": 0,
+            "availability": "Move IDs and PP are available. Coverage aggregation needs integration."
+          },
+          {
+            "id": "collection-profile",
+            "label": "Collection and development",
+            "measure": "Track successful capture events, distinct wild species caught, distinct owned species, evolutions and species held in the party or PC separately. Dex-owned counts include gifts and evolutions, so they are not a substitute for capture counts.",
+            "points": 0,
+            "availability": "Dex ownership and current party are readable. Capture/evolution provenance and storage history need integration."
+          },
+          {
+            "id": "battle-profile",
+            "label": "Battle outcomes and setbacks",
+            "measure": "Track trainer wins by unique trainer, wild wins, escapes, faints and blackouts separately. Show losses and recoveries at matched progress milestones. Farming wild wins earns no extra score.",
+            "points": 0,
+            "availability": "Battle state is available. Persistent verified outcome counters need integration."
+          },
+          {
+            "id": "economy-profile",
+            "label": "Purchases, item use and money",
+            "measure": "Record bought and sold quantities by item, purchase spending, sale proceeds, reward income, blackout losses, item use and remaining supplies separately. Report purchases without awarding points for spending.",
+            "points": 0,
+            "availability": "Current money and bag are readable. Transaction provenance needs integration. Inventory and money deltas alone must not be called purchases."
+          },
+          {
+            "id": "efficiency-profile",
+            "label": "Efficiency at comparable progress",
+            "measure": "Show cumulative reported tokens with input/output/cache breakdown, decisions, actions, game frames and elapsed time at each milestone. Compare efficiency at the same achieved milestone. Do not count cached input twice or label subscription usage as actual API charges.",
+            "points": 0,
+            "availability": "Run token and action logs exist. Milestone joins and dashboard presentation need integration."
+          }
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/constants/event_constants.asm",
+          "https://github.com/pret/pokered/blob/master/constants/map_constants.asm"
+        ]
+      }
+    ]
+  },
+  "navigation": {
+    "category": "navigation",
+    "title": "Gen 1 Red navigation",
+    "evals": [
+      {
+        "id": "navigation-town-landmark",
+        "title": "Enter Viridian Pokemon Center from the Mart",
+        "difficulty": "easy",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "reach-map",
+          "map_id": 41,
+          "description": "Find and enter Viridian Pokemon Center. Healing is not required."
+        },
+        "start": "Viridian City, on the outdoor tile immediately in front of the Mart entrance, facing south.",
+        "success": [
+          "Reach the inside of Viridian Pokemon Center outside battle."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 300000,
+        "existing_task": "heal",
+        "requirements": [
+          "Inspect the existing heal fixture variants for navigation distance and UI state.",
+          "Keep the fixture only if its start is overworld and the landmark is not already entered."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Find and enter the Viridian Pokemon Center",
+        "agent_goal": "Find and enter Viridian Pokemon Center. Healing is not required.",
+        "scenario_details": [
+          "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+          "Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.",
+          "Parcel already delivered. The old man no longer blocks the northern exit."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-forest-crossing",
+        "title": "Cross Viridian Forest and reach Pewter City",
+        "difficulty": "medium",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "reach-map",
+          "map_id": 2,
+          "description": "Reach Pewter City without blacking out."
+        },
+        "start": "Viridian Forest, first controllable tile after entering through the southern gate.",
+        "success": [
+          "Reach Pewter City outside battle without a blackout."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 750000,
+        "existing_task": "viridian-forest",
+        "requirements": [
+          "Reuse only fixture variants that pass the suite start check and reference replay.",
+          "Measure a navigation-only token cap with representative model trials."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Cross Viridian Forest to Pewter City",
+        "agent_goal": "Reach Pewter City without blacking out.",
+        "scenario_details": [
+          "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+          "Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.",
+          "Forest trainers have not been defeated. Wild encounters are enabled."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-branching-cave",
+        "title": "Traverse Mt. Moon and reach Cerulean City",
+        "difficulty": "hard",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "reach-map",
+          "map_id": 3,
+          "description": "Travel through Mt. Moon and reach Cerulean City without blacking out."
+        },
+        "start": "Mt. Moon 1F, first controllable tile inside the Route 3 entrance.",
+        "success": [
+          "Reach Cerulean City outside battle without a blackout."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1200000,
+        "existing_task": "mt-moon",
+        "requirements": [
+          "Reuse only existing variants that pass replay validation.",
+          "Establish a cap that separates route finding from repeated battle recovery."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Choose a route through Mt. Moon to Cerulean",
+        "agent_goal": "Travel through Mt. Moon and reach Cerulean City without blacking out.",
+        "scenario_details": [
+          "Party: Wartortle level 20, Tackle, Tail Whip, Bubble and Water Gun. Full HP, no status and full PP.",
+          "Bag: 10 Potions, 3 Antidotes and 1 Escape Rope. Money: 1000.",
+          "Boulder Badge owned. Mt. Moon trainers and fossil encounter uncleared. No Dig, Fly or bicycle. Either fossil may be selected."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-warp-puzzle",
+        "title": "Reach Sabrina's room through Saffron Gym",
+        "difficulty": "hard",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Saffron Gym, first controllable entrance tile from Saffron City.",
+        "success": [
+          "Stand on the walkable tile immediately south of Sabrina without starting a battle."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 900000,
+        "existing_task": null,
+        "requirements": [
+          "Create the Saffron Gym entrance checkpoint with ordinary trainers cleared.",
+          "Bind the endpoint to the verified tile south of Sabrina and reject an accidental battle start. No warp route is supplied to the agent."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Reach the correct endpoint through a warp maze",
+        "agent_goal": "Reach the tile directly south of Sabrina in Saffron Gym. Do not start her battle.",
+        "scenario_details": [
+          "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+          "Silph Co. rescued. Gym accessible. All seven ordinary gym trainers defeated, Sabrina unbeaten.",
+          "The target tile is (9,9) in the upstream Saffron Gym coordinate system, below Sabrina at (9,8). Check the runtime coordinate convention before binding the grader."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/data/maps/objects/SaffronGym.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-spinning-floors",
+        "title": "Collect the Moon Stone in Rocket Hideout B2F",
+        "difficulty": "hard",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Rocket Hideout B2F, arrival tile from the B1F stairs at the northeast entrance.",
+        "success": [
+          "Acquire the Moon Stone that starts on B2F during this attempt."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1000000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the B2F stair-arrival start and validate the native forced-floor path.",
+          "Track removal of the specific B2F Moon Stone and acquisition during the attempt. Coordinates are evaluator setup details, not route hints."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Navigate directional floor tiles to a target room",
+        "agent_goal": "Collect the Moon Stone on Rocket Hideout B2F. You may backtrack, but do not use a saved-state reset.",
+        "scenario_details": [
+          "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+          "The B2F Rocket trainer is already defeated. Moon Stone uncollected and absent from the bag.",
+          "Target is the native B2F Moon Stone at (1,11). No item relocation or custom floor layout."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/data/maps/objects/RocketHideoutB2F.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-boulder-puzzle",
+        "title": "Solve Victory Road 1F and climb to 2F",
+        "difficulty": "stretch",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Victory Road 1F, first controllable tile after entering from Route 23.",
+        "success": [
+          "Reach Victory Road 2F through the ladder from 1F during this attempt."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1300000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the native unsolved 1F state with a legal Strength user and required badges.",
+          "Bind success to the 1F-to-2F ladder transition, not an arbitrary nearby map coordinate."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Move a boulder to open the required passage",
+        "agent_goal": "Use the boulder puzzle to reach Victory Road 2F. Normal backtracking and room resets are allowed.",
+        "scenario_details": [
+          "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+          "All eight badges owned. The native 1F boulder puzzle is unsolved. 1F trainers already defeated.",
+          "Target is the ladder at (1,1) on 1F. No pre-moved boulders or pre-activated switch."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/data/maps/objects/VictoryRoad1F.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-blocked-route-alternative",
+        "title": "Reach Vermilion while the Saffron gate is closed",
+        "difficulty": "hard",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Route 5, just outside the northern entrance of the Saffron gate building.",
+        "success": [
+          "Reach Vermilion City without a blackout or giving any Saffron guard a drink."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1100000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the Route 5 gate-entrance state with thirsty guards and the Underground Path available.",
+          "Verify Vermilion arrival and unchanged guard-drink event. Do not reveal the Underground Path as a route solution in the agent goal."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Recognize a blocked route and take the alternate path",
+        "agent_goal": "Reach Vermilion City. The Saffron guards have not been given a drink. Find a legal route.",
+        "scenario_details": [
+          "Party: Wartortle level 20 with Tackle, Tail Whip, Bubble and Water Gun, full HP and PP.",
+          "Bag: 5 Super Potions and 2 Antidotes. No Fresh Water, Soda Pop, Lemonade, Fly or bicycle. Money: 0.",
+          "Boulder and Cascade Badges owned. Route 6 trainers already defeated. Native Route 5 to Route 6 Underground Path available."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "navigation-multifloor-required-stops",
+        "title": "Visit Celadon Mart 2F and 4F, then the rooftop",
+        "difficulty": "stretch",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Celadon Department Store 1F, first controllable entrance tile.",
+        "success": [
+          "Record visits to both Celadon Mart 2F and 4F before arriving at the rooftop."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1500000,
+        "existing_task": null,
+        "requirements": [
+          "Create the native Celadon Mart 1F entrance state.",
+          "Add persistent visited-floor evidence and require rooftop arrival after both earlier visits."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Complete required stops across multiple floors before exiting",
+        "agent_goal": "Visit the second and fourth floors of Celadon Department Store in either order, then reach the rooftop. Purchases are not required.",
+        "scenario_details": [
+          "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+          "Store stairs and elevator are available. No money or purchases are needed.",
+          "A brief map transition counts as a floor visit. Rooftop arrival before both visits does not pass, but returning to finish is allowed."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMart2F.asm",
+          "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMart4F.asm",
+          "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMartRoof.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      }
+    ]
+  },
+  "preparation": {
+    "category": "preparation",
+    "title": "Gen 1 Red resource preparation",
+    "evals": [
+      {
+        "id": "preparation-lead-selection",
+        "title": "Brock lead selection with Squirtle and Pidgey",
+        "difficulty": "easy",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fight: Brock, Geodude level 12 then Onix level 14.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Submit an illegal lead or alter the frozen configuration after submission.",
+          "Fail the legality or resource check.",
+          "Finish below the provisional calibrated win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 180000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Choose a lead for a known challenge",
+        "scenario_revision": 2,
+        "agent_goal": "Choose the lead for the Brock battle.",
+        "scenario_details": [
+          "Target fight: Brock, Geodude level 12 then Onix level 14.",
+          "Roster: Squirtle level 15 with Bubble, Tackle, Tail Whip, and Water Gun. Pidgey level 12 with Gust, Sand-Attack, and Quick Attack.",
+          "Bag: Potion x2. Cash: 0 Pokedollars. Allowed preparation: choose Squirtle or Pidgey as lead only."
+        ],
+        "open_questions": [
+          "Calibrate the automated controller threshold."
+        ]
+      },
+      {
+        "id": "preparation-recovery-before-continuing",
+        "title": "Brock Pok\u00e9mon Center recovery",
+        "difficulty": "easy",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Pewter City before Brock with a damaged party and the Pok\u00e9mon Center available.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Use unavailable recovery, revive, money, or inventory resources.",
+          "Submit a configuration that fails recovery-state or legality validation.",
+          "Finish below the provisional calibrated win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 250000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Recover the team before continuing",
+        "scenario_revision": 2,
+        "agent_goal": "Use the free Pok\u00e9mon Center recovery before fighting Brock.",
+        "scenario_details": [
+          "Target fight: Brock, Geodude level 12 then Onix level 14.",
+          "Roster: Squirtle level 15 with Bubble, Tackle, Tail Whip, and Water Gun at half HP. Pidgey level 12 with Gust, Sand-Attack, and Quick Attack at half HP.",
+          "Bag: Potion x1. Cash: 0 Pokedollars. Pok\u00e9mon Center recovery is available.",
+          "Allowed preparation: visit the Pok\u00e9mon Center, use the listed Potion, choose lead, and reorder party."
+        ],
+        "open_questions": [
+          "Validate that the private start permits Center use before the Brock checkpoint."
+        ]
+      },
+      {
+        "id": "preparation-assemble-storage-roster",
+        "title": "Lorelei roster assembly from storage",
+        "difficulty": "medium",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Use a Pokemon, move, item, or quantity absent from the supplied state.",
+          "Exceed party, storage, or resource constraints during the submission.",
+          "Finish below the provisional calibrated win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 350000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Assemble a roster from storage",
+        "scenario_revision": 2,
+        "agent_goal": "Assemble a party for Lorelei from the stated active party and PC box.",
+        "scenario_details": [
+          "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+          "Active party: Charizard level 50 with Flamethrower, Slash, Fly, SmokeScreen, Pidgeot level 48 with Wing Attack, Fly, Quick Attack, Sand-Attack.",
+          "PC box: Jolteon level 50 with Thunderbolt, Thunder Wave, Double Kick, Pin Missile, Jynx level 50 with Psychic, Ice Beam, Lovely Kiss, Rest, Snorlax level 50 with Body Slam, Rest, Amnesia, Earthquake, Lapras level 50 with Surf, Ice Beam, Confuse Ray, Body Slam.",
+          "Bag: Hyper Potion x2. Cash: 0 Pokedollars. Allowed preparation: transfer and order up to six listed Pok\u00e9mon."
+        ],
+        "open_questions": [
+          "Validate PC menu operations and automated controller handling of submitted order."
+        ]
+      },
+      {
+        "id": "preparation-shop-for-challenge",
+        "title": "Misty shopping with Pikachu and Bulbasaur",
+        "difficulty": "medium",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fight: Misty, Staryu level 18 then Starmie level 21.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Spend more money than supplied or buy unavailable stock.",
+          "Submit a bag that violates capacity or quantity constraints.",
+          "Finish below the provisional calibrated win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 300000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Shop for a disclosed challenge",
+        "scenario_revision": 2,
+        "agent_goal": "Buy supplies for the Misty battle within the listed cash and stock.",
+        "scenario_details": [
+          "Target fight: Misty, Staryu level 18 then Starmie level 21.",
+          "Roster: Pikachu level 20 with ThunderShock, Quick Attack, Thunder Wave, Growl, Bulbasaur level 20 with Vine Whip, Tackle, Leech Seed, Growl.",
+          "Cash: 900 Pokedollars. Mart stock: Potion 300 Pokedollars, Antidote 100 Pokedollars, Parlyz Heal 200 Pokedollars, Burn Heal 250 Pokedollars, Pok\u00e9 Ball 200 Pokedollars. Bag initially empty.",
+          "Allowed preparation: buy listed stock in whole quantities, reorder the party, and set the lead."
+        ],
+        "open_questions": [
+          "Calibrate cash accounting, bag capacity, and controller threshold."
+        ]
+      },
+      {
+        "id": "preparation-move-replacement-across-fights",
+        "title": "Kadabra TM choice for Lorelei then Bruno",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fights: Lorelei followed by Bruno.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Teach an unavailable move or retain an illegal move set.",
+          "Attempt an agent edit after the submission has frozen.",
+          "Finish below the provisional calibrated sequence win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 400000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Replace a move for consecutive fights",
+        "scenario_revision": 2,
+        "agent_goal": "Choose one Kadabra move replacement for consecutive Lorelei and Bruno fights.",
+        "scenario_details": [
+          "Target fights: Lorelei followed by Bruno.",
+          "Roster: Kadabra level 50 with Psychic, Recover, Reflect, and Kinesis. Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest.",
+          "Teaching options: TM06 Toxic or TM45 Thunder Wave, each usable once by Kadabra. Bag: Elixer x1. Cash: 0 Pokedollars.",
+          "Allowed preparation: teach at most one listed TM to Kadabra, replace one listed Kadabra move if taught, choose lead, and reorder party."
+        ],
+        "open_questions": [
+          "Verify Gen 1 TM compatibility and the shared controller sequence."
+        ]
+      },
+      {
+        "id": "preparation-scarce-tm-allocation",
+        "title": "TM24 Thunderbolt allocation for Lorelei",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Teach the TM to an ineligible recipient or consume more than the supplied copy.",
+          "Violate move-slot, TM-consumption, roster, or resource checks.",
+          "Finish below the provisional calibrated win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 350000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Allocate a scarce TM",
+        "scenario_revision": 2,
+        "agent_goal": "Choose a legal recipient for the only Thunderbolt TM.",
+        "scenario_details": [
+          "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+          "Roster: Pikachu level 45 with ThunderShock, Thunder Wave, Quick Attack, Agility, Jolteon level 45 with Thundershock, Thunder Wave, Double Kick, Pin Missile, Lapras level 45 with Surf, Ice Beam, Confuse Ray, Body Slam.",
+          "Bag: TM24 Thunderbolt x1 and Elixer x1. Cash: 0 Pokedollars. Allowed preparation: teach TM24 to Pikachu or Jolteon, replace one move on its recipient, choose lead, and reorder party."
+        ],
+        "open_questions": [
+          "Verify TM24 legality and fixture menu behavior."
+        ]
+      },
+      {
+        "id": "preparation-damaged-team-rescue",
+        "title": "Lance damaged team rescue",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fight: Lance, Gyarados level 58, Dragonair level 56, Dragonair level 56, Aerodactyl level 60, Dragonite level 62.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Use recovery beyond the supplied item quantities or revive ineligible Pokemon.",
+          "Submit an illegal HP, status, PP, party, or bag state.",
+          "Finish below the provisional calibrated win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 400000,
+        "existing_task": "team-rescue",
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Rescue a damaged team with scarce supplies",
+        "scenario_revision": 2,
+        "agent_goal": "Allocate scarce recovery supplies before Lance.",
+        "scenario_details": [
+          "Target fight: Lance, Gyarados level 58, Dragonair level 56, Dragonair level 56, Aerodactyl level 60, Dragonite level 62.",
+          "Roster: Jynx level 55 with Ice Beam, Psychic, Lovely Kiss, and Rest at 35 HP with Ice Beam PP 0, Snorlax level 40 with Body Slam, Amnesia, Rest, and Headbutt fainted, Jolteon level 55 with Thunderbolt, Thunder Wave, Pin Missile, and Agility fainted.",
+          "Bag: Revive x1, Max Potion x2, Elixer x1. Cash: 0 Pokedollars. Allowed preparation: use listed bag items and reorder the party."
+        ],
+        "open_questions": [
+          "Confirm registered team-rescue move labels and exact item counts."
+        ]
+      },
+      {
+        "id": "preparation-uncertain-opponent",
+        "title": "Champion Blue lineup preparation",
+        "difficulty": "stretch",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fight: Champion Blue from one of three equally weighted native starter-dependent parties.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Use information that the fixture publicly discloses only after submission to choose the preparation.",
+          "Submit an illegal roster, move, item, PP, or resource state.",
+          "Finish below the provisional calibrated win-rate threshold over the shared schedule."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 450000,
+        "existing_task": null,
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Prepare for an uncertain opponent",
+        "scenario_revision": 2,
+        "agent_goal": "Prepare for any of the three disclosed Champion Blue rosters before the variant is selected.",
+        "scenario_details": [
+          "Target fight: Champion Blue from one of three equally weighted native starter-dependent parties.",
+          "Party A: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Arcanine level 61, Exeggutor level 63, Blastoise level 65. Party B: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Gyarados level 61, Arcanine level 63, Venusaur level 65. Party C: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Exeggutor level 61, Gyarados level 63, Charizard level 65.",
+          "Roster: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, Pin Missile. Lapras level 55 with Surf, Ice Beam, Confuse Ray, Body Slam. Snorlax level 55 with Body Slam, Earthquake, Rest, Amnesia.",
+          "Bag: Hyper Potion x2 and Full Restore x1. Cash: 0 Pokedollars. Allowed preparation: choose lead, order party, and allocate listed items."
+        ],
+        "open_questions": [
+          "Validate authentic saves for all three native Blue party branches and equal-weight scheduling."
+        ]
+      },
+      {
+        "id": "preparation-pp-allocation-gauntlet",
+        "title": "Lorelei and Bruno Elixer allocation",
+        "difficulty": "stretch",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target fights: Lorelei followed by Bruno.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Restore more PP than permitted or use unavailable PP items.",
+          "Attempt an agent edit after the submission has frozen or submit an illegal PP, item, roster, or bag state.",
+          "Finish below the provisional calibrated sequence win-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 500000,
+        "existing_task": "pp-gauntlet",
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Allocate PP for a battle gauntlet",
+        "scenario_revision": 2,
+        "agent_goal": "Allocate one Elixer before the Lorelei to Bruno gauntlet.",
+        "scenario_details": [
+          "Target fights: Lorelei followed by Bruno.",
+          "Roster: Poliwrath level 50 with Hypnosis, Amnesia, Surf PP 4, and Rest. Kadabra level 50 with Psychic, Recover, Reflect, and Kinesis with Psychic PP 5.",
+          "Bag: Elixer x1. Cash: 0 Pokedollars. Allowed preparation: choose the party member that receives Elixer, choose lead, and order party."
+        ],
+        "open_questions": [
+          "Define controller handling when a selected Elixer target has full PP."
+        ]
+      },
+      {
+        "id": "preparation-scarce-resource-league",
+        "title": "Elite Four resource preparation",
+        "difficulty": "stretch",
+        "tested_skill": "resource-planning",
+        "mode": "preparation",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Target sequence: Lorelei, Bruno, Agatha, Lance, then Champion Blue.",
+        "success": [
+          "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+          "The automated controller grades the frozen submission against the named target fight or sequence."
+        ],
+        "failure": [
+          "Exceed supplied money, bag, stock, move, TM, PP, or item limits.",
+          "Attempt an agent edit after the submission has frozen or submit an illegal configuration.",
+          "Finish below the provisional calibrated League completion-rate threshold."
+        ],
+        "variants": [
+          "Five fixed timing variants with the same stated roster, resources, and target."
+        ],
+        "token_limit": 650000,
+        "existing_task": "league",
+        "requirements": [
+          "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+          "Calibrate the automated controller and threshold before scoring any model."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Prepare scarce resources for the League",
+        "scenario_revision": 3,
+        "agent_goal": "Prepare fixed resources for Lorelei, Bruno, Agatha, Lance, and Champion Blue.",
+        "scenario_details": [
+          "Target sequence: Lorelei, Bruno, Agatha, Lance, then Champion Blue.",
+          "Roster: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, Pin Missile, Lapras level 55 with Surf, Ice Beam, Confuse Ray, Body Slam, Snorlax level 55 with Body Slam, Earthquake, Rest, Amnesia.",
+          "Cash: 3000 Pokedollars. Shop stock: Max Potion 2500 Pokedollars, Full Restore 3000 Pokedollars, Revive 1500 Pokedollars. Bag initially has Hyper Potion x1 and Elixer x1.",
+          "Allowed preparation: buy listed items within cash, choose lead, order party, and allocate bag items."
+        ],
+        "open_questions": [
+          "Validate shop access before the League and controller completion criterion."
+        ]
+      }
+    ]
+  },
+  "operations": {
+    "category": "operations",
+    "title": "Gen 1 Manual Menu Operations",
+    "evals": [
+      {
+        "id": "operations-heal-potion-target",
+        "title": "Use one Potion on party slot 2 Pikachu",
+        "difficulty": "easy",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Route 1 overworld at the north grass edge. Party slot 1 Bulbasaur is 29/29 HP and healthy, slot 2 Pikachu is 12/35 HP and healthy, and slot 3 Pidgey is 23/23 HP and healthy. The bag contains Potion x1, Antidote x1, and Poke Ball x3.",
+        "success": [
+          "Potion count changes from 1 to 0.",
+          "Pikachu gains exactly 20 HP, ending at 32/35 HP.",
+          "Bulbasaur and Pidgey retain stated HP, healthy status, moves, PP, and slots.",
+          "The final screen is Route 1 overworld or the pause menu."
+        ],
+        "failure": [
+          "A different item is consumed.",
+          "The Potion targets a different Pokemon.",
+          "Any non-target party state changes.",
+          "The party blacks out."
+        ],
+        "variants": [
+          "route1-pikachu-potion-v1"
+        ],
+        "token_limit": 100000,
+        "existing_task": null,
+        "requirements": [
+          "New exact item, item-count, target, and untouched-party grader.",
+          "Controller-built Gen 1 overworld fixtures with a Potion and one designated damaged target."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Use a Potion on the designated Pokemon",
+        "scenario_revision": 2,
+        "agent_goal": "Open the Bag and use exactly one Potion on Pikachu in party slot 2. Do not use any other item or change the party order.",
+        "scenario_details": [
+          "Target is party slot 2 Pikachu at 12/35 HP.",
+          "Potion x1 is the only HP-restoring item in the bag.",
+          "The required final party order is Bulbasaur, Pikachu, Pidgey."
+        ],
+        "open_questions": [
+          "Confirm the fixture preserves Pikachu 12/35 HP after the opening render."
+        ]
+      },
+      {
+        "id": "operations-cure-poison",
+        "title": "Use one Antidote on party slot 3 Nidoran\u2642",
+        "difficulty": "easy",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Viridian City overworld outside the Pokemon Center. Party slot 1 Bulbasaur is 29/29 HP and healthy, slot 2 Pidgey is 23/23 HP and healthy, and slot 3 Nidoran\u2642 is 18/28 HP and poisoned. The bag contains Antidote x1, Potion x2, and Poke Ball x4.",
+        "success": [
+          "Antidote count changes from 1 to 0.",
+          "Nidoran\u2642 ends healthy at exactly 18/28 HP.",
+          "Bulbasaur and Pidgey retain stated HP, status, moves, PP, and slots.",
+          "The final screen is Viridian City overworld or the pause menu."
+        ],
+        "failure": [
+          "The Antidote targets a different Pokemon.",
+          "A different item is consumed.",
+          "Any unintended party state changes.",
+          "The party blacks out."
+        ],
+        "variants": [
+          "viridian-nidoran-antidote-v1"
+        ],
+        "token_limit": 100000,
+        "existing_task": null,
+        "requirements": [
+          "New exact status-cure, target, inventory, and untouched-party grader.",
+          "Controller-built Gen 1 poison fixtures with an Antidote."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Cure the designated poisoned Pokemon",
+        "scenario_revision": 2,
+        "agent_goal": "Open the Bag and use exactly one Antidote on the poisoned Nidoran\u2642 in party slot 3. Do not use any other item.",
+        "scenario_details": [
+          "Target is party slot 3 Nidoran\u2642, poisoned at 18/28 HP.",
+          "Antidote x1 is the only status-curing item in the bag.",
+          "Poison removal must not heal HP in Generation 1."
+        ],
+        "open_questions": [
+          "Confirm the poison status byte is stable at the selected Viridian City tile."
+        ]
+      },
+      {
+        "id": "operations-restore-move-pp",
+        "title": "Use one Ether on Squirtle Water Gun",
+        "difficulty": "medium",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Route 24 overworld. Party slot 1 Squirtle level 15 is at full HP and healthy with Tackle 35/35 PP, Tail Whip 30/30 PP, Bubble 8/30 PP, and Water Gun 5/25 PP. Party slot 2 Pidgey is at full HP and healthy. The bag contains Ether x1, Potion x1, and Poke Ball x5.",
+        "success": [
+          "Ether count changes from 1 to 0.",
+          "Water Gun changes from 5/25 PP to 15/25 PP.",
+          "Bubble remains 8/30 PP and Squirtle\u2019s other move PP is unchanged.",
+          "All party HP, status, moves, and order remain unchanged."
+        ],
+        "failure": [
+          "The Ether targets a different Pokemon or move.",
+          "A different item is consumed.",
+          "Any unintended party state changes.",
+          "The party blacks out."
+        ],
+        "variants": [
+          "route24-squirtle-water-gun-ether-v1"
+        ],
+        "token_limit": 140000,
+        "existing_task": null,
+        "requirements": [
+          "New exact PP-item, Pokemon, move-slot, PP-delta, and untouched-state grader.",
+          "Controller-built Gen 1 Ether fixtures with two depleted move slots."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Restore PP to the designated move",
+        "scenario_revision": 2,
+        "agent_goal": "Open the Bag, use exactly one Ether on Squirtle in party slot 1, then select Water Gun. Do not restore Bubble PP.",
+        "scenario_details": [
+          "Target is party slot 1 Squirtle, Water Gun in move slot 4 at 5/25 PP.",
+          "Bubble in move slot 3 is deliberately also depleted at 8/30 PP.",
+          "In Generation 1, Ether restores 10 PP to one selected move."
+        ],
+        "open_questions": [
+          "Confirm the selected core exposes per-move PP before and after a bag use."
+        ]
+      },
+      {
+        "id": "operations-battle-switch",
+        "title": "Switch from Charmander to party slot 3 Pikachu",
+        "difficulty": "medium",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Viridian Forest at the live second Bug Catcher trainer battle command menu. The opponent has native Weedle level 7, Kakuna level 7, and Weedle level 7. Party slot 1 Charmander is active at 30/39 HP and healthy, slot 2 Pidgey is 23/23 HP and healthy, and slot 3 Pikachu is 35/35 HP and healthy. No player command has been selected.",
+        "success": [
+          "The player command ledger records PKMN followed by Pikachu slot 3.",
+          "Pikachu becomes active before any player move, item, run attempt, or second switch.",
+          "No player command other than the requested switch occurs before Pikachu is active."
+        ],
+        "failure": [
+          "Select a different Pokemon or another player battle command.",
+          "Exhaust the attempt without completing the requested switch."
+        ],
+        "variants": [
+          "viridian-forest-rick-switch-pikachu-v1"
+        ],
+        "token_limit": 140000,
+        "existing_task": null,
+        "requirements": [
+          "Add active-slot and player command evidence, separating the requested switch from normal opponent effects.",
+          "Prepare a stable live trainer battle with legal bench options. Validate that opponent effects cannot obscure whether the requested switch occurred."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Switch to the designated Pokemon in battle",
+        "scenario_revision": 2,
+        "agent_goal": "At the trainer battle command menu, choose PKMN and switch from Charmander to Pikachu in party slot 3. Do not select FIGHT, ITEM, or RUN.",
+        "scenario_details": [
+          "Requested switch is Charmander in slot 1 to Pikachu in slot 3.",
+          "Pidgey in slot 2 is a legal but incorrect bench choice.",
+          "Opponent damage after the requested switch is allowed."
+        ],
+        "open_questions": [
+          "Confirm the first Viridian Forest Bug Catcher and selected RNG state leave both bench choices switchable."
+        ]
+      },
+      {
+        "id": "operations-party-reorder",
+        "title": "Move party slot 3 Pidgey to the lead",
+        "difficulty": "medium",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Pewter City overworld outside the Pokemon Center. Party order is slot 1 Bulbasaur 29/29 HP healthy, slot 2 Pikachu 35/35 HP healthy, slot 3 Pidgey 23/23 HP healthy. The bag contains Potion x1 and Poke Ball x3.",
+        "success": [
+          "Final party slots are Pidgey, Bulbasaur, Pikachu.",
+          "HP, status, moves, PP, bag counts, and Pewter City location are unchanged.",
+          "The final screen is Pewter City overworld or the pause menu."
+        ],
+        "failure": [
+          "The final party order differs from the specified order.",
+          "Any party, inventory, or map state changes outside the permitted reorder.",
+          "The party blacks out."
+        ],
+        "variants": [
+          "pewter-pidgey-lead-v1"
+        ],
+        "token_limit": 120000,
+        "existing_task": null,
+        "requirements": [
+          "New exact party-order and untouched-state grader.",
+          "Controller-built overworld fixtures with stable three-Pokemon parties."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Reorder the party to the requested lead",
+        "scenario_revision": 2,
+        "agent_goal": "Use the party menu\u2019s SWITCH command as many times as necessary to change the party order from Bulbasaur, Pikachu, Pidgey to Pidgey, Bulbasaur, Pikachu.",
+        "scenario_details": [
+          "Required final party order is Pidgey, Bulbasaur, Pikachu.",
+          "In Generation 1, moving slot 3 to the lead requires two pairwise SWITCH operations for this requested final order.",
+          "All three Pokemon have full PP and no status condition.",
+          "No bag use, map movement, or battle is needed."
+        ],
+        "open_questions": [
+          "Confirm the party SWITCH interaction is available from this overworld state."
+        ]
+      },
+      {
+        "id": "operations-buy-pokeballs",
+        "title": "Buy exactly ten Poke Balls at Viridian Poke Mart",
+        "difficulty": "easy",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Viridian City overworld one tile south of the Poke Mart entrance. The bag contains Poke Ball x0, Potion x1, and Antidote x1. Cash is exactly 2000 Pokedollars. Party slot 1 Bulbasaur is 29/29 HP and healthy.",
+        "success": [
+          "Poke Ball count changes from 0 to exactly 10.",
+          "Cash changes from 2000 to exactly 0.",
+          "Potion and Antidote counts remain 1 each.",
+          "The final screen is Viridian City overworld."
+        ],
+        "failure": [
+          "Fewer than ten Poke Balls are acquired.",
+          "The player leaves the Mart or blacks out before confirmation.",
+          "The purchase occurs on a different map."
+        ],
+        "variants": [
+          "viridian-mart-exact-ten-balls-v1"
+        ],
+        "token_limit": 500000,
+        "existing_task": "buy-pokeballs",
+        "requirements": [
+          "Existing adventure fixture and purchase objective can be reused.",
+          "An exact quantity and no-extra-purchase grader is still required if those constraints are desired."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Buy ten Poke Balls",
+        "scenario_revision": 2,
+        "agent_goal": "Enter the Viridian Poke Mart and buy exactly 10 Poke Balls. Spend all 2000 Pokedollars and buy nothing else. Finish outside the Mart in Viridian City.",
+        "scenario_details": [
+          "Poke Balls cost 200 Pokedollars each at Viridian Poke Mart.",
+          "Cash 2000 permits exactly ten Poke Balls and no other purchase after that.",
+          "The existing purchase objective accepts extra Balls and therefore is not used."
+        ],
+        "open_questions": [
+          "Confirm this Mart\u2019s Poke Ball unit price is 200 in the pinned Red revision."
+        ]
+      },
+      {
+        "id": "operations-deposit-withdraw",
+        "title": "Deposit and withdraw party slot 2 Pikachu",
+        "difficulty": "hard",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Viridian Pokemon Center overworld at the PC. Party order is Bulbasaur 29/29 healthy, Pikachu 35/35 healthy, Pidgey 23/23 healthy. The active Pokemon Storage System box contains Rattata 18/18 healthy and has 19 free slots. The bag contains Potion x1.",
+        "success": [
+          "The operation ledger records deposit of Pikachu, withdrawal of the same Pokemon identity, then a party SWITCH of slots 2 and 3.",
+          "Final party order is Bulbasaur, Pikachu, Pidgey.",
+          "Rattata remains in the active box and all stated HP, status, moves, PP, and bag counts remain unchanged."
+        ],
+        "failure": [
+          "A different Pokemon is deposited or withdrawn.",
+          "The designated Pokemon remains in storage or a different Pokemon remains in party.",
+          "Any unintended party, inventory, or storage state changes."
+        ],
+        "variants": [
+          "viridian-pc-pikachu-roundtrip-v1"
+        ],
+        "token_limit": 220000,
+        "existing_task": null,
+        "requirements": [
+          "New PC box identity, deposit-withdraw transition, final-order, and untouched-state grader.",
+          "Controller-built Pokemon Center fixtures with validated active-box capacity."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Deposit and withdraw the designated Pokemon",
+        "scenario_revision": 2,
+        "agent_goal": "At the Viridian Pokemon Center PC, deposit Pikachu from party slot 2 into the active box, withdraw that same Pikachu after it appends to party slot 3, then use the party menu SWITCH command to restore the order Bulbasaur, Pikachu, Pidgey.",
+        "scenario_details": [
+          "The target is Pikachu, initially party slot 2.",
+          "After depositing Pikachu, withdrawing it appends it after Pidgey in party slot 3.",
+          "The required final party order is Bulbasaur, Pikachu, Pidgey, so the agent must SWITCH party slots 2 and 3 after withdrawal.",
+          "The active box must retain Rattata unchanged."
+        ],
+        "open_questions": [
+          "Confirm the active box is selected and has one empty slot when the fixture opens."
+        ]
+      },
+      {
+        "id": "operations-teach-tm-replace-move",
+        "title": "Teach TM34 Bide to Pikachu over Growl",
+        "difficulty": "hard",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Celadon City overworld. Party slot 1 Bulbasaur is 29/29 HP healthy, slot 2 Pikachu is 35/35 HP healthy with ThunderShock, Growl, Tail Whip, and Thunder Wave at full PP, and slot 3 Pidgey is 23/23 HP healthy. The bag contains TM34 x1, Potion x1, and Poke Ball x3.",
+        "success": [
+          "TM34 count changes from 1 to 0.",
+          "Pikachu move slot 2 changes from Growl to Bide.",
+          "ThunderShock, Tail Whip, and Quick Attack remain in their original slots with their original PP.",
+          "All non-target party state and non-TM bag counts remain unchanged."
+        ],
+        "failure": [
+          "The TM is used on another Pokemon or replaces another move.",
+          "The TM is not consumed or more than one item is consumed.",
+          "Any unintended party or inventory state changes."
+        ],
+        "variants": [
+          "celadon-pikachu-tm34-bide-v1"
+        ],
+        "token_limit": 220000,
+        "existing_task": null,
+        "requirements": [
+          "New TM consumption, recipient, learned-move, replaced-slot, and untouched-state grader.",
+          "Controller-built legal Gen 1 TM fixtures that avoid evolution and HM prompts."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Teach a TM and replace the designated move",
+        "scenario_revision": 2,
+        "agent_goal": "Use TM34 to teach Bide to Pikachu in party slot 2. When prompted, replace Growl in move slot 2.",
+        "scenario_details": [
+          "TM34 is Bide in Pokemon Red Generation 1.",
+          "Pikachu is the recipient in party slot 2 and has four moves, so move replacement is prompted.",
+          "The selected replacement is Growl in move slot 2."
+        ],
+        "open_questions": [
+          "Confirm TM34 compatibility for Pikachu in the pinned Red data table."
+        ]
+      },
+      {
+        "id": "operations-withdraw-item-and-use",
+        "title": "Withdraw one Potion and use it on Pikachu",
+        "difficulty": "hard",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Viridian Pokemon Center overworld at the PC. Party slot 1 Bulbasaur is 29/29 HP healthy, slot 2 Pikachu is 10/35 HP healthy, and slot 3 Pidgey is 23/23 HP healthy. The item PC contains Potion x1 and Antidote x1. The bag contains Potion x0, Antidote x1, and Poke Ball x3.",
+        "success": [
+          "Item PC Potion count changes from 1 to 0.",
+          "Bag Potion count returns to 0 after one withdrawal and one use.",
+          "Pikachu changes from 10/35 HP to 30/35 HP.",
+          "All Antidote and Poke Ball counts and all non-target party state remain unchanged."
+        ],
+        "failure": [
+          "The wrong item is withdrawn or used.",
+          "The Potion targets a different Pokemon.",
+          "Any unintended party, bag, or item-PC state changes."
+        ],
+        "variants": [
+          "viridian-pc-pikachu-potion-v1"
+        ],
+        "token_limit": 220000,
+        "existing_task": null,
+        "requirements": [
+          "New item-PC transfer, item use, exact target, inventory delta, and untouched-state grader.",
+          "Controller-built Pokemon Center fixtures with a Potion only in item PC."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Retrieve a stored item and use it",
+        "scenario_revision": 2,
+        "agent_goal": "At the Viridian Pokemon Center item PC, withdraw one Potion, then use it from the Bag on Pikachu in party slot 2.",
+        "scenario_details": [
+          "Pikachu in party slot 2 is the only damaged Pokemon.",
+          "Exactly one Potion starts in the item PC and none starts in the bag.",
+          "A Potion restores 20 HP, so Pikachu should finish at 30/35 HP."
+        ],
+        "open_questions": [
+          "Confirm the item PC withdrawal menu can transfer a single Potion in this core revision."
+        ]
+      },
+      {
+        "id": "operations-menu-checklist",
+        "title": "Withdraw a Potion, heal Pikachu, then lead with Pidgey",
+        "difficulty": "stretch",
+        "tested_skill": "menu-operation",
+        "mode": "gameplay",
+        "action_policy": "manual-menu-v1",
+        "objective": null,
+        "start": "Viridian Pokemon Center overworld at the PC. Party order is Bulbasaur 29/29 healthy, Pikachu 10/35 healthy, Pidgey 23/23 healthy. The item PC contains Potion x1 and Antidote x1. The bag contains Potion x0, Antidote x1, and Poke Ball x3.",
+        "success": [
+          "The ledger records the required three operations in order.",
+          "Item PC Potion ends at 0 and bag Potion ends at 0.",
+          "Pikachu ends at 30/35 HP.",
+          "Final party order is Pidgey, Bulbasaur, Pikachu, with all other stated state unchanged."
+        ],
+        "failure": [
+          "Any required operation is missing or occurs in the wrong target state.",
+          "An unintended item, Pokemon, move, PP, status, or storage state changes.",
+          "The party blacks out."
+        ],
+        "variants": [
+          "viridian-pc-pikachu-pidgey-checklist-v1"
+        ],
+        "token_limit": 300000,
+        "existing_task": null,
+        "requirements": [
+          "Composite ordered-operation ledger and final-state grader.",
+          "Controller-built Pokemon Center fixtures with item PC storage, one damaged target, and a three-Pokemon party."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Complete a three-step menu checklist",
+        "scenario_revision": 2,
+        "agent_goal": "At the Viridian Pokemon Center, withdraw one Potion from the item PC, use it on Pikachu in party slot 2, then reorder the party to Pidgey, Bulbasaur, Pikachu.",
+        "scenario_details": [
+          "Required operation order is withdraw Potion, use Potion on Pikachu, then party reorder.",
+          "Required final order is Pidgey, Bulbasaur, Pikachu.",
+          "Pikachu should finish at 30/35 HP after the Generation 1 Potion effect."
+        ],
+        "open_questions": [
+          "Confirm the fixture begins beside the PC and not in an interaction or transition state."
+        ]
+      }
+    ]
+  },
+  "objectives": {
+    "category": "objectives",
+    "title": "Gen 1 Red objectives",
+    "evals": [
+      {
+        "id": "objectives-starter-selection",
+        "title": "Choose any starter in Oak's Lab",
+        "difficulty": "easy",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "opening",
+          "target": "starter",
+          "description": "Choose Bulbasaur, Charmander or Squirtle and complete the starter handover. Keep its default name."
+        },
+        "start": "Oak's Lab, immediately after Oak's opening escort and explanation, before any starter ball has been selected.",
+        "success": [
+          "Acquire the first starter and reach the existing starter-completion predicate. Any of the three species counts."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 400000,
+        "existing_task": "starter",
+        "requirements": [
+          "Validate each selected starter fixture and reference replay against the existing opening objective.",
+          "Treat an invalid fixture or failed fixture start check as an infrastructure error, not a model loss."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Obtain a first starter Pokemon",
+        "agent_goal": "Choose Bulbasaur, Charmander or Squirtle and complete the starter handover. Keep its default name.",
+        "scenario_details": [
+          "Party empty, all three starter choices available, no ball selected yet.",
+          "Money: 3000. Bag empty. This task does not require winning the rival battle."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-parcel-roundtrip",
+        "title": "Collect Oak's Parcel in Viridian and return it",
+        "difficulty": "medium",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "opening",
+          "target": "parcel-roundtrip",
+          "description": "Collect Oak's Parcel from Viridian Mart and deliver it to Professor Oak to receive the Pokedex. Keep default Pokemon names."
+        },
+        "start": "Pallet Town, immediately outside Oak's Lab after the first rival battle and free recovery.",
+        "success": [
+          "Collect the parcel after the start, deliver it to Oak and receive the Pokedex outside battle."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1500000,
+        "existing_task": "parcel",
+        "requirements": [
+          "Validate that every fixture meets the existing parcel-roundtrip start contract.",
+          "Keep route solutions and event identifiers private to fixtures and graders."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Collect and return Oak's Parcel",
+        "agent_goal": "Collect Oak's Parcel from Viridian Mart and deliver it to Professor Oak to receive the Pokedex. Keep default Pokemon names.",
+        "scenario_details": [
+          "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+          "Bag: 5 Potions, no parcel or Pokedex. Money: 3000.",
+          "No parcel-collection or delivery flags set. Starter and first rival sequence completed."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-npc-instruction",
+        "title": "Help Bill and receive the S.S. Ticket",
+        "difficulty": "medium",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Bill's house on Route 25, entrance tile before speaking to transformed Bill.",
+        "success": [
+          "Use the cell separator to restore Bill and receive the S.S. Ticket during the attempt."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 700000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the uncompleted Bill event at his house entrance.",
+          "Score Bill restoration and S.S. Ticket receipt using verified private event evidence, never just talking to Bill."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Complete an objective stated by an NPC",
+        "agent_goal": "Speak to Bill, help him with his problem and collect his reward. Follow what he tells you.",
+        "scenario_details": [
+          "Party: Wartortle level 20, Tackle, Tail Whip, Bubble and Water Gun, full HP and PP.",
+          "Bag: 5 Potions. At least two free bag slots. Bill has not been helped and the S.S. Ticket is absent.",
+          "The agent learns the requested PC interaction from the original in-game conversation. No rewritten NPC dialogue."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/scripts/BillsHouse.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-prerequisite-chain",
+        "title": "Rescue Mr. Fuji and obtain the Poke Flute",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Lavender Town, directly outside the Pokemon Tower entrance.",
+        "success": [
+          "Complete the native Pokemon Tower rescue, then receive the Poke Flute from Mr. Fuji."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1200000,
+        "existing_task": null,
+        "requirements": [
+          "Capture Lavender start with Silph Scope and the declared Tower progress.",
+          "Add composite evidence for the native rescue and Poke Flute receipt. Verify no Poke Doll bypass."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Complete a multi-step prerequisite chain",
+        "agent_goal": "Rescue Mr. Fuji and obtain the Poke Flute. Do not use the Poke Doll ghost bypass.",
+        "scenario_details": [
+          "Party: Kadabra level 35 with Psybeam, Confusion, Recover and Disable. Wartortle level 35 with Water Gun, Bite, Bubble and Withdraw. Both fully healed with full PP.",
+          "Bag: Silph Scope, 10 Super Potions, 3 Revives, 5 Antidotes. Money: 0. No Poke Doll.",
+          "Tower rival already defeated. Ghost Marowak and 7F Rockets unbeaten. Mr. Fuji not rescued and Poke Flute absent."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/scripts/PokemonTower7F.asm",
+          "https://github.com/pret/pokered/blob/master/scripts/MrFujisHouse.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-find-capture-species",
+        "title": "Find and catch a wild Pikachu from Viridian City",
+        "difficulty": "hard",
+        "tested_skill": "navigation",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Viridian Pokemon Center, first controllable tile after a full party heal.",
+        "success": [
+          "Capture a wild Pikachu after the start and retain it in the party outside battle.",
+          "No purchased balls, gifted Pikachu, trades or storage withdrawals count."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 900000,
+        "existing_task": null,
+        "requirements": [
+          "Create a Viridian Center checkpoint with the specified Squirtle and exactly 10 Poke Balls.",
+          "Add species-specific capture provenance and party-retention scoring. The generic capture predicate is insufficient.",
+          "Pilot encounter timing and token cost. Report encounter counts so a rare encounter wait is distinguishable from failed capture decisions."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Find and capture the requested species",
+        "agent_goal": "Catch a wild Pikachu and keep it in your party. You start in Viridian City with 10 Poke Balls. Do not buy more balls or use stored Pokemon. Keep default names.",
+        "scenario_details": [
+          "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+          "Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.",
+          "Pokedex owned and parcel delivered. Northern Viridian exit open. No Pikachu in party or storage.",
+          "The intended native encounter source is Viridian Forest. Species and ball budget are fixed across timing variants, not randomly changed. Healing at a Center is allowed."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/data/wild/maps/ViridianForest.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-constrained-valuable-capture",
+        "title": "Catch level 30 Snorlax with 12 Great Balls",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": {
+          "kind": "encounter-capture",
+          "description": "Catch this Snorlax using your supplied team and 12 Great Balls. You may lower its HP or apply status. Do not flee, knock it out or black out. Keep its default name."
+        },
+        "start": "The healthy-capture checkpoint at the opening command menu against the natural level 30 Snorlax, initially at full HP with no status.",
+        "success": [
+          "Capture the initial Snorlax and finish the encounter outside battle."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 500000,
+        "existing_task": "healthy-capture",
+        "requirements": [
+          "Verify the source healthy-capture state has the named party, native Snorlax and exact inventory.",
+          "Retain the initial-encounter identity in the grader and validate capture, KO and flee outcomes."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Capture a valuable Pokemon under stated constraints",
+        "agent_goal": "Catch this Snorlax using your supplied team and 12 Great Balls. You may lower its HP or apply status. Do not flee, knock it out or black out. Keep its default name.",
+        "scenario_details": [
+          "Party: Parasect level 30 with Spore, Scratch, Stun Spore and Leech Life. Haunter level 30 with Hypnosis, Night Shade, Confuse Ray and Lick.",
+          "Bag: 12 Great Balls and one Poke Flute, matching the healthy-capture source contract. No extra balls or healing items.",
+          "Both party members begin fully healed with full PP. Full health describes Snorlax at the start, not a restriction against damaging it."
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-infeasible-plan-alternate",
+        "title": "Obtain a Bicycle without enough money to buy it",
+        "difficulty": "hard",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Cerulean Bike Shop, in front of the clerk before opening a conversation.",
+        "success": [
+          "Obtain the Bicycle during the attempt using a voucher acquired after the start."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1000000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the Bike Shop start with the Fan Club reward unclaimed and route to Vermilion open.",
+          "Track voucher acquisition and Bicycle exchange. Do not supply the Fan Club route in the agent prompt."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Abandon an infeasible plan and complete an alternate objective",
+        "agent_goal": "Obtain a Bicycle. You have 3000 money, no Bike Voucher and cannot afford the displayed purchase price. Find another legal way to obtain one.",
+        "scenario_details": [
+          "Party: Wartortle level 20 with Tackle, Tail Whip, Bubble and Water Gun, full HP and PP.",
+          "Bag: 5 Potions. Money: 3000. Bike Voucher and Bicycle absent. Fan Club chairman has not given the voucher.",
+          "Boulder and Cascade Badges owned. Route 5 and Route 6 path available and trainers cleared. No Fly."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/scripts/BikeShop.asm",
+          "https://github.com/pret/pokered/blob/master/scripts/PokemonFanClub.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-recover-earlier-mistake",
+        "title": "Redeem a Bike Voucher when the bag is full",
+        "difficulty": "stretch",
+        "tested_skill": "resource-planning",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Cerulean Bike Shop, in front of the clerk with a Bike Voucher and all 20 bag slots occupied.",
+        "success": [
+          "Free enough bag space, exchange the Bike Voucher and receive the Bicycle during the attempt."
+        ],
+        "failure": [
+          "The token budget is exhausted before the stated goal is complete.",
+          "The party blacks out before completion. Infrastructure errors are recorded separately."
+        ],
+        "variants": [
+          "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+        ],
+        "token_limit": 1300000,
+        "existing_task": null,
+        "requirements": [
+          "Capture the full-bag voucher start and confirm the original clerk rejects the exchange until space is made.",
+          "Grade Bicycle receipt and voucher consumption. Preserve normal item use, sale, discard and PC recovery choices."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Recover from an earlier reversible mistake",
+        "agent_goal": "Exchange your Bike Voucher for a Bicycle. Your bag is full. Keep the voucher until the exchange and make room by any legal method.",
+        "scenario_details": [
+          "Party: Wartortle level 20 with Tackle, Tail Whip, Bubble and Water Gun, full HP and PP. Money: 0.",
+          "Exactly one of each occupies the 20 bag slots: Bike Voucher, Potion, Antidote, Awakening, Burn Heal, Ice Heal, Parlyz Heal, Escape Rope, Repel, Super Potion, Poke Ball, Great Ball, Ultra Ball, X Attack, X Defend, X Speed, X Special, Guard Spec., Dire Hit and X Accuracy.",
+          "Bicycle not received. Item PC has free capacity. Discarding or depositing a nonessential item is allowed. No particular recovery method is required."
+        ],
+        "sources": [
+          "https://github.com/pret/pokered/blob/master/scripts/BikeShop.asm"
+        ],
+        "scenario_revision": 2,
+        "open_questions": [
+          "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+          "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+        ]
+      },
+      {
+        "id": "objectives-quest-trainer",
+        "title": "Clear Rocket Hideout and defeat Giovanni for the Silph Scope",
+        "difficulty": "hard",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Celadon City overworld outside the Game Corner. Red has Boulder, Cascade, and Thunder Badges, Charmeleon level 31 with Ember, Leer, Rage, and Scratch at full PP, Kadabra level 29 with Teleport, Confusion, Disable, and Psybeam at full PP, Gyarados level 28 with Tackle, Bite, Leer, and Dragon Rage at full PP, Super Potion x4, Antidote x2, Escape Rope x1, and 6200 Pokedollars. The Rocket Hideout is unopened, the Lift Key is absent, Giovanni on Rocket Hideout B4F is unbeaten, and the Silph Scope is absent.",
+        "success": [
+          "The Rocket Hideout is entered and the Lift Key is obtained.",
+          "Giovanni on Rocket Hideout B4F is defeated after the Lift Key event.",
+          "The Silph Scope is collected and the final state is outside battle."
+        ],
+        "failure": [
+          "The token limit expires before the quest and trainer completion are recorded.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "celadon-rocket-hideout-giovanni-v1"
+        ],
+        "token_limit": 6000000,
+        "existing_task": null,
+        "requirements": [
+          "Choose the named quest and trainer only during fixture design, then document the public goal without disclosing route answers.",
+          "Implement ordered story-event and trainer-victory grading.",
+          "Verify that the start does not already satisfy any required quest event or trainer victory."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Complete a multistage quest and defeat its required trainer",
+        "scenario_revision": 2,
+        "agent_goal": "From Celadon City, enter the Rocket Hideout beneath the Game Corner, obtain the Lift Key, defeat Giovanni on B4F, and pick up the Silph Scope. Keep default Pokemon names.",
+        "scenario_details": [
+          "The quest location is Celadon Game Corner and Rocket Hideout B1F through B4F.",
+          "The required trainer is Giovanni on Rocket Hideout B4F, not Giovanni in Viridian Gym.",
+          "Required quest sequence is reveal hideout, obtain Lift Key, defeat Giovanni, then collect Silph Scope.",
+          "This focused checkpoint test fixes the starting resources. Campaign progress does not automatically count as a pass on this task."
+        ],
+        "open_questions": [
+          "Confirm the selected story flags distinguish Rocket Hideout Giovanni from the later Viridian Gym Giovanni."
+        ],
+        "previous_catalog_id": "campaign-quest-trainer"
+      },
+      {
+        "id": "objectives-capture-prepare-battle",
+        "title": "Catch Abra on Route 24, train it, then defeat Misty",
+        "difficulty": "hard",
+        "tested_skill": "campaign",
+        "mode": "gameplay",
+        "action_policy": "assisted-gameplay-v1",
+        "objective": null,
+        "start": "Cerulean City overworld at the Route 24 entrance. Red has the Boulder Badge but not the Cascade Badge. The Nugget Bridge rival is already defeated, so Routes 24 and 25 are accessible. Party slot 1 Ivysaur level 20 has Tackle, Growl, Leech Seed, and Vine Whip at full PP, slot 2 Pidgeotto level 18 has Gust, Sand-Attack, and Quick Attack at full PP, slot 3 Pikachu level 18 has ThunderShock, Growl, Tail Whip, and Quick Attack at full PP, and slots 4 through 6 are empty. The bag contains Poke Ball x8, Potion x2, Antidote x1, and 2400 Pokedollars. No Abra is owned and Misty is unbeaten.",
+        "success": [
+          "A wild Abra is captured after the start.",
+          "That Abra gains at least one level and remains owned.",
+          "Misty is defeated after the capture and level-gain events, the Cascade Badge is awarded, and the final state is outside battle."
+        ],
+        "failure": [
+          "The token limit expires before the required trainer victory is recorded.",
+          "The player reaches a verified terminal game-over state."
+        ],
+        "variants": [
+          "cerulean-route24-abra-misty-v1"
+        ],
+        "token_limit": 6000000,
+        "existing_task": "first-capture",
+        "requirements": [
+          "Implement capture identity, preparation, and trainer-victory sequence grading.",
+          "Treat first-capture as a source candidate only because its current fixture begins in a live wild battle and has no follow-up trainer contract.",
+          "Define preparation as observable legal state changes during fixture design without requiring one prescribed strategy."
+        ],
+        "status": "specified",
+        "calibration": "pending",
+        "task_family": "Capture a Pokemon, prepare it, and win a required trainer battle",
+        "scenario_revision": 2,
+        "agent_goal": "From Cerulean City, catch a wild Abra on Route 24, raise it by at least one level without releasing it, then defeat Misty in Cerulean Gym for the Cascade Badge. Keep default Pokemon names.",
+        "scenario_details": [
+          "The capture target is a wild Abra on Route 24.",
+          "The captured Abra must remain in the party or PC and gain at least one level before the Gym battle.",
+          "The required trainer is Misty in Cerulean Gym, not the already defeated Nugget Bridge rival.",
+          "This focused checkpoint test fixes the starting resources. Campaign progress does not automatically count as a pass on this task."
+        ],
+        "open_questions": [
+          "Confirm a natural Route 24 Abra encounter is available in the pinned Red encounter table.",
+          "Confirm the start has the Nugget Bridge rival flag set, the Cascade Badge absent, and Misty unbeaten."
+        ],
+        "previous_catalog_id": "campaign-capture-prepare-battle"
+      }
+    ]
+  }
+}

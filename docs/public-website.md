@@ -74,8 +74,8 @@ It publishes allowlisted derivatives as `release-protocol.json` and
 `release-summary.json`. The original protocol checksum identifies the source,
 while the export manifest hashes the sanitized public derivative.
 
-The controlled evaluation is the main leaderboard. The earlier development
-ranking and cost estimates are collapsed below it. There is still no suite selector. It displays
+The main leaderboard shows all available results. The matched-start comparison
+and earlier development analysis are secondary expandable sections. There is still no suite selector. It displays
 verified coverage, observed passes, pending work, infrastructure errors and the
 shared execution ceiling. Budget-paused attempts remain pending, never losses.
 The full registered per-attempt maximum is shown separately from the execution
@@ -110,3 +110,43 @@ the website.
 
 Development task links and replays remain available until controlled replay
 publication is added.
+
+## All available results
+
+The reporting policy `available-results-equal-task-weight-v1` keeps every
+registered benchmark and model visible. Per model and task, select all verified
+current release outcomes with complete accounting if any exist. Otherwise use
+verified results from the curated development comparison. Do not pool the two
+sources within a model and task or select by success. Retain all selected
+attempt identifiers and show source and release coverage in each task row.
+
+Average selected outcomes within each tested eligible task, then average those
+task rates equally per model. Missing tasks are not losses. Experimental tasks
+remain visible but do not affect the score. Sort by observed score, with broader
+coverage first on equal scores and no comparative rank numbers. Coverage and
+framework versions differ, so this descriptive ordering is not a controlled
+head-to-head rank. The strict shared-start comparison remains secondary.
+
+Export `available-results.json` with the task grid and selected evidence, plus
+`available-leaderboard.csv`. The full-suite protocol and frozen scoring do not
+change. New presentation code is loaded only by the publisher.
+
+### Documented timeout replacement
+
+After all registered variants for an uncovered Claude model and task end in held infrastructure errors, one explicitly documented replacement may repeat an original provider timeout. The original cells and artifacts remain unchanged. The replacement receives a new ID, the same starting variant, model, effort, observations and per-trial limits. The global ledger retains the original full token holds and funds the new allowance separately.
+
+The replacement authorization binds the original error and result checksums. Both the scheduler and presentation validator reject changed conditions, duplicate replacements for the same repair, missing error holds, unfinished original attempts and any attempt to repeat a completed gameplay outcome. Response-format and outside-tool errors are not eligible for this timeout recovery path. The frozen gameplay runtime stays unchanged. The scheduler loads a separately checksummed validation adapter.
+
+Available-results views include a verified replacement and expose its original attempt ID in result provenance. The original registered matrix stays intact. Exhausted errors are never presented as completed evaluations.
+
+### Claude response headroom, adapter v2
+
+A Forest timeout investigation found two assistant messages ending at `max_tokens`, each with 4,096 output tokens and essentially all output consumed by reasoning. The subscription CLI continued generating until the shared 180-second decision deadline. This was a response headroom failure, not evidence of a gameplay loss.
+
+The next Claude adapter version raises the per-response output allowance from 4,096 to 8,192 and includes that allowance in the pre-decision token estimate. Per-trial and global token ceilings, reasoning effort, gameplay rules, prompts and observations remain unchanged. This change is recorded as `claude-code-bounded-gameplay-v2`. Existing frozen trials continue to use v1 and are not rewritten. A new versioned evaluation or diagnostic registration is required before running v2. More output headroom addresses the observed truncation mechanism but does not guarantee a valid response or fix unrelated schema and unsupported-tool errors.
+
+Provider-only diagnostics are excluded from gameplay scores. Their original input hash, adapter version, response cap, wall deadline, CLI turn limit, result and usage are stored privately. Each diagnostic receives a checksummed reservation bound to the original release protocol. The scheduler charges those full reservations against the same global allowance, including after a diagnostic finishes, so a failed or partly accounted call cannot silently refund tokens. No diagnostic executes controller actions or rewrites an existing trial.
+
+The verified Forest headroom diagnostic permits one separately identified `headroom-v2` replacement after the earlier timeout replacement remains a held error. This exception is limited to Sonnet 4.6 on Viridian Forest and binds the successful diagnostic checksum. The worker records the response adapter in its manifest and provenance. It preserves the original 1M task ceiling, starting variant, prompt, observations and medium reasoning effort. No completed gameplay result is eligible.
+
+The v3 Forest recovery is bound to the next successful provider diagnostic. It permits 32,000 response tokens and a 600-second decision limit, capped by the trial's remaining wall time. The original 1M trial token setting, starting save, medium effort, observations and gameplay remain unchanged. The extra response allowance is included in the pre-decision token estimate. The previous 4K and 8K failures remain intact with their full holds. V3 is limited to one named Forest trial and is exposed as `claude-response-headroom-v3` in provenance.

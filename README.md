@@ -2,9 +2,9 @@
 
 PokeBench evaluates how AI agents play Pokemon Red. Models choose routes, battles, recovery and resource use in the real game. PokeSim Core decodes observations and executes controller inputs. PokeBench owns the tasks, information boundaries, budgets, scoring and replay checks.
 
-The current catalog has **28 active tasks**. Twenty-two contribute to the development ranking and six tactical candidates remain experimental. Five trivial tasks are retired. Development results are useful evidence, but they used evolving harness versions and are not a controlled release comparison.
+The historical development suite has **28 active tasks**. Twenty-two contribute to the development ranking and six tactical candidates remain experimental. Five trivial tasks are retired. Development results are useful evidence, but they used evolving harness versions and are not a controlled release comparison.
 
-A prospective v1 beta evaluates the same three registered starting conditions for every model, with a **50 million reported-token ceiling across the entire evaluation**. This is a staged evaluation. Cells that do not fit the remaining allowance stay pending. A task enters the new aggregate only after every registered model completes all three variants with verified replay. Development results never fill missing release cells.
+The exploratory leaderboard preserves completed and partial results across framework improvements. Runs record their model, task, starting save, controls and runtime so material differences remain visible. Routine backend fixes do not discard earlier results or require a full rerun.
 
 ## Install
 
@@ -17,11 +17,13 @@ uv run pokebench --help
 
 Python 3.12 is selected for reproducibility. The Python distribution and import remain `pokeagent-bench` and `pokeagent_bench` for compatibility. Both `pokebench` and the older `pokeagent` command work.
 
-Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. PokeSim Core is installed from a versioned, hash-pinned release wheel. A sibling PokeSim checkout is not a runtime dependency.
+Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. PyBoy RS 0.1.1 is installed from hash-pinned wheels. `uv sync` installs PokeSim Core 0.6.1.dev1 from the wheel in `vendor/`. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
 
 ## What the agent sees and controls
 
 The gameplay track supplies a screenshot, readable dialogue, observed terrain and objects, party health and moves, inventory and recent action outcomes. A notebook and bounded conversation preserve working context. Eight-turn segments reset from deterministic observations and the agent's notes. There are no paid summarization calls.
+
+Menu-operation tasks disable shortcuts and require individual button presses. Strategy and navigation tasks retain mechanical shortcuts. The task focus and actual permissions are recorded. Within a conversation segment, party updates send only changed HP, status and move fields. Full state returns at every segment start.
 
 The agent chooses every route and tactical decision. Item, move and party shortcuts execute real controller input, preserving battle turns and item costs. Continue-only dialogue is collected until an actual decision is needed. The evaluator's hidden completion flags and future game state are not exposed. A separate visual track remains available for perception experiments.
 
@@ -50,6 +52,7 @@ The catalog includes starter acquisition, parcel delivery, navigation, gym battl
 
 - [Release protocol and reproduction](docs/release-v1.md)
 - [Task catalog](docs/ability-suite.md)
+- [Skill categories and one full-game campaign with progress milestones](docs/catalog/README.md)
 - [Tactical calibration](docs/tactical-battle.md)
 - [Experimental decision tasks](docs/decision-suite.md)
 - [Website export and privacy](docs/public-website.md)
@@ -65,3 +68,15 @@ uv run --locked --offline ruff check .
 ```
 
 The source tree retains earlier observation policies so historical traces remain interpretable. They are not interchangeable experimental conditions. See [third-party notices](THIRD_PARTY_NOTICES.md). Pokemon is an unofficial research setting for this project, with no affiliation or endorsement.
+
+## Gen 1 task catalog
+
+The executable catalog is split into two benchmarks. **PokeBench** has 47 focused tasks plus one inventory variant across navigation, battle tactics, manual menu operations, preparation and quests. **PokeBench Long** is one continuous full-game campaign with 50 scored milestones worth 1,000 points.
+
+`pokebench catalog` and new `catalog-batch` runs default to focused PokeBench. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each batch has its own token ceiling. Campaign progress never contributes to the focused-task ability average. The local portal has separate PokeBench and PokeBench Long pages.
+
+See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring. No models are launched by inspecting the catalog.
+
+Model input defaults to the current screenshot with observed action results and optional screenshot recall. The replay separately shows decision start and action result for human review, plus the exact image sent to the model. See [the screenshot comparison](docs/history/image-presentation-v055.md) for the explicit `--presentation before-after` experiment.
+
+See [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls, preparation assessment and result aggregation. Existing benchmark results remain available alongside these new definitions.

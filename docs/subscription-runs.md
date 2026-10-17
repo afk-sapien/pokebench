@@ -1,4 +1,4 @@
-> Current protocol: [screen feedback and structured memory](visual-feedback-v05.md).
+> Current protocol: [screen feedback and structured memory](history/visual-feedback-v05.md).
 > The control pilot below documents the older v1 harness.
 
 # ChatGPT subscription runs
