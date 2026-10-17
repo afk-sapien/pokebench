@@ -40,7 +40,7 @@ uv run pokebench run \
   --max-total-tokens 500000 --output /private/new-run
 ```
 
-Use `--provider codex` with an available exact Codex model ID for the same gameplay protocol. See [Claude subscription setup and limitations](docs/claude-subscription.md).
+Use `--provider codex` with an available exact Codex model ID for the same gameplay protocol. See [Claude subscription setup and limitations](docs/claude-subscription.md). TypeSafe Jev runs with `--provider jev`. See [the Jev provider](docs/jev.md).
 
 Budgets count reported input plus output tokens, including cached input once. They measure inference workload, not the amount billed on a subscription. API-equivalent dollar estimates are estimates, not subscription charges. Admission reserves and between-decision checks limit spending. An in-flight response can exceed a threshold. Missing usage stops the release sweep for review.
 

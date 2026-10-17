@@ -59,7 +59,7 @@ def parser():
         if name == "run":
             command.add_argument("--journal", action="store_true", help="Enable the bounded agent-authored journal for compact Codex")
             command.add_argument("--pause-after-decisions", type=int)
-            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude"), required=True)
+            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude", "jev"), required=True)
             command.add_argument("--model")
             command.add_argument("--codex-policy", choices=("standard", "grounded", "grounded-motion", "compact", "continuous", "gameplay", "bounded"), default="compact",
                                  help="Compact is the default. Legacy policies remain selectable for comparisons")
@@ -72,6 +72,8 @@ def parser():
             command.add_argument("--fresh-decisions", action="store_true",
                                  help="Comparison mode: restart every decision. Default retains conversation with periodic summaries")
             command.add_argument("--reasoning-effort", choices=("low", "medium", "high", "xhigh"), default="low")
+            command.add_argument("--jev-observation", choices=("images", "state", "both"), default="images",
+                                 help="Jev input. State and both send the track's allowlisted game fields")
             command.add_argument("--seed", type=int, default=7)
             command.add_argument("--max-output-tokens", type=int, default=2048, help="Per-response API cap, not supported by Codex CLI")
             command.add_argument("--input-price", type=float, help="USD per million input tokens")
@@ -83,6 +85,14 @@ def parser():
     review.add_argument("--run", type=Path, nargs="+", required=True)
     review.add_argument("--output", type=Path, required=True)
     review.add_argument("--seconds", type=int, help="Optional total playback seconds per run, default is 8 decisions per second")
+    live = sub.add_parser("jev-live", help="Watch Jev play in a local browser with manual takeover. Not scored")
+    live.add_argument("--rom", type=Path, required=True)
+    live.add_argument("--state", type=Path, help="A current.state saved by an earlier jev-live session")
+    live.add_argument("--labels", type=Path)
+    live.add_argument("--output", type=Path, default=None, help="New directory. Default runs/jev-live/<time>")
+    live.add_argument("--port", type=int, default=8931)
+    live.add_argument("--steps", type=int, default=1000, help="Maximum Jev calls")
+    live.add_argument("--max-input-tokens", type=int, default=1_000_000)
     view = sub.add_parser("dashboard", help="Serve a local read-only results viewer")
     view.add_argument("--runs", type=Path, default=Path("runs"))
     view.add_argument("--port", type=int, default=8941)
@@ -204,6 +214,16 @@ def execute(args):
     if args.command == "report":
         from .report import comparison_report
         return comparison_report(args.runs)
+    if args.command == "jev-live":
+        import os
+        import time
+        from .jev_live import serve
+        if args.steps < 1 or args.max_input_tokens < 1:
+            raise ValueError("steps and max-input-tokens must be positive")
+        output = args.output or Path("runs/jev-live") / time.strftime("%Y%m%d-%H%M%S")
+        serve(args.rom, output, state=args.state, labels=load_labels(args.labels), port=args.port, steps=args.steps,
+              max_input_tokens=args.max_input_tokens, key=os.environ.get("TYPESAFE_API_KEY", ""))
+        return None
     if args.command == "dashboard":
         import uvicorn
         from .dashboard import create_app
@@ -217,7 +237,7 @@ def execute(args):
             raise ValueError("Gameplay track requires --game-data")
         from .gameplay import load_catalog
         gameplay_catalog = load_catalog(args.game_data)
-        if args.command == "run" and not (args.provider == "claude" or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
+        if args.command == "run" and not (args.provider in ("claude", "jev") or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
             raise ValueError("Gameplay runs require --provider codex --codex-policy gameplay")
     provider = None
     agent = None
@@ -242,6 +262,11 @@ def execute(args):
             provider = ClaudeCodeProvider(args.model, reasoning_effort=args.reasoning_effort,
                 context_turns=args.context_turns,
                 compact_at=12000 if args.compact_at is None else args.compact_at)
+        elif args.provider == "jev":
+            from .jev_provider import JevProvider
+            if args.jev_observation != "images" and args.track == "visual":
+                raise ValueError("Jev state observations require the structured or gameplay track")
+            provider = JevProvider(args.model, observation=args.jev_observation)
         elif args.provider == "codex":
             from .codex_provider import CodexProvider
             if args.input_price is not None or args.output_price is not None:
