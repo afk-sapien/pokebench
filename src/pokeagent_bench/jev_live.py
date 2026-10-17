@@ -245,7 +245,7 @@ pre { white-space: pre-wrap }
 <label for="mode">What Jev sees</label>
 <select id="mode"><option value="both">Screenshots + game state</option><option value="state">Game state only</option><option value="images">Screenshots only</option></select>
 <label for="key">TypeSafe API key</label>
-<input id="key" type="password" autocomplete="off" placeholder="Optional if TYPESAFE_API_KEY is configured">
+<input id="key" type="password" autocomplete="off" placeholder="Optional if the TypeSafe key is saved">
 <p class="muted">The key stays in this process and is sent only to TypeSafe. It is not saved to disk.</p>
 <button id="start">Start Jev</button><button id="pause">Pause</button>
 <p id="message" role="status"></p>

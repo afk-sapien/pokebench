@@ -7,6 +7,7 @@ import json
 import math
 import os
 import uuid
+from pathlib import Path
 
 import httpx
 from PIL import Image
@@ -111,13 +112,25 @@ def parse_answer(payload, choices=ACTIONS):
             raise ValueError
         if any(type(v) not in (int, float) or not math.isfinite(v) or not 0 <= v <= 1 for v in values):
             raise ValueError
-        if not math.isclose(sum(probabilities.values()), 1, abs_tol=0.01) or probabilities[choice] < max(probabilities.values()):
+        # Jev rounds each probability to two decimals, so the error grows with the menu size.
+        if not math.isclose(sum(probabilities.values()), 1, abs_tol=max(0.01, 0.005 * len(choices))) or probabilities[choice] < max(probabilities.values()):
             raise ValueError
         if type(tokens) is not int or tokens < 0 or not isinstance(payload["model"], str) or not payload["model"]:
             raise ValueError
     except (KeyError, TypeError, ValueError, AttributeError):
         raise ProviderError("Jev returned an invalid action response") from None
     return answer
+
+
+KEY_FILE = Path.home() / ".config" / "typesafe" / "key"
+
+
+def api_key():
+    """The environment wins. Otherwise read the private key file, ignoring surrounding whitespace."""
+    key = os.environ.get("TYPESAFE_API_KEY", "").strip()
+    if not key and KEY_FILE.is_file():
+        key = KEY_FILE.read_text().strip()
+    return key or None
 
 
 def client_for(key):
@@ -190,9 +203,9 @@ class JevProvider:
             self.menu = criteria()
         self.config_identity = {"observation": observation, "endpoint": ENDPOINT, "shortcuts": shortcuts,
                                 "actions": self.menu}
-        key = os.environ.get("TYPESAFE_API_KEY")
+        key = api_key()
         if not key and client is None:
-            raise ValueError("Set TYPESAFE_API_KEY before starting a paid run")
+            raise ValueError(f"Set TYPESAFE_API_KEY or save the key in {KEY_FILE} before starting a paid run")
         self.client = client or client_for(key)
         self.previous_png = None
 

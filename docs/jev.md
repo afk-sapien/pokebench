@@ -13,14 +13,17 @@ part of this adapter. Jev now sees only the benchmark's allowlisted observations
 
 ## Set the key
 
-Each Jev call is billed to your TypeSafe account. Read the key without echoing it:
+Each Jev call is billed to your TypeSafe account at $42 per billion input tokens.
+Output tokens are free. Save the key once in a file only you can read:
 
 ```sh
-read -rsp 'TypeSafe API key: ' TYPESAFE_API_KEY
-export TYPESAFE_API_KEY
+mkdir -p ~/.config/typesafe && chmod 700 ~/.config/typesafe
+read -rsp 'TypeSafe API key: ' K && printf %s "$K" > ~/.config/typesafe/key
+chmod 600 ~/.config/typesafe/key
 ```
 
-The key is sent only to TypeSafe. It is never written to manifests, decisions or saves.
+`TYPESAFE_API_KEY` overrides the file when set. The key is sent only to TypeSafe. It is
+never written to manifests, decisions or saves.
 
 ## Run a benchmark task
 
@@ -118,7 +121,14 @@ with `--steps` and `--max-input-tokens`. The server binds only to localhost.
   saved, and resumed from that save.
 - Shortcut mode, October 17, 2026: unit tests cover the menu, the request and the
   runner executing shortcuts. A six-command mocked run on the real ROM executed press,
-  interact, inspect, dialogue, move and wait, and replay verified it. Not yet run live.
+  interact, inspect, dialogue, move and wait, and replay verified it.
+- First live shortcut trial, October 17, 2026: both mode from the opening save. Jev
+  cleared the title and naming screens into the bedroom and walked a few tiles. It then
+  alternated START and B for about 50 decisions until the 1,000,000-token cap stopped
+  it after 91 calls. Shortcut decisions averaged about 10,500 input tokens, which is
+  about $0.0004 each, so the run cost about $0.04. Score 0. Replay verified. Jev
+  reported rounded probabilities that sum to 0.99 over the 66 choices, so the check
+  now allows rounding error that grows with the menu size.
 - First live trial, October 17, 2026: 20 screenshot-only decisions from the opening
   save. Jev pressed A and waited through the title screen into Professor Oak's
   introduction. It used 42,747 input and 2,240 output tokens, with a median of about

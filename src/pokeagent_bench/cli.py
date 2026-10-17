@@ -217,14 +217,14 @@ def execute(args):
         from .report import comparison_report
         return comparison_report(args.runs)
     if args.command == "jev-live":
-        import os
         import time
         from .jev_live import serve
+        from .jev_provider import api_key
         if args.steps < 1 or args.max_input_tokens < 1:
             raise ValueError("steps and max-input-tokens must be positive")
         output = args.output or Path("runs/jev-live") / time.strftime("%Y%m%d-%H%M%S")
         serve(args.rom, output, state=args.state, labels=load_labels(args.labels), port=args.port, steps=args.steps,
-              max_input_tokens=args.max_input_tokens, key=os.environ.get("TYPESAFE_API_KEY", ""))
+              max_input_tokens=args.max_input_tokens, key=api_key() or "")
         return None
     if args.command == "dashboard":
         import uvicorn

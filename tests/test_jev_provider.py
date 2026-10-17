@@ -1,6 +1,7 @@
 import base64
 import io
 import json
+from pathlib import Path
 
 import httpx
 from PIL import Image
@@ -98,6 +99,7 @@ def test_state_mode_rejects_visual_track(session):
 
 def test_missing_key_fails_before_a_run(monkeypatch):
     monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
+    monkeypatch.setattr("pokeagent_bench.jev_provider.KEY_FILE", Path("/nonexistent/key"))
     with pytest.raises(ValueError, match="TYPESAFE_API_KEY"):
         JevProvider()
 
@@ -160,3 +162,21 @@ def test_runner_executes_jev_shortcuts_on_gameplay_track(tmp_path, engine):
     manifest = json.loads((session.output / "manifest.json").read_text())
     assert manifest["agent"]["harness"] == "jev-choice-shortcuts-v1"
     assert manifest["agent"]["configuration"]["shortcuts"] is True
+
+
+def test_key_file_is_used_when_environment_is_unset(monkeypatch, tmp_path):
+    from pokeagent_bench.jev_provider import api_key
+    monkeypatch.delenv("TYPESAFE_API_KEY", raising=False)
+    (tmp_path / "key").write_text("file-key\n")
+    monkeypatch.setattr("pokeagent_bench.jev_provider.KEY_FILE", tmp_path / "key")
+    assert api_key() == "file-key"
+    monkeypatch.setenv("TYPESAFE_API_KEY", " env-key ")
+    assert api_key() == "env-key"
+
+
+def test_rounded_shortcut_probabilities_are_accepted():
+    from pokeagent_bench.jev_provider import parse_answer, shortcut_menu
+    menu = shortcut_menu(True)
+    payload = shortcut_answer("wait", menu)
+    payload["answers"]["action"]["probabilities"].update(wait=0.81, press_a=0.18)
+    assert parse_answer(payload, menu)["choice"] == "wait"
