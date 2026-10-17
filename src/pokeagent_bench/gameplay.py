@@ -14,7 +14,7 @@ from pokesim_core.gen1_ui import read_battler, read_screen, read_sprites, read_s
 from .core import digest, encoded
 from .game import structured
 
-POLICY = "player-information-v036"
+POLICY = "player-information-v062"
 TYPES = {0: "Normal", 1: "Fighting", 2: "Flying", 3: "Poison", 4: "Ground", 5: "Rock",
          7: "Bug", 8: "Ghost", 20: "Fire", 21: "Water", 22: "Grass", 23: "Electric",
          24: "Psychic", 25: "Ice", 26: "Dragon"}
@@ -52,7 +52,7 @@ def load_catalog(path):
             "labels": {key: tables[key] for key in ("maps", "species", "moves", "items")},
             "moves": {key: {field: value[field] for field in ("name", "type", "power", "accuracy", "pp", "effect")}
                       for key, value in strategy["moves"].items()},
-            "world": {key: {field: value[field] for field in ("passable", "warps", "objects", "backgrounds")}
+            "world": {key: {field: value[field] for field in ("passable", "warps", "objects", "backgrounds", "tileset")}
                       for key, value in strategy["world"].items()}}
 
 
@@ -145,7 +145,11 @@ def local_map(memory, catalog, ui):
     left, top = x - 4, y - 4
     tiles = read_screen(memory)["tiles"]
     # Live bottom-left subtiles include changes such as cut trees and opened doors.
-    grid = [["." if tiles[(2 * row + 1) * 20 + 2 * col] in world["passable"] else "#"
+    arrows = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
+              "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"}}.get(world.get("tileset"), {})
+    # Read only on-screen graphics. Never include scripted paths or destinations.
+    grid = [[arrows.get(tiles[(2 * row + 1) * 20 + 2 * col],
+                        "." if tiles[(2 * row + 1) * 20 + 2 * col] in world["passable"] else "#")
              for col in range(10)] for row in range(9)]
     objects = []
     def inside(px, py):
@@ -175,7 +179,8 @@ def local_map(memory, catalog, ui):
     grid[4][4] = "@"
     return {"available": True, "origin": {"x": left, "y": top}, "rows": ["".join(row) for row in grid],
             "legend": {".": "walkable terrain", "#": "blocked terrain", "@": "you", "O": "visible object",
-                       "S": "fixed interactable", "E": "exit or stairs, destination unknown"},
+                       "S": "fixed interactable", "E": "exit or stairs, destination unknown",
+                       "^ v < >": "visible floor arrows pointing up, down, left, right"},
             "objects": objects, "exits": exits,
             "caveat": "Terrain is local. Objects can block movement. Special directional collisions may apply."}
 
@@ -189,7 +194,7 @@ def known_map(history, map_id, x, y):
     top, bottom = max(y - 16, min(py for px, py in points)), min(y + 16, max(py for px, py in points))
     return {"map_id": int(map_id), "origin": {"x": left, "y": top},
             "rows": ["".join(points.get((px, py), "?") for px in range(left, right + 1)) for py in range(top, bottom + 1)],
-            "legend": "? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable, @ current position. Historical terrain may change."}
+            "legend": "? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable, ^ v < > observed floor arrows, @ current position. Historical terrain may change."}
 
 
 def observe_gameplay(session):

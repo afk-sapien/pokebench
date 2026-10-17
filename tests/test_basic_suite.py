@@ -30,11 +30,11 @@ def recovered(state):
     return state
 
 
-def test_healing_needs_center_same_party_hp_status_and_control():
+def test_healing_needs_center_same_party_hp_status_and_no_battle():
     start = healing_state()
     evaluator = ChallengeEvaluator(start, HEAL)
     healed = recovered(start)
-    for change in ('wrong-map', 'partial-hp', 'status', 'dialogue'):
+    for change in ('wrong-map', 'partial-hp', 'status', 'battle', 'invalid'):
         bad = deepcopy(healed)
         if change == 'wrong-map':
             bad['challenge']['map_id'] = 1
@@ -42,10 +42,34 @@ def test_healing_needs_center_same_party_hp_status_and_control():
             bad['challenge']['party'][0]['hp'] = 22
         if change == 'status':
             bad['challenge']['party'][0]['status'] = 8
-        if change == 'dialogue':
-            bad['challenge']['overworld'] = False
+        if change == 'battle':
+            bad['challenge']['battle'] = 1
+        if change == 'invalid':
+            bad['valid'] = False
         assert not evaluator.observe(bad, 1, 0)
         assert not evaluator.observe(bad, 2, 0)
+    assert not evaluator.observe(healed, 3, 0)
+    assert evaluator.observe(healed, 4, 0)
+
+
+@pytest.mark.parametrize('overworld', [False, True])
+def test_healing_scores_actual_recovery_without_requiring_menu_cleanup(overworld):
+    start = healing_state()
+    evaluator = ChallengeEvaluator(start, HEAL)
+    healed = recovered(start)
+    healed['challenge']['overworld'] = overworld
+    assert not evaluator.observe(healed, 1, 0)
+    assert evaluator.observe(healed, 2, 0)
+    assert evaluator.complete('challenge')
+
+
+def test_healing_requires_two_confirmations_after_transient_health():
+    start = healing_state()
+    evaluator = ChallengeEvaluator(start, HEAL)
+    healed = recovered(start)
+    healed['challenge']['overworld'] = False
+    assert not evaluator.observe(healed, 1, 0)
+    assert not evaluator.observe(start, 2, 0)
     assert not evaluator.observe(healed, 3, 0)
     assert evaluator.observe(healed, 4, 0)
 

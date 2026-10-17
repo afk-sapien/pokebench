@@ -25,6 +25,50 @@ def test_reservations_count_inflight_tokens_once_and_keep_unused_ceiling():
     assert spent + reserved + 120 == 280
 
 
+def test_empty_box_reads_do_not_access_emulator_and_nonempty_reads_are_unchanged(monkeypatch):
+    from pokesim_core import gen1_ui
+    old = gen1_ui.memory_bytes
+    monkeypatch.setattr(gen1_ui, 'memory_bytes', old)
+    parallel.install_storage_read_fix()
+    class Memory:
+        def __init__(self):
+            self.reads = []
+        def __getitem__(self, key):
+            self.reads.append(key)
+            block = key[1] if isinstance(key, tuple) else key
+            assert block.start < block.stop
+            return list(range(block.stop - block.start))
+    memory = Memory()
+    assert gen1_ui.memory_bytes(memory, None, 0xA000, 0) == b''
+    assert gen1_ui.memory_bytes(memory, 2, 0xA000, 0) == b''
+    assert memory.reads == []
+    assert gen1_ui.memory_bytes(memory, None, 0xA000, 3) == b'\x00\x01\x02'
+    assert gen1_ui.memory_bytes(memory, 2, 0xA000, 3) == b'\x00\x01\x02'
+    assert len(memory.reads) == 2
+
+
+def test_explicit_budget_amendment_does_not_change_registration(tmp_path):
+    protocol = {'sha256': 'a'*64, 'total_token_budget': 50000000}
+    assert parallel.execution_budget(tmp_path, protocol) == 50000000
+    record = {'protocol_sha256': protocol['sha256'], 'total_token_budget': 300000000}
+    record['sha256'] = digest(encoded(record))
+    write_json(tmp_path/'budget-authorization.json', record)
+    assert parallel.execution_budget(tmp_path, protocol) == 300000000
+    assert protocol['total_token_budget'] == 50000000
+    record['total_token_budget'] = 400000000
+    write_json(tmp_path/'budget-authorization.json', record)
+    with pytest.raises(ValueError, match='authorization'):
+        parallel.execution_budget(tmp_path, protocol)
+
+
+def test_reviewed_infrastructure_error_allows_missing_claude_pair_but_not_gameplay_retry():
+    failed = {**cell('failed', provider='claude', status='error'), 'model': 'claude', 'budget_hold_tokens': 120}
+    pending = {**cell('retry', provider='claude', variant=2), 'model': 'claude'}
+    assert parallel.next_cell([failed, pending], 4, 4, 'claude-missing') == pending
+    failed['status'] = 'finished'
+    assert parallel.next_cell([failed, pending], 4, 4, 'claude-missing') is None
+
+
 def test_worker_overrun_increases_reservation_and_unknown_usage_blocks_admission():
     cells = [cell('active', status='running')]
     assert parallel.reservation_ledger(cells, {'active': outcome(tokens=170)}, 20) == (0, 170)
@@ -42,6 +86,20 @@ def test_provider_caps_allow_other_provider_without_crossing_variant_barrier():
     cells[0]['status'] = 'finished'
     assert parallel.next_cell(cells, 4, 2)['id'] == 'c'
     assert parallel.next_cell(cells, 2, 2) is None
+
+
+def test_exploration_selects_only_missing_claude_pairs_with_smallest_caps():
+    cells = [cell('openai'), cell('repeat', provider='claude', variant=2),
+             cell('done', provider='claude', status='finished'),
+             cell('new', provider='claude', task='two', budget=50),
+             cell('costly', provider='claude', task='three', budget=100)]
+    for item in cells:
+        item['model'] = 'claude' if item['provider'] == 'claude' else 'openai'
+    assert parallel.next_cell(cells, 4, 2, 'claude-missing')['id'] == 'new'
+    cells[3]['status'] = 'running'
+    assert parallel.next_cell(cells, 4, 2, 'claude-missing')['id'] == 'costly'
+    cells[4]['status'] = 'running'
+    assert parallel.next_cell(cells, 4, 2, 'claude-missing') is None
 
 
 def setup_coordinator(tmp_path, monkeypatch, budget=50_000_000):
@@ -136,3 +194,71 @@ def test_reviewed_failure_is_not_retried_and_its_reserve_limits_remaining_work(t
     assert not summary['accounting_complete']
     assert summary['finished'] == 0
     assert all(model['score'] is None for model in summary['models'])
+
+
+def test_named_trial_never_selects_other_eligible_work():
+    first = {**cell('first', provider='claude'), 'model':'claude-a'}
+    second = {**cell('second', provider='claude'), 'model':'claude-b'}
+    assert parallel.next_cell([first, second], 1, 1, 'claude-missing', 'second') is second
+    second['status'] = 'finished'
+    assert parallel.next_cell([first, second], 1, 1, 'claude-missing', 'second') is None
+    assert parallel.next_cell([first, second], 1, 1, 'claude-missing', 'absent') is None
+
+
+def test_diagnostic_reservations_are_bound_unique_and_never_refunded(tmp_path):
+    protocol = {'sha256':'a'*64}
+    assert parallel.diagnostic_holds(tmp_path, protocol) == 0
+    record = {'protocol_sha256':protocol['sha256'], 'holds':[{'id':'diagnostic-one', 'token_hold':250000, 'status':'finished'}]}
+    record['sha256'] = digest(encoded(record))
+    write_json(tmp_path/'diagnostic-reservations.json', record)
+    assert parallel.diagnostic_holds(tmp_path, protocol) == 250000
+    record['holds'][0]['token_hold'] = 0
+    record['sha256'] = digest(encoded({k:v for k,v in record.items() if k != 'sha256'}))
+    write_json(tmp_path/'diagnostic-reservations.json', record)
+    with pytest.raises(ValueError, match='reservation'):
+        parallel.diagnostic_holds(tmp_path, protocol)
+    record['holds'] = [{'id':'one', 'token_hold':10}, {'id':'one', 'token_hold':20}]
+    record['sha256'] = digest(encoded({k:v for k,v in record.items() if k != 'sha256'}))
+    write_json(tmp_path/'diagnostic-reservations.json', record)
+    with pytest.raises(ValueError, match='reservation'):
+        parallel.diagnostic_holds(tmp_path, protocol)
+    with pytest.raises(ValueError, match='checksum'):
+        parallel.diagnostic_holds(tmp_path, {'sha256':'b'*64})
+
+
+def test_frozen_response_adapter_adds_headroom_and_reservation_without_changing_other_settings(monkeypatch):
+    from pokeagent_bench import claude_provider
+    cls = claude_provider.ClaudeCodeProvider
+    monkeypatch.setattr(cls, 'harness', 'claude-code-bounded-gameplay-v1')
+    monkeypatch.setattr(cls, 'max_output_tokens', 4096)
+    monkeypatch.setattr(cls, 'estimate_next_tokens', lambda self, *args, **kwargs: 20000)
+    monkeypatch.setattr(claude_provider, 'subscription_environment', lambda: {'CLAUDE_CODE_MAX_OUTPUT_TOKENS':'4096', 'isolation':'unchanged'})
+    parallel.install_response_headroom()
+    assert cls.harness == 'claude-code-bounded-gameplay-v2'
+    assert cls.max_output_tokens == 8192
+    assert cls.estimate_next_tokens(None) == 24096
+    assert claude_provider.subscription_environment() == {'CLAUDE_CODE_MAX_OUTPUT_TOKENS':'8192', 'isolation':'unchanged'}
+    parallel.install_response_headroom()
+    assert cls.estimate_next_tokens(None) == 24096
+
+
+@pytest.mark.parametrize('remaining,expected', [(900,600), (50,50)])
+def test_v3_deadline_never_exceeds_remaining_trial_time_and_reserves_full_response(monkeypatch, remaining, expected):
+    from pokeagent_bench import claude_provider
+    cls = claude_provider.ClaudeCodeProvider
+    monkeypatch.setattr(cls, 'harness', 'claude-code-bounded-gameplay-v1')
+    monkeypatch.setattr(cls, 'max_output_tokens', 4096)
+    monkeypatch.setattr(cls, '__init__', lambda self: setattr(self, 'config_identity', {}))
+    monkeypatch.setattr(cls, 'estimate_next_tokens', lambda self, *args: 20000)
+    monkeypatch.setattr(cls, 'decide', lambda self, *args: self._complete('turn', {}, -1))
+    monkeypatch.setattr(cls, '_complete', lambda self, method, params, deadline: deadline)
+    monkeypatch.setattr(claude_provider, 'subscription_environment', lambda: {'CLAUDE_CODE_MAX_OUTPUT_TOKENS':'4096'})
+    monkeypatch.setattr(parallel.time, 'monotonic', lambda: 1000)
+    parallel.install_response_budget_v3()
+    obj = cls()
+    assert obj.decide({}, None, [], None, remaining) == 1000+expected
+    assert obj.estimate_next_tokens() == 47904
+    assert obj.config_identity == {'max_response_tokens':32000, 'max_decision_seconds':600}
+    assert claude_provider.subscription_environment()['CLAUDE_CODE_MAX_OUTPUT_TOKENS'] == '32000'
+    parallel.install_response_budget_v3()
+    assert obj.estimate_next_tokens() == 47904

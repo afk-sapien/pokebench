@@ -33,7 +33,8 @@ def test_shortcut_contract_requires_one_selected_target():
             validate(command, Limits())
     provider = object.__new__(GameplayCodexProvider)
     provider.response_contract = 'simple'
-    commands = provider.decision_schema(Limits())['properties']['actions']['items']['properties']['command']['enum']
+    variants = provider.decision_schema(Limits())['properties']['actions']['items']['anyOf']
+    commands = {branch['properties']['command']['enum'][0] for branch in variants}
     assert {'use_move','use_item','switch_pokemon'} <= set(commands)
     assert 'without a separate FIGHT' in provider.prompt
 
@@ -79,7 +80,7 @@ def test_unknown_choice_stops_without_confirming(tmp_path, engine, monkeypatch):
     monkeypatch.setattr('pokeagent_bench.menu_shortcuts.read_party',lambda m:[mon()])
     monkeypatch.setattr('pokeagent_bench.menu_shortcuts.read_bag',lambda m:[(16,1)])
     monkeypatch.setattr('pokeagent_bench.menu_shortcuts.ui_state',lambda m:{'kind':'menu','cursor_tile':[1,2]})
-    monkeypatch.setattr('pokeagent_bench.menu_shortcuts.panel',lambda *args:'unknown')
+    monkeypatch.setattr('pokesim_core.shortcuts.machine.current_screen', lambda *args, **kwargs: 'unknown')
     result = {}
     try:
         execute_shortcut(session,{'command':'use_item','argument':'Full Restore:1'},
@@ -123,3 +124,23 @@ def test_shortcut_result_survives_bounded_observation_allowlist():
     assert packet['last_result']['shortcut'] == result['shortcut']
     assert 'NEVER_EXPOSE' not in json.dumps(packet)
     assert 'Item consumed: yes' in render(packet)
+
+
+
+def test_shortcuts_use_core_screen_classifier_and_preserve_completion(monkeypatch, tmp_path, engine):
+    from pokesim_core.controls import panel as core_panel
+    session = setup(tmp_path, engine)
+    observed = []
+    def core_move(port, slot):
+        assert port.panel is core_panel
+        assert port.version == 'red'
+        observed.append(slot)
+        return {'outcome': 'Move requested', 'shortcut': {'completed': True, 'settled': False}}
+    monkeypatch.setattr('pokeagent_bench.menu_shortcuts.choose_move', core_move)
+    try:
+        result = execute(session, 'move', {'command': 'use_move', 'argument': '3', 'count': 1})
+        assert observed == [2]
+        assert result['shortcut'] == {'completed': True, 'settled': False}
+        assert not engine.inputs
+    finally:
+        session.close()

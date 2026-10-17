@@ -1,5 +1,4 @@
 """Short retained conversations with deterministic handoffs and no summary calls."""
-import json
 import time
 
 from . import bounded_context
@@ -9,11 +8,12 @@ from .visual_feedback import public_context
 
 
 class BoundedGameplayProvider(GameplayCodexProvider):
-    harness = 'codex-app-server-gameplay-v036'
+    harness = 'codex-app-server-gameplay-fair-bounded-v046'
     memory_protocol = 'bounded-segments-deltas-v1'
     default_compact_at = 12000
+    decision_timeout_seconds = 600
 
-    def __init__(self, *args, context_turns=8, **kwargs):
+    def __init__(self, *args, context_turns=8, context_detail="full", **kwargs):
         if type(context_turns) is not int or not 2 <= context_turns <= 32:
             raise ValueError('context_turns must be between 2 and 32')
         if kwargs.get('continuity', True) is not True:
@@ -21,6 +21,9 @@ class BoundedGameplayProvider(GameplayCodexProvider):
         kwargs['continuity'] = True
         kwargs['observation_format'] = 'text'
         super().__init__(*args, **kwargs)
+        if context_detail not in ("full", "on-demand"):
+            raise ValueError("context_detail must be full or on-demand")
+        self.context_detail = context_detail
         self.context_turns = context_turns
         self.packet_baseline = None
         self.packet_sequence = 0
@@ -40,8 +43,9 @@ Updates name fields to replace and paths to remove. Omitted fields are unchanged
 within this segment. A snapshot replaces all previous state. Sequence numbers
 identify the previous packet. Current location, result and screenshot are current.
 Agent notes and plans are unverified. Do not confuse a requested action with its result.''')
-        self.config_identity.update(context_turns=context_turns, compaction_protocol='deterministic-checkpoint-no-summary-v1',
-                                    text_presentation='bounded-gameplay-context-v1',
+        self.config_identity.update(context_turns=context_turns, context_detail=context_detail,
+                                    decision_timeout_seconds=self.decision_timeout_seconds, compaction_protocol='deterministic-checkpoint-no-summary-v1',
+                                    text_presentation='bounded-gameplay-context-v3',
                                     ordinary_packet_bytes=bounded_context.PACKET_BYTES,
                                     inspection_packet_bytes=bounded_context.INSPECTION_BYTES)
 
@@ -51,7 +55,7 @@ Agent notes and plans are unverified. Do not confuse a requested action with its
         segment = self.segment_index + 1 if rotate else self.segment_index
         public = public_context(observation)
         packet, baseline = bounded_context.build(public, notes, recent,
-            None if rotate else self.packet_baseline, self.packet_sequence + 1, segment)
+            None if rotate else self.packet_baseline, self.packet_sequence + 1, segment, detail=self.context_detail)
         text = bounded_context.render(packet)
         bounded_context.check_size(packet, text)
         return public, packet, baseline, text, rotate
@@ -59,13 +63,14 @@ Agent notes and plans are unverified. Do not confuse a requested action with its
     def estimate_next_tokens(self, observation, notes, recent, limits):
         _, _, _, text, rotate = self.prepare_packet(observation, notes, recent)
         history = len(self.prompt.encode()) if rotate else self.context_tokens
-        images = 2 if self.look_back is not None else 1
-        return max(8000, history + len(text.encode()) + 2048 * images + 4096)
+        images = (2 if self.before_after else 1) * (2 if self.look_back is not None else 1)
+        output_allowance = max(4096, self.max_output_tokens or 0)
+        return max(8000, history + len(text.encode()) + 2048 * images + output_allowance)
 
     def decide(self, observation, notes, recent, limits, timeout):
         if observation['status']['track'] != self.allowed_track:
             raise ProviderError('Bounded provider requires the gameplay track')
-        deadline = time.monotonic() + min(timeout, 180)
+        deadline = time.monotonic() + min(timeout, self.decision_timeout_seconds)
         public, packet, baseline, text, rotate = self.prepare_packet(observation, notes, recent)
         if rotate:
             self.close()
@@ -95,12 +100,13 @@ Agent notes and plans are unverified. Do not confuse a requested action with its
                     inputs.append({'type': 'text', 'text': 'Requested screenshot is outside retained history.'})
             inputs.extend([{'type': 'text', 'text': f"CURRENT frame {observation['frame']}"},
                            {'type': 'image', 'url': 'data:image/png;base64,' + view['base64']}])
+            from .decision_contract import wire_schema
             message, usage = self._complete('turn/start', {'threadId': self.thread_id, 'input': inputs,
-                'effort': self.reasoning_effort, 'outputSchema': self.decision_schema(limits)}, deadline)
-            response = json.loads(message)
-            look_back = response.pop('look_back')
-            if look_back is not None and (type(look_back) is not int or not 1 <= look_back <= 8):
-                raise ValueError('Invalid look_back')
+                'effort': self.reasoning_effort, 'outputSchema': wire_schema(self.decision_schema(limits), self.provider)}, deadline)
+            from .decision_contract import parse_response
+            response, look_back, error = parse_response(message, self.decision_schema(limits), limits)
+            if error:
+                record['response_validation_error'] = error
             if not response['actions'] and look_back is not None:
                 record['maintenance'] = 'look_back'
             # The runner accounts for empty decisions and applies its invalid-response limit.

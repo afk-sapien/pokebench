@@ -7,9 +7,9 @@ SCHEMA = {"anyOf": [{"type": "null"}, {"type": "object", "additionalProperties":
           "required": list(FIELDS)}]}
 
 
-def validate(value, existing):
+def validate(value, existing, *, require_initial=False):
     if value is None:
-        if existing is None:
+        if require_initial and existing is None:
             raise ValueError("Set an initial goal_plan with evidence and a completion condition")
         return None
     if not isinstance(value, dict) or set(value) != set(FIELDS):

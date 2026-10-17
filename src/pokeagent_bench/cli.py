@@ -29,6 +29,49 @@ def load_labels(path):
 def parser():
     root = argparse.ArgumentParser(description="Controlled Pokemon Red agent benchmarks")
     sub = root.add_subparsers(dest="command", required=True)
+    catalog = sub.add_parser("catalog", help="Inspect the six-category eval plan without running models")
+    from .evaluation_catalog import CATEGORIES
+    from .benchmark_tracks import BENCHMARKS
+    catalog.add_argument("--benchmark", choices=BENCHMARKS, help="Defaults to PokeBench focused tasks")
+    catalog.add_argument("--category", choices=(*CATEGORIES, "quests"))
+    catalog.add_argument("--fixtures", type=Path, help="Optional private fixture root to count reusable source variants")
+    inspect_catalog = sub.add_parser('catalog-validate', help='Check every catalog fixture and its native evaluator')
+    inspect_catalog.add_argument('--fixtures', type=Path, required=True)
+    inspect_catalog.add_argument('--rom', type=Path, required=True)
+    inspect_catalog.add_argument('--output', type=Path)
+    launch = sub.add_parser('catalog-run', help='Run one registered Gen 1 task or a native input reference')
+    launch.add_argument('--fixtures', type=Path, required=True)
+    launch.add_argument('--task', required=True)
+    launch.add_argument('--variant', default='default')
+    launch.add_argument('--rom', type=Path, required=True)
+    launch.add_argument('--game-data', type=Path, required=True)
+    launch.add_argument('--output', type=Path, required=True)
+    launch.add_argument('--provider', choices=('codex', 'claude'))
+    launch.add_argument('--model')
+    launch.add_argument('--token-limit', type=int)
+    launch.add_argument('--decision-limit', type=int, help='Maximum agent decisions, including inspection and invalid responses')
+    launch.add_argument('--presentation', choices=('current', 'before-after'), default='current')
+    launch.add_argument('--reasoning-effort', choices=('low', 'medium', 'high', 'xhigh'), default='low')
+    launch.add_argument('--actions', type=Path, help='Zero-model native inputs or preparation choices as a JSON list')
+    launch.add_argument('--reference', action='store_true', help='Record replay verification against the starting fixture')
+    batch_catalog = sub.add_parser('catalog-batch', help='Run a model matrix across registered tasks')
+    batch_catalog.add_argument('--benchmark', choices=BENCHMARKS, help='Defaults to PokeBench for a new batch. Long requires pokebench-long')
+    batch_catalog.add_argument('--fixtures', type=Path, required=True)
+    batch_catalog.add_argument('--rom', type=Path, required=True)
+    batch_catalog.add_argument('--game-data', type=Path, required=True)
+    batch_catalog.add_argument('--output', type=Path, required=True)
+    batch_catalog.add_argument('--models', nargs='+', help='Provider-prefixed model names: codex:MODEL or claude:MODEL')
+    batch_catalog.add_argument('--tasks', nargs='+')
+    batch_catalog.add_argument('--repeats', type=int, default=1)
+    batch_catalog.add_argument('--total-token-budget', type=int, required=True)
+    batch_catalog.add_argument('--dry-run', action='store_true')
+    batch_catalog.add_argument('--resume', action='store_true')
+    campaign_report = sub.add_parser('campaign-report', help='Export a scored campaign milestone and party report')
+    campaign_report.add_argument('--run', type=Path, required=True)
+    campaign_report.add_argument('--output', type=Path)
+    campaign_report.add_argument('--game-data', type=Path)
+    catalog_report = sub.add_parser('catalog-report', help='Summarize a catalog batch by task and category')
+    catalog_report.add_argument('--batch', type=Path, required=True)
     setup = sub.add_parser("prepare", help="Create a fixed opening scenario using fresh SRAM")
     setup.add_argument("--rom", type=Path, required=True)
     setup.add_argument("--output", type=Path, required=True)
@@ -52,6 +95,8 @@ def parser():
         command.add_argument("--labels", type=Path)
         command.add_argument("--game-data", type=Path, help="Private verified game data bundle for the gameplay track")
         command.add_argument("--track", choices=("structured", "visual", "gameplay"), default="structured")
+        from .action_policy import POLICIES
+        command.add_argument("--action-policy", choices=POLICIES, help="Task automation policy. Defaults to the scenario policy")
         command.add_argument("--goal", choices=("first-gym", "campaign", "challenge"), default="first-gym")
         for key, default in asdict(Limits()).items():
             command.add_argument("--" + key.replace("_", "-"), type=float if isinstance(default, float) else int,
@@ -63,11 +108,13 @@ def parser():
             command.add_argument("--model")
             command.add_argument("--codex-policy", choices=("standard", "grounded", "grounded-motion", "compact", "continuous", "gameplay", "bounded"), default="compact",
                                  help="Compact is the default. Legacy policies remain selectable for comparisons")
+            command.add_argument("--context-detail", choices=("full", "on-demand"), default="full",
+                                 help="Bounded gameplay detail policy. On-demand omits move mechanics until party inspection")
             command.add_argument("--context-turns", type=int, default=8, help="Maximum responses per bounded conversation segment")
             command.add_argument("--compact-at", type=int, help="Context threshold, default 12000 for bounded, 32000 for legacy gameplay and 24000 for visual")
             command.add_argument("--observation-format", choices=("json", "text"), default="json",
                                  help="Gameplay input format. Text is an experimental deterministic presentation")
-            command.add_argument("--presentation", choices=("current", "strip"), default="current")
+            command.add_argument("--presentation", choices=("current", "before-after", "strip"), default="current")
             command.add_argument("--response-contract", choices=("simple", "assessment"), default="simple")
             command.add_argument("--fresh-decisions", action="store_true",
                                  help="Comparison mode: restart every decision. Default retains conversation with periodic summaries")
@@ -131,6 +178,38 @@ def parser():
 
 
 def execute(args):
+    if args.command == "catalog":
+        from .evaluation_catalog import summary
+        return summary(args.category, args.fixtures, benchmark=args.benchmark or ('pokebench-long' if args.category == 'campaign' else 'pokebench'))
+    if args.command == 'campaign-report':
+        from .campaign_report import export_campaign_report
+        return {'report': str(export_campaign_report(args.run, args.output, game_data=args.game_data))}
+    if args.command == 'catalog-report':
+        from .catalog_batch import report
+        return report(args.batch)
+    if args.command == 'catalog-batch':
+        from .catalog_batch import plan, run_batch
+        if args.dry_run:
+            return plan(args.fixtures, args.models or [], args.tasks, args.repeats, benchmark=args.benchmark or 'pokebench')
+        return run_batch(args.fixtures, args.rom, args.game_data, args.output,
+                         models=args.models, tasks=args.tasks, repeats=args.repeats,
+                         budget=args.total_token_budget, resume=args.resume, benchmark=args.benchmark)
+    if args.command == 'catalog-validate':
+        from .catalog_execution import validate_fixtures
+        from .core import write_json
+        result = validate_fixtures(args.fixtures, args.rom)
+        if args.output:
+            write_json(args.output, result)
+        return result
+    if args.command == 'catalog-run':
+        from .catalog_execution import run_task
+        actions = json.loads(args.actions.read_text()) if args.actions else None
+        if args.reference and actions is None:
+            raise ValueError('A reference requires explicit input actions')
+        return run_task(args.fixtures, args.task, args.rom, args.game_data, args.output,
+                        provider=args.provider, model=args.model, variant=args.variant,
+                        token_limit=args.token_limit, decision_limit=args.decision_limit, actions=actions,
+                        reasoning_effort=args.reasoning_effort, reference=args.reference, presentation=args.presentation)
     if args.command == "suite":
         from . import suite
         if args.suite_command == "catalog":
@@ -178,7 +257,7 @@ def execute(args):
             raise ValueError("CLI resume supports controlled Codex and Claude Code runs")
         extra = {}
         if agent["harness"] in (ContinuousCodexProvider.harness, GameplayCodexProvider.harness, BoundedGameplayProvider.harness, ClaudeCodeProvider.harness):
-            extra = {k: v for k, v in agent["configuration"].items() if k in ("compact_at", "presentation", "response_contract", "continuity", "observation_format", "context_turns")}
+            extra = {k: v for k, v in agent["configuration"].items() if k in ("compact_at", "presentation", "response_contract", "continuity", "observation_format", "context_turns", "context_detail")}
         provider = classes[agent["harness"]](agent["model"], reasoning_effort=agent["reasoning_effort"], **extra)
         session = None
         try:
@@ -233,29 +312,31 @@ def execute(args):
             raise ValueError("Supply both input and output prices, or neither")
         if any(p is not None and (not math.isfinite(p) or p < 0) for p in (args.input_price, args.output_price)):
             raise ValueError("Prices must be nonnegative and finite")
+        if args.context_detail != "full" and not (args.provider == "claude" or (args.provider == "codex" and args.codex_policy == "bounded")):
+            raise ValueError("context-detail requires a bounded gameplay provider")
         if args.provider == "claude":
             from .claude_provider import ClaudeCodeProvider
-            if args.track != "gameplay" or args.codex_policy != "bounded" or args.presentation != "current" or args.response_contract != "simple" or args.fresh_decisions:
-                raise ValueError("Claude requires gameplay track, bounded policy and retained current/simple presentation")
+            if args.track != "gameplay" or args.codex_policy != "bounded" or args.presentation not in ("current", "before-after") or args.response_contract != "simple" or args.fresh_decisions:
+                raise ValueError("Claude requires gameplay track, bounded policy and retained current or before-after images and the simple response contract")
             if args.input_price is not None or args.output_price is not None:
                 raise ValueError("Subscription usage is not API-priced")
             provider = ClaudeCodeProvider(args.model, reasoning_effort=args.reasoning_effort,
-                context_turns=args.context_turns,
+                context_turns=args.context_turns, context_detail=args.context_detail, presentation=args.presentation,
                 compact_at=12000 if args.compact_at is None else args.compact_at)
         elif args.provider == "codex":
             from .codex_provider import CodexProvider
             if args.input_price is not None or args.output_price is not None:
                 raise ValueError("Subscription usage is not API-priced")
             if args.codex_policy in ("gameplay", "bounded"):
-                if args.track != "gameplay" or args.response_contract != "simple" or args.presentation != "current":
-                    raise ValueError("Gameplay policy requires gameplay track and current/simple presentation")
+                if args.track != "gameplay" or args.response_contract != "simple" or args.presentation not in ("current", "before-after"):
+                    raise ValueError("Gameplay policy requires gameplay track and current or before-after images and the simple response contract")
                 from .gameplay_provider import GameplayCodexProvider
                 from .bounded_provider import BoundedGameplayProvider
                 cls = BoundedGameplayProvider if args.codex_policy == "bounded" else GameplayCodexProvider
-                options = {"context_turns": args.context_turns} if args.codex_policy == "bounded" else {}
+                options = {"context_turns": args.context_turns, "context_detail": args.context_detail} if args.codex_policy == "bounded" else {}
                 provider = cls(args.model, reasoning_effort=args.reasoning_effort,
                     compact_at=cls.default_compact_at if args.compact_at is None else args.compact_at, continuity=not args.fresh_decisions,
-                    observation_format=args.observation_format, **options)
+                    observation_format=args.observation_format, presentation=args.presentation, **options)
             elif args.codex_policy == "continuous":
                 if args.track != "visual":
                     raise ValueError("Continuous gameplay requires --track visual")
@@ -287,7 +368,8 @@ def execute(args):
     try:
         engine, manifest = load_engine(args.rom, args.scenario)
         session = Session(engine, args.output, manifest, track=args.track, goal=args.goal,
-                          limits=limits, labels=labels, agent=agent, journal=getattr(args, "journal", False), gameplay_catalog=gameplay_catalog)
+                          limits=limits, labels=labels, agent=agent, journal=getattr(args, "journal", False), gameplay_catalog=gameplay_catalog,
+                          action_policy=getattr(args, "action_policy", None))
         if args.command == "mcp":
             from .mcp_server import serve
             serve(session)

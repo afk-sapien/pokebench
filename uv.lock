@@ -3,11 +3,23 @@ revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version >= '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version >= '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "(python_full_version >= '3.14' and platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (python_full_version >= '3.14' and platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32')",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
     "python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'win32'",
-    "python_full_version < '3.12' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "(python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32')",
+    "python_full_version < '3.12' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version < '3.12' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.12' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "(python_full_version < '3.12' and platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.12' and platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32')",
 ]
 
 [[package]]
@@ -369,7 +381,11 @@ version = "2.4.6"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version < '3.12' and sys_platform == 'win32'",
-    "python_full_version < '3.12' and sys_platform != 'win32'",
+    "python_full_version < '3.12' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version < '3.12' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.12' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "(python_full_version < '3.12' and platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (python_full_version < '3.12' and platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version < '3.12' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32')",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/d0/ad/fed0499ce6a338d2a03ebae59cd15093910c8875328855781952abf6c2fe/numpy-2.4.6.tar.gz", hash = "sha256:f3a3570c4a2a16746ac2c31a7c7c7b0c186b95ce902e33db6f28094ed7387dda", size = 20735807, upload-time = "2026-05-18T23:37:14.07Z" }
 wheels = [
@@ -452,9 +468,17 @@ version = "2.5.3"
 source = { registry = "https://pypi.org/simple" }
 resolution-markers = [
     "python_full_version >= '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version >= '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version >= '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "(python_full_version >= '3.14' and platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (python_full_version >= '3.14' and platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32')",
     "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
-    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "(python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine != 'arm64' and platform_machine != 'x86_64' and sys_platform == 'darwin') or (python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine != 'aarch64' and platform_machine != 'x86_64' and sys_platform == 'linux') or (python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform != 'darwin' and sys_platform != 'linux' and sys_platform != 'win32')",
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/13/01/11703282db468b85f6f7b8c7f22d058de5970d5c7e60a3a8aaa313c3de36/numpy-2.5.3.tar.gz", hash = "sha256:df2d5874ff183595a4ba404edd04f6bd9b5505c1d7708573f6a6c17489a67563", size = 20791231, upload-time = "2026-09-06T16:27:47.073Z" }
 wheels = [
@@ -630,16 +654,22 @@ wheels = [
 
 [[package]]
 name = "pokeagent-bench"
-version = "0.31.0"
+version = "0.35.0"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
     { name = "httpx" },
+    { name = "jsonschema" },
     { name = "mcp" },
     { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
     { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
     { name = "pillow" },
-    { name = "pokesim-core", extra = ["emulator"] },
+    { name = "pokesim-core" },
+    { name = "pyboy-rs", version = "0.1.1", source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl" }, marker = "platform_machine == 'x86_64' and sys_platform == 'darwin'" },
+    { name = "pyboy-rs", version = "0.1.1", source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl" }, marker = "platform_machine == 'arm64' and sys_platform == 'darwin'" },
+    { name = "pyboy-rs", version = "0.1.1", source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl" }, marker = "platform_machine == 'aarch64' and sys_platform == 'linux'" },
+    { name = "pyboy-rs", version = "0.1.1", source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" }, marker = "platform_machine == 'x86_64' and sys_platform == 'linux'" },
+    { name = "pyboy-rs", version = "0.1.1", source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-win_amd64.whl" }, marker = "(platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'x86_64' and sys_platform == 'win32')" },
     { name = "uvicorn" },
 ]
 
@@ -653,10 +683,16 @@ dev = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "httpx", specifier = ">=0.28,<0.29" },
+    { name = "jsonschema", specifier = ">=4.23,<5" },
     { name = "mcp", specifier = ">=1.26,<2" },
     { name = "numpy", specifier = ">=1.26,<3" },
     { name = "pillow", specifier = ">=10,<13" },
-    { name = "pokesim-core", extras = ["emulator"], url = "https://github.com/afk-sapien/pokesim-core/releases/download/v0.1.4/pokesim_core-0.1.4-py3-none-any.whl" },
+    { name = "pokesim-core", path = "vendor/pokesim_core-0.6.1.dev1-py3-none-any.whl" },
+    { name = "pyboy-rs", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl" },
+    { name = "pyboy-rs", marker = "platform_machine == 'x86_64' and sys_platform == 'darwin'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl" },
+    { name = "pyboy-rs", marker = "platform_machine == 'aarch64' and sys_platform == 'linux'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl" },
+    { name = "pyboy-rs", marker = "platform_machine == 'x86_64' and sys_platform == 'linux'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" },
+    { name = "pyboy-rs", marker = "(platform_machine == 'AMD64' and sys_platform == 'win32') or (platform_machine == 'x86_64' and sys_platform == 'win32')", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-win_amd64.whl" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8,<10" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11,<1" },
     { name = "uvicorn", specifier = ">=0.34,<1" },
@@ -665,64 +701,130 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "pokesim-core"
-version = "0.1.4"
-source = { url = "https://github.com/afk-sapien/pokesim-core/releases/download/v0.1.4/pokesim_core-0.1.4-py3-none-any.whl" }
+version = "0.6.1.dev1"
+source = { path = "vendor/pokesim_core-0.6.1.dev1-py3-none-any.whl" }
 wheels = [
-    { url = "https://github.com/afk-sapien/pokesim-core/releases/download/v0.1.4/pokesim_core-0.1.4-py3-none-any.whl", hash = "sha256:8984ad4f2ac5012ca6a2d1f0501866f3194cf182b42686122e3edbc7a09c10cb" },
-]
-
-[package.optional-dependencies]
-emulator = [
-    { name = "pillow" },
-    { name = "pyboy" },
+    { filename = "pokesim_core-0.6.1.dev1-py3-none-any.whl", hash = "sha256:1f2e6f5d1a4b2bd3020bdc332dcafb306b41eccb63f97ae1fabcc5bc5436fe5d" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "pillow", marker = "extra == 'emulator'", specifier = ">=10,<13" },
-    { name = "pyboy", marker = "extra == 'emulator'", specifier = "==2.7.0" },
+    { name = "pyboy-rs", marker = "extra == 'emulator'", specifier = ">=0.1.1,<0.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8,<10" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11,<1" },
 ]
 provides-extras = ["emulator", "dev"]
 
 [[package]]
-name = "pyboy"
-version = "2.7.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "numpy", version = "2.4.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.12'" },
-    { name = "numpy", version = "2.5.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.12'" },
-    { name = "pysdl2" },
-    { name = "pysdl2-dll" },
+name = "pyboy-rs"
+version = "0.1.1"
+source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl" }
+resolution-markers = [
+    "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and platform_machine == 'x86_64' and sys_platform == 'darwin'",
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7b/90/60ab95f484d1d792488ea30852b0820c0527b0f79fa555c57f214028c7b7/pyboy-2.7.0.tar.gz", hash = "sha256:b97db94c366f5e54af04f94641c6107454821543015716b7182df29684ad9180", size = 171904, upload-time = "2026-01-24T08:41:13.996Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/76/75/0a15888cddaead6be4a5d56874c21acc1441803cc209f7ce3f0fe7f86d12/pyboy-2.7.0-cp311-cp311-macosx_10_9_universal2.whl", hash = "sha256:20b1ab830cf355a635355556e8924273146e7f939e146c0394373d0625fd0686", size = 11111567, upload-time = "2026-01-24T08:56:24.393Z" },
-    { url = "https://files.pythonhosted.org/packages/14/3f/80e65fcf097400c54ffd884e13167e936fd71d032cfc7f9444760269b9ec/pyboy-2.7.0-cp311-cp311-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:57c69e7532957ac5d266a0fd5df467f6c293e85ea9fd89b5c14e2b80f8e011a1", size = 5716406, upload-time = "2026-01-24T08:44:19.465Z" },
-    { url = "https://files.pythonhosted.org/packages/42/28/2a71cba0add6b1258b7d485b53a0fca31016144c90ebc1a98ac754f04c4a/pyboy-2.7.0-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:82a097fc3bc5e9a0c95b73b3dc675c1d781a163068bbc83f03f823251a855cad", size = 6147609, upload-time = "2026-01-24T08:44:54.269Z" },
-    { url = "https://files.pythonhosted.org/packages/73/f7/4f06d1c2d18dacb68e9c36090bd7cc3feaf0f26e3a7a3506ddd5b2e73a83/pyboy-2.7.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:cf68cd3d41b2cb4939e2a68196f352fb7b4023c4c211d036a559128cf71d2316", size = 5731777, upload-time = "2026-01-24T08:53:06.359Z" },
-    { url = "https://files.pythonhosted.org/packages/63/99/11ad5dcc760e016ba6e629aa8fc32c621eed211a620d49dd824c45f88f5b/pyboy-2.7.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:0cf68c993eb64eb5a16015812da518022d2e037bcdee48c9b00a766a50b8bc2a", size = 6183647, upload-time = "2026-01-24T08:53:05.38Z" },
-    { url = "https://files.pythonhosted.org/packages/f0/04/e986a47deb4222795df0c4ab34d276cc90c89f585695c9161b46ca4118ae/pyboy-2.7.0-cp311-cp311-win_amd64.whl", hash = "sha256:d8d0740923461858ca2f48f69923c41cd068e42fc95be60f1760ac62013b70f2", size = 4487289, upload-time = "2026-01-24T08:45:17.688Z" },
-    { url = "https://files.pythonhosted.org/packages/05/af/c84b122a051b51d5fa76bffcf30b4585fa3c8efbaedb070c609382d2f4e9/pyboy-2.7.0-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:11be1062563c565d53c63485bf9c37080a809cea9faf78330e73dbd452b72d63", size = 11168865, upload-time = "2026-01-24T08:57:32.72Z" },
-    { url = "https://files.pythonhosted.org/packages/95/99/9b93efaf52eee3db84a09916d9f42a660630ece8c0f5698caebc4eb9388a/pyboy-2.7.0-cp312-cp312-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:8eb63ee10e4c2028b1ca54aa893c6020a0f09282cb34bf8dae90be23693da2e4", size = 5498331, upload-time = "2026-01-24T08:56:38.49Z" },
-    { url = "https://files.pythonhosted.org/packages/5c/d9/16a6c353b37b573e1c11c1eef0de69fef74bde74f3229afb3111521444af/pyboy-2.7.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:b5858a6bbcec32bb47a3e673a5cfefc1b0839cf9e27bbaed7c996656ff73c40f", size = 5944465, upload-time = "2026-01-24T09:00:25.994Z" },
-    { url = "https://files.pythonhosted.org/packages/23/20/017b1b37316daf76eb56aebc28ef18016a49f8efbb2830e25afe60cc479e/pyboy-2.7.0-cp312-cp312-musllinux_1_2_aarch64.whl", hash = "sha256:1ec35bbe7516b388427b27d47daae4476357b41016292c58506523c43ce8f92f", size = 5507449, upload-time = "2026-01-24T08:46:22.514Z" },
-    { url = "https://files.pythonhosted.org/packages/50/38/ef59b6a35349610e55ce84e887d7d9dccce08aeed13215351095d8559d89/pyboy-2.7.0-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:3193781f0d2fcb2237171c5f90ee22a3dd9a19926626edb8b7f78509b2634357", size = 5974144, upload-time = "2026-01-24T08:43:29.654Z" },
-    { url = "https://files.pythonhosted.org/packages/13/27/5b4de060073b228665254ccee3a6132404ddd3b6679efddcd83292c3ecdb/pyboy-2.7.0-cp312-cp312-win_amd64.whl", hash = "sha256:dfdc0c07a60abe42728f14cf7b0ce3274397fd360568fb9ece01cb7e605b8660", size = 4428190, upload-time = "2026-01-24T08:49:08.317Z" },
-    { url = "https://files.pythonhosted.org/packages/36/67/76c2255857c228e66ac2046ce1a7a22d1eccd4677a8d4bd7e1ce151a681f/pyboy-2.7.0-cp313-cp313-macosx_10_13_universal2.whl", hash = "sha256:3007adead654bd4b5624d7f324d0ae88d83b782bee149af71c92e94bda3bd9c0", size = 11025024, upload-time = "2026-01-24T08:53:30.004Z" },
-    { url = "https://files.pythonhosted.org/packages/8f/cd/21129161d2e25dc8b851b3c13375c3388dfc55c6f58f7a19726d0326161e/pyboy-2.7.0-cp313-cp313-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:6a32facb77ca734328d08c00a13da2117084f76d28b077af5979ddb944104322", size = 5467426, upload-time = "2026-01-24T09:02:07.884Z" },
-    { url = "https://files.pythonhosted.org/packages/d4/1c/084ca1c56ed0ba45cf9ea2493698bf96e70e25881c760d83d15ac7ff9b20/pyboy-2.7.0-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:fcf29ae998c27d63f3d6598bccfbab389ef41c4fa535b4ac15711ba9096cf239", size = 5904682, upload-time = "2026-01-24T09:01:02.048Z" },
-    { url = "https://files.pythonhosted.org/packages/c8/18/d40dc4f84a221c007c47e52f4b85ad358bf0b79da7824c9ab035e820b5c1/pyboy-2.7.0-cp313-cp313-musllinux_1_2_aarch64.whl", hash = "sha256:b117068aeb2641ca12025e6b16e6c22f8cda064d1641a12eee6851df053e8502", size = 5485653, upload-time = "2026-01-24T09:01:48.639Z" },
-    { url = "https://files.pythonhosted.org/packages/49/01/f499ed55607e10818c599a41b8cb4ad5af1b6e938a80bff7f3fd8ba0e62e/pyboy-2.7.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:b8da22db6094055f200955dd66c87541ddf94997fcea9af14464abef800d88d3", size = 5940329, upload-time = "2026-01-24T08:51:47.35Z" },
-    { url = "https://files.pythonhosted.org/packages/dd/1f/9bd094c067d5c9221f2959d59c88f5bcfb8d503e1a94007dff0ed2b66cbb/pyboy-2.7.0-cp313-cp313-win_amd64.whl", hash = "sha256:2417a6bee88b05f970131986a3199f912f9dee1b37aa1dd82ca9d0fdeae149d3", size = 4410048, upload-time = "2026-01-24T08:49:54.113Z" },
-    { url = "https://files.pythonhosted.org/packages/a8/68/33bdc660799ffc81cb67184425776d458004fcdedf91a6555fa320146ce0/pyboy-2.7.0-cp314-cp314-macosx_10_15_universal2.whl", hash = "sha256:2001957ff1aee57ea5e9f5996d04fcb4dd1057f61359806a169bfeb2eca69c12", size = 11029493, upload-time = "2026-01-24T08:41:10.877Z" },
-    { url = "https://files.pythonhosted.org/packages/ae/d7/adef77aa6ab916032e8dda5ec112daf42cf0c0767067caed5321f9b71069/pyboy-2.7.0-cp314-cp314-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4fdf189e40750ea7326d5194c0ec46baf3665207ed2fc9f158ee3ef05800d07a", size = 5532489, upload-time = "2026-01-24T09:00:38.897Z" },
-    { url = "https://files.pythonhosted.org/packages/51/da/ce77683a235cbbf797c8eab25bd6dceabfd2c5109d75e06abbf7b27ff174/pyboy-2.7.0-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:8af4b55ad8270b36b00e8d1f9d386eece7f723511872e37ef2dc1d4756d09df7", size = 5927265, upload-time = "2026-01-24T08:54:54.582Z" },
-    { url = "https://files.pythonhosted.org/packages/a9/90/852232905640ac658dbcc93661fb9e9f5e09e8d919e62d6ac8f3f536ec2a/pyboy-2.7.0-cp314-cp314-musllinux_1_2_aarch64.whl", hash = "sha256:b0bb6bba5cb0433eaef5ff484ee162847489fa1f0f1c28351a93177be2e5769f", size = 5552835, upload-time = "2026-01-24T08:58:47.619Z" },
-    { url = "https://files.pythonhosted.org/packages/f9/fd/b7b1b9ac7d13a6ec2896434a4bf0b80874b092faf61164b9e2d6df67cfc8/pyboy-2.7.0-cp314-cp314-musllinux_1_2_x86_64.whl", hash = "sha256:f1611f7e0c73b2a2972d1c83b718725ad595589853971df25e35ecfcefff9898", size = 5965984, upload-time = "2026-01-24T08:54:22.679Z" },
-    { url = "https://files.pythonhosted.org/packages/ab/9b/7ebba7b12b28f617969a084b1f5a842f6099e4c9d7c03901ff975f9c502f/pyboy-2.7.0-cp314-cp314-win_amd64.whl", hash = "sha256:a3817d048407b4a12d596ba967ab1d971a14a51627c97da832ed4c6960a217bb", size = 4545323, upload-time = "2026-01-24T08:41:58.654Z" },
+    { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl", hash = "sha256:3a2ed6798967bf0887565b2b79530608f94b44292ff8846a6c67eb26e920df9f" },
 ]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", marker = "extra == 'images'" },
+    { name = "pillow", marker = "extra == 'images'", specifier = ">=10" },
+    { name = "pyboy", marker = "extra == 'test'", specifier = "==2.7.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
+]
+provides-extras = ["images", "test"]
+
+[[package]]
+name = "pyboy-rs"
+version = "0.1.1"
+source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl" }
+resolution-markers = [
+    "python_full_version >= '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+    "python_full_version < '3.12' and platform_machine == 'arm64' and sys_platform == 'darwin'",
+]
+wheels = [
+    { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl", hash = "sha256:ebf7ecded4238546c080ba968ee68756f409ddb68c63fb3f16cc73497f524adb" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", marker = "extra == 'images'" },
+    { name = "pillow", marker = "extra == 'images'", specifier = ">=10" },
+    { name = "pyboy", marker = "extra == 'test'", specifier = "==2.7.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
+]
+provides-extras = ["images", "test"]
+
+[[package]]
+name = "pyboy-rs"
+version = "0.1.1"
+source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl" }
+resolution-markers = [
+    "python_full_version >= '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+    "python_full_version < '3.12' and platform_machine == 'aarch64' and sys_platform == 'linux'",
+]
+wheels = [
+    { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:34bd154b4cd857bb133cb25ce2563b55c1276d12cced08ee207095c0113ff465" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", marker = "extra == 'images'" },
+    { name = "pillow", marker = "extra == 'images'", specifier = ">=10" },
+    { name = "pyboy", marker = "extra == 'test'", specifier = "==2.7.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
+]
+provides-extras = ["images", "test"]
+
+[[package]]
+name = "pyboy-rs"
+version = "0.1.1"
+source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl" }
+resolution-markers = [
+    "python_full_version >= '3.14' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+    "python_full_version < '3.12' and platform_machine == 'x86_64' and sys_platform == 'linux'",
+]
+wheels = [
+    { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:424ab5b2ba03e80ce0c13c776687fa51f2e217488200d30c6061df40fb3b2ceb" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", marker = "extra == 'images'" },
+    { name = "pillow", marker = "extra == 'images'", specifier = ">=10" },
+    { name = "pyboy", marker = "extra == 'test'", specifier = "==2.7.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
+]
+provides-extras = ["images", "test"]
+
+[[package]]
+name = "pyboy-rs"
+version = "0.1.1"
+source = { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-win_amd64.whl" }
+resolution-markers = [
+    "python_full_version >= '3.14' and sys_platform == 'win32'",
+    "python_full_version >= '3.12' and python_full_version < '3.14' and sys_platform == 'win32'",
+    "python_full_version < '3.12' and sys_platform == 'win32'",
+]
+wheels = [
+    { url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-win_amd64.whl", hash = "sha256:25b5c20d238851e1b4ce3206a28b2423787337c079cd7ba2f3ba1a73c2aff0bf" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", marker = "extra == 'images'" },
+    { name = "pillow", marker = "extra == 'images'", specifier = ">=10" },
+    { name = "pyboy", marker = "extra == 'test'", specifier = "==2.7.0" },
+    { name = "pytest", marker = "extra == 'test'", specifier = ">=8" },
+]
+provides-extras = ["images", "test"]
 
 [[package]]
 name = "pycparser"
@@ -885,31 +987,6 @@ wheels = [
 [package.optional-dependencies]
 crypto = [
     { name = "cryptography" },
-]
-
-[[package]]
-name = "pysdl2"
-version = "0.9.17"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/d7/ff/8704d84ad4d25f0a7bf7912504f64575e432e8d57dfba2fe35f5b2db7e04/pysdl2-0.9.17.tar.gz", hash = "sha256:48c6ef01a4eb123db5f7e46e1a1b565675755b07e615f3fe20a623c94735b52b", size = 775955, upload-time = "2024-12-30T18:07:27.562Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/5d/e2/399ea7900e7510096aeb41439e6f1540bef0bdf7e15cc2d8464e4adb71e8/PySDL2-0.9.17-py3-none-any.whl", hash = "sha256:fe923dbf5c7b27bbc1eb2bf58abfa793f8f13fd7ae8b27b1bc2de49920bcbd41", size = 583137, upload-time = "2024-12-30T18:07:25.987Z" },
-]
-
-[[package]]
-name = "pysdl2-dll"
-version = "2.32.10"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/28/5b/bd6fb7cce36ec24cacea8f7d8264db819a3a9de89402653690d70a8da659/pysdl2_dll-2.32.10.tar.gz", hash = "sha256:ad83e0e1a0227633495d6b3ec6701ac5a2beac44e6692f52278033bda1313717", size = 16235, upload-time = "2026-05-26T18:07:45.48Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/0e/43/4abf8109b7c68cb73bd0f09bfd429bfbfe9767fdab952098ec4f8fb4418a/pysdl2_dll-2.32.10-py2.py3-none-macosx_10_11_x86_64.whl", hash = "sha256:cab126a82c2bd2cd79b6cb8da906916884789c9f4f1ae4cf861f26438ce651a4", size = 6629721, upload-time = "2026-05-26T18:13:12.263Z" },
-    { url = "https://files.pythonhosted.org/packages/5e/cb/356315a7a30dff1d6b155d70c5293043fa683c52aae2eda236bab163081f/pysdl2_dll-2.32.10-py2.py3-none-macosx_11_0_universal2.whl", hash = "sha256:5ccbd89cd2a032f4ac890606dfe5c33874c0e5e909b2e667438ad7d7fc7fcc5d", size = 6629724, upload-time = "2026-05-26T18:13:13.75Z" },
-    { url = "https://files.pythonhosted.org/packages/c8/3a/0686cdb266f7051e8ed3cfbb38f7e325155beb19bfb9821056debf6dfecb/pysdl2_dll-2.32.10-py2.py3-none-manylinux2014_i686.whl", hash = "sha256:4fad629105d0f138d084a37dcaf33aa47343ba771d1971c27f5cf68ef5428798", size = 4570812, upload-time = "2026-05-26T18:14:40.115Z" },
-    { url = "https://files.pythonhosted.org/packages/5d/6e/07ec92ba241b2aa941abf478e96c1474f2c5975b61d84303fbcb2ba1dcc9/pysdl2_dll-2.32.10-py2.py3-none-manylinux2014_x86_64.whl", hash = "sha256:12b136c38114ae0f8a85453a879795ba5d61663d98673ba19c36c3008ff00353", size = 4272860, upload-time = "2026-05-26T18:14:35.407Z" },
-    { url = "https://files.pythonhosted.org/packages/65/fc/8e35a36010e9dce25247991762ba3fc058c2626d323848c5e293447dcb35/pysdl2_dll-2.32.10-py2.py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:248b1c6c6ba1f43e964f2f9bc723ee4ce39892aca840aee6de25da90c46f685d", size = 4478001, upload-time = "2026-05-26T22:32:00.976Z" },
-    { url = "https://files.pythonhosted.org/packages/2b/1c/91fb667c3968b420de5dd76e840259b44b876b6fc84c5889151633fcc06e/pysdl2_dll-2.32.10-py2.py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:1e6139e3ce832d95d8376b77f4c9288bef34d6b131f844f2a5fcc8873ce8e6da", size = 5218513, upload-time = "2026-05-26T18:26:57.088Z" },
-    { url = "https://files.pythonhosted.org/packages/19/d3/f50924d47313cadf4b8994d1e8c3befb33031f4115c38570e5a4a8f13956/pysdl2_dll-2.32.10-py2.py3-none-win32.whl", hash = "sha256:881e2362fbe5c8d7129fa66f690380bbd0240d9d2cb1bc5612856be1e58e9261", size = 3437042, upload-time = "2026-05-26T18:10:11.243Z" },
-    { url = "https://files.pythonhosted.org/packages/91/8e/3a90c664cca4c61c7538a8b1a7fd86c7dc3521465198a844bce21b4a97c1/pysdl2_dll-2.32.10-py2.py3-none-win_amd64.whl", hash = "sha256:65eba83d68c33b22aa5eca6c9a8521cff5044435ecd5b49521068df82674de6a", size = 4064320, upload-time = "2026-05-26T18:11:29.046Z" },
 ]
 
 [[package]]

@@ -24,6 +24,49 @@ def core_provenance():
             "source_sha256": digest(encoded(sources))}
 
 
+
+def emulator_provenance():
+    """Identify the backend selected by Core, never by installed package presence."""
+    try:
+        from pokesim_core.emulator_state import runtime_provenance
+    except ModuleNotFoundError as error:
+        if error.name != "pokesim_core.emulator_state":
+            raise
+        installed = distribution("pyboy")
+        return {"backend": "pyboy", "version": installed.version,
+                "state_format": "pyboy-format-15" if installed.version == "2.7.0" else "unknown"}
+    return runtime_provenance()
+
+
+def emulator_manifest():
+    """New artifacts name their actual emulator instead of a compatibility tag."""
+    runtime = emulator_provenance()
+    result = {"emulator": runtime}
+    if runtime["backend"] == "pyboy":
+        result["pyboy_version"] = runtime["version"]
+    return result
+
+
+def validate_emulator_manifest(manifest):
+    """Require the original backend and fingerprint for runs and starting saves.
+
+    Legacy PyBoy metadata is accepted only by that backend. Rust's ability to
+    decode the same state format is not permission to change an experiment.
+    """
+    current = emulator_provenance()
+    recorded = manifest.get("emulator")
+    if recorded is None:
+        if current["backend"] != "pyboy" or manifest.get("pyboy_version") != current["version"]:
+            raise ValueError("Legacy scenario requires its original PyBoy backend and version. "
+                             "Use an explicitly validated copy for a backend migration")
+        return
+    if not isinstance(recorded, dict) or recorded != current:
+        raise ValueError("Emulator backend or exact runtime fingerprint mismatch")
+    if "pyboy_version" in manifest and (current["backend"] != "pyboy"
+                                       or manifest["pyboy_version"] != current["version"]):
+        raise ValueError("Conflicting emulator provenance")
+
+
 def digest(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 

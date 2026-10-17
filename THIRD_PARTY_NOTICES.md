@@ -13,7 +13,7 @@ included in the application source distribution. The results website includes
 selected gameplay screenshots as research evidence. Those images retain their
 original rights and are not covered by this project's MIT license.
 
-PyBoy and other Python dependencies retain their own licenses and are installed
+PyBoy RS and other Python dependencies retain their own licenses and are installed
 separately by the package manager. This repository distributes application source
 and a dependency lockfile, not a bundled emulator binary or container image.
 Review dependency notices before creating a bundled distribution.

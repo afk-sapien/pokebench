@@ -1,0 +1,536 @@
+{
+  "category": "battle",
+  "title": "Gen 1 Red battle strategy",
+  "evals": [
+    {
+      "id": "battle-wild-basics",
+      "title": "Route 1 Rattata battle",
+      "difficulty": "easy",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Battle menu: wild Route 1 Rattata level 3 at full HP.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "Fleeing, catching, or knocking out the player party.",
+        "Ending the attempt without defeating the initial opponent."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 750000,
+      "existing_task": null,
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Win a straightforward wild battle",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat the wild level 3 Rattata on Route 1 without fleeing or catching it.",
+      "scenario_details": [
+        "Battle menu: wild Route 1 Rattata level 3 at full HP.",
+        "Party: Squirtle level 5 with Tackle and Tail Whip, at full HP.",
+        "Bag: Potion x1.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement. The task rule forbids RUN and throwing Poké Balls."
+      ],
+      "open_questions": [
+        "Confirm the private checkpoint has a native Route 1 level 3 Rattata and only timing changes across variants."
+      ],
+      "decision_limit": 25
+    },
+    {
+      "id": "battle-prepared-gym",
+      "title": "Brock with Squirtle and Pidgey",
+      "difficulty": "easy",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Pewter Gym battle menu: Brock leads Geodude level 12, then Onix level 14.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "A blackout before the Boulder Badge is earned.",
+        "Exhausting the attempt without earning the Boulder Badge."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 1500000,
+      "existing_task": "brock",
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Defeat a prepared gym leader",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Gym Leader Brock and earn the Boulder Badge with Squirtle level 15 and Pidgey level 12.",
+      "scenario_details": [
+        "Pewter Gym battle menu: Brock leads Geodude level 12, then Onix level 14.",
+        "Party: Squirtle level 15 with Bubble, Tackle, Tail Whip, and Water Gun, plus Pidgey level 12 with Gust, Sand-Attack, and Quick Attack.",
+        "Both party members start at full HP with no status. Bag: Potion x2.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Verify this proposed team against the private Brock fixture and the exact battle-menu state."
+      ],
+      "decision_limit": 50
+    },
+    {
+      "id": "battle-unfavorable-lead",
+      "title": "Lorelei recovery with registered bad-matchup team",
+      "difficulty": "medium",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Lorelei battle menu: Dewgong level 54 is active against Graveler level 45.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "Any supplied party Pokemon faints.",
+        "A blackout occurs before Lorelei is defeated.",
+        "The attempt ends without defeating Lorelei."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 1800000,
+      "existing_task": "bad-matchup",
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Recover from an unfavorable lead",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Elite Four member Lorelei without any supplied Pokémon fainting.",
+      "scenario_details": [
+        "Lorelei battle menu: Dewgong level 54 is active against Graveler level 45.",
+        "Party: Graveler level 45 with Earthquake, Rock Slide, Defense Curl, and Self-Destruct, Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest, Haunter level 45 with Hypnosis, Dream Eater, Night Shade, and Confuse Ray.",
+        "All three party members begin healthy. Bag: Elixer x1.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Confirm move labels from registered private move IDs and verify all timing variants."
+      ],
+      "decision_limit": 60
+    },
+    {
+      "id": "battle-ineffective-attack-adaptation",
+      "title": "Lorelei adaptation after a missed Hypnosis",
+      "difficulty": "medium",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Lorelei battle menu: Dewgong level 54 is active after Poliwrath has missed Hypnosis.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "Black out before defeating Lorelei.",
+        "Exhaust the attempt without defeating Lorelei."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 1800000,
+      "existing_task": null,
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Adapt after an ineffective attack",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Elite Four member Lorelei after Poliwrath misses Hypnosis against Dewgong.",
+      "scenario_details": [
+        "Lorelei battle menu: Dewgong level 54 is active.",
+        "Party: Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest. Pikachu level 45 with ThunderShock, Thunder Wave, Quick Attack, and Agility. Haunter level 45 with Hypnosis, Dream Eater, Night Shade, and Confuse Ray.",
+        "Poliwrath is the lead. The fixture records that Poliwrath used Hypnosis and it missed before this live battle menu. Bag: Elixer x1.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Build and validate the proposed authentic post-miss checkpoint without opponent or RNG editing."
+      ],
+      "decision_limit": 60
+    },
+    {
+      "id": "battle-heal-switch-attack-tradeoff",
+      "title": "Bruno Machamp resource tradeoff",
+      "difficulty": "medium",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Bruno battle menu: Machamp level 58 is active.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "Black out before winning.",
+        "Exhaust the attempt without defeating Elite Four member Bruno."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 2400000,
+      "existing_task": null,
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Choose among healing, switching, and attacking",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Elite Four member Bruno from the Machamp battle menu.",
+      "scenario_details": [
+        "Bruno battle menu: Machamp level 58 is active.",
+        "Party: Kadabra level 50 with Psychic, Recover, Disable, and Kinesis, Poliwrath level 50 with Surf, Hypnosis, Amnesia, and Rest, Pidgeot level 50 with Wing Attack, Fly, Quick Attack, and Sand-Attack.",
+        "Kadabra starts at 35/100 HP, Poliwrath and Pidgeot start healthy. Bag: Hyper Potion x1 and Super Potion x1.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement.",
+        "Kadabra has Psychic 6/10 PP, Recover 20/20 PP, Disable 20/20 PP and Kinesis 15/15 PP after clearing Bruno’s first four Pokemon through native battle actions. The party and active Kadabra HP are initialized to 35 before this trial."
+      ],
+      "open_questions": [
+        "Validate legal move sets, HP values, and a fixture whose outcome distinguishes the choices."
+      ],
+      "decision_limit": 80
+    },
+    {
+      "id": "battle-underleveled-status-setup",
+      "title": "Lorelei tactical v2 Poliwrath team",
+      "difficulty": "hard",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Lorelei battle menu: Dewgong level 54 is active.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "A blackout occurs before Lorelei is defeated.",
+        "The attempt ends without defeating Lorelei."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 2400000,
+      "existing_task": "lorelei-tactics",
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Win with underleveled status and setup tools",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Elite Four member Lorelei using tactical team version 2.",
+      "scenario_details": [
+        "Lorelei battle menu: Dewgong level 54 is active.",
+        "Tactical team version 2: Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest. Pikachu level 45 with ThunderShock, Thunder Wave, Quick Attack, and Agility. Haunter level 45 with Hypnosis, Dream Eater, Night Shade, and Confuse Ray.",
+        "All party members are healthy. Bag: Elixer x1 and no healing or revival items.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Validate tactical team version 2 at the private Lorelei battle menu."
+      ],
+      "decision_limit": 80
+    },
+    {
+      "id": "battle-preserve-specialist",
+      "title": "Champion preserve Jolteon",
+      "difficulty": "hard",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Champion battle menu: Blue leads Pidgeot level 61.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "Jolteon faints.",
+        "Black out or exhaust the attempt without defeating the Champion."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 3000000,
+      "existing_task": null,
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Preserve a specialist for the decisive matchup",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Champion Blue while Jolteon remains unfainted.",
+      "scenario_details": [
+        "Champion battle menu: Blue leads Pidgeot level 61.",
+        "Blue party A: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Arcanine level 61, Exeggutor level 63, Blastoise level 65.",
+        "Party: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, and Pin Missile. Lapras level 55 with Surf, Ice Beam, Confuse Ray, and Body Slam. Snorlax level 55 with Body Slam, Earthquake, Rest, and Amnesia.",
+        "All party members are healthy. Bag: Hyper Potion x2 and Full Restore x1. Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Implement private tracking that records whether Jolteon faints during the attempt."
+      ],
+      "decision_limit": 100
+    },
+    {
+      "id": "battle-losing-midbattle-recovery",
+      "title": "Agatha Gengar recovery",
+      "difficulty": "hard",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Agatha battle menu: Gengar level 56 is active.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "Black out.",
+        "Exhaust the attempt without defeating Elite Four member Agatha."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 1800000,
+      "existing_task": null,
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Recover from a losing mid-battle position",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Elite Four member Agatha from a damaged lead state.",
+      "scenario_details": [
+        "Agatha battle menu: Gengar level 56 is active.",
+        "Party: Jynx level 55 with Psychic, Ice Beam, Lovely Kiss, and Rest, Alakazam level 55 with Psychic, Recover, Thunder Wave, and Reflect, Rhydon level 55 with Earthquake, Rock Slide, Body Slam, and Substitute.",
+        "Jynx is the lead at 30 percent HP. Alakazam and Rhydon are healthy. Bag: Hyper Potion x1 and Full Restore x1.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Validate the proposed active HP and whether the encounter produces a real recovery tradeoff."
+      ],
+      "decision_limit": 60
+    },
+    {
+      "id": "battle-restricted-pp",
+      "title": "Lorelei and Bruno PP gauntlet",
+      "difficulty": "hard",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Lorelei battle menu: Dewgong level 54 is active. Bruno follows immediately after Lorelei.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "A blackout occurs before both required victories.",
+        "The attempt ends without defeating both Lorelei and Bruno."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 3600000,
+      "existing_task": "pp-gauntlet",
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Manage restricted PP across a battle gauntlet",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Lorelei and then Bruno without blacking out.",
+      "scenario_details": [
+        "Lorelei battle menu: Dewgong level 54 is active. Bruno follows immediately after Lorelei.",
+        "Party: Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest. Kadabra level 50 with Psychic, Recover, Reflect, and Kinesis.",
+        "Poliwrath begins with Surf PP 4. Kadabra begins with Psychic PP 5. Bag: Elixer x1.",
+        "Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement between both battles."
+      ],
+      "open_questions": [
+        "Confirm the private pp-gauntlet party labels and the inter-battle transition."
+      ],
+      "decision_limit": 120
+    },
+    {
+      "id": "battle-uncertain-opponent-lineup",
+      "title": "Champion Blue starter-dependent lineup",
+      "difficulty": "stretch",
+      "difficulty_provisional": true,
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Champion battle menu: Blue leads Pidgeot level 61 from a fixed authentic starter-dependent party.",
+      "success": [
+        "Defeat the named initial opponent or complete the named gauntlet.",
+        "Finish with at least one usable party Pokémon and no blackout."
+      ],
+      "failure": [
+        "A blackout occurs.",
+        "The sampled trainer lineup is not defeated."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same opponent, party, bag, and move sets."
+      ],
+      "token_limit": 3000000,
+      "existing_task": null,
+      "requirements": [
+        "Create the stated authentic private checkpoint and validate every listed fact.",
+        "Calibrate the evaluator and token limit without model runs in this specification."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Plan for a disclosed set of possible opponent lineups",
+      "scenario_revision": 2,
+      "agent_goal": "Defeat Champion Blue from a fixed authentic starter-dependent Champion lineup.",
+      "scenario_details": [
+        "Champion battle menu: Blue leads Pidgeot level 61.",
+        "Blue party A: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Arcanine level 61, Exeggutor level 63, Blastoise level 65.",
+        "Blue party B: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Gyarados level 61, Arcanine level 63, Venusaur level 65.",
+        "Blue party C: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Exeggutor level 61, Gyarados level 63, Charizard level 65.",
+        "Party: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, and Pin Missile. Lapras level 55 with Surf, Ice Beam, Confuse Ray, and Body Slam. Snorlax level 55 with Body Slam, Earthquake, Rest, and Amnesia.",
+        "Bag: Hyper Potion x2 and Full Restore x1. Each native Blue party is assigned equal weight. Allowed decisions: FIGHT, PKMN, BAG, and dialogue advancement."
+      ],
+      "open_questions": [
+        "Validate all three native Blue party branches from authentic Red saves."
+      ],
+      "decision_limit": 100
+    },
+    {
+      "id": "battle-league-balanced",
+      "title": "Become Champion with Snorlax, Graveler, Charizard, Vileplume, Parasect, and Weezing",
+      "difficulty": "hard",
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "milestone",
+        "target": "champion",
+        "description": "Defeat the Elite Four and Champion from the registered League start, then complete Hall of Fame registration. Keep default Pokemon names."
+      },
+      "start": "Indigo Plateau overworld at the League entrance before Lorelei. All eight badges are owned, no Elite Four member or Champion has been defeated, and Hall of Fame entries are 0. The healthy full-PP party is Snorlax level 58, Graveler level 53, Charizard level 55, Vileplume level 31, Parasect level 30, and Weezing level 41. The bag contains Full Restore x5, Revive x5, Max Potion x1, and Elixer x1.",
+      "success": [
+        "Lorelei, Bruno, Agatha, Lance, and the Champion are defeated.",
+        "Hall of Fame registration completes in the Hall of Fame room."
+      ],
+      "failure": [
+        "The token limit expires before Champion and Hall of Fame completion.",
+        "The player reaches a verified terminal game-over state."
+      ],
+      "variants": [
+        "league-first-championship-v1"
+      ],
+      "token_limit": 10500000,
+      "existing_task": "league",
+      "requirements": [
+        "Reuse the League task only after its fixture start check and Hall of Fame completion evidence are replay-validated.",
+        "Confirm the registered party and supplies for every selected variant.",
+        "Record Elite Four victories and Champion battle entry as partial milestones."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Become Champion with the balanced League team",
+      "scenario_revision": 2,
+      "agent_goal": "From Indigo Plateau before Lorelei, defeat Lorelei, Bruno, Agatha, Lance, and the Champion, then complete Hall of Fame registration using the supplied party and bag. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Snorlax knows Double Edge, Hyper Beam, Rest, Surf. Graveler knows Earthquake, Explosion, Rock Throw, Selfdestruct.",
+        "Charizard knows Cut, Slash, Strength, Flamethrower. Vileplume knows Absorb, Poisonpowder, Stun Spore, Sleep Powder.",
+        "Parasect knows Scratch, Stun Spore, Leech Life, Spore. Weezing knows Tackle, Smog, Sludge, Smokescreen.",
+        "This is an isolated battle gauntlet with a supplied team, not a second full-game campaign. Its results are separate from campaign milestones."
+      ],
+      "open_questions": [
+        "Confirm the archived League source still produces the documented party, moves, PP, and bag after its settle frames."
+      ],
+      "previous_catalog_id": "campaign-league-balanced",
+      "decision_limit": 350
+    },
+    {
+      "id": "battle-league-constrained",
+      "title": "Become Champion with Pidgeot, Charizard, Lapras, Vileplume, Raticate, and Beedrill",
+      "difficulty": "stretch",
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "milestone",
+        "target": "champion",
+        "description": "Defeat the Elite Four and Champion from the registered difficult-team League start, then complete Hall of Fame registration. Keep default Pokemon names."
+      },
+      "start": "Indigo Plateau overworld at the League entrance before Lorelei. All eight badges are owned, no Elite Four member or Champion has been defeated, and Hall of Fame entries are 0. The healthy full-PP party is Pidgeot level 50, Charizard level 61, Lapras level 58, Vileplume level 44, Raticate level 33, and Beedrill level 38. The bag contains Revive x5, Elixer x1, and no HP-restoring Potions.",
+      "success": [
+        "Lorelei, Bruno, Agatha, Lance, and the Champion are defeated.",
+        "Hall of Fame registration completes in the Hall of Fame room."
+      ],
+      "failure": [
+        "The token limit expires before Champion and Hall of Fame completion.",
+        "The player reaches a verified terminal game-over state."
+      ],
+      "variants": [
+        "league-hard-first-championship-v1"
+      ],
+      "token_limit": 12000000,
+      "existing_task": "league-hard",
+      "requirements": [
+        "Reuse the difficult League task only after fixture start and completion evidence are replay-validated.",
+        "Document the fixed team and resources in the private fixture manifest.",
+        "Record Elite Four victories and Champion battle entry as partial milestones."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Become Champion with the constrained League team",
+      "scenario_revision": 2,
+      "agent_goal": "From Indigo Plateau before Lorelei, defeat Lorelei, Bruno, Agatha, Lance, and the Champion, then complete Hall of Fame registration using the supplied difficult team. Do not nickname Pokemon.",
+      "scenario_details": [
+        "This is the documented natural archived difficult League team.",
+        "All party members start healthy with full PP.",
+        "The required end state is the same first Hall of Fame registration used by the existing Champion predicate.",
+        "This is an isolated battle gauntlet with a supplied team, not a second full-game campaign. Its results are separate from campaign milestones."
+      ],
+      "open_questions": [
+        "Confirm the archived difficult-team source preserves the documented team, full PP, and exactly five Revives plus one Elixer."
+      ],
+      "previous_catalog_id": "campaign-league-constrained",
+      "decision_limit": 400
+    }
+  ]
+}

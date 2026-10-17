@@ -169,3 +169,127 @@ def test_disabled_area_budget_preserves_existing_limits(tmp_path, engine):
     result = run(session, StubProvider({"button": "wait", "hold_frames": 2, "release_frames": 0, "notes": None}))
     assert result["stop_reason"] == "model_call_budget"
     assert not (session.output / "area_budget.json").exists()
+
+
+def test_metered_interface_rejection_stops_after_three_without_game_actions(session):
+    value = {'actions': [], 'notes': None, 'goal_plan': None,
+             'interface_error': 'Response format correction required'}
+    result = run(session, StubProvider(value))
+    assert result['stop_reason'] == 'invalid_model_response'
+    assert result['actions'] == result['frames'] == 0
+    assert result['usage']['calls'] == 3
+    assert result['usage']['input_tokens'] + result['usage']['output_tokens'] == 45
+    assert result['usage']['accounting_complete'] is True
+
+
+
+def test_optional_notes_preserve_notebook_for_direct_controller(tmp_path, engine):
+    session = Session(engine, tmp_path / "optional-notes", {}, limits=Limits(max_model_calls=1))
+    session.write_notes("Remember my previous observations")
+    result = run(session, StubProvider({"button": "wait", "hold_frames": 2, "release_frames": 0}))
+    assert result["frames"] == 2
+    assert session.notes == "Remember my previous observations"
+
+
+def test_invalid_supplied_notes_reject_actions_atomically(tmp_path, engine):
+    session = Session(engine, tmp_path / "invalid-notes", {})
+    session.write_notes("Keep this note")
+    result = run(session, StubProvider({"button": "wait", "hold_frames": 2,
+                                       "release_frames": 0, "notes": ["not a string"]}))
+    assert result["stop_reason"] == "invalid_model_response"
+    assert result["frames"] == result["actions"] == 0
+    assert session.notes == "Keep this note"
+
+
+
+def test_interface_rejection_preserves_specific_bounded_feedback(tmp_path, engine):
+    class RecoveringProvider(StubProvider):
+        def __init__(self):
+            self.feedback = []
+
+        def decide(self, observation, notes, recent, *args):
+            self.feedback.append(list(recent))
+            if len(self.feedback) == 1:
+                return {"actions": [], "interface_error": "JSON action missing. " + "x" * 1000}, {
+                    "input_tokens": 10, "output_tokens": 5}, {}
+            return {"button": "wait", "hold_frames": 2, "release_frames": 0}, {
+                "input_tokens": 10, "output_tokens": 5}, {}
+
+    provider = RecoveringProvider()
+    session = Session(engine, tmp_path / "interface-feedback", {}, limits=Limits(max_model_calls=2))
+    result = run(session, provider)
+    assert result["frames"] == 2
+    assert result["usage"]["calls"] == 2
+    assert result["usage"]["input_tokens"] + result["usage"]["output_tokens"] == 30
+    error = provider.feedback[1][-1]["error"]
+    assert error.startswith("JSON action missing.")
+    assert len(error) == 512
+
+
+def test_interface_error_cannot_execute_actions_or_commit_metadata(tmp_path, engine):
+    from test_planning import PLAN
+
+    for index, replacement in enumerate([
+        {"actions": [{"button": "wait", "hold_frames": 2, "release_frames": 0}]},
+        {"notes": "Unauthorized replacement"},
+        {"goal_plan": PLAN},
+        {"journal": {"writes": [{"key": "x", "text": "not committed"}], "delete": [], "query": None}},
+        {"look_back": {"query": "anything"}},
+        {"extra": "unrecognized"},
+        {"interface_error": 1},
+        {"interface_error": "   "},
+    ]):
+        session = Session(engine, tmp_path / f"interface-guard-{index}", {})
+        session.write_notes("Original note")
+        provider = StubProvider({"actions": [], "interface_error": "Correct response format", **replacement})
+        provider.persistent_goal = True
+        result = run(session, provider)
+        assert result["stop_reason"] == "invalid_model_response"
+        assert result["frames"] == result["actions"] == 0
+        assert session.notes == "Original note"
+        assert "agent_plan" not in session.gameplay_memory
+        assert session.journal_entries == {}
+
+
+def test_interface_rejection_cannot_be_disguised_as_maintenance(tmp_path, engine):
+    class RejectedMaintenance(StubProvider):
+        maintenance_decisions = True
+
+        def decide(self, *args):
+            return {"actions": [], "notes": "Must not write", "interface_error": "Invalid JSON"}, {
+                "input_tokens": 10, "output_tokens": 5}, {"maintenance": "look_back"}
+
+    session = Session(engine, tmp_path / "maintenance-rejection", {})
+    result = run(session, RejectedMaintenance())
+    assert result["stop_reason"] == "invalid_model_response"
+    assert result["frames"] == result["actions"] == 0
+    assert session.notes == ""
+
+
+
+def test_provider_controller_limit_overrides_more_permissive_session(tmp_path, engine):
+    session = Session(engine, tmp_path / "provider-command-limit", {}, limits=Limits(max_actions_per_decision=8))
+    provider = StubProvider({"actions": [
+        {"button": "wait", "hold_frames": 2, "release_frames": 0},
+        {"button": "wait", "hold_frames": 2, "release_frames": 0}]})
+    provider.max_controller_commands = 1
+    result = run(session, provider)
+    assert result["stop_reason"] == "invalid_model_response"
+    assert result["frames"] == result["actions"] == 0
+
+
+def test_malformed_maintenance_uses_bounded_corrections_without_writes(tmp_path, engine):
+    class BadRecall(StubProvider):
+        maintenance_decisions = True
+        look_back = True
+
+        def decide(self, *args):
+            return {"actions": [], "notes": "Must not write"}, {
+                "input_tokens": 10, "output_tokens": 5}, {"maintenance": "look_back"}
+
+    session = Session(engine, tmp_path / "bad-recall", {})
+    result = run(session, BadRecall())
+    assert result["stop_reason"] == "invalid_model_response"
+    assert result["usage"]["calls"] == 3
+    assert result["frames"] == result["actions"] == 0
+    assert session.notes == ""

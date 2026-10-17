@@ -33,6 +33,7 @@ LEAGUE_DEFINITION = {**DEFINITION, "id": "red-league-v1", "tasks": [LEAGUE_TASK]
 EXPANDED_DEFINITION = {**DEFINITION, "id": "red-basic-plus-league-v1", "tasks": [*TASKS, LEAGUE_TASK]}
 SKILL_TASKS = [
     {'id': 'item-recovery', 'name': 'Recover the party with items', 'difficulty': 'medium', 'tokens': 250_000,
+     'action_policy': 'manual-menu-v1', 'tested_skill': 'menu-operation',
      'objective': {'kind': 'heal', 'map_id': 113}},
     {'id': 'agatha', 'name': 'Defeat Agatha', 'difficulty': 'hard', 'tokens': 750_000,
      'objective': {'kind': 'milestone', 'target': 'elite:agatha'}},
@@ -57,7 +58,7 @@ SKILLS_DEFINITION = {**DEFINITION, 'id': 'red-skills-v1', 'tasks': NEW_SKILL_TAS
 ABILITY_V2_DEFINITION = {**DEFINITION, 'id': 'red-ability-v2',
                          'tasks': [*ABILITY_DEFINITION['tasks'], *NEW_SKILL_TASKS]}
 ADVENTURE_TASKS = [
-    {'id': 'buy-pokeballs', 'name': 'Buy ten Poke Balls', 'difficulty': 'easy', 'tokens': 500_000,
+    {'id': 'buy-pokeballs', 'action_policy': 'manual-menu-v1', 'tested_skill': 'menu-operation', 'name': 'Buy ten Poke Balls', 'difficulty': 'easy', 'tokens': 500_000,
      'objective': {'kind': 'purchase', 'item_id': 4, 'quantity': 10, 'unit_price': 200, 'map_id': 42}},
     {'id': 'viridian-forest', 'name': 'Cross Viridian Forest to Pewter', 'difficulty': 'medium', 'tokens': 1_000_000,
      'objective': {'kind': 'reach-map', 'map_id': 2}},
@@ -309,6 +310,11 @@ def prepare(rom, bindings, output, suite_id="red-basic-v1"):
                 raise ValueError(f'{key}: objective does not match the suite')
             for name in ('initial.state', 'preview.png', 'scenario.json'):
                 shutil.copyfile(source / name, destination / name)
+            manifest['task_id'] = key
+            for field in ('tested_skill', 'action_policy'):
+                if field in task:
+                    manifest[field] = task[field]
+            write_json(destination / 'scenario.json', manifest)
             engine, _ = load_engine(rom, destination)
             try:
                 check_start(task, engine)
@@ -555,6 +561,8 @@ def run_batch(root, rom, game_data, output, models=None, repeats=1, budget=None,
                                '--provider', 'codex', '--model', cell['model'], '--track', 'gameplay',
                                '--codex-policy', 'bounded', '--reasoning-effort', 'medium', '--context-turns', '8',
                                '--compact-at', '12000', '--game-data', str(game_data), '--goal', 'challenge']
+                    if 'action_policy' in task:
+                        command += ['--action-policy', task['action_policy']]
                     for key, value in limits(task).items():
                         command += ['--'+key.replace('_','-'), str(value)]
                     result = execute(parser().parse_args(command))

@@ -71,7 +71,7 @@ def plan(tasks, models, variants):
 def prepare(suite_root, rom, output, variants=3, seed=20261005):
     """Preregister fresh timing offsets, with no selection by subsequent outcome."""
     from .session import load_engine
-    from .challenges import ChallengeEvaluator,evidence
+    from .challenges import create_challenge_evaluator,evidence
     suite_root,rom,output=Path(suite_root),Path(rom),Path(output)
     suite=validate(suite_root,rom)
     tasks=[t for t in suite['definition']['tasks'] if t['id'] not in RETIRED]
@@ -91,7 +91,7 @@ def prepare(suite_root, rom, output, variants=3, seed=20261005):
             try:
                 engine.tick(offset)
                 check_start(task,engine)
-                ChallengeEvaluator(evidence(engine,manifest['objective']),manifest['objective'])
+                create_challenge_evaluator(evidence(engine,manifest['objective']),manifest['objective'])
                 folder=output/'fixtures'/task['id']/f'variant-{index:02d}'
                 folder.mkdir(parents=True)
                 state,screen=engine.save(),engine.screenshot()
@@ -187,7 +187,7 @@ def freeze(root, models, budget, game_data):
     return protocol
 
 
-def validate_batch(protocol, batch):
+def _validate_registered_batch(protocol, batch):
     unhashed = {key:value for key,value in protocol.items() if key != 'sha256'}
     if digest(encoded(unhashed)) != protocol.get('sha256'):
         raise ValueError('Release protocol checksum mismatch')
@@ -201,6 +201,15 @@ def validate_batch(protocol, batch):
             raise ValueError('Batch schedule or cell configuration changed')
         if actual.get('status') not in ('pending', 'running', 'finished', 'error'):
             raise ValueError('Invalid batch cell status')
+
+
+
+def validate_batch(protocol, batch):
+    from .replacement import validate_extended_batch
+    validate_extended_batch(protocol, batch, _validate_registered_batch)
+
+
+validate_batch.recovery_aware = True
 
 
 def accounted_usage(result):
@@ -242,7 +251,12 @@ def report(root):
         valid_counts = all(type(value) is int and value >= 0 for value in values)
         known = valid_counts and usage.get('accounting_complete') is True and usage.get('available') is True
         tokens = sum(value for value in values if type(value) is int and value >= 0)
-        attempts.append({**cell,'tokens':tokens,
+        from .action_policy import ASSISTED
+        task = next(t for t in protocol['tasks'] if t['id'] == cell['task'])
+        policy = result.get('action_policy', ASSISTED if result else task.get('action_policy', ASSISTED))
+        if cell['status'] == 'finished' and policy != task.get('action_policy', ASSISTED):
+            raise ValueError('Attempt action policy differs from the registered task')
+        attempts.append({**cell,'tokens':tokens,'action_policy':policy,
                          'completed':result.get('completed') if cell['status']=='finished' else None,
                          'stop_reason':result.get('stop_reason'),'decisions':usage.get('calls'),
                          'wall_seconds':result.get('wall_seconds'),
@@ -330,6 +344,8 @@ def _run(root, rom, game_data):
                          '--provider',cell['provider'],'--model',cell['model'],'--track','gameplay',
                          '--codex-policy','bounded','--reasoning-effort',cell['effort'],'--context-turns','8',
                          '--compact-at','12000','--game-data',str(game_data),'--goal','challenge']
+                from .action_policy import ASSISTED
+                command.extend(['--action-policy', task.get('action_policy', ASSISTED)])
                 for key,value in limits(task).items():
                     command.extend(['--'+key.replace('_','-'),str(value)])
                 result=execute(parser().parse_args(command))

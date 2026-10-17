@@ -186,6 +186,9 @@ def build_run(root: Path):
         steps.append(
             {
                 "decision": index,
+                "model_input_frames": [screen['frame'] for screen in decision.get('provider', {}).get('presentation', {}).get('screens', [])],
+                "requested_history_frames": [screen['frame'] for screen in decision.get('provider', {}).get('requested_history_presentation', {}).get('screens', [])],
+                "model_input_image": "data:image/png;base64," + base64.b64encode(read_artifact(root, decision['provider']['presentation']['artifact'])).decode(),
                 "before_frame": before,
                 "after_frame": after,
                 "before": by_frame[before],
@@ -225,6 +228,7 @@ def build_run(root: Path):
         "objective": manifest.get("scenario", {}).get("objective", {}).get("description", manifest.get("goal")),
         "benchmark": manifest.get("benchmark"),
         "track": manifest.get("track"),
+        "action_policy": manifest.get("action_policy", "assisted-gameplay-v1"),
         "completed": result.get("completed"),
         "stop_reason": result.get("stop_reason"),
         "score": result.get("score"),

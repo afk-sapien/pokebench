@@ -54,7 +54,8 @@ class AppServer:
             event = self.receive(deadline)
             if event.get("id") == request_id:
                 if "error" in event:
-                    raise ProviderError("App Server rejected " + method + ". Usage may be unreported")
+                    raise ProviderError("App Server rejected " + method + ". Usage may be unreported",
+                        details={"method": method, "error": event["error"]})
                 return event["result"]
             self.pending.append(event)
 

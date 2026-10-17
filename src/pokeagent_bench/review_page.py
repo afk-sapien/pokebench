@@ -210,6 +210,8 @@ h1 {font-size:12px}
 <div class="eyebrow">AGENT'S STATED PLAN</div><p id="plan"></p><div id="actions"></div>
 <p><small>Expected result, according to the agent</small><br><span id="expected"></span></p>
 <div id="tags" class="tags"></div><p id="reviewer"></p><p id="cost" class="muted"></p>
+<p id="image-policy"></p>
+<details><summary>Actual screenshot input for this decision</summary><p>New screenshot input, separate from the replay outcome. Earlier turns may remain in the conversation.</p><img id="model-input-image" alt="Recorded screenshot input sent to the model" style="max-width:100%"></details>
 <details id="gameplay-panel"><summary>Information supplied to model</summary><pre id="gameplay-input"></pre></details>
 <details id="notebook"><summary>Agent notebook</summary><small>These claims may contain mistakes.</small><div id="notes"></div></details>
 <details><summary>Jump to a moment</summary><small>Locations are evaluator annotations. Scene reports are the agent's claims.</small><div id="jumps" class="jumps"></div></details>
@@ -268,8 +270,12 @@ function render(skipped = 0) {
   const s = r.steps[cursor]
   $('before').src = r.images[s.before]
   $('after').src = r.images[s.after]
-  $('beforeLabel').textContent = 'BEFORE · frame ' + number(s.before_frame)
-  $('afterLabel').textContent = 'AFTER · frame ' + number(s.after_frame)
+  $('beforeLabel').textContent = 'DECISION START · frame ' + number(s.before_frame)
+  $('afterLabel').textContent = 'ACTION RESULT · frame ' + number(s.after_frame)
+  $('model-input-image').src = s.model_input_image
+  $('image-policy').textContent = 'New model screenshot frames: ' + s.model_input_frames.join(', ') +
+    (s.requested_history_frames.length ? '. Requested earlier frames: ' + s.requested_history_frames.join(', ') : '') +
+    '. The replay shows the action result afterward, not a future image supplied before the action.'
   $('plan').textContent = s.plan
   $('expected').textContent = s.expected || 'No expected result recorded'
   $('actions').replaceChildren()
@@ -297,7 +303,7 @@ function render(skipped = 0) {
   }
   $('gameplay-panel').hidden = !s.gameplay_input
   $('gameplay-input').textContent = JSON.stringify({information:s.gameplay_input, requested_commands:s.requested_commands}, null, 2)
-  $('evidence').textContent = JSON.stringify({run:r.id, benchmark:r.benchmark, track:r.track, decision:s.decision,
+  $('evidence').textContent = JSON.stringify({run:r.id, benchmark:r.benchmark, track:r.track, action_policy:r.action_policy, decision:s.decision,
     before_frame:s.before_frame, after_frame:s.after_frame, source_before_sha256:s.source_before_sha256,
     source_after_sha256:s.source_after_sha256, trace_head:r.trace_head,
     final_evaluator:r.final_evaluator}, null, 2)

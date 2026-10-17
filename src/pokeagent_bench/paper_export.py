@@ -9,7 +9,7 @@ def export_results(root: Path, output: Path):
     rows = read_runs(root)
     finished = [row for row in rows if row["state"] == "finished"]
     allowed = {"id", "group", "provider", "model", "benchmark", "goal", "track", "state", "stop_reason",
-               "completed", "score", "score_max", "wall_seconds", "emulated_seconds", "frames", "actions"}
+               "action_policy", "completed", "score", "score_max", "wall_seconds", "emulated_seconds", "frames", "actions"}
     usage_keys = {"available", "accounting_complete", "calls", "input_tokens", "output_tokens",
                   "model_seconds", "estimated_cost_usd"}
     public = []

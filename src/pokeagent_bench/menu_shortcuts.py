@@ -2,7 +2,8 @@
 import re
 
 from pokesim_core.gen1 import read_bag, read_party
-from pokesim_core.controls import ControllerPort, use_item, switch_pokemon, panel as core_panel, identity as identity
+from pokesim_core.controls import ControllerPort, use_item, switch_pokemon, identity as identity
+from pokesim_core.shortcuts import choose_move
 
 from .dialogue import continue_ready
 from .gameplay import ui_state
@@ -25,10 +26,6 @@ def parse_item(argument):
     return ITEMS[normalize(parts[0])], int(parts[1].strip()) - 1
 
 
-def panel(memory, ui, catalog):
-    return core_panel(memory, ui, catalog['labels']['items'])
-
-
 def execute_shortcut(session, command, send, choose, result):
     port = ControllerPort(
         memory=session.engine.memory, send=send, choose=choose,
@@ -36,10 +33,12 @@ def execute_shortcut(session, command, send, choose, result):
         stopped=lambda: bool(session.reason), continue_ready=lambda: continue_ready(session.engine),
         item_labels=session.gameplay_catalog['labels']['items'],
         read_party=read_party, read_bag=read_bag,
-        panel=lambda memory, ui, labels: panel(memory, ui, session.gameplay_catalog),
+        version='red',
     )
     if command['command'] == 'use_item':
         item, slot = parse_item(command['argument'])
         result.update(use_item(port, item, slot))
+    elif command['command'] == 'use_move':
+        result.update(choose_move(port, int(command['argument']) - 1))
     else:
         result.update(switch_pokemon(port, int(command['argument']) - 1))

@@ -1,0 +1,569 @@
+{
+  "category": "campaign",
+  "title": "Gen 1 Red full-game campaign",
+  "evals": [
+    {
+      "id": "campaign-full-game",
+      "title": "One full-game campaign: starter to Champion",
+      "difficulty": "stretch",
+      "tested_skill": "campaign",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "milestone",
+        "target": "champion",
+        "description": "You are Red in your Pallet Town bedroom. Choose a starter, earn the Boulder, Cascade, Thunder, Rainbow, Soul, Marsh, Volcano, and Earth Badges, defeat the Elite Four and Champion, and complete Hall of Fame registration. Keep default Pokemon names."
+      },
+      "start": "Red's bedroom in Pallet Town before the opening sequence. Red has no Pokemon, no Pokedex, no badges, no key items, no story flags, and no Oak's Parcel. The normal new-game inventory is empty and cash is 3000 Pokedollars.",
+      "success": [
+        "Complete Hall of Fame registration after defeating the Champion.",
+        "Retain partial milestone progress even when the complete-game goal is not reached. Partial progress is not a full pass."
+      ],
+      "failure": [
+        "The shared attempt budget expires before Hall of Fame registration. Keep all earned milestones.",
+        "A blackout is an in-game setback. Continue from the game recovery point while budget remains, without restoring an earlier save.",
+        "An infrastructure failure marks the attempt incomplete, with its recorded progress preserved."
+      ],
+      "variants": [
+        "One shared fresh-game checkpoint for the initial comparison. The agent chooses its starter. Any later repeats run the whole campaign under the same registered conditions, not one run per milestone."
+      ],
+      "token_limit": 30000000,
+      "existing_task": null,
+      "requirements": [
+        "Validate the fresh-game checkpoint and bind each of the 50 milestone predicates to native game evidence.",
+        "Integrate a persistent event history for captures, evolution, location visits, purchases and battle outcomes. Retain this history across context resets and process resume.",
+        "Apply the proposed scoring definition only to new evaluated runs or historical traces with sufficient evidence. Existing runtime scoring remains unchanged by this plan.",
+        "Record the party and resources at matched milestones, and join milestone events to cumulative tokens, decisions, frames and time.",
+        "Pilot milestone weights and collection thresholds before using the new score in the leaderboard. No model sweep is launched by editing this plan."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Complete a full Pokemon Red game from a fresh start",
+      "scenario_revision": 4,
+      "agent_goal": "You are Red in your Pallet Town bedroom. Choose a starter, earn the Boulder, Cascade, Thunder, Rainbow, Soul, Marsh, Volcano, and Earth Badges, defeat the Elite Four and Champion, and complete Hall of Fame registration. Keep default Pokemon names.",
+      "scenario_details": [
+        "The target Gym Leaders are Brock, Misty, Lt. Surge, Erika, Koga, Sabrina, Blaine, and Giovanni in Viridian Gym.",
+        "The fresh start has no prior story progress, starter, party, badges, key items, or Pokedex.",
+        "Any legal route, team, shopping, training, capture, and recovery strategy is permitted.",
+        "One continuous game per model attempt, one token budget and one evolving party. Do not restart from the bedroom for each milestone.",
+        "Record the first achievement of each milestone with cumulative tokens, decisions, game frames and elapsed wall time. Milestones are observations from one trajectory, not independent trials.",
+        "Badges need not be earned in the display order. Preserve the actual event order. Use the 50 weighted milestones below, while recording other events as unscored timeline annotations.",
+        "After a budget stop, later milestones are marked not reached in this attempt. An early infrastructure error is incomplete evaluation, not evidence that the model cannot do the remaining tasks.",
+        "Keep isolated checkpoint results separate. A campaign victory cannot be assigned to a battle benchmark with a different supplied team or resources.",
+        "One attempt produces Champion completion, a proposed 1000-point progress breakdown and an unscored run profile. The 50 milestones do not create additional model runs."
+      ],
+      "open_questions": [
+        "Validate the fresh save and evidence hooks against a real replay.",
+        "Choose a practical shared campaign budget after a pilot. The displayed cap is provisional.",
+        "Verify that a resumed attempt preserves milestone history and the original total budget.",
+        "Check that location and item events cannot be awarded from transient menu or battle memory.",
+        "Measure whether the capped collection bonuses induce unnecessary detours. Adjust weights before freezing the comparison, not after seeing preferred model rankings."
+      ],
+      "run_unit": "one-continuous-attempt",
+      "milestones": [
+        {
+          "id": "starter",
+          "label": "Choose a starter",
+          "evidence": "Confirm the starter handover event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "parcel-collected",
+          "label": "Collect Oak's Parcel",
+          "evidence": "Confirm the parcel receipt event, not mere inventory presence in a supplied save.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "parcel",
+          "label": "Deliver Oak's Parcel and receive the Pokedex",
+          "evidence": "Confirm parcel delivery and Pokedex ownership.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "cerulean-rival",
+          "label": "Defeat the rival at Nugget Bridge",
+          "evidence": "Confirm the Cerulean rival victory flag.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "bill-ticket",
+          "label": "Help Bill and receive the S.S. Ticket",
+          "evidence": "Confirm Bill restoration and ticket receipt.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "ss-anne-rival",
+          "label": "Defeat the rival aboard the S.S. Anne",
+          "evidence": "Confirm the S.S. Anne rival victory flag.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "hm-cut",
+          "label": "Obtain HM01 Cut from the captain",
+          "evidence": "Confirm the native HM01 reward event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "lift-key",
+          "label": "Obtain the Rocket Hideout Lift Key",
+          "evidence": "Confirm the Lift Key pickup event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "hideout-giovanni",
+          "label": "Defeat Giovanni in Rocket Hideout",
+          "evidence": "Confirm the Hideout Giovanni victory flag.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "silph-scope",
+          "label": "Collect the Silph Scope",
+          "evidence": "Confirm the post-Giovanni Silph Scope pickup.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "ghost-marowak",
+          "label": "Resolve the ghost Marowak encounter in Pokemon Tower",
+          "evidence": "Confirm the ghost Marowak completion event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "fuji-flute",
+          "label": "Rescue Mr. Fuji and receive the Poke Flute",
+          "evidence": "Confirm the rescue and Poke Flute reward events.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "snorlax-resolved",
+          "label": "Clear either sleeping Snorlax roadblock",
+          "evidence": "Confirm either Route 12 or Route 16 Snorlax removal and resolved encounter. Award once across both locations.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "card-key",
+          "label": "Obtain the Silph Co. Card Key",
+          "evidence": "Confirm the Card Key pickup event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "silph-rival",
+          "label": "Defeat the rival in Silph Co.",
+          "evidence": "Confirm the Silph Co. rival victory event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "silph-giovanni",
+          "label": "Defeat Giovanni and liberate Silph Co.",
+          "evidence": "Confirm the Silph Co. Giovanni victory and liberation events.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "hm-surf",
+          "label": "Obtain HM03 Surf in the Safari Zone",
+          "evidence": "Confirm the native Secret House reward event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "gold-teeth",
+          "label": "Find the Gold Teeth in the Safari Zone",
+          "evidence": "Confirm the Gold Teeth pickup event even if the item is later handed over.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "hm-strength",
+          "label": "Return the Gold Teeth and receive HM04 Strength",
+          "evidence": "Confirm the Warden handover and HM04 reward events.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "secret-key",
+          "label": "Find the Secret Key in Pokemon Mansion",
+          "evidence": "Confirm the Secret Key pickup event.",
+          "group": "story",
+          "points": 5,
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:viridian-city",
+          "label": "Reach Viridian City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:pewter-city",
+          "label": "Reach Pewter City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:cerulean-city",
+          "label": "Reach Cerulean City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:vermilion-city",
+          "label": "Reach Vermilion City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:lavender-town",
+          "label": "Reach Lavender Town",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:celadon-city",
+          "label": "Reach Celadon City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:fuchsia-city",
+          "label": "Reach Fuchsia City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:saffron-city",
+          "label": "Reach Saffron City",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:cinnabar-island",
+          "label": "Reach Cinnabar Island",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "visit:indigo-plateau",
+          "label": "Reach Indigo Plateau",
+          "group": "exploration",
+          "points": 5,
+          "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "badge:boulder",
+          "label": "Earn the Boulder Badge from Brock",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:cascade",
+          "label": "Earn the Cascade Badge from Misty",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:thunder",
+          "label": "Earn the Thunder Badge from Lt. Surge",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:rainbow",
+          "label": "Earn the Rainbow Badge from Erika",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:soul",
+          "label": "Earn the Soul Badge from Koga",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:marsh",
+          "label": "Earn the Marsh Badge from Sabrina",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:volcano",
+          "label": "Earn the Volcano Badge from Blaine",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "badge:earth",
+          "label": "Earn the Earth Badge from Giovanni",
+          "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
+          "group": "badges",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "elite:lorelei",
+          "label": "Defeat Lorelei",
+          "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+          "group": "elite",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "elite:bruno",
+          "label": "Defeat Bruno",
+          "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+          "group": "elite",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "elite:agatha",
+          "label": "Defeat Agatha",
+          "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+          "group": "elite",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "elite:lance",
+          "label": "Defeat Lance",
+          "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
+          "group": "elite",
+          "points": 50,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "champion",
+          "label": "Defeat the Champion and enter the Hall of Fame",
+          "evidence": "Existing evaluator requires Champion victory and a new Hall of Fame entry.",
+          "group": "champion",
+          "points": 200,
+          "tracking_status": "existing-evidence-new-score-pending"
+        },
+        {
+          "id": "caught-species:1",
+          "label": "Catch 1 distinct wild species",
+          "group": "collection",
+          "points": 5,
+          "evidence": "Confirm 1 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "caught-species:5",
+          "label": "Catch 5 distinct wild species",
+          "group": "collection",
+          "points": 5,
+          "evidence": "Confirm 5 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "caught-species:10",
+          "label": "Catch 10 distinct wild species",
+          "group": "collection",
+          "points": 5,
+          "evidence": "Confirm 10 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "caught-species:20",
+          "label": "Catch 20 distinct wild species",
+          "group": "collection",
+          "points": 10,
+          "evidence": "Confirm 20 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "evolved-lines:1",
+          "label": "Evolve a Pokemon for the first time",
+          "group": "collection",
+          "points": 5,
+          "evidence": "Confirm evolution events in 1 different families. Two evolutions of the same starter family count as one. Evolution cancellations do not count.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "evolved-lines:3",
+          "label": "Evolve Pokemon from 3 distinct evolutionary families",
+          "group": "collection",
+          "points": 10,
+          "evidence": "Confirm evolution events in 3 different families. Two evolutions of the same starter family count as one. Evolution cancellations do not count.",
+          "tracking_status": "integration-pending"
+        },
+        {
+          "id": "party-six-species",
+          "label": "Assemble a party of six distinct species",
+          "group": "collection",
+          "points": 10,
+          "evidence": "Confirm six different species simultaneously in the party through legal acquisitions. This measures roster breadth, not tactical quality. Reordering and repeated assembly do not score again.",
+          "tracking_status": "integration-pending"
+        }
+      ],
+      "scoring_plan": {
+        "version": "campaign-progress-v1-draft",
+        "status": "proposed-not-runtime-scoring",
+        "maximum_points": 1000,
+        "groups": [
+          {
+            "id": "story",
+            "label": "Story and quest progress",
+            "count": 20,
+            "points": 100
+          },
+          {
+            "id": "exploration",
+            "label": "Town and League access",
+            "count": 10,
+            "points": 50
+          },
+          {
+            "id": "badges",
+            "label": "Gym badges",
+            "count": 8,
+            "points": 400
+          },
+          {
+            "id": "elite",
+            "label": "Elite Four",
+            "count": 4,
+            "points": 200
+          },
+          {
+            "id": "champion",
+            "label": "Champion and Hall of Fame",
+            "count": 1,
+            "points": 200
+          },
+          {
+            "id": "collection",
+            "label": "Capture and team development",
+            "count": 7,
+            "points": 50
+          }
+        ],
+        "rules": [
+          "Champion completion is the primary outcome. Show the 0 to 1000 progress score and its category breakdown alongside it, rather than replacing completion with collection totals.",
+          "Each milestone earns its listed points at most once per attempt. Counts are cumulative thresholds, so 20 distinct wild species earns 25 capture points in total, not 20 points per catch.",
+          "Exclude facts already true at the supplied start. The official campaign starts fresh. No resets, repeated purchases, repeated map visits or repeated easy battles generate extra points.",
+          "Milestone points never decrease. Keep blackouts, item waste and current party condition in the run profile so they explain progress without erasing completed achievements.",
+          "The optional collection component is capped at 50 points. Becoming Champion does not require collecting every bonus, and 1000 points is not required for a full-game pass.",
+          "Award progress from verified game evidence. Do not infer completion from the agent notebook or a claimed tool result. Missing telemetry is unknown, not a zero or an automatic failure.",
+          "Record the first achievement time, frame, decision and cumulative token use. These are 50 observations within one trajectory, not 50 independent trials.",
+          "Publish the score definition to agents before an evaluated run. Keep hidden evaluator state private, and give every model the same scoring rules and budget.",
+          "The weights are provisional design choices. Pilot the breakdown before using it for model ranking. Do not relabel historical scores without enough saved evidence to recompute this definition."
+        ]
+      },
+      "run_metrics": [
+        {
+          "id": "party-profile",
+          "label": "Party strength and readiness",
+          "measure": "At the start, each badge, League entry and attempt end, save the roster, levels, total and median level, HP/max HP, nonfainted count, status, remaining move PP, Attack, Defense, Speed and Special. Show stat totals as descriptive proxies, not a calibrated battle-power score.",
+          "points": 0,
+          "availability": "Party levels, HP, status and PP are available in current observations. Full stat snapshots and standardized reporting need integration."
+        },
+        {
+          "id": "move-coverage",
+          "label": "Moves and team coverage",
+          "measure": "Show damaging move types with usable PP, status/setup/recovery moves and field moves. Coverage describes available options. It is not a claim that all matchups are winnable.",
+          "points": 0,
+          "availability": "Move IDs and PP are available. Coverage aggregation needs integration."
+        },
+        {
+          "id": "collection-profile",
+          "label": "Collection and development",
+          "measure": "Track successful capture events, distinct wild species caught, distinct owned species, evolutions and species held in the party or PC separately. Dex-owned counts include gifts and evolutions, so they are not a substitute for capture counts.",
+          "points": 0,
+          "availability": "Dex ownership and current party are readable. Capture/evolution provenance and storage history need integration."
+        },
+        {
+          "id": "battle-profile",
+          "label": "Battle outcomes and setbacks",
+          "measure": "Track trainer wins by unique trainer, wild wins, escapes, faints and blackouts separately. Show losses and recoveries at matched progress milestones. Farming wild wins earns no extra score.",
+          "points": 0,
+          "availability": "Battle state is available. Persistent verified outcome counters need integration."
+        },
+        {
+          "id": "economy-profile",
+          "label": "Purchases, item use and money",
+          "measure": "Record bought and sold quantities by item, purchase spending, sale proceeds, reward income, blackout losses, item use and remaining supplies separately. Report purchases without awarding points for spending.",
+          "points": 0,
+          "availability": "Current money and bag are readable. Transaction provenance needs integration. Inventory and money deltas alone must not be called purchases."
+        },
+        {
+          "id": "efficiency-profile",
+          "label": "Efficiency at comparable progress",
+          "measure": "Show cumulative reported tokens with input/output/cache breakdown, decisions, actions, game frames and elapsed time at each milestone. Compare efficiency at the same achieved milestone. Do not count cached input twice or label subscription usage as actual API charges.",
+          "points": 0,
+          "availability": "Run token and action logs exist. Milestone joins and dashboard presentation need integration."
+        }
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/constants/event_constants.asm",
+        "https://github.com/pret/pokered/blob/master/constants/map_constants.asm"
+      ]
+    }
+  ]
+}

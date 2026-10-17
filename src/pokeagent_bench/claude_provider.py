@@ -19,7 +19,7 @@ def subscription_environment():
     excluded = ('ANTHROPIC_', 'CLAUDE_CODE_', 'CLAUDE_CONFIG_DIR', 'CLAUDE_AGENT_', 'CLAUDE_SESSION_', 'CLAUDECODE')
     env = {key: value for key, value in os.environ.items() if not key.startswith(excluded)}
     env.update(CLAUDE_CODE_DISABLE_AUTO_COMPACT='1', CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC='1',
-               CLAUDE_CODE_MAX_OUTPUT_TOKENS='4096')
+               CLAUDE_CODE_MAX_OUTPUT_TOKENS='8192')
     return env
 
 
@@ -89,19 +89,21 @@ class ClaudeStream:
 
 class ClaudeCodeProvider(BoundedGameplayProvider):
     provider = 'claude-code'
-    harness = 'claude-code-bounded-gameplay-v1'
-    max_output_tokens = 4096
+    harness = 'claude-code-gameplay-fair-v046'
+    max_output_tokens = 8192
 
     def __init__(self, model, *, executable='claude', **kwargs):
         if not re.fullmatch(r'claude-[a-z]+-[0-9][a-z0-9-]*', model):
             raise ValueError('Use an exact Claude model ID, not an alias')
-        if 'fable' in model:
-            raise ValueError('Fable may require usage credits and is excluded from the subscription adapter')
+        verified_models = os.environ.get('POKEBENCH_VERIFIED_CLAUDE_MODELS', '').split(',')
+        if 'fable' in model and model not in verified_models:
+            raise ValueError('Fable may require usage credits. Verify subscription access for this exact model first')
         super().__init__(model, executable=executable, **kwargs)
         self.config_identity.update(transport='claude-code-stream-json-v1',
             tools='none', subscription_only=True, automatic_compaction=False,
-            effort_control_supported='haiku' not in model,
-            effective_effort=None if 'haiku' in model else self.reasoning_effort,
+            subscription_access_verified=model in verified_models,
+            effort_control_supported=not model.startswith('claude-haiku-4'),
+            effective_effort=None if model.startswith('claude-haiku-4') else self.reasoning_effort,
             context_persistence='retained-segments-cli-session-resume',
             usage_accounting='cumulative-model-usage-delta-including-cache-v1')
 
@@ -116,6 +118,7 @@ class ClaudeCodeProvider(BoundedGameplayProvider):
             raise ValueError('Claude Code subscription CLI is unavailable') from None
 
     def decide(self, observation, notes, recent, limits, timeout):
+        self.decision_limits = limits
         self.schema = self.decision_schema(limits)
         decision, usage, record = super().decide(observation, notes, recent, limits, timeout)
         record.update(resolved_model=self.model, subscription=self.auth['subscriptionType'],
@@ -176,3 +179,9 @@ class ClaudeCodeProvider(BoundedGameplayProvider):
                 if not isinstance(event.get('structured_output'), dict):
                     raise ProviderError('Claude returned no structured decision. Usage may be unreported')
                 return json.dumps(event['structured_output']), usage
+
+
+# Keep the shared gameplay schema unchanged and adapt only the CLI boundary.
+from . import claude_interface as _interface
+import sys as _sys
+_interface.install(_sys.modules[__name__])

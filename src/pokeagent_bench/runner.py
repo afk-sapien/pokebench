@@ -13,9 +13,11 @@ from . import loop_budget
 
 
 def run(session, provider, *, input_price=None, output_price=None, pause_after_decisions=None):
+    if hasattr(provider, "configure_action_policy"):
+        provider.configure_action_policy(session.action_policy, record="action_policy" in session.manifest)
     prompt = getattr(provider, "prompt", PROMPT)
     recent = deque(maxlen=8)
-    feedback = VisualFeedback(session.output, with_motion=getattr(provider, "motion_feedback", False), compact=getattr(provider, "compact_feedback", False), current_only=getattr(provider, "current_only", False)) if getattr(provider, "visual_feedback", False) else None
+    feedback = VisualFeedback(session.output, with_motion=getattr(provider, "motion_feedback", False), compact=getattr(provider, "compact_feedback", False), current_only=getattr(provider, "current_only", False), before_after=getattr(provider, "before_after", False)) if getattr(provider, "visual_feedback", False) else None
     invalid = 0
     decision_index = 0
     previous_unique_views = 0
@@ -146,7 +148,8 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
             except ProviderError as error:
                 session.usage["accounting_complete"] = False
                 session.usage["model_seconds"] += time.monotonic() - started
-                write_json(session.output / "error.json", {"kind": "provider_error", "message": str(error)})
+                write_json(session.output / "error.json", {"kind": "provider_error", "message": str(error),
+                    "details": error.details})
                 session.finish("provider_error")
                 break
             duration = time.monotonic() - started
@@ -171,27 +174,29 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                 session.finish("token_budget")
             if session.status()["state"] != "running":
                 break
-            if getattr(provider, "maintenance_decisions", False) and record.get("maintenance") in ("compaction", "look_back"):
-                if decision.get("actions") != []:
-                    raise ValueError("Maintenance cannot execute controller actions")
-                if decision.get("notes") is not None:
-                    maintenance_notes = provider.normalize_notes(decision["notes"])
-                    if not isinstance(maintenance_notes, str) or len(maintenance_notes.encode()) > session.limits.max_note_bytes:
-                        raise ValueError("Invalid maintenance notes")
-                    session.write_notes(maintenance_notes)
-                session.audit_memory(record["maintenance"], {"decision": decision_index, "usage": usage})
-                save_boundary()
-                continue
             try:
                 if not isinstance(decision, dict):
                     raise ValueError("Expected a controller decision")
+                if "interface_error" in decision:
+                    allowed = {"interface_error", "actions", "notes", "goal_plan", "look_back", "journal"}
+                    message = decision["interface_error"]
+                    if (set(decision) - allowed or decision.get("actions") != []
+                            or any(decision.get(key) is not None for key in allowed - {"interface_error", "actions"})
+                            or not isinstance(message, str) or not message.strip()):
+                        raise ValueError("Invalid format rejection envelope. No action executed")
+                    raise ValueError(" ".join(message.split())[:512])
+                required_metadata = getattr(provider, "required_planning_metadata", False)
+                decision = dict(decision)
+                if not required_metadata:
+                    decision.setdefault("notes", None)
                 planned = getattr(provider, "persistent_goal", False)
                 plan = None
                 if planned:
                     from .planning import validate as validate_plan
-                    if "goal_plan" not in decision:
+                    if required_metadata and "goal_plan" not in decision:
                         raise ValueError("Missing goal_plan. Use null to retain the existing goal")
-                    plan = validate_plan(decision["goal_plan"], session.gameplay_memory.get("agent_plan"))
+                    plan = validate_plan(decision.get("goal_plan"), session.gameplay_memory.get("agent_plan"),
+                                         require_initial=required_metadata)
                     decision = {k: v for k, v in decision.items() if k != "goal_plan"}
                 journal_request = None
                 if session.journal_enabled:
@@ -204,15 +209,25 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                     raw_commands = [{key: value for key, value in decision.items() if key != "notes"}]
                 else:
                     raise ValueError("Unexpected decision fields")
+                maintenance = record.get("maintenance") if getattr(provider, "maintenance_decisions", False) else None
+                if maintenance in ("compaction", "look_back"):
+                    if raw_commands != []:
+                        raise ValueError("Maintenance cannot execute controller actions. No action executed")
+                    if maintenance == "look_back":
+                        look_back = getattr(provider, "look_back", None)
+                        if type(look_back) is not int or not 1 <= look_back <= 8:
+                            raise ValueError("Screenshot recall requires look_back from 1 to 8. No action executed")
                 memory_only = journal_request is not None and (journal_request["writes"] or journal_request["delete"] or journal_request["query"] is not None)
-                minimum = 0 if memory_only else 1
-                if not isinstance(raw_commands, list) or not minimum <= len(raw_commands) <= session.limits.max_actions_per_decision:
+                minimum = 0 if memory_only or maintenance in ("compaction", "look_back") else 1
+                maximum = min(session.limits.max_actions_per_decision,
+                              getattr(provider, "max_controller_commands", session.limits.max_actions_per_decision))
+                if not isinstance(raw_commands, list) or not minimum <= len(raw_commands) <= maximum:
                     raise ValueError("Invalid controller batch length")
                 commands = []
                 for raw in raw_commands:
                     if getattr(provider, "gameplay_commands", False):
                         from .gameplay_commands import validate
-                        commands.append(validate(raw, session.limits))
+                        commands.append(validate(raw, session.limits, session.action_policy))
                         continue
                     if not isinstance(raw, dict) or set(raw) != {"button", "hold_frames", "release_frames"}:
                         raise ValueError("Invalid controller action fields")
@@ -241,6 +256,10 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                 session.update_journal(journal_request)
             if notes is not None:
                 session.write_notes(notes)
+            if maintenance in ("compaction", "look_back"):
+                session.audit_memory(maintenance, {"decision": decision_index, "usage": usage})
+                save_boundary()
+                continue
             for action_index, command in enumerate(commands, 1):
                 if session.status()["state"] != "running":
                     break

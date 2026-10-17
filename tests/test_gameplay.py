@@ -196,3 +196,68 @@ def test_map_change_withholds_new_objects_until_settled(tmp_path, engine):
         assert observe_gameplay(session)["local_map"]["objects"][0]["appearance"] == "sign or fixed interactable"
     finally:
         session.close()
+
+
+@pytest.mark.parametrize("map_id", [0, 5])
+def test_delayed_transition_reconciles_movement_feedback(tmp_path, engine, monkeypatch, map_id):
+    session = setup(tmp_path, engine)
+
+    def delayed_transition(session, send, transcript, phase_end):
+        session.engine.memory[0xD35E] = map_id
+        session.engine.memory[0xD362] = 19
+        session.engine.memory[0xD361] = 17
+        return transcript.result("control returned", 0)
+
+    monkeypatch.setattr("pokeagent_bench.gameplay_commands.settle_dialogue", delayed_transition)
+    try:
+        result = execute(session, "delayed-warp", {"command": "move", "argument": "up", "count": 1})
+        assert result["position_after"] == {"map_id": map_id, "x": 19, "y": 17}
+        assert result["tiles_moved"] == 0
+        assert "blocked_at" not in result
+        assert "blocked" not in result["outcome"]
+        assert "Position changed" in result["outcome"]
+        assert result["map_changed"] is (map_id != 0)
+        assert session.gameplay_memory["movements"][-1]["outcome"] == result["outcome"]
+        assert session.gameplay_memory["working"]["decisions"][-1]["commands"][-1]["outcome"] == result["outcome"]
+    finally:
+        session.close()
+
+
+def test_object_motion_is_not_reported_as_a_blocked_player_move(tmp_path, engine, monkeypatch):
+    session = setup(tmp_path, engine)
+    mem = engine.memory
+    mem[0xC110], mem[0xC112] = 1, 4
+    mem[0xC214], mem[0xC215] = 7, 8
+
+    def object_motion(session, send, transcript, phase_end):
+        session.engine.memory[0xC214] = 8
+        return transcript.result("control returned", 0)
+
+    monkeypatch.setattr("pokeagent_bench.gameplay_commands.settle_dialogue", object_motion)
+    try:
+        result = execute(session, "push", {"command": "move", "argument": "up", "count": 1})
+        assert result["position_before"] == result["position_after"]
+        assert result["tiles_moved"] == 0
+        assert "blocked_at" not in result
+        assert result["visible_object_changes"] == [
+            {"id": "object-1", "from": {"x": 4, "y": 3}, "to": {"x": 4, "y": 4}}]
+        assert "Visible object positions changed" in result["outcome"]
+        assert "SECRET" not in json.dumps(result)
+        assert session.gameplay_memory["working"]["decisions"][-1]["commands"][-1]["outcome"] == result["outcome"]
+    finally:
+        session.close()
+
+
+@pytest.mark.parametrize('tileset,tiles', [
+    ('FACILITY', [0x21, 0x20, 0x31, 0x30]), ('GYM', [0x3C, 0x4C, 0x3D, 0x4D])])
+def test_live_spinner_arrows_preserve_direction_without_exposing_routes(tileset, tiles):
+    mem, cat = memory(), catalog()
+    cat['world']['0']['tileset'] = tileset
+    cat['world']['0']['forced_moves'] = [[50, 50, 99, 99]]
+    for col, tile in enumerate(tiles):
+        mem[0xC3A0 + 20 + 2 * col] = tile
+    view = local_map(mem, cat, {'kind': 'overworld'})
+    assert view['rows'][0].startswith('^v<>')
+    assert '99' not in json.dumps(view)
+    cat['world']['0']['tileset'] = 'FOREST'
+    assert local_map(mem, cat, {'kind': 'overworld'})['rows'][0].startswith('####')

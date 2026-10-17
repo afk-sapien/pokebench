@@ -18,6 +18,10 @@ def read_runs(root: Path):
             manifest = json.loads((directory / "manifest.json").read_text())
             result = json.loads((directory / "result.json").read_text())
             config = {key: manifest[key] for key in ("benchmark", "track", "goal", "limits", "labels_sha256")}
+            from .action_policy import from_manifest
+            policy = from_manifest(manifest)
+            if "action_policy" in manifest:
+                config["action_policy"] = policy
             config["observation_policy"] = manifest.get("observation_policy")
             config["catalog_sha256"] = manifest.get("catalog_sha256")
             config["journal"] = manifest.get("journal", False)
@@ -39,7 +43,7 @@ def read_runs(root: Path):
                 result["wall_seconds"] += max(0, (datetime.now(timezone.utc) - updated).total_seconds())
             rows.append({"id": directory.name, "group": digest(encoded(config))[:12],
                          "provider": agent.get("provider"), "model": agent.get("model"),
-                         "benchmark": manifest["benchmark"], **result})
+                         "benchmark": manifest["benchmark"], **result, "action_policy": policy})
         except (OSError, ValueError, KeyError, TypeError):
             continue
     return sorted(rows, key=lambda row: (row["group"], -row["score"], row["wall_seconds"]))
@@ -59,6 +63,7 @@ def summarize(rows):
         usage = [row["usage"] for row in trials if row.get("usage", {}).get("available", False)]
         priced = [item["estimated_cost_usd"] for item in usage if item.get("estimated_cost_usd") is not None]
         output.append({"group": group, "provider": provider, "model": model,
+                       "action_policy": trials[0].get("action_policy", "assisted-gameplay-v1"),
                        "trials": len(trials), "running": sum(row["state"] == "running" for row in trials),
                        "paused": sum(row["state"] == "paused" for row in trials),
                        "evaluated": len(evaluated), "errors_or_interruptions": len(errors),

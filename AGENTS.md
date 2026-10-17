@@ -54,9 +54,51 @@ message and tag attribution too. Correct unintended identities before they
 become public. Pass these rules explicitly to delegated agents and temporary
 checkouts that might not load this file automatically.
 
+## Working agreement: exploratory PokeBench
+
+The owner clarified this on 2026-10-08. PokeBench is an exploratory Pokemon
+benchmark and hobby research project. Optimize for useful comparisons, clear
+explanations, low token waste and steady progress. Do not impose production
+release machinery or publication-grade requirements unless explicitly requested.
+A technical report does not by itself change this working mode.
+
+- Fix shared behavior in its owning package. Emulator or shared controller bugs
+  belong in PokeSim Core, with a focused regression test and integration into the
+  affected consumer. Do not leave a benchmark adapter as the final fix simply
+  to avoid updating Core. A temporary workaround must be called temporary, and
+  the remaining Core work must be stated plainly.
+- Check the actual current Core implementation before duplicating functionality
+  or assuming a dependency update is too disruptive. Keep old runs on their
+  recorded versions while using appropriate fixes for new work.
+- Preserve useful historical results. Routine backend fixes do not invalidate
+  all prior evaluations or justify rerunning the whole benchmark. Show existing
+  and partial results with concise caveats. Distinguish materially different
+  task conditions without hiding the rest of the leaderboard.
+- Use proportionate verification. Reproduce the bug, test the relevant behavior,
+  satisfy required repository checks and use small model trials when needed.
+  Do not build elaborate approval, reservation, release or reporting systems
+  for an ordinary repair unless they solve a concrete current problem.
+- Catalog entries must describe concrete evaluations, not just task families.
+  Name the target species, opponent or location, starting resources, agent goal
+  and scored outcome. Separate proposed setup details from verified save facts.
+  Do not present a generic placeholder as a completed evaluation specification.
+- Match tools to the skill being tested. Menu-operation tasks require manual
+  inputs. Decision-making tasks and campaigns can use reliable mechanical
+  shortcuts. Record the condition and keep those results distinguishable.
+- Continue authorized diagnosis, fixes and verification without repeatedly
+  stopping to ask whether to perform the obvious next step. Existing spending
+  limits, account identity rules and publication permissions still apply.
+- Explain what was actually fixed, where it was fixed and what remains. Do not
+  describe a consumer workaround as a Core fix or a small smoke test as proof
+  that the entire system is flawless.
+- Keep communication simple. Lead with the result and the practical implication.
+  Avoid enterprise-style process language and excessive methodological caveats.
+
 ## Project conventions
 
-- Keep this project independent of PokeSim. Never modify a sibling checkout or its saves.
+- Keep the benchmark independent of the PokeSim application and never alter its saves.
+  Authorized shared-library repairs should be made in PokeSim Core and integrated
+  into the benchmark, rather than duplicated in a local adapter.
 - Do not use em dashes or semicolons in authored output.
 - Never commit ROMs, generated game labels, emulator states, API keys, or private run artifacts.
 - Agent observations must use an explicit allowlist. Evaluator flags remain private.

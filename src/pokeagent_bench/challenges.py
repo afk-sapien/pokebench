@@ -10,7 +10,9 @@ def validate_objective(value):
         raise ValueError("An objective must be an object")
     objective = deepcopy(value)
     kind = objective.get("kind")
-    required = {"guarded-milestones": {"kind", "targets", "no_faints", "description"},
+    required = {"catalog-task": {"kind", "task_id", "description"},
+                "preparation-submission": {"kind", "task_id", "description"},
+                "guarded-milestones": {"kind", "targets", "no_faints", "description"},
                 "encounter-capture": {"kind", "description"},
                 "resource-route": {"kind", "map_id", "description"},
                 "battle-milestone": {"kind", "target", "description"}, "milestone": {"kind", "target", "description"},
@@ -27,7 +29,15 @@ def validate_objective(value):
         raise ValueError("Unsupported objective or unexpected fields")
     if not isinstance(objective["description"], str) or not 1 <= len(objective["description"]) <= 1000:
         raise ValueError("An objective needs a short player-facing description")
-    if kind == 'guarded-milestones':
+    if kind in ('catalog-task', 'preparation-submission'):
+        from importlib.resources import files
+        import json
+        tasks = {task['id']: task for path in files('pokeagent_bench').joinpath('catalogs').iterdir()
+                 if path.name.endswith('.json') for task in json.loads(path.read_text())['evals']}
+        task = tasks.get(objective['task_id'])
+        if task is None or (task['mode'] == 'preparation') != (kind == 'preparation-submission') or task['id'] == 'campaign-full-game':
+            raise ValueError('Unknown task or incorrect catalog execution mode')
+    elif kind == 'guarded-milestones':
         targets=objective['targets']
         if not isinstance(targets,list) or not targets or any(not isinstance(t,str) for t in targets) or len(targets)!=len(set(targets)) or type(objective['no_faints']) is not bool:
             raise ValueError('Invalid guarded battle targets')
@@ -62,6 +72,10 @@ def validate_objective(value):
 
 def evidence(engine, objective=None):
     state = engine.evidence()
+    if objective and objective["kind"] == "catalog-task":
+        from .catalog_runtime import catalog_evidence
+        state["catalog"] = catalog_evidence(engine, objective["task_id"])
+        return state
     if objective and objective["kind"] in ("guarded-milestones", "encounter-capture", "resource-route", "battle-milestone", "location", "trainer", "opening", "capture", "wild-battle", "heal", "reach-map", "purchase", "obtain-item"):
         state["challenge"] = engine.challenge_evidence(objective)
     return state
@@ -197,7 +211,7 @@ class ChallengeEvaluator:
         if kind == "heal":
             facts = state["challenge"]
             return (not self.healing_disqualified and facts["map_id"] == self.objective["map_id"]
-                    and facts["battle"] == 0 and facts["overworld"] and bool(facts["party"])
+                    and facts["battle"] == 0 and bool(facts["party"])
                     and all(mon["hp"] == mon["max_hp"] and mon["max_hp"] > 0 and not mon["status"]
                             for mon in facts["party"]))
         if kind == "location":
@@ -292,3 +306,33 @@ class ChallengeEvaluator:
 
     def complete(self, goal):
         return bool(self.awarded)
+
+
+class PreparationEvaluator:
+    """Preparation completes only by explicit submission, never a gameplay flag."""
+
+    def __init__(self, initial, objective):
+        self.objective = validate_objective(objective)
+        self.baseline = deepcopy(initial)
+        self.awarded = {}
+        self.initial_keys = set()
+
+    def observe(self, state, frame, wall_seconds):
+        return []
+
+    @property
+    def score(self):
+        return 0
+
+    def complete(self, goal=None):
+        return False
+
+
+def create_challenge_evaluator(initial, objective):
+    objective = validate_objective(objective)
+    if objective['kind'] == 'catalog-task':
+        from .catalog_runtime import CatalogEvaluator
+        return CatalogEvaluator(initial['catalog'], objective)
+    if objective['kind'] == 'preparation-submission':
+        return PreparationEvaluator(initial, objective)
+    return ChallengeEvaluator(initial, objective)

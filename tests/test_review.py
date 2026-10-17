@@ -138,3 +138,16 @@ def test_no_action_decision_has_same_before_and_after(tmp_path, engine):
     first = build_run(path)["steps"][0]
     assert first["actions"] == []
     assert first["before"] == first["after"]
+
+
+def test_replay_distinguishes_recorded_model_input_from_action_result(tmp_path, engine):
+    path = recorded_run(tmp_path, engine)
+    result = build_run(path)
+    first = result['steps'][0]
+    assert first['model_input_frames'] == [first['before_frame']]
+    assert first['after_frame'] not in first['model_input_frames']
+    assert first['requested_history_frames'] == []
+    assert first['model_input_image'].startswith('data:image/png;base64,')
+    page = review_html([path])
+    assert 'Actual screenshot input for this decision' in page
+    assert 'DECISION START' in page and 'ACTION RESULT' in page

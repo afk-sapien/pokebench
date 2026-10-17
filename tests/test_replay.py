@@ -72,3 +72,16 @@ def test_legacy_run_without_core_provenance_still_replays(recorded):
     manifest["package_version"] = "0.1.0"
     write_json(run / "manifest.json", manifest)
     assert replay(rom, run)["verified"]
+
+
+def test_replay_reinstalls_recorded_navigation_condition(recorded, monkeypatch):
+    rom, run = recorded
+    path = run / "manifest.json"
+    manifest = json.loads(path.read_text())
+    manifest["scenario"]["navigation_condition"] = "navigation-no-battles-v1"
+    write_json(path, manifest)
+    installed = []
+    monkeypatch.setattr("pokeagent_bench.navigation_conditions.install",
+                        lambda engine, scenario: installed.append(scenario.get("navigation_condition")))
+    assert replay(rom, run)["verified"]
+    assert installed == ["navigation-no-battles-v1"]

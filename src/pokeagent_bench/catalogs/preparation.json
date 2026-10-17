@@ -1,0 +1,441 @@
+{
+  "category": "preparation",
+  "title": "Gen 1 Red resource preparation",
+  "evals": [
+    {
+      "id": "preparation-lead-selection",
+      "title": "Brock lead selection with Squirtle and Pidgey",
+      "difficulty": "easy",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fight: Brock, Geodude level 12 then Onix level 14.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Submit an illegal lead or alter the frozen configuration after submission.",
+        "Fail the legality or resource check.",
+        "Finish below the provisional calibrated win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Choose a lead for a known challenge",
+      "scenario_revision": 2,
+      "agent_goal": "Choose the lead for the Brock battle.",
+      "scenario_details": [
+        "Target fight: Brock, Geodude level 12 then Onix level 14.",
+        "Roster: Squirtle level 15 with Bubble, Tackle, Tail Whip, and Water Gun. Pidgey level 12 with Gust, Sand-Attack, and Quick Attack.",
+        "Bag: Potion x2. Cash: 0 Pokedollars. Allowed preparation: choose Squirtle or Pidgey as lead only."
+      ],
+      "open_questions": [
+        "Calibrate the automated controller threshold."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-recovery-before-continuing",
+      "title": "Brock Pok\u00e9mon Center recovery",
+      "difficulty": "easy",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Pewter City before Brock with a damaged party and the Pok\u00e9mon Center available.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Use unavailable recovery, revive, money, or inventory resources.",
+        "Submit a configuration that fails recovery-state or legality validation.",
+        "Finish below the provisional calibrated win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Recover the team before continuing",
+      "scenario_revision": 2,
+      "agent_goal": "Use the free Pok\u00e9mon Center recovery before fighting Brock.",
+      "scenario_details": [
+        "Target fight: Brock, Geodude level 12 then Onix level 14.",
+        "Roster: Squirtle level 15 with Bubble, Tackle, Tail Whip, and Water Gun at half HP. Pidgey level 12 with Gust, Sand-Attack, and Quick Attack at half HP.",
+        "Bag: Potion x1. Cash: 0 Pokedollars. Pok\u00e9mon Center recovery is available.",
+        "Allowed preparation: visit the Pok\u00e9mon Center, use the listed Potion, choose lead, and reorder party."
+      ],
+      "open_questions": [
+        "Validate that the private start permits Center use before the Brock checkpoint."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-assemble-storage-roster",
+      "title": "Lorelei roster assembly from storage",
+      "difficulty": "medium",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Use a Pokemon, move, item, or quantity absent from the supplied state.",
+        "Exceed party, storage, or resource constraints during the submission.",
+        "Finish below the provisional calibrated win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Assemble a roster from storage",
+      "scenario_revision": 2,
+      "agent_goal": "Assemble a party for Lorelei from the stated active party and PC box.",
+      "scenario_details": [
+        "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+        "Active party: Charizard level 50 with Flamethrower, Slash, Fly, SmokeScreen, Pidgeot level 48 with Wing Attack, Fly, Quick Attack, Sand-Attack.",
+        "PC box: Jolteon level 50 with Thunderbolt, Thunder Wave, Double Kick, Pin Missile, Jynx level 50 with Psychic, Ice Beam, Lovely Kiss, Rest, Snorlax level 50 with Body Slam, Rest, Amnesia, Earthquake, Lapras level 50 with Surf, Ice Beam, Confuse Ray, Body Slam.",
+        "Bag: Hyper Potion x2. Cash: 0 Pokedollars. Allowed preparation: transfer and order up to six listed Pok\u00e9mon."
+      ],
+      "open_questions": [
+        "Validate PC menu operations and automated controller handling of submitted order."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-shop-for-challenge",
+      "title": "Misty shopping with Pikachu and Bulbasaur",
+      "difficulty": "medium",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fight: Misty, Staryu level 18 then Starmie level 21.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Spend more money than supplied or buy unavailable stock.",
+        "Submit a bag that violates capacity or quantity constraints.",
+        "Finish below the provisional calibrated win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Shop for a disclosed challenge",
+      "scenario_revision": 2,
+      "agent_goal": "Buy supplies for the Misty battle within the listed cash and stock.",
+      "scenario_details": [
+        "Target fight: Misty, Staryu level 18 then Starmie level 21.",
+        "Roster: Pikachu level 20 with ThunderShock, Quick Attack, Thunder Wave, Growl, Bulbasaur level 20 with Vine Whip, Tackle, Leech Seed, Growl.",
+        "Cash: 900 Pokedollars. Mart stock: Potion 300 Pokedollars, Antidote 100 Pokedollars, Parlyz Heal 200 Pokedollars, Burn Heal 250 Pokedollars, Pok\u00e9 Ball 200 Pokedollars. Bag initially empty.",
+        "Allowed preparation: buy listed stock in whole quantities, reorder the party, and set the lead."
+      ],
+      "open_questions": [
+        "Calibrate cash accounting, bag capacity, and controller threshold."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-move-replacement-across-fights",
+      "title": "Kadabra TM choice for Lorelei then Bruno",
+      "difficulty": "hard",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fights: Lorelei followed by Bruno.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Teach an unavailable move or retain an illegal move set.",
+        "Attempt an agent edit after the submission has frozen.",
+        "Finish below the provisional calibrated sequence win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Replace a move for consecutive fights",
+      "scenario_revision": 2,
+      "agent_goal": "Choose one Kadabra move replacement for consecutive Lorelei and Bruno fights.",
+      "scenario_details": [
+        "Target fights: Lorelei followed by Bruno.",
+        "Roster: Kadabra level 50 with Psychic, Recover, Reflect, and Kinesis. Poliwrath level 50 with Hypnosis, Amnesia, Surf, and Rest.",
+        "Teaching options: TM06 Toxic or TM45 Thunder Wave, each usable once by Kadabra. Bag: Elixer x1. Cash: 0 Pokedollars.",
+        "Allowed preparation: teach at most one listed TM to Kadabra, replace one listed Kadabra move if taught, choose lead, and reorder party."
+      ],
+      "open_questions": [
+        "Verify Gen 1 TM compatibility and the shared controller sequence."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-scarce-tm-allocation",
+      "title": "TM24 Thunderbolt allocation for Lorelei",
+      "difficulty": "hard",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Teach the TM to an ineligible recipient or consume more than the supplied copy.",
+        "Violate move-slot, TM-consumption, roster, or resource checks.",
+        "Finish below the provisional calibrated win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Allocate a scarce TM",
+      "scenario_revision": 2,
+      "agent_goal": "Choose a legal recipient for the only Thunderbolt TM.",
+      "scenario_details": [
+        "Target fight: Lorelei, Dewgong level 54, Cloyster level 53, Slowbro level 54, Jynx level 56, Lapras level 56.",
+        "Roster: Pikachu level 45 with ThunderShock, Thunder Wave, Quick Attack, Agility, Jolteon level 45 with Thundershock, Thunder Wave, Double Kick, Pin Missile, Lapras level 45 with Surf, Ice Beam, Confuse Ray, Body Slam.",
+        "Bag: TM24 Thunderbolt x1 and Elixer x1. Cash: 0 Pokedollars. Allowed preparation: teach TM24 to Pikachu or Jolteon, replace one move on its recipient, choose lead, and reorder party."
+      ],
+      "open_questions": [
+        "Verify TM24 legality and fixture menu behavior."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-damaged-team-rescue",
+      "title": "Lance damaged team rescue",
+      "difficulty": "hard",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fight: Lance, Gyarados level 58, Dragonair level 56, Dragonair level 56, Aerodactyl level 60, Dragonite level 62.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Use recovery beyond the supplied item quantities or revive ineligible Pokemon.",
+        "Submit an illegal HP, status, PP, party, or bag state.",
+        "Finish below the provisional calibrated win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": "team-rescue",
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Rescue a damaged team with scarce supplies",
+      "scenario_revision": 2,
+      "agent_goal": "Allocate scarce recovery supplies before Lance.",
+      "scenario_details": [
+        "Target fight: Lance, Gyarados level 58, Dragonair level 56, Dragonair level 56, Aerodactyl level 60, Dragonite level 62.",
+        "Roster: Jynx level 55 with Ice Beam, Psychic, Lovely Kiss, and Rest at 35 HP with Ice Beam PP 0, Snorlax level 40 with Body Slam, Amnesia, Rest, and Headbutt fainted, Jolteon level 55 with Thunderbolt, Thunder Wave, Pin Missile, and Agility fainted.",
+        "Bag: Revive x1, Max Potion x2, Elixer x1. Cash: 0 Pokedollars. Allowed preparation: use listed bag items and reorder the party."
+      ],
+      "open_questions": [
+        "Confirm registered team-rescue move labels and exact item counts."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-uncertain-opponent",
+      "title": "Champion Blue lineup preparation",
+      "difficulty": "stretch",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fight: Champion Blue from one of three equally weighted native starter-dependent parties.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Use information that the fixture publicly discloses only after submission to choose the preparation.",
+        "Submit an illegal roster, move, item, PP, or resource state.",
+        "Finish below the provisional calibrated win-rate threshold over the shared schedule."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": null,
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Prepare for an uncertain opponent",
+      "scenario_revision": 2,
+      "agent_goal": "Prepare for any of the three disclosed Champion Blue rosters before the variant is selected.",
+      "scenario_details": [
+        "Target fight: Champion Blue from one of three equally weighted native starter-dependent parties.",
+        "Party A: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Arcanine level 61, Exeggutor level 63, Blastoise level 65. Party B: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Gyarados level 61, Arcanine level 63, Venusaur level 65. Party C: Pidgeot level 61, Alakazam level 59, Rhydon level 61, Exeggutor level 61, Gyarados level 63, Charizard level 65.",
+        "Roster: Jolteon level 55 with Thunderbolt, Thunder Wave, Double Kick, Pin Missile. Lapras level 55 with Surf, Ice Beam, Confuse Ray, Body Slam. Snorlax level 55 with Body Slam, Earthquake, Rest, Amnesia.",
+        "Bag: Hyper Potion x2 and Full Restore x1. Cash: 0 Pokedollars. Allowed preparation: choose lead, order party, and allocate listed items."
+      ],
+      "open_questions": [
+        "Validate authentic saves for all three native Blue party branches and equal-weight scheduling."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-pp-allocation-gauntlet",
+      "title": "Lorelei and Bruno Elixer allocation",
+      "difficulty": "stretch",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target fights: Lorelei followed by Bruno.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Restore more PP than permitted or use unavailable PP items.",
+        "Attempt an agent edit after the submission has frozen or submit an illegal PP, item, roster, or bag state.",
+        "Finish below the provisional calibrated sequence win-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": "pp-gauntlet",
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Allocate PP for a battle gauntlet",
+      "scenario_revision": 2,
+      "agent_goal": "Allocate one Elixer before the Lorelei to Bruno gauntlet.",
+      "scenario_details": [
+        "Target fights: Lorelei followed by Bruno.",
+        "Roster: Poliwrath level 50 with Hypnosis, Amnesia, Surf PP 4, and Rest. Kadabra level 50 with Psychic, Recover, Reflect, and Kinesis with Psychic PP 5.",
+        "Bag: Elixer x1. Cash: 0 Pokedollars. Allowed preparation: choose the party member that receives Elixer, choose lead, and order party."
+      ],
+      "open_questions": [
+        "Define controller handling when a selected Elixer target has full PP."
+      ],
+      "decision_limit": 1
+    },
+    {
+      "id": "preparation-scarce-resource-league",
+      "title": "Elite Four resource preparation",
+      "difficulty": "stretch",
+      "tested_skill": "resource-planning",
+      "mode": "preparation",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Target sequence: Lorelei, Bruno, Agatha, Lance, then Champion Blue.",
+      "success": [
+        "Submit a legal frozen configuration using only the stated roster, moves, items, TMs, cash, and allowed decisions.",
+        "The automated controller grades the frozen submission against the named target fight or sequence."
+      ],
+      "failure": [
+        "Exceed supplied money, bag, stock, move, TM, PP, or item limits.",
+        "Attempt an agent edit after the submission has frozen or submit an illegal configuration.",
+        "Finish below the provisional calibrated League completion-rate threshold."
+      ],
+      "variants": [
+        "Five fixed timing variants with the same stated roster, resources, and target."
+      ],
+      "token_limit": 50000,
+      "existing_task": "league",
+      "requirements": [
+        "Build a private preparation checkpoint with the stated facts and validate submission legality.",
+        "Calibrate the automated controller and threshold before scoring any model."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Prepare scarce resources for the League",
+      "scenario_revision": 4,
+      "agent_goal": "Prepare fixed resources for Lorelei, Bruno, Agatha, Lance, and Champion Blue.",
+      "scenario_details": [
+        "Target sequence: Lorelei, Bruno, Agatha, Lance, then Champion Blue.",
+        "Roster: Jolteon level 60 with Thunderbolt, Thunder Wave, Double Kick, Pin Missile, Lapras level 60 with Surf, Ice Beam, Confuse Ray, Body Slam, Snorlax level 60 with Body Slam, Earthquake, Rest, Amnesia.",
+        "Cash: 3000 Pokedollars. Shop stock: Max Potion 2500 Pokedollars, Full Restore 3000 Pokedollars, Revive 1500 Pokedollars. Bag initially has Hyper Potion x1 and Elixer x1.",
+        "Allowed preparation: buy listed items within cash, choose lead, order party, and allocate bag items."
+      ],
+      "open_questions": [
+        "Validate shop access before the League and controller completion criterion."
+      ],
+      "decision_limit": 1,
+      "calibration_evidence": {
+        "version": "v062",
+        "fixed_controller": "fixed-battle-v4",
+        "fixed_starts": 5,
+        "buy_full_restore_wins": 2,
+        "no_purchase_wins": 1,
+        "evaluation_errors": 0,
+        "scope": "Native feasibility check, not evidence of optimal play or statistically established separation."
+      }
+    }
+  ]
+}

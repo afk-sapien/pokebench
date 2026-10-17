@@ -109,3 +109,39 @@ def test_invalid_structured_notebook_rejects_actions_without_ticks(session):
     result = run(session, Provider())
     assert result["stop_reason"] == "invalid_model_response"
     assert result["frames"] == 0
+
+
+@pytest.mark.parametrize('selection,expected', [('current', [6]), ('before-after', [0, 6])])
+def test_image_selection_retains_only_requested_decision_boundaries(session, selection, expected):
+    feedback = VisualFeedback(session.output, current_only=selection == 'current', before_after=selection == 'before-after')
+    feedback.prepare(session.observe(), 1)
+    command = {'button': 'right', 'hold_frames': 2, 'release_frames': 1}
+    for i in range(2):
+        before = session.frame
+        session.act(f'move-{i}', **command)
+        observation = session.observe()
+        feedback.record(command, before, session.frame, observation['screenshot'])
+    view = feedback.prepare(observation, 2)
+    assert [screen['frame'] for screen in view['screens']] == expected
+    assert view['scale'] == 3
+    assert view['selection'] == selection
+    assert session.frame == 6
+    assert view['screen_history']['unique_images_seen'] == 3
+    with Image.open(BytesIO(base64.b64decode(view['base64']))) as image:
+        assert image.size == (480 * len(expected), 472)
+        assert image.getpixel((image.width - 1, 40)) == (6, 50, 80)
+
+
+def test_gameplay_completion_feedback_is_current_and_has_no_target_details(session):
+    observation = session.observe()
+    observation['status'].update(track='gameplay', completed=False,
+                                 achievements=['SECRET_TARGET'], score=17)
+    observation['game'] = {}
+    public = public_context(observation)
+    assert public['task_status'] == 'not_complete'
+    assert 'SECRET_TARGET' not in json.dumps(public)
+    assert 'score' not in public
+    observation['status']['completed'] = True
+    assert public_context(observation)['task_status'] == 'complete'
+    observation['status']['track'] = 'visual'
+    assert 'task_status' not in public_context(observation)

@@ -278,3 +278,27 @@ def test_gameplay_default_retains_context_with_larger_threshold(provider):
     fresh = GameplayCodexProvider('explicit-model', continuity=False)
     assert fresh.continuity is False
     assert 'Each decision starts fresh' in fresh.prompt
+
+
+def test_failed_turn_retains_capacity_error_and_exact_identity(provider):
+    stream = events(usage=False)
+    stream[-1]['params']['turn'].update(status='failed', error={
+        'message': 'Selected model is at capacity', 'codexErrorInfo': 'serverOverloaded'})
+    ready(provider, stream)
+    with pytest.raises(ProviderError) as caught:
+        provider._complete('turn/start', {}, time.monotonic() + 10)
+    assert caught.value.details == {
+        'thread_id': 'thread', 'turn_id': 't1', 'status': 'failed',
+        'error': {'message': 'Selected model is at capacity', 'codexErrorInfo': 'serverOverloaded'}}
+    assert len(provider.server.requests) == 1
+
+
+def test_timeout_retains_turn_identity_without_duplicate_request(provider):
+    ready(provider, [])
+    def timeout(deadline):
+        raise ProviderError('App Server deadline exceeded')
+    provider.server.event = timeout
+    with pytest.raises(ProviderError) as caught:
+        provider._complete('turn/start', {}, time.monotonic() + 10)
+    assert caught.value.details == {'thread_id': 'thread', 'turn_id': 't1'}
+    assert len(provider.server.requests) == 1

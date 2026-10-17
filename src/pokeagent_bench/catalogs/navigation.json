@@ -1,0 +1,384 @@
+{
+  "category": "navigation",
+  "title": "Gen 1 Red navigation",
+  "evals": [
+    {
+      "id": "navigation-town-landmark",
+      "title": "Enter Viridian Pokemon Center from the Mart",
+      "difficulty": "easy",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "reach-map",
+        "map_id": 41,
+        "description": "Find and enter Viridian Pokemon Center. Healing is not required."
+      },
+      "start": "Viridian City, on the outdoor tile immediately in front of the Mart entrance, facing south.",
+      "success": [
+        "Reach the inside of Viridian Pokemon Center outside battle."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 300000,
+      "existing_task": "heal",
+      "requirements": [
+        "Inspect the existing heal fixture variants for navigation distance and UI state.",
+        "Keep the fixture only if its start is overworld and the landmark is not already entered."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Find and enter the Viridian Pokemon Center",
+      "agent_goal": "Find and enter Viridian Pokemon Center. Healing is not required.",
+      "scenario_details": [
+        "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+        "Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.",
+        "Parcel already delivered. The old man no longer blocks the northern exit."
+      ],
+      "scenario_revision": 2,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "active": false,
+      "retirement_reason": "Short town travel adds little beyond the parcel quest and campaign. Retained only for historical references."
+    },
+    {
+      "id": "navigation-forest-crossing",
+      "title": "Cross Viridian Forest and reach Pewter City",
+      "difficulty": "medium",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "reach-map",
+        "map_id": 2,
+        "description": "Reach Pewter City without blacking out."
+      },
+      "start": "Viridian Forest, first controllable tile after entering through the southern gate.",
+      "success": [
+        "Reach Pewter City outside battle without a blackout."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 6000000,
+      "existing_task": "viridian-forest",
+      "requirements": [
+        "Reuse only fixture variants that pass the suite start check and reference replay.",
+        "Measure a navigation-only token cap with representative model trials."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Cross Viridian Forest to Pewter City",
+      "agent_goal": "Reach Pewter City without blacking out. Trainers on this route are already defeated and wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.",
+        "Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.",
+        "Forest trainers are already defeated. Wild encounters are disabled throughout this trial.",
+        "Navigation-only condition: route trainers are defeated in the starting save. A documented emulator ROM override disables random wild encounters for the entire trial, including after map transitions. No route hints or puzzle solutions are supplied."
+      ],
+      "scenario_revision": 3,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "measures": "Follow a branching outdoor route to its exit. No quest item or NPC sequence is required.",
+      "decision_limit": 200,
+      "navigation_condition": "navigation-no-battles-v1"
+    },
+    {
+      "id": "navigation-branching-cave",
+      "title": "Traverse Mt. Moon and reach Cerulean City",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "reach-map",
+        "map_id": 3,
+        "description": "Travel through Mt. Moon and reach Cerulean City without blacking out."
+      },
+      "start": "Mt. Moon 1F, first controllable tile inside the Route 3 entrance.",
+      "success": [
+        "Reach Cerulean City outside battle without a blackout."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 9750000,
+      "existing_task": "mt-moon",
+      "requirements": [
+        "Reuse only existing variants that pass replay validation.",
+        "Validate battle-free travel across map transitions."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Choose a route through Mt. Moon to Cerulean",
+      "agent_goal": "Travel through Mt. Moon and reach Cerulean City without blacking out. Trainers on this route are already defeated and wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Wartortle level 20, Tackle, Tail Whip, Bubble and Water Gun. Full HP, no status and full PP.",
+        "Bag: 10 Potions, 3 Antidotes and 1 Escape Rope. Money: 1000.",
+        "Boulder Badge owned. Mt. Moon trainers, including the fossil Super Nerd, are already defeated. No Dig, Fly or bicycle. Either fossil may be selected without a battle.",
+        "Navigation-only condition: route trainers are defeated in the starting save. A documented emulator ROM override disables random wild encounters for the entire trial, including after map transitions. No route hints or puzzle solutions are supplied."
+      ],
+      "scenario_revision": 4,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "measures": "Navigate a multi-floor cave and distinguish exits from dead ends. Battles are excluded from this navigation task.",
+      "decision_limit": 650,
+      "navigation_condition": "navigation-no-battles-v1",
+      "budget_calibration": {
+        "version": "v062",
+        "reference_controller_inputs": 317,
+        "decision_limit": 650,
+        "basis": "At least two times a completed native reference input count. One input per decision is a conservative ceiling, not the expected cost. Movement batches can use fewer decisions.",
+        "reference_verified": true,
+        "model_difficulty_calibration": "pending"
+      }
+    },
+    {
+      "id": "navigation-warp-puzzle",
+      "title": "Reach Sabrina's room through Saffron Gym",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Saffron Gym, first controllable entrance tile from Saffron City.",
+      "success": [
+        "Stand on the walkable tile immediately south of Sabrina without starting a battle."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 6000000,
+      "existing_task": null,
+      "requirements": [
+        "Create the Saffron Gym entrance checkpoint with ordinary trainers cleared.",
+        "Bind the endpoint to the verified tile south of Sabrina and reject an accidental battle start. No warp route is supplied to the agent."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Reach the correct endpoint through a warp maze",
+      "agent_goal": "Reach the tile directly south of Sabrina in Saffron Gym. Do not start her battle.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+        "Silph Co. rescued. Gym accessible. All seven ordinary gym trainers defeated, Sabrina unbeaten.",
+        "The target tile is (9,9) in the upstream Saffron Gym coordinate system, below Sabrina at (9,8). Check the runtime coordinate convention before binding the grader."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SaffronGym.asm"
+      ],
+      "scenario_revision": 2,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "measures": "Understand connected warp rooms and reach a specific destination without starting a battle.",
+      "decision_limit": 200
+    },
+    {
+      "id": "navigation-spinning-floors",
+      "title": "Collect the Moon Stone in Rocket Hideout B2F",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Rocket Hideout B2F, arrival tile from the B1F stairs at the northeast entrance.",
+      "success": [
+        "Acquire the Moon Stone that starts on B2F during this attempt."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 7500000,
+      "existing_task": null,
+      "requirements": [
+        "Capture the B2F stair-arrival start and validate the native forced-floor path.",
+        "Track removal of the specific B2F Moon Stone and acquisition during the attempt. Coordinates are evaluator setup details, not route hints."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Navigate directional floor tiles to a target room",
+      "agent_goal": "Collect the Moon Stone on Rocket Hideout B2F. You may backtrack, but do not use a saved-state reset.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+        "The B2F Rocket trainer is already defeated. Moon Stone uncollected and absent from the bag.",
+        "Target is the native B2F Moon Stone at (1,11). No item relocation or custom floor layout."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/RocketHideoutB2F.asm"
+      ],
+      "scenario_revision": 2,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "measures": "Predict forced movement on spin tiles. The Moon Stone is a concrete marker that the puzzle was solved.",
+      "decision_limit": 250
+    },
+    {
+      "id": "navigation-boulder-puzzle",
+      "title": "Solve Victory Road 1F and climb to 2F",
+      "difficulty": "stretch",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Victory Road 1F, first controllable tile after entering from Route 23.",
+      "success": [
+        "Reach Victory Road 2F through the ladder from 1F during this attempt."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 9000000,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native unsolved 1F state with a legal Strength user and required badges.",
+        "Bind success to the 1F-to-2F ladder transition, not an arbitrary nearby map coordinate."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Move a boulder to open the required passage",
+      "agent_goal": "Use the boulder puzzle to reach Victory Road 2F. Normal backtracking and room resets are allowed. Trainers on this route are already defeated and wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. The native 1F boulder puzzle is unsolved. 1F trainers already defeated.",
+        "Target is the ladder at (1,1) on 1F. No pre-moved boulders or pre-activated switch.",
+        "Navigation-only condition: route trainers are defeated in the starting save. A documented emulator ROM override disables random wild encounters for the entire trial, including after map transitions. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/VictoryRoad1F.asm"
+      ],
+      "scenario_revision": 3,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "measures": "Push a boulder onto a switch without blocking the route, then reach the unlocked ladder.",
+      "decision_limit": 300,
+      "navigation_condition": "navigation-no-battles-v1"
+    },
+    {
+      "id": "navigation-blocked-route-alternative",
+      "title": "Reach Vermilion while the Saffron gate is closed",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Route 5, just outside the northern entrance of the Saffron gate building.",
+      "success": [
+        "Reach Vermilion City without a blackout or giving any Saffron guard a drink."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 7500000,
+      "existing_task": null,
+      "requirements": [
+        "Capture the Route 5 gate-entrance state with thirsty guards and the Underground Path available.",
+        "Verify Vermilion arrival and unchanged guard-drink event. Do not reveal the Underground Path as a route solution in the agent goal."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Recognize a blocked route and take the alternate path",
+      "agent_goal": "Reach Vermilion City. The Saffron guards have not been given a drink. Find a legal route. Trainers on this route are already defeated and wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Wartortle level 20 with Tackle, Tail Whip, Bubble and Water Gun, full HP and PP.",
+        "Bag: 5 Super Potions and 2 Antidotes. No Fresh Water, Soda Pop, Lemonade, Fly or bicycle. Money: 0.",
+        "Boulder and Cascade Badges owned. Route 6 trainers already defeated. Native Route 5 to Route 6 Underground Path available.",
+        "Navigation-only condition: route trainers are defeated in the starting save. A documented emulator ROM override disables random wild encounters for the entire trial, including after map transitions. No route hints or puzzle solutions are supplied."
+      ],
+      "scenario_revision": 3,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "measures": "Recognize a blocked route and use the available Underground Path instead of opening the guard gate.",
+      "decision_limit": 250,
+      "navigation_condition": "navigation-no-battles-v1"
+    },
+    {
+      "id": "navigation-multifloor-required-stops",
+      "title": "Visit Celadon Mart 2F and 4F, then the rooftop",
+      "difficulty": "stretch",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": null,
+      "start": "Celadon Department Store 1F, first controllable entrance tile.",
+      "success": [
+        "Record visits to both Celadon Mart 2F and 4F before arriving at the rooftop."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Five pilot starts with identical goals, party and resources, separated by 0, 17, 37, 67 and 97 released-button frames. Confirm the timing shift does not alter the starting contract."
+      ],
+      "token_limit": 1500000,
+      "existing_task": null,
+      "requirements": [
+        "Create the native Celadon Mart 1F entrance state.",
+        "Add persistent visited-floor evidence and require rooftop arrival after both earlier visits."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Complete required stops across multiple floors before exiting",
+      "agent_goal": "Visit the second and fourth floors of Celadon Department Store in either order, then reach the rooftop. Purchases are not required.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Bag: 20 Max Repels. No Escape Rope, Dig or Fly.",
+        "Store stairs and elevator are available. No money or purchases are needed.",
+        "A brief map transition counts as a floor visit. Rooftop arrival before both visits does not pass, but returning to finish is allowed."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMart2F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMart4F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMartRoof.asm"
+      ],
+      "scenario_revision": 2,
+      "open_questions": [
+        "Capture the proposed start as a private save and verify its location, party, inventory and story flags.",
+        "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
+      ],
+      "active": false,
+      "retirement_reason": "An arbitrary floor checklist overlaps movement and menu operations without a distinct spatial problem."
+    }
+  ]
+}

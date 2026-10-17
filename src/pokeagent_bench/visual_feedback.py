@@ -41,12 +41,19 @@ def public_context(observation):
               "goal": status["goal"], "track": status["track"],
               "emulated_seconds": status["emulated_seconds"],
               "remaining": status["remaining"], "token_budget": status["token_budget"],
+              "decision_budget": status.get("decision_budget"),
               "max_action_frames": status["max_action_frames"],
               "max_actions_per_decision": status["max_actions_per_decision"],
               "max_note_bytes": status["max_note_bytes"]}
     if status["track"] in ("structured", "gameplay"):
         result["game"] = observation["game"]
+    if "tested_skill" in status:
+        result["tested_skill"] = status["tested_skill"]
+    if "action_policy" in status:
+        result["action_policy"] = status["action_policy"]
     if status["track"] == "gameplay":
+        # A completion bit gives no target coordinates, identity or intermediate score.
+        result["task_status"] = "complete" if status.get("completed") else "not_complete"
         result["max_dialogue_frames"] = status["max_dialogue_frames"]
     return result
 
@@ -68,7 +75,7 @@ def change(before, after):
             "changed_pixel_fraction": round(count / (left.width * left.height), 6)}
 
 
-def pack_screens(samples, *, compact=False):
+def pack_screens(samples, *, compact=False, boundary_pair=False):
     """Losslessly enlarge game pixels and optionally reuse identical panels."""
     scale, header = (2, 32) if compact else (3, 40)
     width, height = pixels(samples[0]["png"]).size
@@ -107,6 +114,8 @@ def pack_screens(samples, *, compact=False):
             label_frame = samples[-1]["frame"] if is_current else sample["frame"]
         else:
             label = "BEFORE" if number == 0 and len(samples) > 1 else "CURRENT" if len(samples) == 1 else f"AFTER {number}"
+        if boundary_pair:
+            label = "CURRENT" if number == len(unique) - 1 else "PREVIOUS DECISION"
         if compact:
             draw.text((x + 8, y + 3), label, fill="black")
             draw.text((x + 8, y + 17), f"frame {label_frame}", fill="black")
@@ -128,9 +137,12 @@ def pack_screens(samples, *, compact=False):
 class VisualFeedback:
     """Keep the previous decision's screen and every ensuing controller result."""
 
-    def __init__(self, output: Path, *, with_motion=False, compact=False, current_only=False):
+    def __init__(self, output: Path, *, with_motion=False, compact=False, current_only=False, before_after=False):
         self.output = output
         self.current_only = current_only
+        self.before_after = before_after
+        if before_after and (current_only or compact):
+            raise ValueError("Before/after requires its own image selection at the standard scale")
         self.with_motion = with_motion
         self.compact = compact
         self.samples = []
@@ -146,7 +158,11 @@ class VisualFeedback:
             self.recent_views.append(digest(current))
         if self.samples[-1]["frame"] != observation["frame"] or self.samples[-1]["png"] != current:
             raise ValueError("Visual history does not match current observation")
-        png, entries, layout = pack_screens(self.samples[-1:] if self.current_only else self.samples, compact=self.compact)
+        selected = self.samples[-1:] if self.current_only else self.samples
+        if self.before_after:
+            selected = [self.samples[0], self.samples[-1]] if len(self.samples) > 1 else self.samples
+        png, entries, layout = pack_screens(selected, compact=self.compact, boundary_pair=self.before_after)
+        layout['selection'] = 'current' if self.current_only else 'before-after' if self.before_after else 'strip'
         directory = self.output / "observations"
         directory.mkdir(exist_ok=True)
         filename = f"{index:06d}.png"

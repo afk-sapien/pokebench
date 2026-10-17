@@ -4,20 +4,21 @@ from collections import Counter, OrderedDict, deque
 from dataclasses import asdict
 from datetime import datetime, timezone
 import fcntl
-from importlib.metadata import version
 import json
 import os
 from pathlib import Path
 import threading
 import time
 
-from .core import Limits, core_provenance, digest, encoded
+from .core import Limits, core_provenance, digest, encoded, validate_emulator_manifest
 from .scoring import Evaluator
-from .challenges import ChallengeEvaluator
+from .challenges import ChallengeEvaluator, PreparationEvaluator
+from .campaign_runtime import CampaignTracker
+from .catalog_runtime import CatalogEvaluator
 
 
 LOGS = ('actions.jsonl', 'decisions.jsonl', 'memory.jsonl')
-FIELDS = ('frame', 'actions', 'notes', 'reason', 'operation_ids', 'operations', 'trace_head',
+FIELDS = ('campaign_tracking', 'frame', 'actions', 'notes', 'reason', 'operation_ids', 'operations', 'trace_head',
           'usage', 'usage_available', 'journal_enabled', 'journal_entries', 'journal_results', 'current_decision',
           'gameplay_catalog', 'gameplay_memory', 'gameplay_inspection', 'gameplay_result', 'gameplay_operations')
 
@@ -25,7 +26,7 @@ FIELDS = ('frame', 'actions', 'notes', 'reason', 'operation_ids', 'operations', 
 def pack(value):
     if isinstance(value, bytes):
         return {'t': 'bytes', 'v': base64.b64encode(value).decode()}
-    if isinstance(value, (Evaluator, ChallengeEvaluator)):
+    if isinstance(value, (Evaluator, ChallengeEvaluator, PreparationEvaluator, CatalogEvaluator, CampaignTracker)):
         return {'t': type(value).__name__, 'v': pack(vars(value))}
     if isinstance(value, dict):
         kind = 'Counter' if isinstance(value, Counter) else 'OrderedDict' if isinstance(value, OrderedDict) else 'dict'
@@ -41,8 +42,10 @@ def unpack(value):
     kind, content = value['t'], value['v']
     if kind == 'bytes':
         return base64.b64decode(content, validate=True)
-    if kind in ('Evaluator', 'ChallengeEvaluator'):
-        result = object.__new__({'Evaluator': Evaluator, 'ChallengeEvaluator': ChallengeEvaluator}[kind])
+    if kind in ('Evaluator', 'ChallengeEvaluator', 'PreparationEvaluator', 'CatalogEvaluator', 'CampaignTracker'):
+        result = object.__new__({'Evaluator': Evaluator, 'ChallengeEvaluator': ChallengeEvaluator,
+                               'PreparationEvaluator': PreparationEvaluator, 'CatalogEvaluator': CatalogEvaluator,
+                               'CampaignTracker': CampaignTracker}[kind])
         result.__dict__.update(unpack(content))
         return result
     if kind in ('dict', 'Counter', 'OrderedDict'):
@@ -89,11 +92,18 @@ def checkpoint(session, state):
             logs[name] = digest(path.read_bytes())
         else:
             logs[name] = None
+    capture = getattr(session.engine, 'checkpoint', None)
+    restore = getattr(session.engine, 'restore_checkpoint', None)
+    engine_checkpoint = capture() if callable(capture) and callable(restore) else None
+    engine_state = engine_checkpoint['state'] if engine_checkpoint is not None else session.engine.save()
     payload = {'format': 1, 'manifest': session.manifest, 'limits': asdict(session.limits),
                'labels': session.labels, 'elapsed': session.elapsed(), 'saved_at': datetime.now(timezone.utc).isoformat(),
                'session': {key: getattr(session, key) for key in FIELDS}, 'evaluator': session.evaluator,
-               'engine': session.engine.save(), 'screen': session.engine.screenshot(), 'runner': state, 'logs': logs,
-               'pending_button_release': next(reversed(session.operations.values()))[0]['button'] if session.operations else None}
+               'engine': engine_state, 'screen': session.engine.screenshot(), 'runner': state, 'logs': logs,
+               'pending_button_release': (next(reversed(session.operations.values()))[0]['button']
+                                          if session.operations and engine_checkpoint is None else None)}
+    if engine_checkpoint is not None:
+        payload['engine_checkpoint'] = engine_checkpoint
     data = pack(payload)
     atomic(session.output / 'recovery.json', {'payload': data, 'sha256': digest(encoded(data))})
     (session.output / 'pending.json').unlink(missing_ok=True)
@@ -120,7 +130,10 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
         source = digest(encoded({p.name: digest(p.read_bytes()) for p in sorted(Path(__file__).parent.glob('*.py'))}))
         if saved['manifest'] != manifest or manifest['source_sha256'] != source:
             raise ValueError('Resume requires the original manifest and exact runtime source')
-        if manifest['core'] != core_provenance() or manifest['pyboy_version'] != version('pyboy'):
+        from .evaluation_catalog import validate_run_spec
+        validate_run_spec(manifest)
+        validate_emulator_manifest(manifest)
+        if manifest['core'] != core_provenance():
             raise ValueError('Resume requires the original core and emulator versions')
         if digest(Path(rom).read_bytes()) != manifest['scenario']['rom_sha256']:
             raise ValueError('Resume ROM checksum mismatch')
@@ -134,17 +147,28 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
         pending = root / 'pending.json'
         if pending.exists() and json.loads(pending.read_text())['decision'] > saved['runner']['decision_index']:
             raise ValueError('In-flight decision has uncertain usage or actions. Automatic retry is unsafe')
-        engine = (engine_factory or RedEngine)(Path(rom), saved['engine'])
-        engine.initial_screen = saved['screen']
-        # PyBoy save states omit queued input events. Restore the release requested
-        # by the last controller action without advancing an emulator frame.
-        if saved['pending_button_release'] is not None:
+        engine_checkpoint = saved.get('engine_checkpoint')
+        engine = (engine_factory or RedEngine)(Path(rom), None if engine_checkpoint is not None else saved['engine'])
+        if engine_checkpoint is not None:
+            restore = getattr(engine, 'restore_checkpoint', None)
+            if not callable(restore):
+                raise ValueError('Recovery requires the original Core checkpoint capability')
+            if engine_checkpoint.get('state') != saved['engine']:
+                raise ValueError('Recovery raw state and Core checkpoint disagree')
+            restore(engine_checkpoint, match='exact')
+        elif saved['pending_button_release'] is not None:
+            # Legacy raw states omit queued inputs. Restore the final release only.
             engine.release(saved['pending_button_release'])
+        engine.initial_screen = saved['screen']
         session = object.__new__(Session)
         session.__dict__.update(saved['session'])
         session.engine, session.output, session.manifest = engine, root, manifest
         session.scenario, session.labels = manifest['scenario'], saved['labels']
         session.track, session.goal = manifest['track'], manifest['goal']
+        session.campaign_tracking = manifest.get('scoring_protocol') == 'campaign-progress-v1'
+        from .action_policy import from_manifest, tested_skill
+        session.action_policy = from_manifest(manifest)
+        session.tested_skill = manifest.get("tested_skill", tested_skill(manifest.get("scenario", {})))
         session.limits, session.evaluator = Limits(**saved['limits']), saved['evaluator']
         session.objective = getattr(session.evaluator, 'objective', None)
         session.score_max = 1 if session.objective else 75 if session.goal == 'first-gym' else 1000

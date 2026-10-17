@@ -21,12 +21,14 @@ def content(observation):
 
 
 def create_server(session):
+    from .action_policy import ASSISTED, MANUAL, description
+    policy = getattr(session, "action_policy", ASSISTED)
     server = FastMCP("PokeAgent Bench", instructions=(
         "Play Pokemon Red using only these tools. Actions advance bounded frames and return the screen. "
         "Use a unique operation_id per new action and reuse it only for a retry. "
         "The game pauses between actions. Store lasting plans in notes. "
         "Use status to read the goal and remaining budgets. There are no reset or memory editing tools. "
-        + NICKNAME_RULE))
+        + description(policy) + " " + NICKNAME_RULE))
 
     @server.tool()
     def observe() -> list[TextContent | ImageContent]:
@@ -79,6 +81,15 @@ def create_server(session):
             from .gameplay_commands import execute
             execute(session, operation_id, {"command": command, "argument": argument, "count": count})
             return content(session.observe())
+
+    if session.track == "gameplay" and policy == MANUAL:
+        gameplay_command.__doc__ = ("Manual menu task. Only press, wait and inspect are allowed. "
+                                    "No menu shortcuts or automatic dialogue advancement.")
+        from typing import Literal
+        from .action_policy import MANUAL_COMMANDS
+        gameplay_command.__annotations__["command"] = Literal[MANUAL_COMMANDS]
+        server.remove_tool("gameplay_command")
+        server.add_tool(gameplay_command)
 
     return server
 

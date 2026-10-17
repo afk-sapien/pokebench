@@ -1,0 +1,499 @@
+{
+  "category": "operations",
+  "title": "Gen 1 Manual Menu Operations",
+  "evals": [
+    {
+      "id": "operations-heal-potion-target",
+      "title": "Use one Potion on party slot 2 Pikachu",
+      "difficulty": "easy",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Route 1 overworld at the north grass edge. Party slot 1 Bulbasaur is 29/29 HP and healthy, slot 2 Pikachu is 12/35 HP and healthy, and slot 3 Pidgey is 23/23 HP and healthy. The bag contains Potion x1, Antidote x1, and Poke Ball x3.",
+      "success": [
+        "Potion count changes from 1 to 0.",
+        "Pikachu gains exactly 20 HP, ending at 32/35 HP.",
+        "Bulbasaur and Pidgey retain stated HP, healthy status, moves, PP, and slots.",
+        "The final screen is Route 1 overworld or the pause menu."
+      ],
+      "failure": [
+        "A different item is consumed.",
+        "The Potion targets a different Pokemon.",
+        "Any non-target party state changes.",
+        "The party blacks out."
+      ],
+      "variants": [
+        "route1-pikachu-potion-v1"
+      ],
+      "token_limit": 1200000,
+      "existing_task": null,
+      "requirements": [
+        "New exact item, item-count, target, and untouched-party grader.",
+        "Controller-built Gen 1 overworld fixtures with a Potion and one designated damaged target."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Use a Potion on the designated Pokemon",
+      "scenario_revision": 2,
+      "agent_goal": "Open the Bag and use exactly one Potion on Pikachu in party slot 2. Do not use any other item or change the party order. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "Target is party slot 2 Pikachu at 12/35 HP.",
+        "Potion x1 is the only HP-restoring item in the bag.",
+        "The required final party order is Bulbasaur, Pikachu, Pidgey."
+      ],
+      "open_questions": [
+        "Confirm the fixture preserves Pikachu 12/35 HP after the opening render."
+      ],
+      "decision_limit": 40
+    },
+    {
+      "id": "operations-cure-poison",
+      "title": "Use one Antidote on party slot 3 Nidoran♂",
+      "difficulty": "easy",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Viridian City overworld outside the Pokemon Center. Party slot 1 Bulbasaur is 29/29 HP and healthy, slot 2 Pidgey is 23/23 HP and healthy, and slot 3 Nidoran♂ is 18/28 HP and poisoned. The bag contains Antidote x1, Potion x2, and Poke Ball x4.",
+      "success": [
+        "Antidote count changes from 1 to 0.",
+        "Nidoran♂ ends healthy at exactly 18/28 HP.",
+        "Bulbasaur and Pidgey retain stated HP, status, moves, PP, and slots.",
+        "The final screen is Viridian City overworld or the pause menu."
+      ],
+      "failure": [
+        "The Antidote targets a different Pokemon.",
+        "A different item is consumed.",
+        "Any unintended party state changes.",
+        "The party blacks out."
+      ],
+      "variants": [
+        "viridian-nidoran-antidote-v1"
+      ],
+      "token_limit": 1200000,
+      "existing_task": null,
+      "requirements": [
+        "New exact status-cure, target, inventory, and untouched-party grader.",
+        "Controller-built Gen 1 poison fixtures with an Antidote."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Cure the designated poisoned Pokemon",
+      "scenario_revision": 2,
+      "agent_goal": "Open the Bag and use exactly one Antidote on the poisoned Nidoran♂ in party slot 3. Do not use any other item. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "Target is party slot 3 Nidoran♂, poisoned at 18/28 HP.",
+        "Antidote x1 is the only status-curing item in the bag.",
+        "Poison removal must not heal HP in Generation 1."
+      ],
+      "open_questions": [
+        "Confirm the poison status byte is stable at the selected Viridian City tile."
+      ],
+      "decision_limit": 40
+    },
+    {
+      "id": "operations-restore-move-pp",
+      "title": "Use one Ether on Squirtle Water Gun",
+      "difficulty": "medium",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Route 24 overworld. Party slot 1 Squirtle level 15 is at full HP and healthy with Tackle 35/35 PP, Tail Whip 30/30 PP, Bubble 8/30 PP, and Water Gun 5/25 PP. Party slot 2 Pidgey is at full HP and healthy. The bag contains Ether x1, Potion x1, and Poke Ball x5.",
+      "success": [
+        "Ether count changes from 1 to 0.",
+        "Water Gun changes from 5/25 PP to 15/25 PP.",
+        "Bubble remains 8/30 PP and Squirtle’s other move PP is unchanged.",
+        "All party HP, status, moves, and order remain unchanged.",
+        "The final screen is the overworld or pause menu at the starting location."
+      ],
+      "failure": [
+        "The Ether targets a different Pokemon or move.",
+        "A different item is consumed.",
+        "Any unintended party state changes.",
+        "The party blacks out."
+      ],
+      "variants": [
+        "route24-squirtle-water-gun-ether-v1"
+      ],
+      "token_limit": 1500000,
+      "existing_task": null,
+      "requirements": [
+        "New exact PP-item, Pokemon, move-slot, PP-delta, and untouched-state grader.",
+        "Controller-built Gen 1 Ether fixtures with two depleted move slots."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Restore PP to the designated move",
+      "scenario_revision": 2,
+      "agent_goal": "Open the Bag, use exactly one Ether on Squirtle in party slot 1, then select Water Gun. Do not restore Bubble PP. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "Target is party slot 1 Squirtle, Water Gun in move slot 4 at 5/25 PP.",
+        "Bubble in move slot 3 is deliberately also depleted at 8/30 PP.",
+        "In Generation 1, Ether restores 10 PP to one selected move."
+      ],
+      "open_questions": [
+        "Confirm the selected core exposes per-move PP before and after a bag use."
+      ],
+      "decision_limit": 50
+    },
+    {
+      "id": "operations-battle-switch",
+      "title": "Switch from Charmander to party slot 3 Pikachu",
+      "difficulty": "medium",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Viridian Forest at the live second Bug Catcher trainer battle command menu. The opponent has native Weedle level 7, Kakuna level 7, and Weedle level 7. Party slot 1 Charmander is active at 30/39 HP and healthy, slot 2 Pidgey is 23/23 HP and healthy, and slot 3 Pikachu is 35/35 HP and healthy. No player command has been selected.",
+      "success": [
+        "The player command ledger records PKMN followed by Pikachu slot 3.",
+        "Pikachu becomes active before any player move, item, run attempt, or second switch.",
+        "No player command other than the requested switch occurs before Pikachu is active."
+      ],
+      "failure": [
+        "Select a different Pokemon or another player battle command.",
+        "Exhaust the attempt without completing the requested switch."
+      ],
+      "variants": [
+        "viridian-forest-rick-switch-pikachu-v1"
+      ],
+      "token_limit": 1200000,
+      "existing_task": null,
+      "requirements": [
+        "Add active-slot and player command evidence, separating the requested switch from normal opponent effects.",
+        "Prepare a stable live trainer battle with legal bench options. Validate that opponent effects cannot obscure whether the requested switch occurred."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Switch to the designated Pokemon in battle",
+      "scenario_revision": 2,
+      "agent_goal": "At the trainer battle command menu, choose PKMN and switch from Charmander to Pikachu in party slot 3. Do not select FIGHT, ITEM, or RUN.",
+      "scenario_details": [
+        "Requested switch is Charmander in slot 1 to Pikachu in slot 3.",
+        "Pidgey in slot 2 is a legal but incorrect bench choice.",
+        "Opponent damage after the requested switch is allowed."
+      ],
+      "open_questions": [
+        "Confirm the first Viridian Forest Bug Catcher and selected RNG state leave both bench choices switchable."
+      ],
+      "decision_limit": 40
+    },
+    {
+      "id": "operations-party-reorder",
+      "title": "Move party slot 3 Pidgey to the lead",
+      "difficulty": "medium",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Pewter City overworld outside the Pokemon Center. Party order is slot 1 Bulbasaur 29/29 HP healthy, slot 2 Pikachu 35/35 HP healthy, slot 3 Pidgey 23/23 HP healthy. The bag contains Potion x1 and Poke Ball x3.",
+      "success": [
+        "Final party slots are Pidgey, Bulbasaur, Pikachu.",
+        "HP, status, moves, PP, bag counts, and Pewter City location are unchanged.",
+        "The final screen is Pewter City overworld or the pause menu."
+      ],
+      "failure": [
+        "The final party order differs from the specified order.",
+        "Any party, inventory, or map state changes outside the permitted reorder.",
+        "The party blacks out."
+      ],
+      "variants": [
+        "pewter-pidgey-lead-v1"
+      ],
+      "token_limit": 1500000,
+      "existing_task": null,
+      "requirements": [
+        "New exact party-order and untouched-state grader.",
+        "Controller-built overworld fixtures with stable three-Pokemon parties."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Reorder the party to the requested lead",
+      "scenario_revision": 2,
+      "agent_goal": "Use the party menu’s SWITCH command as many times as necessary to change the party order from Bulbasaur, Pikachu, Pidgey to Pidgey, Bulbasaur, Pikachu. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "Required final party order is Pidgey, Bulbasaur, Pikachu.",
+        "In Generation 1, moving slot 3 to the lead requires two pairwise SWITCH operations for this requested final order.",
+        "All three Pokemon have full PP and no status condition.",
+        "No bag use, map movement, or battle is needed."
+      ],
+      "open_questions": [
+        "Confirm the party SWITCH interaction is available from this overworld state."
+      ],
+      "decision_limit": 50
+    },
+    {
+      "id": "operations-buy-pokeballs",
+      "title": "Buy exactly ten Poke Balls at Viridian Poke Mart",
+      "difficulty": "easy",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Viridian City overworld one tile south of the Poke Mart entrance. The bag contains Poke Ball x0, Potion x1, and Antidote x1. Cash is exactly 2000 Pokedollars. Party slot 1 Bulbasaur is 29/29 HP and healthy.",
+      "success": [
+        "Poke Ball count changes from 0 to exactly 10.",
+        "Cash changes from 2000 to exactly 0.",
+        "Potion and Antidote counts remain 1 each.",
+        "The final screen is Viridian City overworld."
+      ],
+      "failure": [
+        "Fewer than ten Poke Balls are acquired.",
+        "The player leaves the Mart or blacks out before confirmation.",
+        "The purchase occurs on a different map."
+      ],
+      "variants": [
+        "viridian-mart-exact-ten-balls-v1"
+      ],
+      "token_limit": 3000000,
+      "existing_task": "buy-pokeballs",
+      "requirements": [
+        "Existing adventure fixture and purchase objective can be reused.",
+        "An exact quantity and no-extra-purchase grader is still required if those constraints are desired."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Buy ten Poke Balls",
+      "scenario_revision": 2,
+      "agent_goal": "Enter the Viridian Poke Mart and buy exactly 10 Poke Balls. Spend all 2000 Pokedollars and buy nothing else. Finish outside the Mart in Viridian City.",
+      "scenario_details": [
+        "Poke Balls cost 200 Pokedollars each at Viridian Poke Mart.",
+        "Cash 2000 permits exactly ten Poke Balls and no other purchase after that.",
+        "The existing purchase objective accepts extra Balls and therefore is not used."
+      ],
+      "open_questions": [
+        "Confirm this Mart’s Poke Ball unit price is 200 in the pinned Red revision."
+      ],
+      "decision_limit": 100
+    },
+    {
+      "id": "operations-deposit-withdraw",
+      "title": "Deposit and withdraw party slot 2 Pikachu",
+      "difficulty": "hard",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Viridian Pokemon Center overworld at the PC. Party order is Bulbasaur 29/29 healthy, Pikachu 35/35 healthy, Pidgey 23/23 healthy. The active Pokemon Storage System box contains Rattata 18/18 healthy and has 19 free slots. The bag contains Potion x1.",
+      "success": [
+        "The operation ledger records deposit of Pikachu, withdrawal of the same Pokemon identity, then a party SWITCH of slots 2 and 3.",
+        "Final party order is Bulbasaur, Pikachu, Pidgey.",
+        "Rattata remains in the active box and all stated HP, status, moves, PP, and bag counts remain unchanged.",
+        "The final screen is the overworld or pause menu at the starting location."
+      ],
+      "failure": [
+        "A different Pokemon is deposited or withdrawn.",
+        "The designated Pokemon remains in storage or a different Pokemon remains in party.",
+        "Any unintended party, inventory, or storage state changes."
+      ],
+      "variants": [
+        "viridian-pc-pikachu-roundtrip-v1"
+      ],
+      "token_limit": 3000000,
+      "existing_task": null,
+      "requirements": [
+        "New PC box identity, deposit-withdraw transition, final-order, and untouched-state grader.",
+        "Controller-built Pokemon Center fixtures with validated active-box capacity."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Deposit and withdraw the designated Pokemon",
+      "scenario_revision": 2,
+      "agent_goal": "At the Viridian Pokemon Center PC, deposit Pikachu from party slot 2 into the active box, withdraw that same Pikachu after it appends to party slot 3, then use the party menu SWITCH command to restore the order Bulbasaur, Pikachu, Pidgey. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "The target is Pikachu, initially party slot 2.",
+        "After depositing Pikachu, withdrawing it appends it after Pidgey in party slot 3.",
+        "The required final party order is Bulbasaur, Pikachu, Pidgey, so the agent must SWITCH party slots 2 and 3 after withdrawal.",
+        "The active box must retain Rattata unchanged."
+      ],
+      "open_questions": [
+        "Confirm the active box is selected and has one empty slot when the fixture opens."
+      ],
+      "decision_limit": 100
+    },
+    {
+      "id": "operations-teach-tm-replace-move",
+      "title": "Teach TM34 Bide to Pikachu over Growl",
+      "difficulty": "hard",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Celadon City overworld. Party slot 1 Bulbasaur is 29/29 HP healthy, slot 2 Pikachu is 35/35 HP healthy with ThunderShock, Growl, Tail Whip, and Thunder Wave at full PP, and slot 3 Pidgey is 23/23 HP healthy. The bag contains TM34 x1, Potion x1, and Poke Ball x3.",
+      "success": [
+        "TM34 count changes from 1 to 0.",
+        "Pikachu move slot 2 changes from Growl to Bide.",
+        "ThunderShock, Tail Whip, and Quick Attack remain in their original slots with their original PP.",
+        "All non-target party state and non-TM bag counts remain unchanged.",
+        "The final screen is the overworld or pause menu at the starting location."
+      ],
+      "failure": [
+        "The TM is used on another Pokemon or replaces another move.",
+        "The TM is not consumed or more than one item is consumed.",
+        "Any unintended party or inventory state changes."
+      ],
+      "variants": [
+        "celadon-pikachu-tm34-bide-v1"
+      ],
+      "token_limit": 2100000,
+      "existing_task": null,
+      "requirements": [
+        "New TM consumption, recipient, learned-move, replaced-slot, and untouched-state grader.",
+        "Controller-built legal Gen 1 TM fixtures that avoid evolution and HM prompts."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Teach a TM and replace the designated move",
+      "scenario_revision": 2,
+      "agent_goal": "Use TM34 to teach Bide to Pikachu in party slot 2. When prompted, replace Growl in move slot 2. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "TM34 is Bide in Pokemon Red Generation 1.",
+        "Pikachu is the recipient in party slot 2 and has four moves, so move replacement is prompted.",
+        "The selected replacement is Growl in move slot 2."
+      ],
+      "open_questions": [
+        "Confirm TM34 compatibility for Pikachu in the pinned Red data table."
+      ],
+      "decision_limit": 70
+    },
+    {
+      "id": "operations-withdraw-item-and-use",
+      "title": "Withdraw one Potion and use it on Pikachu",
+      "difficulty": "hard",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Viridian Pokemon Center overworld at the PC. Party slot 1 Bulbasaur is 29/29 HP healthy, slot 2 Pikachu is 10/35 HP healthy, and slot 3 Pidgey is 23/23 HP healthy. The item PC contains Potion x1 and Antidote x1. The bag contains Potion x0, Antidote x1, and Poke Ball x3.",
+      "success": [
+        "Item PC Potion count changes from 1 to 0.",
+        "Bag Potion count returns to 0 after one withdrawal and one use.",
+        "Pikachu changes from 10/35 HP to 30/35 HP.",
+        "All Antidote and Poke Ball counts and all non-target party state remain unchanged.",
+        "The final screen is the overworld or pause menu at the starting location."
+      ],
+      "failure": [
+        "The wrong item is withdrawn or used.",
+        "The Potion targets a different Pokemon.",
+        "Any unintended party, bag, or item-PC state changes."
+      ],
+      "variants": [
+        "viridian-pc-pikachu-potion-v1"
+      ],
+      "token_limit": 2700000,
+      "existing_task": null,
+      "requirements": [
+        "New item-PC transfer, item use, exact target, inventory delta, and untouched-state grader.",
+        "Controller-built Pokemon Center fixtures with a Potion only in item PC."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Retrieve a stored item and use it",
+      "scenario_revision": 2,
+      "agent_goal": "At the Viridian Pokemon Center item PC, withdraw one Potion, then use it from the Bag on Pikachu in party slot 2. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "Pikachu in party slot 2 is the only damaged Pokemon.",
+        "Exactly one Potion starts in the item PC and none starts in the bag.",
+        "A Potion restores 20 HP, so Pikachu should finish at 30/35 HP."
+      ],
+      "open_questions": [
+        "Confirm the item PC withdrawal menu can transfer a single Potion in this core revision."
+      ],
+      "decision_limit": 90
+    },
+    {
+      "id": "operations-menu-checklist",
+      "title": "Complete an inventory and party checklist",
+      "difficulty": "stretch",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Viridian Pokemon Center overworld at the PC. Party order is Bulbasaur 29/29 healthy, Pikachu 10/35 healthy, Pidgey 23/23 healthy. The item PC contains Potion x1 and Antidote x1. The bag contains Potion x0, Antidote x1, and Poke Ball x3.",
+      "success": [
+        "The ledger records the required three operations in order.",
+        "Item PC Potion ends at 0 and bag Potion ends at 0.",
+        "Pikachu ends at 30/35 HP.",
+        "Final party order is Pidgey, Bulbasaur, Pikachu, with all other stated state unchanged.",
+        "The final screen is the overworld or pause menu at the starting location."
+      ],
+      "failure": [
+        "Any required operation is missing or occurs in the wrong target state.",
+        "An unintended item, Pokemon, move, PP, status, or storage state changes.",
+        "The party blacks out."
+      ],
+      "variants": [
+        "viridian-pc-pikachu-pidgey-checklist-v1"
+      ],
+      "token_limit": 3900000,
+      "existing_task": null,
+      "requirements": [
+        "Composite ordered-operation ledger and final-state grader.",
+        "Controller-built Pokemon Center fixtures with item PC storage, one damaged target, and a three-Pokemon party."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Complete a three-step menu checklist",
+      "scenario_revision": 2,
+      "agent_goal": "At the Viridian Pokemon Center, withdraw one Potion from the item PC, use it on Pikachu in party slot 2, then reorder the party to Pidgey, Bulbasaur, Pikachu. Finish by closing the item, party or PC screens and returning to the overworld or pause menu at the starting location.",
+      "scenario_details": [
+        "Required operation order is withdraw Potion, use Potion on Pikachu, then party reorder.",
+        "Required final order is Pidgey, Bulbasaur, Pikachu.",
+        "Pikachu should finish at 30/35 HP after the Generation 1 Potion effect."
+      ],
+      "open_questions": [
+        "Confirm the fixture begins beside the PC and not in an interaction or transition state."
+      ],
+      "measures": "Carry out a short inventory operation sequence. The full-bag exchange is an alternative case in this same task family.",
+      "decision_limit": 130
+    },
+    {
+      "id": "objectives-recover-earlier-mistake",
+      "title": "Free a bag slot and exchange the Bike Voucher",
+      "difficulty": "easy",
+      "tested_skill": "menu-operation",
+      "mode": "gameplay",
+      "action_policy": "manual-menu-v1",
+      "objective": null,
+      "start": "Cerulean Bike Shop, in front of the clerk with a Bike Voucher and all 20 bag slots occupied.",
+      "success": [
+        "Free enough bag space, exchange the Bike Voucher and receive the Bicycle during the attempt."
+      ],
+      "failure": [
+        "The token budget is exhausted before the stated goal is complete.",
+        "The party blacks out before completion. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "Full-bag capacity variant of the inventory checklist. Shares its task weight in category averages."
+      ],
+      "token_limit": 3000000,
+      "existing_task": null,
+      "requirements": [
+        "Enforce manual inputs for the bag operation and exchange. No menu or dialogue shortcuts.",
+        "Verify the native full-bag start and Bicycle receipt after the voucher exchange."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Recover from an earlier reversible mistake",
+      "agent_goal": "Exchange your Bike Voucher for a Bicycle. Your bag is full. Keep the voucher until the exchange and make room by any legal method.",
+      "scenario_details": [
+        "Party: Wartortle level 20 with Tackle, Tail Whip, Bubble and Water Gun, full HP and PP. Money: 0.",
+        "Exactly one of each occupies the 20 bag slots: Bike Voucher, Potion, Antidote, Awakening, Burn Heal, Ice Heal, Parlyz Heal, Escape Rope, Repel, Super Potion, Poke Ball, Great Ball, Ultra Ball, X Attack, X Defend, X Speed, X Special, Guard Spec., Dire Hit and X Accuracy.",
+        "Bicycle not received. Item PC has free capacity. Discarding or depositing a nonessential item is allowed. No particular recovery method is required."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/BikeShop.asm"
+      ],
+      "scenario_revision": 2,
+      "open_questions": [
+        "Measure difficulty as an inventory variant. It is not a second quest or a stretch challenge."
+      ],
+      "variant_of": "operations-menu-checklist",
+      "measures": "Recognize an inventory-capacity error and resolve it through manual menus while retaining the required quest item.",
+      "expected_solution": "Discard, use or deposit a nonessential item to free one slot, then talk to the shopkeeper to exchange the already-owned voucher. No money or new voucher is needed.",
+      "decision_limit": 100
+    }
+  ]
+}

@@ -4,16 +4,22 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pokeagent-bench"
-version = "0.31.0"
+version = "0.35.0"
 description = "Controlled Pokemon Red benchmarks for AI agents"
 requires-python = ">=3.11"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-  "pokesim-core[emulator] @ https://github.com/afk-sapien/pokesim-core/releases/download/v0.1.4/pokesim_core-0.1.4-py3-none-any.whl#sha256=8984ad4f2ac5012ca6a2d1f0501866f3194cf182b42686122e3edbc7a09c10cb",
+  "pokesim-core @ https://raw.githubusercontent.com/afk-sapien/PokeSim/3fb9eaf233be6d9a542c867b863b3c71e569f043/tools/temp-wheels/pokesim_core-0.6.0-py3-none-any.whl#sha256=935660bcc135e2b91ca623f0aea5d52d662f7f62b4011e6dc9212eb825b8cb6e",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=424ab5b2ba03e80ce0c13c776687fa51f2e217488200d30c6061df40fb3b2ceb ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl#sha256=34bd154b4cd857bb133cb25ce2563b55c1276d12cced08ee207095c0113ff465 ; sys_platform == 'linux' and platform_machine == 'aarch64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl#sha256=3a2ed6798967bf0887565b2b79530608f94b44292ff8846a6c67eb26e920df9f ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl#sha256=ebf7ecded4238546c080ba968ee68756f409ddb68c63fb3f16cc73497f524adb ; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-win_amd64.whl#sha256=25b5c20d238851e1b4ce3206a28b2423787337c079cd7ba2f3ba1a73c2aff0bf ; sys_platform == 'win32' and (platform_machine == 'AMD64' or platform_machine == 'x86_64')",
   "pillow>=10,<13",
   "numpy>=1.26,<3",
   "httpx>=0.28,<0.29",
+  "jsonschema>=4.23,<5",
   "mcp>=1.26,<2",
   "fastapi>=0.115,<1",
   "uvicorn>=0.34,<1",
@@ -40,5 +46,8 @@ select = ["E9", "F"]
 allow-direct-references = true
 
 [tool.hatch.build.targets.sdist]
-include = ["src/", "tests/", "scripts/", "docs/", "examples/", "fixtures/", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "pyproject.toml", "uv.lock", ".python-version"]
+include = ["src/", "tests/", "scripts/", "docs/", "examples/", "fixtures/", "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "pyproject.toml", "uv.lock", ".python-version", "vendor/"]
 exclude = ["**/__pycache__", "**/*.pyc", "**/.pytest_cache"]
+
+[tool.uv.sources]
+pokesim-core = { path = "vendor/pokesim_core-0.6.1.dev1-py3-none-any.whl" }

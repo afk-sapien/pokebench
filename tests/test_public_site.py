@@ -97,6 +97,8 @@ def test_complete_static_export_contains_only_public_data(tmp_path):
     assert 'setInterval(refresh' not in index
     assert 'benchmarks/${esc(t.id)}.html' in index
     assert 'test-v1' in (out/'results.json').read_text()
+    assert json.loads((out/'results.json').read_text())['cohorts'][0]['attempts'][0]['outcome_category'] == 'success'
+    assert '<small>Completed</small>' in (out/'benchmarks'/'task.html').read_text()
     with pytest.raises(ValueError, match='new public export'):
         export_public(feed, config, out)
 
@@ -253,3 +255,20 @@ def test_controlled_export_rejects_duplicate_or_mismatched_registration(tmp_path
     (root/'release-summary.json').write_text(json.dumps(summary))
     with pytest.raises(ValueError, match='frozen protocol'):
         release_snapshot(root)
+
+
+
+def test_release_snapshot_derives_outcome_category_from_original_stop(tmp_path):
+    from pokeagent_bench.public_site import release_snapshot
+
+    root = tmp_path / "release"
+    _, summary = release_files(root)
+    summary["attempts"][0].update(status="finished", completed=False, stop_reason="invalid_model_response",
+                                  replay_verified=True, accounting_complete=True)
+    summary["attempts"][1].update(status="error", stop_reason="provider_error")
+    (root / "release-summary.json").write_text(json.dumps(summary))
+    _, public = release_snapshot(root)
+    assert public["attempts"][0]["outcome_category"] == "interface_failure"
+    assert public["attempts"][1]["outcome_category"] == "infrastructure_failure"
+    assert public["attempts"][2]["outcome_category"] == "pending"
+    assert public["attempts"][0]["completed"] is False

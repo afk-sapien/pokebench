@@ -1,49 +1,22 @@
 """Bounded mechanical commands. No route finding or gameplay decisions."""
-from pokesim_core.gen1_ui import read_screen, read_battler
+from pokesim_core.gen1_ui import read_screen
 
-from .core import BUTTONS
-from .gameplay import menu_options, ui_state
+from .gameplay_contract import validate_command
+from .gameplay import local_map, menu_options, ui_state
 from .dialogue import Transcript, settle_dialogue
 
 
-def validate(command, limits):
-    if not isinstance(command, dict) or set(command) != {"command", "argument", "count"}:
-        raise ValueError("Expected command, argument and count")
-    kind, arg, count = command["command"], command["argument"], command["count"]
-    if not isinstance(arg, str) or type(count) is not int or count < 1:
-        raise ValueError("Invalid command arguments")
-    if kind == "move":
-        valid = arg in ("up", "down", "left", "right") and count <= 8
-    elif kind == "press":
-        valid = arg in BUTTONS and count == 1
-    elif kind == "wait":
-        valid = arg == "" and count <= limits.max_action_frames
-    elif kind in ("interact", "advance_dialogue"):
-        valid = arg == "" and count == 1
-    elif kind == "choose":
-        valid = bool(arg.strip()) and len(arg) <= 80 and count == 1
-    elif kind == "use_move":
-        valid = arg in ("1", "2", "3", "4") and count == 1
-    elif kind == "use_item":
-        from .menu_shortcuts import parse_item
-        parse_item(arg)
-        valid = count == 1
-    elif kind == "switch_pokemon":
-        valid = arg in ("1", "2", "3", "4", "5", "6") and count == 1
-    elif kind == "inspect":
-        valid = arg in ("party", "bag", "storage", "map", "memory") and count == 1
-    else:
-        valid = False
-    if not valid:
-        raise ValueError("Unsupported command or argument")
-    return dict(command)
+def validate(command, limits, policy=None):
+    return validate_command(command, limits, policy)
 
 
 def execute(session, operation_id, command, on_action=None):
     with session.lock:
         if session.track != "gameplay":
             raise ValueError("Structured commands require the gameplay track")
-        command = validate(command, session.limits)
+        from .action_policy import ASSISTED, MANUAL
+        policy = getattr(session, "action_policy", ASSISTED)
+        command = validate(command, session.limits, policy)
         if operation_id in session.gameplay_operations:
             previous = session.gameplay_operations[operation_id]
             if previous["request"] != command:
@@ -53,7 +26,7 @@ def execute(session, operation_id, command, on_action=None):
         start = session.frame
         raw_count = 0
         phase_end = start + session.limits.max_action_frames
-        if command["command"] in ("use_item", "switch_pokemon"):
+        if command["command"] in ("use_item", "switch_pokemon", "use_move"):
             phase_end = start + min(2400, session.limits.max_dialogue_frames)
         transcript = Transcript()
         def capture():
@@ -65,6 +38,8 @@ def execute(session, operation_id, command, on_action=None):
         result = {"request": command, "start_frame": start, "outcome": "executed", "position_before": position()}
         kind, arg, count = command["command"], command["argument"], command["count"]
         session.gameplay_inspection = None
+        visible_before = (local_map(session.engine.memory, session.gameplay_catalog,
+                                    ui_state(session.engine.memory)) if kind == "move" else {})
 
         def raw_send(button, hold=8, release=24):
             nonlocal raw_count
@@ -85,7 +60,7 @@ def execute(session, operation_id, command, on_action=None):
 
         def send(button, hold=8, release=24):
             ok = raw_send(button, hold, release)
-            if not ok or button != "a":
+            if not ok or button != "a" or policy == MANUAL:
                 return ok
             # The requested tap is followed only by released-button frames.
             # Return immediately at a visible menu, otherwise allow text to finish.
@@ -135,36 +110,9 @@ def execute(session, operation_id, command, on_action=None):
             send(arg if kind == "press" else "a")
         elif kind == "choose":
             choose(arg)
-        elif kind in ("use_item", "switch_pokemon"):
+        elif kind in ("use_item", "switch_pokemon", "use_move"):
             from .menu_shortcuts import execute_shortcut
             execute_shortcut(session, command, raw_send, choose, result)
-        elif kind == "use_move":
-            before = ui_state(session.engine.memory)
-            slot = int(arg) - 1
-            active = read_battler(session.engine.memory)
-            if before["kind"] not in ("battle_menu", "move_menu"):
-                result["outcome"] = "Move selection requires a battle or move menu. No input sent."
-            elif not active["moves"][slot] or active["pp"][slot] == 0:
-                result["outcome"] = "Requested move is empty or has no PP. No input sent."
-            else:
-                if before["kind"] == "battle_menu":
-                    choose("FIGHT")
-                for _ in range(3):
-                    if ui_state(session.engine.memory)["kind"] == "move_menu" or session.reason:
-                        break
-                    if not send(None, min(60, session.limits.max_action_frames), 0):
-                        break
-                for _ in range(4):
-                    current = ui_state(session.engine.memory)
-                    if current["kind"] != "move_menu":
-                        result["outcome"] = "Move menu unavailable. Stopped without selecting a move."
-                        break
-                    y = current["cursor_tile"][1]
-                    if y == 13 + slot:
-                        send("a")
-                        break
-                    if not send("down" if 13 + slot > y else "up"):
-                        break
         elif kind == "move":
             completed = 0
             for _ in range(count):
@@ -200,14 +148,38 @@ def execute(session, operation_id, command, on_action=None):
             if result["outcome"] == "executed":
                 result["outcome"] = f"Moved {completed} tiles."
             result["position_after_input"] = position()
-        if (raw_count or kind == "advance_dialogue") and not session.reason:
+        if policy != MANUAL and (raw_count or kind == "advance_dialogue") and not session.reason:
             phase_end = session.frame + session.limits.max_dialogue_frames
             result["dialogue"] = settle_dialogue(session, raw_send, transcript, phase_end)
         elif kind != "inspect":
-            result["dialogue"] = transcript.result("run ended" if session.reason else "command not executed", 0)
+            result["dialogue"] = transcript.result("run ended" if session.reason else "manual input complete" if raw_count and policy == MANUAL else "command not executed", 0)
         result.update(end_frame=session.frame, raw_actions=raw_count, position_after=position())
         result["map_changed"] = result["position_before"]["map_id"] != result["position_after"]["map_id"]
         if kind == "move":
+            if result["position_after"] != result["position_after_input"]:
+                # Reconcile delayed transitions before writing the observed history.
+                result.pop("blocked_at", None)
+                destination = result["position_after"]
+                result["outcome"] = (
+                    f"Moved {result['tiles_moved']} tiles during input. Position changed while the game settled. "
+                    f"Now at map {destination['map_id']}, ({destination['x']}, {destination['y']})."
+                )
+            if not result["map_changed"]:
+                visible_after = local_map(session.engine.memory, session.gameplay_catalog,
+                                          ui_state(session.engine.memory))
+                before_objects = {item["id"]: item for item in visible_before.get("objects", [])}
+                changes = []
+                for item in visible_after.get("objects", []):
+                    old = before_objects.get(item["id"])
+                    if old and (old["x"], old["y"]) != (item["x"], item["y"]):
+                        changes.append({"id": item["id"], "from": {"x": old["x"], "y": old["y"]},
+                                        "to": {"x": item["x"], "y": item["y"]}})
+                if changes:
+                    result["visible_object_changes"] = changes
+                    if result["position_before"] == result["position_after"]:
+                        result.pop("blocked_at", None)
+                        result["outcome"] = ("Player position unchanged. Visible object positions changed. "
+                                             "Check the updated map before treating the move as blocked.")
             movements = session.gameplay_memory.setdefault("movements", [])
             movements.append({key: result[key] for key in ("request", "position_before", "position_after_input", "position_after", "outcome", "tiles_moved", "map_changed")})
             del movements[:-8]

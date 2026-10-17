@@ -53,13 +53,14 @@ object labels, automatic navigation or human help are available.
             raise ValueError("compact_at must be at least 1024 tokens")
         if response_contract == "assessment" and presentation != "strip":
             raise ValueError("Assessment control requires the strip presentation")
-        if presentation not in ("current", "strip") or response_contract not in ("simple", "assessment"):
+        if presentation not in ("current", "before-after", "strip") or response_contract not in ("simple", "assessment"):
             raise ValueError("Unknown continuous provider policy")
         self.compact_at = compact_at
         self.presentation_policy = presentation
         self.response_contract = response_contract
         self.continuity = continuity
         self.current_only = presentation == "current"
+        self.before_after = presentation == "before-after"
         self.compact_feedback = presentation == "strip"
         self.legacy = object.__new__(CompactCodexProvider)
         if response_contract == "assessment":
@@ -164,7 +165,11 @@ object labels, automatic navigation or human help are available.
         usage = None
         compacted = False
         while True:
-            event = self.server.event(deadline)
+            try:
+                event = self.server.event(deadline)
+            except ProviderError as error:
+                error.details.update(thread_id=self.thread_id, turn_id=turn_id)
+                raise
             kind, data = event.get("method"), event.get("params", {})
             if data.get("threadId") not in (None, self.thread_id):
                 continue
@@ -182,7 +187,9 @@ object labels, automatic navigation or human help are available.
                     compacted = True
             if kind == "turn/completed" and data["turn"]["id"] == turn_id:
                 if data["turn"]["status"] != "completed":
-                    raise ProviderError("App Server turn failed. Usage may be unreported")
+                    raise ProviderError("App Server turn failed. Usage may be unreported",
+                        details={"thread_id": self.thread_id, "turn_id": turn_id,
+                                 "status": data["turn"]["status"], "error": data["turn"].get("error")})
                 break
         if usage is None:
             raise ProviderError("Missing turn usage, including compaction. Trial stopped")
@@ -269,11 +276,25 @@ object labels, automatic navigation or human help are available.
                 self.look_back = None
             inputs.extend([{"type": "text", "text": f"CURRENT frame {observation['frame']}"},
                            {"type": "image", "url": "data:image/png;base64," + view["base64"]}])
+            from .decision_contract import wire_schema
+            output_schema = self.decision_schema(limits)
+            if self.allowed_track == "gameplay":
+                output_schema = wire_schema(output_schema, self.provider)
             message, usage = self._complete("turn/start", {"threadId": self.thread_id, "input": inputs,
-                "effort": self.reasoning_effort, "outputSchema": self.decision_schema(limits)}, deadline)
+                "effort": self.reasoning_effort, "outputSchema": output_schema}, deadline)
             self.pending_summary = None
-            response = json.loads(message)
-            if self.response_contract == "assessment":
+            if self.allowed_track == 'gameplay':
+                from .decision_contract import parse_response
+                decision, self.look_back, error = parse_response(message, self.decision_schema(limits), limits)
+                if error:
+                    record['response_validation_error'] = error
+                if not decision['actions'] and self.look_back is not None:
+                    record['maintenance'] = 'look_back'
+            else:
+                response = json.loads(message)
+            if self.allowed_track == 'gameplay':
+                pass
+            elif self.response_contract == "assessment":
                 decision, record["assessment"] = self.legacy.unpack_decision(response)
                 if response.get("memory") is None:
                     decision["notes"] = None
