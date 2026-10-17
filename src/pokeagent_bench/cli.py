@@ -59,7 +59,7 @@ def parser():
         if name == "run":
             command.add_argument("--journal", action="store_true", help="Enable the bounded agent-authored journal for compact Codex")
             command.add_argument("--pause-after-decisions", type=int)
-            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude", "jev"), required=True)
+            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude", "jev", "jev-v2"), required=True)
             command.add_argument("--model")
             command.add_argument("--codex-policy", choices=("standard", "grounded", "grounded-motion", "compact", "continuous", "gameplay", "bounded"), default="compact",
                                  help="Compact is the default. Legacy policies remain selectable for comparisons")
@@ -239,7 +239,7 @@ def execute(args):
             raise ValueError("Gameplay track requires --game-data")
         from .gameplay import load_catalog
         gameplay_catalog = load_catalog(args.game_data)
-        if args.command == "run" and not (args.provider in ("claude", "jev") or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
+        if args.command == "run" and not (args.provider in ("claude", "jev", "jev-v2") or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
             raise ValueError("Gameplay runs require --provider codex --codex-policy gameplay")
     provider = None
     agent = None
@@ -271,6 +271,11 @@ def execute(args):
             if args.jev_shortcuts and args.track != "gameplay":
                 raise ValueError("Jev shortcuts require the gameplay track")
             provider = JevProvider(args.model, observation=args.jev_observation, shortcuts=args.jev_shortcuts)
+        elif args.provider == "jev-v2":
+            from .jev_v2 import JevTargetsProvider
+            if args.track != "gameplay":
+                raise ValueError("Jev v2 requires the gameplay track")
+            provider = JevTargetsProvider(args.model)
         elif args.provider == "codex":
             from .codex_provider import CodexProvider
             if args.input_price is not None or args.output_price is not None:

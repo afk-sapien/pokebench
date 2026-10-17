@@ -251,6 +251,10 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                             recent.append(feedback.record(raw, before, result["frame"], result["screenshot"]))
                     outcome = execute(session, f"decision-{decision_index}-{action_index}", command, record_action)
                     recent.append(outcome)
+                    # Providers that plan multi-command routes can stop when the world changes under them.
+                    if (hasattr(provider, "continue_batch") and action_index < len(commands)
+                            and not provider.continue_batch(outcome, commands[action_index])):
+                        break
                     continue
                 before_frame = session.frame
                 result = session.act(f"decision-{decision_index}-{action_index}", **command)
