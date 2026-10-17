@@ -134,3 +134,25 @@ with `--steps` and `--max-input-tokens`. The server binds only to localhost.
   introduction. It used 42,747 input and 2,240 output tokens, with a median of about
   0.19 seconds per call. Score 0, as expected for that distance. This shows the
   adapter works live. It is not yet a measure of play quality or the best mode.
+
+## Full PokeBench pass, October 17, 2026
+
+Jev ran the same 48 tasks, fixtures and limits as the ranked pass, in a copy of the frozen
+`main-v067-fable` runtime with this adapter added. It used shortcuts and both mode, with no
+notebook. The 10 preparation cells were not run because they need one multi-operation
+submission and Jev answers one fixed choice per call. The remaining 40 cells all finished
+and accounting is complete. Output is in `pokeagent-bench/data/main-v074-jev`.
+
+On those 40 cells, with the benchmark's usual weighting:
+
+| Model | Score | Battle | Navigation | Objectives | Operations |
+| --- | --- | --- | --- | --- | --- |
+| Astra | 0.951 | 0.92 | 1.00 | 0.89 | 1.00 |
+| Fable 5.1 | 0.889 | 1.00 | 0.67 | 0.89 | 1.00 |
+| Luna, the lowest ranked model | 0.497 | 0.47 | 0.33 | 0.33 | 0.85 |
+| Jev | 0.225 | 0.39 | 0.00 | 0.11 | 0.40 |
+
+Jev used 99.9 million input tokens, about $4.20. Two attempts stopped early because the
+adapter required the chosen option to be the most probable one. Jev may choose otherwise,
+so that check was removed and both cells were rerun. The archived attempts' tokens are
+counted in the pass budget.
