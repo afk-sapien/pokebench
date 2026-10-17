@@ -156,3 +156,32 @@ Jev used 99.9 million input tokens, about $4.20. Two attempts stopped early beca
 adapter required the chosen option to be the most probable one. Jev may choose otherwise,
 so that check was removed and both cells were rerun. The archived attempts' tokens are
 counted in the pass budget.
+
+## Jev v2, October 17, 2026
+
+`--provider jev-v2` is a separate harness, `jev-choice-targets-v2`. Never rank it with
+the main results. It always uses screenshots and state on the gameplay track, and adds:
+
+- Destination choices built from seen terrain: `goto_exit_X_Y`, `talk_<object>` and
+  `explore_<direction>`. Each is a route of up to six tiles per move command.
+- A 40-entry progress log, the exits it has learned and the maps visited. These are sent
+  as `progress` in the state.
+- Masking: a choice that changed nothing is hidden for four decisions. An exit that twice
+  fails to change the map is dropped.
+- Screen menus: the overworld, battle, dialogue and menu screens each offer only their
+  own options, about 6 to 18 instead of 66. Items appear only in battle when owned.
+- The planned route stops early on a map change, a blocked move or a stop.
+
+It ran the 16 navigation and objectives tasks with the same fixtures and limits as v1.
+`objectives-infeasible-plan-alternate` did not fit the pass's 80M-token ceiling. It ran
+on its own with the same limits and scored 0. Output is in
+`pokeagent-bench/data/main-v075-jev-v2`.
+
+| Harness | Navigation cells solved | Objectives cells solved | Input tokens | Cost |
+| --- | --- | --- | --- | --- |
+| v1, shortcuts | 0 of 6 | 1 of 10 | 72.2M | about $3.03 |
+| v2, destinations | 0 of 6 | 2 of 10 | 82.7M | about $3.47 |
+
+The extra solve is `objectives-starter-selection`. On navigation, v2 reached a third map
+in two cells, but by going back the way it came. Jev's confidence fell from about 0.25 to
+about 0.15. With a progress log and routes, it still does not keep heading toward the goal.
