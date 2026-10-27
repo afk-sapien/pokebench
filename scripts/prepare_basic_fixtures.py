@@ -9,7 +9,7 @@ import time
 from pokeagent_bench.core import digest, encoded, write_json, core_provenance
 from pokeagent_bench.session import load_engine
 from pokeagent_bench.suite import reference
-from pokesim_core.gen1 import read_party, W_CUR_MAP, W_IS_IN_BATTLE
+from pokecore.gen1 import read_party, W_CUR_MAP, W_IS_IN_BATTLE
 
 
 def save_fixture(engine, source, destination, objective, provenance):

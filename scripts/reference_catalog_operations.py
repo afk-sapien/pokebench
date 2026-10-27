@@ -2,12 +2,12 @@
 import argparse
 from pathlib import Path
 
-from pokesim_core.shortcuts.actions import (
+from pokecore.shortcuts.actions import (
     UseItem, ReorderParty, SwitchPokemon, DepositPokemon, WithdrawPokemon,
     WithdrawItem, BuyItem,
 )
-from pokesim_core.shortcuts.machine import Done
-from pokesim_core.shortcuts.screens import current_screen
+from pokecore.shortcuts.machine import Done
+from pokecore.shortcuts.screens import current_screen
 from pokeagent_bench.catalog_fixtures import load_source, command, snapshot, read, walk_to
 from pokeagent_bench.catalog_runtime import CatalogEvaluator, catalog_evidence
 from pokeagent_bench.gameplay import ui_state

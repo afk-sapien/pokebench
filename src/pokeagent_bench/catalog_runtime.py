@@ -6,9 +6,9 @@ Native inputs and stable state transitions supply the operation ledger.
 from collections import Counter
 from copy import deepcopy
 
-from pokesim_core.gen1 import W_EVENT_FLAGS, event_set
-from pokesim_core.gen1_ui import read_screen
-from pokesim_core.storage import decode_box, memory_bytes
+from pokecore.gen1 import W_EVENT_FLAGS, event_set
+from pokecore.gen1_ui import read_screen
+from pokecore.storage import decode_box, memory_bytes
 
 from .campaign_runtime import CampaignTracker, read_campaign_evidence
 from .gameplay import ui_state

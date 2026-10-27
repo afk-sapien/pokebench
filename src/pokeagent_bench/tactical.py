@@ -1,5 +1,5 @@
 """Public fixture specification, without a strategy or opponent decision oracle."""
-from pokesim_core.gen1 import read_bag, read_party
+from pokecore.gen1 import read_bag, read_party
 
 TEAM = [(110, 45, (95, 133, 57, 156)),
         (84, 45, (85, 86, 98, 97)),

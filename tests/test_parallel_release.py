@@ -26,7 +26,7 @@ def test_reservations_count_inflight_tokens_once_and_keep_unused_ceiling():
 
 
 def test_empty_box_reads_do_not_access_emulator_and_nonempty_reads_are_unchanged(monkeypatch):
-    from pokesim_core import gen1_ui
+    from pokecore import gen1_ui
     old = gen1_ui.memory_bytes
     monkeypatch.setattr(gen1_ui, 'memory_bytes', old)
     parallel.install_storage_read_fix()

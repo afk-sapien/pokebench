@@ -9,7 +9,7 @@ import gzip
 import json
 from pathlib import Path
 
-from pokesim_core.gen1 import (
+from pokecore.gen1 import (
     W_PARTY_COUNT, W_PARTY_SPECIES, W_PARTY_MONS, W_PARTY_NICKS,
     W_PARTY_OT, W_NUM_BAG_ITEMS, W_BAG_ITEMS, W_MONEY, W_EVENT_FLAGS, W_PLAYER_ID, W_PLAYER_NAME,
 )

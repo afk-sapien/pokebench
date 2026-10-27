@@ -1,8 +1,8 @@
 """Read-only detection of continue-only text waits and bounded controller input."""
 import re
 
-from pokesim_core.gen1 import decode_text
-from pokesim_core.gen1_ui import read_screen
+from pokecore.gen1 import decode_text
+from pokecore.gen1_ui import read_screen
 
 from .gameplay import ui_state
 

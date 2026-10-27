@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pokesim_core.emulator import GameBoy
-from pokesim_core.gen1 import (
+from pokecore.emulator import GameBoy
+from pokecore.gen1 import (
     BADGES,
     W_BADGES,
     W_EVENT_FLAGS,

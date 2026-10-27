@@ -1,9 +1,9 @@
 """Execute an agent-selected item or party change through real controller input."""
 import re
 
-from pokesim_core.gen1 import read_bag, read_party
-from pokesim_core.controls import ControllerPort, use_item, switch_pokemon, identity as identity
-from pokesim_core.shortcuts import choose_move
+from pokecore.gen1 import read_bag, read_party
+from pokecore.controls import ControllerPort, use_item, switch_pokemon, identity as identity
+from pokecore.shortcuts import choose_move
 
 from .dialogue import continue_ready
 from .gameplay import ui_state

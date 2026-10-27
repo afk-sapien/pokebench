@@ -80,7 +80,7 @@ def test_unknown_choice_stops_without_confirming(tmp_path, engine, monkeypatch):
     monkeypatch.setattr('pokeagent_bench.menu_shortcuts.read_party',lambda m:[mon()])
     monkeypatch.setattr('pokeagent_bench.menu_shortcuts.read_bag',lambda m:[(16,1)])
     monkeypatch.setattr('pokeagent_bench.menu_shortcuts.ui_state',lambda m:{'kind':'menu','cursor_tile':[1,2]})
-    monkeypatch.setattr('pokesim_core.shortcuts.machine.current_screen', lambda *args, **kwargs: 'unknown')
+    monkeypatch.setattr('pokecore.shortcuts.machine.current_screen', lambda *args, **kwargs: 'unknown')
     result = {}
     try:
         execute_shortcut(session,{'command':'use_item','argument':'Full Restore:1'},
@@ -128,7 +128,7 @@ def test_shortcut_result_survives_bounded_observation_allowlist():
 
 
 def test_shortcuts_use_core_screen_classifier_and_preserve_completion(monkeypatch, tmp_path, engine):
-    from pokesim_core.controls import panel as core_panel
+    from pokecore.controls import panel as core_panel
     session = setup(tmp_path, engine)
     observed = []
     def core_move(port, slot):

@@ -8,7 +8,7 @@ from pokeagent_bench.catalog_fixtures import (
     read, load_source, set_party, set_bag, set_event, command, save, snapshot, walk_to, set_active_box,
 )
 from pokeagent_bench.core import digest, write_json
-from pokesim_core.gen1 import W_BADGES
+from pokecore.gen1 import W_BADGES
 
 
 
@@ -136,7 +136,7 @@ def build(args, key, entry, strategy):
             if 'box' in recipe:
                 set_active_box(engine, strategy, recipe['box'])
             if 'hp_fraction' in recipe:
-                from pokesim_core.gen1 import W_PARTY_MONS
+                from pokecore.gen1 import W_PARTY_MONS
                 hp = int(engine.structured()['party'][0]['max_hp'] * recipe['hp_fraction'])
                 engine.memory[W_PARTY_MONS+1] = hp >> 8
                 engine.memory[W_PARTY_MONS+2] = hp & 255
@@ -160,7 +160,7 @@ def build(args, key, entry, strategy):
             if recipe.get('starter_dialogue'):
                 for _ in range(100):
                     asked = strategy['events']['EVENT_OAK_ASKED_TO_CHOOSE_MON']
-                    from pokesim_core.gen1 import W_EVENT_FLAGS
+                    from pokecore.gen1 import W_EVENT_FLAGS
                     if engine.memory[W_EVENT_FLAGS+asked//8] & (1 << (asked % 8)):
                         break
                     trace.append(command(engine, 'a'))

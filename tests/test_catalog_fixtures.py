@@ -1,7 +1,7 @@
 """Offline fixture construction must preserve native ownership and legal stats."""
 import pytest
 
-from pokesim_core.gen1 import (
+from pokecore.gen1 import (
     W_PLAYER_ID, W_PLAYER_NAME, W_PARTY_MONS, W_PARTY_OT, W_PARTY_NICKS,
     read_party,
 )

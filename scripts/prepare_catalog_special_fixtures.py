@@ -5,9 +5,9 @@ import json
 from pokeagent_bench.catalog_fixtures import read, load_source, set_party, set_bag, command, save
 from pokeagent_bench.gameplay import ui_state
 from pokeagent_bench.core import write_json
-from pokesim_core.gen1 import W_RIVAL_STARTER, W_ENEMY_SPECIES2, W_ENEMY_LEVEL, W_IS_IN_BATTLE, W_TRAINER_CLASS, W_PARTY_MONS
-from pokesim_core.shortcuts.actions import ChooseMove
-from pokesim_core.shortcuts.machine import Done
+from pokecore.gen1 import W_RIVAL_STARTER, W_ENEMY_SPECIES2, W_ENEMY_LEVEL, W_IS_IN_BATTLE, W_TRAINER_CLASS, W_PARTY_MONS
+from pokecore.shortcuts.actions import ChooseMove
+from pokecore.shortcuts.machine import Done
 from prepare_catalog_fixtures import mon, PIDGEY, PIKA
 
 def main():

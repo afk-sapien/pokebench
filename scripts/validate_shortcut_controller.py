@@ -4,8 +4,8 @@ from itertools import permutations
 from pathlib import Path
 import tempfile
 
-from pokesim_core.gen1 import read_bag, read_party
-from pokesim_core.shortcuts import current_screen
+from pokecore.gen1 import read_bag, read_party
+from pokecore.shortcuts import current_screen
 from pokeagent_bench.core import Limits, digest, write_json
 from pokeagent_bench.session import Session, load_engine, replay
 from pokeagent_bench.gameplay import load_catalog, ui_state

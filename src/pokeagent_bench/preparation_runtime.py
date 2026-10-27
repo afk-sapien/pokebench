@@ -12,8 +12,8 @@ import json
 import math
 import time
 
-from pokesim_core.gen1 import W_IS_IN_BATTLE, W_MONEY, bcd, read_bag, read_party
-from pokesim_core.shortcuts import (
+from pokecore.gen1 import W_IS_IN_BATTLE, W_MONEY, bcd, read_bag, read_party
+from pokecore.shortcuts import (
     BuyItem, DepositPokemon, ReorderParty, UseItem, WithdrawPokemon, Done, current_screen,
 )
 
@@ -90,7 +90,7 @@ def normalize_preparation_response(value, schema, limits=None):
 
 def public_preparation_state(session, task_id=None):
     """Publish owned resources only, never opponent RAM or evaluator flags."""
-    from pokesim_core.shortcuts import list_box
+    from pokecore.shortcuts import list_box
     view = observe_gameplay(session)
     result = {key: view[key] for key in ('party', 'bag')}
     result['money'] = bcd(session.engine.memory[W_MONEY:W_MONEY + 3])
@@ -125,7 +125,7 @@ def request_submission(provider, task, public_state, token_limit, timeout=180, *
     provider.schema = schema
     provider.response_normalizer = normalize_preparation_response
     provider.decision_limits = Limits()
-    from pokesim_core.shortcuts import item_names
+    from pokecore.shortcuts import item_names
     names = item_names('red')
     rule = RULES[task['id']]
     payload = {'task': {key: task[key] for key in ('id', 'agent_goal', 'scenario_details')},

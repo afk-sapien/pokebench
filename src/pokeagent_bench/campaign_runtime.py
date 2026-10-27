@@ -11,8 +11,8 @@ import json
 from pathlib import Path
 from statistics import median
 
-from pokesim_core.gen1 import BADGES, event_set, read_progress
-from pokesim_core.snapshot import read_fields
+from pokecore.gen1 import BADGES, event_set, read_progress
+from pokecore.snapshot import read_fields
 
 VERSION = 'campaign-progress-v1'
 
