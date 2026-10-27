@@ -10,7 +10,7 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-  "pokesim-core @ https://github.com/afk-sapien/pokesim-core/releases/download/v0.8.0/pokesim_core-0.8.0-py3-none-any.whl#sha256=c4616ca6ec44a1659add725914ba8641625651bb798151801c876a8ef48d02a2",
+  "pokecore @ https://github.com/afk-sapien/pokesim-core/releases/download/v0.9.0/pokecore-0.9.0-py3-none-any.whl#sha256=37df883da7b24a9717b533f86fccf73ec1cb3bf939be7560daf74d7737b4cee6",
   "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=424ab5b2ba03e80ce0c13c776687fa51f2e217488200d30c6061df40fb3b2ceb ; sys_platform == 'linux' and platform_machine == 'x86_64'",
   "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl#sha256=34bd154b4cd857bb133cb25ce2563b55c1276d12cced08ee207095c0113ff465 ; sys_platform == 'linux' and platform_machine == 'aarch64'",
   "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl#sha256=3a2ed6798967bf0887565b2b79530608f94b44292ff8846a6c67eb26e920df9f ; sys_platform == 'darwin' and platform_machine == 'x86_64'",

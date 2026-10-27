@@ -16,7 +16,7 @@ def core_provenance():
     """Record the installed core, including local edits and package-manager origin."""
     import pokecore
 
-    installed = distribution("pokesim-core")
+    installed = distribution("pokecore")
     direct_url = installed.read_text("direct_url.json")
     root = Path(pokecore.__file__).parent
     sources = {str(path.relative_to(root)): digest(path.read_bytes()) for path in sorted(root.rglob("*.py"))}
