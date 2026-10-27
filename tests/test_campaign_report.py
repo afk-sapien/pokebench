@@ -148,7 +148,7 @@ def test_storage_reports_all_boxes_without_inventing_historical_counts(monkeypat
     boxes = [{'box': n + 1, 'available': True, 'pokemon': []} for n in range(12)]
     boxes[0]['pokemon'] = [{'species': 177}, {'species': 177}]
     boxes[11]['pokemon'] = [{'species': 84}]
-    monkeypatch.setattr('pokesim_core.gen1_ui.read_storage', lambda memory: {'available': True, 'boxes': boxes})
+    monkeypatch.setattr('pokecore.gen1_ui.read_storage', lambda memory: {'available': True, 'boxes': boxes})
     original = report()
     enriched = enrich_current_profile(SimpleNamespace(memory=object()), original)
     assert enriched['current_profile']['stored_pokemon_count'] == 3
@@ -173,7 +173,7 @@ def test_native_storage_profile_is_read_only():
         data = CampaignTracker(read_campaign_evidence(engine)).report()
         data = enrich_current_profile(engine, data)
         assert engine.save() == initial
-        from pokesim_core.gen1_ui import read_storage
+        from pokecore.gen1_ui import read_storage
         boxes = read_storage(engine.memory)['boxes']
         complete = len(boxes) == 12 and all(box['available'] for box in boxes)
         assert data['current_profile']['stored_pokemon_count'] == (0 if complete else None)

@@ -687,7 +687,7 @@ requires-dist = [
     { name = "mcp", specifier = ">=1.26,<2" },
     { name = "numpy", specifier = ">=1.26,<3" },
     { name = "pillow", specifier = ">=10,<13" },
-    { name = "pokesim-core", path = "vendor/pokesim_core-0.6.1.dev1-py3-none-any.whl" },
+    { name = "pokesim-core", url = "https://github.com/afk-sapien/pokesim-core/releases/download/v0.8.0/pokesim_core-0.8.0-py3-none-any.whl" },
     { name = "pyboy-rs", marker = "platform_machine == 'arm64' and sys_platform == 'darwin'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_11_0_arm64.whl" },
     { name = "pyboy-rs", marker = "platform_machine == 'x86_64' and sys_platform == 'darwin'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-macosx_10_12_x86_64.whl" },
     { name = "pyboy-rs", marker = "platform_machine == 'aarch64' and sys_platform == 'linux'", url = "https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.1/pyboy_rs-0.1.1-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl" },
@@ -701,16 +701,16 @@ provides-extras = ["dev"]
 
 [[package]]
 name = "pokesim-core"
-version = "0.6.1.dev1"
-source = { path = "vendor/pokesim_core-0.6.1.dev1-py3-none-any.whl" }
+version = "0.8.0"
+source = { url = "https://github.com/afk-sapien/pokesim-core/releases/download/v0.8.0/pokesim_core-0.8.0-py3-none-any.whl" }
 wheels = [
-    { filename = "pokesim_core-0.6.1.dev1-py3-none-any.whl", hash = "sha256:1f2e6f5d1a4b2bd3020bdc332dcafb306b41eccb63f97ae1fabcc5bc5436fe5d" },
+    { url = "https://github.com/afk-sapien/pokesim-core/releases/download/v0.8.0/pokesim_core-0.8.0-py3-none-any.whl", hash = "sha256:c4616ca6ec44a1659add725914ba8641625651bb798151801c876a8ef48d02a2" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "pillow", marker = "extra == 'emulator'", specifier = ">=10,<13" },
-    { name = "pyboy-rs", marker = "extra == 'emulator'", specifier = ">=0.1.1,<0.2" },
+    { name = "pillow", marker = "extra == 'emulator'", specifier = ">=10,<14" },
+    { name = "pyboy-rs", marker = "extra == 'emulator'", specifier = ">=0.1.2,<0.2" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8,<10" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.11,<1" },
 ]

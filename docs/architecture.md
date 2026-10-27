@@ -11,7 +11,7 @@ recovery code, trading, custom rewards, and application database stay in PokeSim
 
 | Module | Responsibility |
 | --- | --- |
-| `pokesim_core` dependency | ROM validation, isolated emulator, shared game facts |
+| `pokecore` dependency | ROM validation, isolated emulator, shared game facts |
 | `game.py` | Red-only engine policy and explicit agent observation allowlist |
 | `session.py` | Frame stepping, budgets, idempotency, artifacts, scenario preparation, replay |
 | `scoring.py` | Private evidence, two-frame confirmation, unique achievement awards |

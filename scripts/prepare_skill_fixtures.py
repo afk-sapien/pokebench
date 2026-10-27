@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 
-from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
+from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
 
 from pokeagent_bench.core import digest, encoded, write_json
 from pokeagent_bench.gameplay import ui_state

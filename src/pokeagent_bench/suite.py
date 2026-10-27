@@ -148,7 +148,7 @@ def check_start(task, engine):
         validate_team(engine.memory, task.get('team_version', 1))
         return
     if task['id'] in GYM_SPECS:
-        from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
+        from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
         from .gameplay import ui_state
         name, badge, trainer, map_id, bit = GYM_SPECS[task['id']]
         progress = engine.evidence()
@@ -160,7 +160,7 @@ def check_start(task, engine):
             raise ValueError('Gym fixture requires a surviving party')
         return
     if task['id'] in ('lorelei', 'bruno', 'agatha', 'lance', 'champion-duel'):
-        from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
+        from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
         from .gameplay import ui_state
         expected = {'lorelei': 44, 'bruno': 33, 'agatha': 46, 'lance': 47, 'champion-duel': 43}[task['id']]
         progress = engine.evidence()
@@ -188,7 +188,7 @@ def check_start(task, engine):
         return
     if task['id'] in {t['id'] for t in ADVENTURE_TASKS}:
         from .gameplay import ui_state
-        from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS, read_bag
+        from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS, read_bag
         progress = engine.evidence()
         key = task['id']
         if key in ('misty', 'fossil'):

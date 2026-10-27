@@ -23,13 +23,13 @@ def digest(data):
 
 def worker(rom, scenario):
     from importlib.metadata import version
-    from pokesim_core.emulator import GameBoy
-    from pokesim_core.gen1 import read_bag, read_party, read_progress
+    from pokecore.emulator import GameBoy
+    from pokecore.gen1 import read_bag, read_party, read_progress
     try:
-        from pokesim_core.emulator_state import runtime_provenance
+        from pokecore.emulator_state import runtime_provenance
         runtime = runtime_provenance()
     except ModuleNotFoundError as error:
-        if error.name != "pokesim_core.emulator_state":
+        if error.name != "pokecore.emulator_state":
             raise
         runtime = {"backend": "pyboy", "version": version("pyboy")}
     manifest = json.loads((scenario / "scenario.json").read_text())

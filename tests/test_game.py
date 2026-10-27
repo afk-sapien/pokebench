@@ -1,8 +1,8 @@
 """The shared decoder must not widen the benchmark's observation permissions."""
 from pathlib import Path
 
-from pokesim_core.emulator import GameBoy
-from pokesim_core.gen1 import (
+from pokecore.emulator import GameBoy
+from pokecore.gen1 import (
     W_BADGES,
     W_BAG_ITEMS,
     W_CUR_MAP,

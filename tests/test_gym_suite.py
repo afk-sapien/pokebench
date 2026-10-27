@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 import pytest
-from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
+from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
 
 from conftest import blank_evidence
 from pokeagent_bench import suite

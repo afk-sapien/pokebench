@@ -1,5 +1,5 @@
 """Bounded mechanical commands. No route finding or gameplay decisions."""
-from pokesim_core.gen1_ui import read_screen
+from pokecore.gen1_ui import read_screen
 
 from .gameplay_contract import validate_command
 from .gameplay import local_map, menu_options, ui_state

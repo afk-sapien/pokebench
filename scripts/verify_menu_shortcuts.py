@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 
-from pokesim_core.gen1 import read_bag, read_party
+from pokecore.gen1 import read_bag, read_party
 
 from pokeagent_bench.core import Limits, digest, encoded, write_json
 from pokeagent_bench.game import RedEngine

@@ -7,8 +7,8 @@ from pokeagent_bench.tactical import TEAM, TIMING_OFFSETS, validate_team
 from pokeagent_bench.session import Session, load_engine, replay
 from pokeagent_bench.gameplay import load_catalog, ui_state
 from pokeagent_bench.gameplay_commands import execute
-from pokesim_core.gen1 import read_party, W_PARTY_COUNT, W_PARTY_SPECIES, W_PARTY_MONS, W_PARTY_NICKS, W_NUM_BAG_ITEMS, W_BAG_ITEMS
-from pokesim_core.gen1_ui import read_battler
+from pokecore.gen1 import read_party, W_PARTY_COUNT, W_PARTY_SPECIES, W_PARTY_MONS, W_PARTY_NICKS, W_NUM_BAG_ITEMS, W_BAG_ITEMS
+from pokecore.gen1_ui import read_battler
 from prepare_basic_fixtures import advance, save_fixture
 
 def party(engine):

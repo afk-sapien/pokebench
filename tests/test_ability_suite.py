@@ -5,7 +5,7 @@ import pytest
 
 from pokeagent_bench import suite
 from pokeagent_bench.suite_report import summarize
-from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
+from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS
 
 
 def test_nine_tasks_and_budget_are_registered_without_changing_older_suites(monkeypatch):

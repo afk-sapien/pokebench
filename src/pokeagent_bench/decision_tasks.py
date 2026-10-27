@@ -45,7 +45,7 @@ OFFSETS = (0,17,37,67,97)
 
 
 def check_start(task, engine):
-    from pokesim_core.gen1 import read_party, read_bag
+    from pokecore.gen1 import read_party, read_bag
     from .gameplay import ui_state
     key=task['id']
     party=read_party(engine.memory)
@@ -61,7 +61,7 @@ def check_start(task, engine):
                               or party[1]['hp']!=0 or party[2]['hp']!=0 or party[0]['pp'][0]!=0):
         raise ValueError('Rescue starts before battle with fainted reserves and depleted Ice Beam')
     if key=='healthy-capture':
-        from pokesim_core.gen1_ui import read_battler
+        from pokecore.gen1_ui import read_battler
         enemy=read_battler(engine.memory,0xCFE5)
         if engine.memory[0xD057]!=1 or enemy['species']!=132 or enemy['hp']!=enemy['max_hp'] or enemy['status'] or ui_state(engine.memory)['kind']!='battle_menu':
             raise ValueError('Capture must start against a healthy, natural Snorlax')

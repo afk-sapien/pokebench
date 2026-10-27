@@ -194,7 +194,7 @@ def preflight(root, rom, game_data):
 
 def install_storage_read_fix():
     """Avoid emulator slices for empty boxes without changing nonempty reads."""
-    from pokesim_core import gen1_ui, storage
+    from pokecore import gen1_ui, storage
     def memory_bytes(memory, bank, start, size):
         if size == 0:
             return b''

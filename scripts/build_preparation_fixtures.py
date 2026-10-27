@@ -8,8 +8,8 @@ import argparse
 import json
 from pathlib import Path
 
-from pokesim_core.gen1 import W_PARTY_MONS, read_party
-from pokesim_core.shortcuts import current_screen
+from pokecore.gen1 import W_PARTY_MONS, read_party
+from pokecore.shortcuts import current_screen
 
 from pokeagent_bench.catalog_fixtures import (
     command, load_source, save, set_active_box, set_bag, set_party, set_event, walk_to,

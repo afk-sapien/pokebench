@@ -2,7 +2,7 @@ import json
 from types import SimpleNamespace
 
 import pytest
-from pokesim_core.gen1 import W_PARTY_COUNT, W_PARTY_MONS, W_PARTY_SPECIES
+from pokecore.gen1 import W_PARTY_COUNT, W_PARTY_MONS, W_PARTY_SPECIES
 
 from pokeagent_bench.evaluation_catalog import load_catalog
 from pokeagent_bench.preparation_runtime import (

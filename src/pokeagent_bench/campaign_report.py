@@ -12,7 +12,7 @@ GROUP_NAMES = {
 
 def _power_profiles(campaign, game_data):
     """Use Core's descriptive heuristic with the checked private game tables."""
-    from pokesim_core.gen1_battle_power import BattlePower
+    from pokecore.gen1_battle_power import BattlePower
     from .core import digest
     from .gameplay import load_catalog
 
@@ -46,7 +46,7 @@ def _power_profiles(campaign, game_data):
 
 def enrich_current_profile(engine, report, game_data=None):
     """Sample private storage at persistence without advancing or modifying the game."""
-    from pokesim_core.gen1_ui import read_storage
+    from pokecore.gen1_ui import read_storage
 
     report = deepcopy(report)
     profile = report['current_profile']

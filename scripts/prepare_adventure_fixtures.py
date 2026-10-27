@@ -6,7 +6,7 @@ from pathlib import Path
 import sys
 import time
 
-from pokesim_core.gen1 import W_CUR_MAP, W_IS_IN_BATTLE, W_TRAINER_CLASS, W_Y
+from pokecore.gen1 import W_CUR_MAP, W_IS_IN_BATTLE, W_TRAINER_CLASS, W_Y
 from pokeagent_bench.core import digest, encoded, write_json
 from pokeagent_bench.game import RedEngine
 from pokeagent_bench.gameplay import ui_state

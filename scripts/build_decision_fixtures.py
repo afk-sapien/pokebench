@@ -6,7 +6,7 @@ from pathlib import Path
 from pokeagent_bench.core import write_json, digest
 from pokeagent_bench.session import load_engine
 from pokeagent_bench.decision_tasks import TASKS, DESCRIPTIONS, TEAMS, BAGS, OFFSETS, check_start
-from pokesim_core.gen1 import W_NUM_BAG_ITEMS, W_BAG_ITEMS, W_PARTY_MONS
+from pokecore.gen1 import W_NUM_BAG_ITEMS, W_BAG_ITEMS, W_PARTY_MONS
 from pokeagent_bench.gameplay import ui_state
 from prepare_basic_fixtures import advance, save_fixture
 import prepare_tactical_fixture as party_builder

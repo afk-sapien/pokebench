@@ -14,11 +14,11 @@ BUTTONS = ("up", "down", "left", "right", "a", "b", "start", "select")
 
 def core_provenance():
     """Record the installed core, including local edits and package-manager origin."""
-    import pokesim_core
+    import pokecore
 
     installed = distribution("pokesim-core")
     direct_url = installed.read_text("direct_url.json")
-    root = Path(pokesim_core.__file__).parent
+    root = Path(pokecore.__file__).parent
     sources = {str(path.relative_to(root)): digest(path.read_bytes()) for path in sorted(root.rglob("*.py"))}
     return {"version": installed.version, "direct_url": json.loads(direct_url) if direct_url else None,
             "source_sha256": digest(encoded(sources))}
@@ -28,9 +28,9 @@ def core_provenance():
 def emulator_provenance():
     """Identify the backend selected by Core, never by installed package presence."""
     try:
-        from pokesim_core.emulator_state import runtime_provenance
+        from pokecore.emulator_state import runtime_provenance
     except ModuleNotFoundError as error:
-        if error.name != "pokesim_core.emulator_state":
+        if error.name != "pokecore.emulator_state":
             raise
         installed = distribution("pyboy")
         return {"backend": "pyboy", "version": installed.version,

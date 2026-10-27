@@ -9,7 +9,7 @@ from test_gameplay import setup
 
 
 def screen(rows):
-    from pokesim_core.gen1 import decode_text
+    from pokecore.gen1 import decode_text
     encoding = {decode_text(bytes([tile])): tile for tile in range(128, 256)}
     encoding.update({' ': 127, ':': 156})
     return {'textbox': True, 'tiles': [encoding.get(char, 127) for row in rows for char in row.ljust(20)[:20]]}

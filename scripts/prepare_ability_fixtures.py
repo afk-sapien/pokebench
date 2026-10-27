@@ -3,7 +3,7 @@ import argparse
 import json
 from pathlib import Path
 
-from pokesim_core.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS, read_party, read_bag
+from pokecore.gen1 import W_IS_IN_BATTLE, W_TRAINER_CLASS, read_party, read_bag
 
 from pokeagent_bench.core import Limits, digest, encoded, write_json
 from pokeagent_bench.game import RedEngine

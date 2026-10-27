@@ -7,9 +7,9 @@ import json
 import re
 from pathlib import Path
 
-from pokesim_core.menus import menu_options as core_menu_options
-from pokesim_core.gen1 import read_party, W_IS_IN_BATTLE, W_X, W_Y, W_CUR_MAP
-from pokesim_core.gen1_ui import read_battler, read_screen, read_sprites, read_storage
+from pokecore.menus import menu_options as core_menu_options
+from pokecore.gen1 import read_party, W_IS_IN_BATTLE, W_X, W_Y, W_CUR_MAP
+from pokecore.gen1_ui import read_battler, read_screen, read_sprites, read_storage
 
 from .core import digest, encoded
 from .game import structured
