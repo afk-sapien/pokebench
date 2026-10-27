@@ -2,7 +2,18 @@
 
 PokeBench evaluates how AI agents play Pokemon Red. Models choose routes, battles, recovery and resource use in the real game. PokeSim Core decodes observations and executes controller inputs. PokeBench owns the tasks, information boundaries, budgets, scoring and replay checks.
 
-The historical development suite has **28 active tasks**. Twenty-two contribute to the development ranking and six tactical candidates remain experimental. Five trivial tasks are retired. Development results are useful evidence, but they used evolving harness versions and are not a controlled release comparison.
+## Gen 1 task catalog
+
+The current catalog is split into two benchmarks with separate rankings.
+
+- **PokeBench Gen 1 Short** has **48 tasks**: 47 focused tasks plus one inventory variant, across navigation, battle tactics, manual menu operations, preparation and quests. One battle task has three fixed starting variants, so each model plays **50 starts**. Scores are category-balanced.
+- **PokeBench Gen 1 Long** is one continuous full-game campaign with 50 scored milestones worth 1,000 points. The comparison budget is 2,000 decisions and 30M tokens per model.
+
+Short and Long scores are never averaged together. Results and replays are on the [public site](https://afk-sapien.github.io/pokebench/). See the [catalog](docs/catalog/README.md) and [long runs](docs/long-runs.md).
+
+`pokebench catalog` and new `catalog-batch` runs default to Short. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each batch has its own token ceiling. No models are launched by inspecting the catalog. See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring and [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls, preparation assessment and result aggregation.
+
+The earlier 28-task development suite and the v1 beta release protocol are kept in [docs/history](docs/history/release-v1-beta.md). They are not the current catalog.
 
 The exploratory leaderboard preserves completed and partial results across framework improvements. Runs record their model, task, starting save, controls and runtime so material differences remain visible. Routine backend fixes do not discard earlier results or require a full rerun.
 
@@ -50,7 +61,7 @@ Budgets count reported input plus output tokens, including cached input once. Th
 
 The catalog includes starter acquisition, parcel delivery, navigation, gym battles, the League, and calibrated tactical battles. Six experimental tasks cover switching out of a bad matchup, healthy capture, team rescue, PP management, adaptive Champion play and a recovery detour. Their selected winning reference traces establish feasibility, not guaranteed success or independence from luck.
 
-- [Release protocol and reproduction](docs/release-v1.md)
+- [Earlier v1 beta release protocol](docs/history/release-v1-beta.md)
 - [Task catalog](docs/ability-suite.md)
 - [Skill categories and one full-game campaign with progress milestones](docs/catalog/README.md)
 - [Tactical calibration](docs/tactical-battle.md)
@@ -69,14 +80,6 @@ uv run --locked --offline ruff check .
 
 The source tree retains earlier observation policies so historical traces remain interpretable. They are not interchangeable experimental conditions. See [third-party notices](THIRD_PARTY_NOTICES.md). Pokemon is an unofficial research setting for this project, with no affiliation or endorsement.
 
-## Gen 1 task catalog
-
-The executable catalog is split into two benchmarks. **PokeBench** has 47 focused tasks plus one inventory variant across navigation, battle tactics, manual menu operations, preparation and quests. **PokeBench Long** is one continuous full-game campaign with 50 scored milestones worth 1,000 points.
-
-`pokebench catalog` and new `catalog-batch` runs default to focused PokeBench. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each batch has its own token ceiling. Campaign progress never contributes to the focused-task ability average. The local portal has separate PokeBench and PokeBench Long pages.
-
-See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring. No models are launched by inspecting the catalog.
+## Screenshot presentation
 
 Model input defaults to the current screenshot with observed action results and optional screenshot recall. The replay separately shows decision start and action result for human review, plus the exact image sent to the model. See [the screenshot comparison](docs/history/image-presentation-v055.md) for the explicit `--presentation before-after` experiment.
-
-See [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls, preparation assessment and result aggregation. Existing benchmark results remain available alongside these new definitions.

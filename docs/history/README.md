@@ -19,3 +19,4 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Failure repairs v062](failure-repairs-v062.md)
 - [Bounded feedback repair v064](bounded-feedback-v064.md)
 - [Long decision checkpoints (v068)](long-continuations-v068.md)
+- [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)
