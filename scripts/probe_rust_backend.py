@@ -53,7 +53,7 @@ def worker(rom, scenario):
             rows.append({"wram_sha256": digest(bytes(engine.memory[0xc000:0xe000])),
                          "screen_sha256": digest(engine.screenshot()),
                          "facts_sha256": digest(json.dumps(facts, sort_keys=True).encode())})
-    return {"runtime": runtime, "core_version": version("pokesim-core"),
+    return {"runtime": runtime, "core_version": version("pokecore"),
             "source_state_sha256": digest(state), "steps": rows}
 
 

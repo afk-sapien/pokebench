@@ -28,7 +28,7 @@ uv run pokebench --help
 
 Python 3.12 is selected for reproducibility. The Python distribution and import remain `pokeagent-bench` and `pokeagent_bench` for compatibility. Both `pokebench` and the older `pokeagent` command work.
 
-Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. PyBoy RS 0.1.1 is installed from hash-pinned wheels. `uv sync` installs PokeSim Core 0.8.0 (import name `pokecore`) from its hash-pinned release wheel. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
+Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. PyBoy RS 0.1.1 is installed from hash-pinned wheels. `uv sync` installs PokeSim Core 0.9.0 (the `pokecore` package) from its hash-pinned release wheel. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
 
 ## What the agent sees and controls
 
