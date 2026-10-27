@@ -207,6 +207,11 @@ thead {border-top:1px solid #bfc6b5}
 .partial-label {color:#9b6525}
 .partial-label {display:block}
 .partial-label {margin-top:4px}
+.score-ci {font:9px monospace}
+.score-ci {color:#798071}
+.score-ci {display:block}
+.score-ci {margin-top:4px}
+.score-ci {white-space:nowrap}
 .selected-model {background:#e9edde}
 .table-note {display:flex}
 .table-note {justify-content:space-between}
@@ -319,6 +324,10 @@ summary {cursor:pointer}
 .run-name {font-size:23px}
 .run-name {font-weight:bold}
 .run-name {margin:0 0 8px}
+.run-model {font:9px monospace}
+.run-model {color:#798071}
+.run-model {display:block}
+.run-model {margin:-4px 0 8px}
 .run-score strong {font-size:29px}
 .run-score strong {letter-spacing:-1px}
 .run-score span {color:#78806c}
@@ -328,6 +337,9 @@ summary {cursor:pointer}
 .run-score small,.run-budget span {font-size:11px}
 .run-budget {font-size:13px}
 .run-budget {line-height:1.9}
+.run-budget .stop-reason {color:#3f4638}
+.run-budget .stop-detail {line-height:1.4}
+.run-budget .stop-detail {max-width:240px}
 .badges {display:flex}
 .badges {gap:5px}
 .badge {width:11px}
