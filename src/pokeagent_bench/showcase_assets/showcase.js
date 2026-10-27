@@ -9,6 +9,30 @@ const count = x => Number(x || 0).toLocaleString()
 const cap = x => x[0].toUpperCase() + x.slice(1)
 const categoryNames = {navigation:'Navigation',battle:'Battles',operations:'Menus',preparation:'Preparation',objectives:'Quests'}
 const reason = x => ({completed:'Completed',model_call_budget:'Decision limit',token_budget:'Token limit',challenge_failed:'Task failed',provider_error:'Evaluation error',loop_budget:'No-progress limit',loop_token_budget:'No-progress limit'}[x] || (x || '').replaceAll('_',' '))
+const ciText = ci => ci ? `95% CI ${(ci.low * 100).toFixed(1)} to ${(ci.high * 100).toFixed(1)}` : ''
+const intervals = new Map()
+const modelInterval = m => {
+  const key = data.updated_at + m.id
+  if (!intervals.has(key)) intervals.set(key, m.ci || scoreInterval(data.short.cells.filter(c => c.model === m.id)))
+  return intervals.get(key)
+}
+const modelId = r => r.model || data.short.models.find(m => m.label === r.label)?.id || ''
+function stopText(r) {
+  if (r.stop_reason === 'model_call_budget') return `Used all ${count(r.decision_limit)} decisions.`
+  if (r.stop_reason === 'token_budget') return `Reached the ${million(r.token_limit)} token ceiling.`
+  if (r.stop_reason === 'provider_error') return 'The model provider failed and the run could not continue.'
+  if (r.stop_reason === 'loop_token_budget') {
+    const d = r.stop_detail || {}
+    return `Stopped early after ${million(d.limit || 2000000)} tokens without reaching a new location or milestone${d.last_progress_decision ? `. Last progress at decision ${count(d.last_progress_decision)}` : ''}.`
+  }
+  return ''
+}
+function renderWeights() {
+  const groups = {}
+  for (const c of data.short.cells) (groups[c.category] ||= new Set()).add(c.score_group || c.task_id)
+  const parts = data.short.categories.map(c => `${categoryNames[c]} ${groups[c]?.size || 0} tasks, ${(100 / data.short.categories.length / (groups[c]?.size || 1)).toFixed(1)} points each`)
+  $('weight-note').textContent = `Each of the ${data.short.categories.length} categories counts for ${(100 / data.short.categories.length).toFixed(0)}% of the score, whatever its task count. Turning one failed task into a full pass moves the score by: ${parts.join(' · ')}.`
+}
 let data
 let category = 'all'
 let model = null
@@ -45,9 +69,10 @@ function renderRank() {
   let rank = 0
   $('ranking').innerHTML = s.models.map(m => {
     if (m.complete) rank += 1
-    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td><span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span><button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(m.id)}</span></td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}</td>${s.categories.map(c => `<td>${pct(m.categories[c])}</td>`).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}</td><td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td></tr>`
+    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td><span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span><button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(m.id)}</span></td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(modelInterval(m))}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}</td>${s.categories.map(c => `<td>${pct(m.categories[c])}</td>`).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}</td><td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td></tr>`
   }).join('')
   renderCost('short')
+  renderWeights()
   $('short-stats').innerHTML = [[s.tasks.length,'tasks'],[s.models.length,'models'],[s.finished + '/' + s.planned,'trials finished']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('')
 }
 $('ranking').addEventListener('click', event => {
@@ -115,7 +140,7 @@ function renderLong() {
   $('long-token-label').textContent = tokenLimits.map(million).join(' / ')
   $('long-comparison-note').textContent = longLimit === 2000 ? 'Original results stay fixed when a run is extended.' : `${rows.length} extended run(s). In-progress scores are provisional. Models without this allowance are omitted.`
   const open = new Set([...document.querySelectorAll('.long-run')].filter(el => el.querySelector('details').open).map(el => el.dataset.run))
-  $('long-runs').innerHTML = rows.map(r => `<article class="long-run" data-run="${esc(r.id)}"><div class="run-top">${r.image ? `<img class="run-image" loading="lazy" src="${esc(r.image)}" alt="${esc(r.label)}'s recorded game screen" width="112" height="101">` : '<div></div>'}<div><h3 class="run-name">${esc(r.label)}</h3><div class="badges" aria-label="${r.badges} of 8 badges">${Array.from({length:8},(_,i) => `<span class="badge ${i < r.badges ? 'earned' : ''}" aria-hidden="true"></span>`).join('')}</div><p class="badge-count">${r.badges} / 8 badges</p></div><div class="run-score"><strong>${r.score}</strong><span> / ${r.maximum}</span><small>progress points</small></div><div class="run-budget">${count(r.decisions)} / ${count(r.decision_limit)} decisions<br>${million(r.tokens)} tokens<br>${costCell(r.cost)}<span>${esc(reason(r.stop_reason) || r.state)}</span></div><div>${r.replay ? `<a class="watch" target="_blank" rel="noopener" href="${esc(r.replay)}">▶ Watch run</a><span class="replay-size">Interactive replay · ${r.replay_mb} MB</span>` : r.report ? `<a class="watch" target="_blank" rel="noopener" href="${esc(r.report)}">View live run ↗</a>` : '<span class="small">Waiting to start</span>'}${(r.extensions || []).filter(e => e.report).map(e => `<a class="extension-link" href="${esc(e.report)}" target="_blank" rel="noopener">${count(e.decision_limit)}-decision extension ↗</a>`).join('')}</div></div><details class="run-bottom" ${open.has(r.id) ? 'open' : ''}><summary>${r.milestones.length} milestones · Latest: ${esc(r.milestones.at(-1)?.label || 'None yet')}</summary><div class="milestones">${r.milestones.map(m => `<span class="milestone">${esc(m.label)}<small>DECISION ${count(m.decision)} · +${m.points} PTS</small></span>`).join('')}</div></details></article>`).join('')
+  $('long-runs').innerHTML = rows.map(r => `<article class="long-run" data-run="${esc(r.id)}"><div class="run-top">${r.image ? `<img class="run-image" loading="lazy" src="${esc(r.image)}" alt="${esc(r.label)}'s recorded game screen" width="112" height="101">` : '<div></div>'}<div><h3 class="run-name">${esc(r.label)}</h3><span class="run-model">${esc(modelId(r))}</span><div class="badges" aria-label="${r.badges} of 8 badges">${Array.from({length:8},(_,i) => `<span class="badge ${i < r.badges ? 'earned' : ''}" aria-hidden="true"></span>`).join('')}</div><p class="badge-count">${r.badges} / 8 badges</p></div><div class="run-score"><strong>${r.score}</strong><span> / ${r.maximum}</span><small>progress points</small></div><div class="run-budget">${count(r.decisions)} / ${count(r.decision_limit)} decisions<br>${million(r.tokens)} tokens<br>${costCell(r.cost)}<span class="stop-reason">Stop: ${esc(reason(r.stop_reason) || r.state)}</span><span class="stop-detail">${esc(stopText(r))}</span></div><div>${r.replay ? `<a class="watch" target="_blank" rel="noopener" href="${esc(r.replay)}">▶ Watch run</a><span class="replay-size">Interactive replay · ${r.replay_mb} MB</span>` : r.report ? `<a class="watch" target="_blank" rel="noopener" href="${esc(r.report)}">View live run ↗</a>` : '<span class="small">Waiting to start</span>'}${(r.extensions || []).filter(e => e.report).map(e => `<a class="extension-link" href="${esc(e.report)}" target="_blank" rel="noopener">${count(e.decision_limit)}-decision extension ↗</a>`).join('')}</div></div><details class="run-bottom" ${open.has(r.id) ? 'open' : ''}><summary>${r.milestones.length} milestones · Latest: ${esc(r.milestones.at(-1)?.label || 'None yet')}</summary><div class="milestones">${r.milestones.map(m => `<span class="milestone">${esc(m.label)}<small>DECISION ${count(m.decision)} · +${m.points} PTS</small></span>`).join('')}</div></details></article>`).join('')
 }
 
 let costSort = {short:'score',long:'score'}

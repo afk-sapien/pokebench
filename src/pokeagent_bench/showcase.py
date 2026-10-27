@@ -11,6 +11,7 @@ from .showcase_costs import PRICING, comparison, run_cost, sum_cost
 LABELS = {'claude-fable-5-1': 'Fable 5.1', 'gpt-6-astra': 'Astra', 'gpt-5.6-sol': 'Sol', 'gpt-5.6-terra': 'Terra',
           'gpt-5.6-luna': 'Luna', 'claude-opus-5-5': 'Opus',
           'claude-sonnet-5-5': 'Sonnet', 'claude-haiku-5-5': 'Haiku'}
+ASSETS = ('showcase.css', 'showcase-stats.js', 'showcase.js')
 CELL_FIELDS = ('id', 'task_id', 'category', 'score_group', 'model', 'variant', 'mode',
                'state', 'value', 'tokens', 'decisions', 'stop_reason', 'decision_limit',
                'token_limit', 'evaluation_spec_sha256', 'fixture_sha256')
@@ -76,7 +77,11 @@ def long_row(root, web, name, decision_limit=2000):
     manifest = load(root / 'run/manifest.json') if (root / 'run/manifest.json').exists() else {}
     cost = run_cost(root / 'run', manifest.get('agent', {}).get('model'))
     replay = existing_link(web, f'{root.name}-replay.html')
+    loop = load(root / 'run/loop_budget.json') if (root / 'run/loop_budget.json').exists() else {}
+    stop_detail = ({'last_progress_decision': loop.get('last_progress_decision'), 'limit': loop.get('limit')}
+                   if result.get('stop_reason') == 'loop_token_budget' else None)
     return {'id': name, 'label': 'Fable 5.1' if name == 'fable' else name.title(),
+            'model': manifest.get('agent', {}).get('model'), 'stop_detail': stop_detail,
             'run_id': root.name, 'decision_limit': decision_limit,
             'token_limit': pilot.get('token_limit', 30000000), 'cost': cost,
             'report': existing_link(web, f'{root.name}.html'), 'score': result.get('score', 0),
@@ -130,7 +135,7 @@ def export(base, web, *, install=False):
     temporary.replace(web / 'showcase-data.json')
     if install:
         assets = Path(__file__).with_name('showcase_assets')
-        for name in ('showcase.css', 'showcase.js'):
+        for name in ASSETS:
             shutil.copy2(assets / name, web / name)
         if (web / 'index.html').exists() and not (web / 'analysis-v060.html').exists():
             shutil.copy2(web / 'index.html', web / 'analysis-v060.html')
@@ -190,7 +195,7 @@ def export_public(web, output, *, report=None):
         data['report'] = 'technical-report.pdf'
     (output / 'showcase-data.json').write_text(json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n')
     assets = Path(__file__).with_name('showcase_assets')
-    for name in ('showcase.css', 'showcase.js'):
+    for name in ASSETS:
         shutil.copy2(assets / name, output / name)
     page = (assets / 'index.html').read_text().replace('<a href="analysis-v060.html">Detailed analysis ↗</a>', '')
     if not report:

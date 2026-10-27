@@ -1,4 +1,9 @@
 import json
+from pathlib import Path
+import shutil
+import subprocess
+
+import pytest
 
 from pokeagent_bench.showcase import existing_link, export_public, short_snapshot
 
@@ -42,6 +47,24 @@ def test_only_existing_local_replays_are_linked(tmp_path):
     assert existing_link(tmp_path, 'replay.html') == 'replay.html'
     assert existing_link(tmp_path, 'missing.html') is None
     assert existing_link(tmp_path, '../outside.html') is None
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_score_interval_resamples_tasks_within_categories():
+    stats = Path(__file__).parents[1] / 'src/pokeagent_bench/showcase_assets/showcase-stats.js'
+    rows = [{'task_id': f'b{i}', 'category': 'battle', 'state': 'finished', 'value': i % 2} for i in range(10)]
+    rows += [{'task_id': 'n', 'category': 'navigation', 'state': 'finished', 'value': 1},
+             {'task_id': 'p', 'category': 'navigation', 'state': 'pending', 'value': None}]
+    same = [dict(r, value=1) for r in rows if r['state'] == 'finished']
+    script = (f'const {{scoreInterval}} = require({json.dumps(str(stats))})\n'
+              f'console.log(JSON.stringify([scoreInterval({json.dumps(rows)}), scoreInterval({json.dumps(rows)}), '
+              f'scoreInterval({json.dumps(same)}), scoreInterval([])]))')
+    first, again, perfect, empty = json.loads(subprocess.run(['node', '-e', script], check=True,
+                                                             capture_output=True, text=True).stdout)
+    assert first == again
+    assert 0.5 < first['low'] < 0.75 < first['high'] < 1.0
+    assert perfect['low'] == perfect['high'] == 1.0
+    assert empty is None
 
 
 def test_public_page_omits_report_link_without_report(tmp_path):
