@@ -162,7 +162,7 @@ async function refresh(first = false) {
     renderLong()
     renderStatus()
     $('updated').textContent = 'Updated ' + new Date(data.updated_at).toLocaleString()
-    $('report-link').hidden = !data.report
+    if ($('report-link')) $('report-link').hidden = !data.report
     $('load-error').hidden = true
   } catch(error) {
     if (!data) $('load-error').hidden = false

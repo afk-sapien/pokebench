@@ -193,6 +193,9 @@ def export_public(web, output, *, report=None):
     for name in ('showcase.css', 'showcase.js'):
         shutil.copy2(assets / name, output / name)
     page = (assets / 'index.html').read_text().replace('<a href="analysis-v060.html">Detailed analysis ↗</a>', '')
+    if not report:
+        page = page.replace('<a id="report-link" href="technical-report.pdf">Technical report ↗</a>', '')
+        page = page.replace(' The technical report covers an earlier snapshot.', '')
     hero = next((r for r in data['long'] if r['run_id'] == 'long-v065-opus'), None)
     if hero and hero['replay'] and hero['image']:
         page = page.replace('href="long-v065-opus-replay.html"', f'href="{hero["replay"]}"').replace('src="long-v065-opus.png"', f'src="{hero["image"]}"')

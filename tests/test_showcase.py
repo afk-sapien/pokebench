@@ -1,4 +1,6 @@
-from pokeagent_bench.showcase import existing_link, short_snapshot
+import json
+
+from pokeagent_bench.showcase import existing_link, export_public, short_snapshot
 
 
 def test_partial_scores_keep_failures_and_exclude_pending(tmp_path):
@@ -40,3 +42,15 @@ def test_only_existing_local_replays_are_linked(tmp_path):
     assert existing_link(tmp_path, 'replay.html') == 'replay.html'
     assert existing_link(tmp_path, 'missing.html') is None
     assert existing_link(tmp_path, '../outside.html') is None
+
+
+def test_public_page_omits_report_link_without_report(tmp_path):
+    web = tmp_path / 'web'
+    web.mkdir()
+    (web / 'showcase-data.json').write_text(json.dumps({'short': {'cells': []}, 'long': [], 'report': 'technical-report.pdf'}))
+    data = export_public(web, tmp_path / 'public')
+    page = (tmp_path / 'public' / 'index.html').read_text()
+    assert data['report'] is None
+    assert 'technical-report.pdf' not in page
+    assert 'technical report' not in page.lower()
+    assert 'analysis-v060.html' not in page
