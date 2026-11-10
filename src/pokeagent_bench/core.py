@@ -47,11 +47,35 @@ def emulator_manifest():
     return result
 
 
-def validate_emulator_manifest(manifest):
+_PYBOY_RS_011 = {"backend": "pyboy-rs", "version": "0.1.1", "state_format": "pyboy-format-15",
+                 "native_sha256": "d1b7a2ffa74aeffc62495e1d42997b1e9f2ddc46796d391d7777a68f20731df2",
+                 "binding_sha256": "f4fe084798ee098560b4e1e5baa58c15dd540f96e2a0ba881b9518247075e2f4"}
+_PYBOY_RS_015 = {"backend": "pyboy-rs", "version": "0.1.5", "state_format": "pyboy-format-15",
+                 "native_sha256": "c82540b72344fc7120decdf816bcc60c242d200542e25eda2568fbd5971b44ce",
+                 "binding_sha256": "52fe3e8f575e065a37a4bad0187bdec5c5f68dec702038596ef9064c444be118"}
+
+# Build pairs proven by a replay sweep: every recorded run replayed under the
+# runtime build with identical frames, screens, evidence and scores. A shared
+# state format alone is not proof, so each entry names the note with its sweep.
+VERIFIED_EMULATOR_PAIRS = (
+    {"recorded": _PYBOY_RS_011, "runtime": _PYBOY_RS_015, "evidence": "docs/history/pyboy-rs-015.md"},
+)
+
+
+def _build_name(fingerprint):
+    if not isinstance(fingerprint, dict):
+        return "unknown build"
+    return f"{fingerprint.get('backend')} {fingerprint.get('version')}"
+
+
+def validate_emulator_manifest(manifest, *, verified_pairs=False):
     """Require the original backend and fingerprint for runs and starting saves.
 
     Legacy PyBoy metadata is accepted only by that backend. Rust's ability to
     decode the same state format is not permission to change an experiment.
+    With verified_pairs, replay and fixture loading also accept a recorded
+    build under a runtime build when VERIFIED_EMULATOR_PAIRS lists that exact
+    pair. Resume never uses it and keeps the exact build rule.
     """
     current = emulator_provenance()
     recorded = manifest.get("emulator")
@@ -60,8 +84,15 @@ def validate_emulator_manifest(manifest):
             raise ValueError("Legacy scenario requires its original PyBoy backend and version. "
                              "Use an explicitly validated copy for a backend migration")
         return
-    if not isinstance(recorded, dict) or recorded != current:
+    if not isinstance(recorded, dict) or (recorded != current and not verified_pairs):
         raise ValueError("Emulator backend or exact runtime fingerprint mismatch")
+    if recorded != current and not any(pair["recorded"] == recorded and pair["runtime"] == current
+                                       for pair in VERIFIED_EMULATOR_PAIRS):
+        raise ValueError(
+            f"Emulator build pair is not verified: recorded {_build_name(recorded)}, "
+            f"runtime {_build_name(current)}. Replay the recorded runs under this runtime with "
+            "scripts/verify_emulator_pair.py. If every run is identical, add the pair to "
+            "VERIFIED_EMULATOR_PAIRS in core.py with a docs/history note of the sweep")
     if "pyboy_version" in manifest and (current["backend"] != "pyboy"
                                        or manifest["pyboy_version"] != current["version"]):
         raise ValueError("Conflicting emulator provenance")

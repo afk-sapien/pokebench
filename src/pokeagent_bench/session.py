@@ -65,7 +65,7 @@ def load_engine(rom, scenario):
     state = (scenario / "initial.state").read_bytes()
     if manifest.get("format") != 1 or manifest.get("game") != "red":
         raise ValueError("Unsupported scenario format or game")
-    validate_emulator_manifest(manifest)
+    validate_emulator_manifest(manifest, verified_pairs=True)
     if manifest["state_sha256"] != digest(state):
         raise ValueError("Scenario state checksum mismatch")
     if manifest["rom_sha256"] != digest(rom.read_bytes()):
@@ -442,7 +442,7 @@ def replay(rom: Path, run: Path):
     from .evaluation_catalog import validate_run_spec
     validate_run_spec(manifest)
     state = (run / "initial.state").read_bytes()
-    validate_emulator_manifest(manifest)
+    validate_emulator_manifest(manifest, verified_pairs=True)
     if digest(state) != manifest["initial_sha256"]:
         raise ValueError("Run state checksum mismatch")
     if digest(rom.read_bytes()) != manifest["scenario"]["rom_sha256"]:
