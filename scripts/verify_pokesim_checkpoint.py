@@ -6,7 +6,7 @@ import sys
 
 from pokeagent_bench.core import Limits, digest, encoded, write_json
 from pokeagent_bench.session import Session, load_engine, replay
-from prepare_pokesim_gym import ReadOnlyMemory
+from prepare_pokesim_gym import ReadOnlyMemory, policy_context
 
 
 def main():
@@ -35,7 +35,7 @@ def main():
     try:
         while not session.reason:
             snapshot = read_snapshot(memory, session.frame)
-            commands = policy.step(PolicyContext(snapshot, 0, session.elapsed(), memory))
+            commands = policy.step(policy_context(PolicyContext, snapshot, session.frame, session.elapsed(), memory))
             if not commands or not any(command.hold + command.gap for command in commands):
                 raise ValueError('Reference policy returned no advancing commands')
             for command in commands:

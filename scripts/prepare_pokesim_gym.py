@@ -1,4 +1,5 @@
 import argparse
+import dataclasses
 import json
 import os
 from pathlib import Path
@@ -15,6 +16,19 @@ class ReadOnlyMemory:
 
     def __getitem__(self, key):
         return self._memory[key]
+
+
+def policy_context(PolicyContext, snapshot, frame, elapsed, memory):
+    """Build a policy context for whichever PokeSim checkout is on the path.
+
+    PokeSim #435 changed PolicyContext from (snapshot, stuck_seconds, real_time,
+    mem) to (snapshot, clock, mem, sp), where clock counts game frames that never
+    rewind. Newer checkouts get the run's frame count as the clock. Older
+    checkouts keep the wall clock form that built the existing fixtures.
+    """
+    if 'clock' in {field.name for field in dataclasses.fields(PolicyContext)}:
+        return PolicyContext(snapshot, clock=frame, mem=memory)
+    return PolicyContext(snapshot, 0, elapsed, memory)
 
 
 def main():
@@ -77,7 +91,7 @@ def main():
                             and Screen(memory).battle_menu):
                         capture('brock-battle-v015')
                         break
-                actions = policy.step(PolicyContext(snapshot,0,time.monotonic()-started,memory))
+                actions = policy.step(policy_context(PolicyContext, snapshot, frame, time.monotonic()-started, memory))
                 if not actions:
                     raise ValueError('PokeSim returned no controller actions')
                 for action in actions:

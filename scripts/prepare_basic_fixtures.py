@@ -73,7 +73,7 @@ def main():
     from pokesim.policies.strategic import StrategicPolicy
     from pokesim.policies.base import PolicyContext
     from pokesim.ram import read_snapshot, TRAINER_NAMES
-    from prepare_pokesim_gym import ReadOnlyMemory
+    from prepare_pokesim_gym import ReadOnlyMemory, policy_context
     policy_hash=digest(encoded({str(p.relative_to(args.pokesim)):digest(p.read_bytes())
                                for p in sorted((args.pokesim/'pokesim').rglob('*.py'))}))
     source=args.root/'scenarios/brock-entrance-v015'
@@ -106,7 +106,7 @@ def main():
                     if not captured:
                         raise ValueError('Brock was defeated before a healthy fixture was captured')
                     break
-                actions=policy.step(PolicyContext(snapshot,0,time.monotonic()-started,memory))
+                actions=policy.step(policy_context(PolicyContext, snapshot, frame, time.monotonic()-started, memory))
                 if not actions:
                     raise ValueError('Curation returned no actions')
                 for action in actions:

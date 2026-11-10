@@ -13,7 +13,7 @@ from pokeagent_bench.gameplay import ui_state
 from pokeagent_bench.session import load_engine
 from pokeagent_bench.suite import ADVENTURE_TASKS, check_start, read, reference
 from prepare_basic_fixtures import advance, save_fixture
-from prepare_pokesim_gym import ReadOnlyMemory
+from prepare_pokesim_gym import ReadOnlyMemory, policy_context
 
 DESCRIPTIONS = {
     'buy-pokeballs': 'Visit the Viridian Poke Mart and buy at least ten Poke Balls with your money. Finish shopping and close the menus while still inside the Mart. Do not black out.',
@@ -110,7 +110,7 @@ def later(root, rom, pokesim, output, reuse=None):
                         log.write(json.dumps(command)+'\n')
                         break
                     snapshot = read_snapshot(memory, frame)
-                    actions = policy.step(PolicyContext(snapshot, 0, time.monotonic()-started, memory))
+                    actions = policy.step(policy_context(PolicyContext, snapshot, frame, time.monotonic()-started, memory))
                     if not actions:
                         raise ValueError('Offline policy returned no controller actions')
                     for action in actions:
