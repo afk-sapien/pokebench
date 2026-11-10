@@ -14,7 +14,7 @@ from pokeagent_bench.game import RedEngine
 from pokeagent_bench.gameplay import ui_state
 from pokeagent_bench.suite import GYM_SPECS, GYM_TASKS, check_start, read, reference
 from prepare_basic_fixtures import advance, save_fixture
-from prepare_pokesim_gym import ReadOnlyMemory
+from prepare_pokesim_gym import ReadOnlyMemory, policy_context
 
 # These archived map-entry states precede each leader's first defeat.
 EVENTS = {'surge': 240, 'erika': 368, 'koga': 527, 'sabrina': 591, 'blaine': 670, 'giovanni': 687}
@@ -73,7 +73,7 @@ def curate(rom, pokesim, archive, output, key):
                     captured = len(commands)
                     print('Captured', key, frame, flush=True)
                 snapshot = read_snapshot(memory, frame)
-                actions = policy.step(PolicyContext(snapshot, 0, time.monotonic()-started, memory))
+                actions = policy.step(policy_context(PolicyContext, snapshot, frame, time.monotonic()-started, memory))
                 if not actions:
                     raise ValueError('Policy returned no controller inputs')
                 for action in actions:
