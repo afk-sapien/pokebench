@@ -28,7 +28,15 @@ All 381 Short leaderboard runs (focused-pass-v056, main-v066-astra and main-v067
 
 The 29 are focused-pass-v056 cells 0007 to 0012, 0241 to 0246 (preparation), 0271 to 0276, 0283 to 0285 and 0286 to 0288, and original-navigation-v056 cells 0001, 0004, 0010, 0025 and 0034. Their catalog drift is an existing issue. It is not caused by this change and is not fixed here.
 
-The other 14 Long runs are being replayed under the merged gate. Their result will be added here.
+## Long sweep
+
+After the merge, the other 14 Long runs were replayed under 0.1.5 with the merged gate and no check relaxed, four at a time.
+
+- 14 of 14 replay identically and pass every check, 12,662,273 frames in total. Frames, actions, score and trace head all match each recorded result.
+- The largest is long-v072-astra-8k, with 2,222,534 frames, 80,799 actions and a score of 710.
+- With long-v073-haiku and long-v069-luna above, all 16 Long runs are identical under 0.1.5.
+
+The runs are long-v065-opus, long-v065-sol, long-v065-sonnet, long-v065-terra, long-v067-astra, long-v067-fable, long-v068-astra-4k, long-v069-sol-4k, long-v069-terra-4k, long-v070-luna-plus4k, long-v071-opus-4k, long-v071-sonnet-4k, long-v072-astra-6k and long-v072-astra-8k.
 
 ## First frame after a load
 
