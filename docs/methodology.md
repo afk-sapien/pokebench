@@ -82,8 +82,12 @@ Reports group comparable conditions before aggregating by model. Show completion
 rate and mean score, plus median wall time among completed runs only. Exclude
 provider errors, infrastructure errors, and interrupted runs from the gameplay
 success denominator while reporting their counts separately. Budget exhaustion
-and invalid agent outputs are evaluated outcomes. Pilot reports have no automatic
-confidence intervals and should include multiple independent trials.
+and invalid agent outputs are evaluated outcomes. In catalog batches an interface
+failure is first held as an evaluation error, outside the average and blocking
+further cells of the same task start, until a reviewer records it in its
+`error.json` as a reviewed model failure, after which it scores as a finished
+zero. Pilot reports have no automatic confidence intervals and should include
+multiple independent trials.
 
 ## Replay and artifacts
 
