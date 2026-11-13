@@ -18,7 +18,9 @@ into the agent observation.
 The local map is a 10 by 9 tile viewport. It uses live terrain subtiles and the
 current tileset's collision list. It marks visible objects, fixed interactables
 and exits. Exit destinations and offscreen geometry are withheld. Object names
-are generic visual categories, never scripts or starter identities. Textboxes,
+are generic visual categories, never scripts or starter identities. A person
+is labeled with the sprite kind a player sees, such as youngster or girl,
+never a name or a role. Textboxes,
 menus, fades and moving-player states suppress the map. This is a terrain map,
 not a guarantee that every edge can be traversed. Ledges, surf and directional
 collision rules still apply.

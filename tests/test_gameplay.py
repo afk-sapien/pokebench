@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from pokeagent_bench.core import Limits
-from pokeagent_bench.gameplay import known_map, local_map, observe_gameplay, pair_floors, ui_state
+from pokeagent_bench.gameplay import SPRITE_LOOKS, known_map, local_map, observe_gameplay, pair_floors, ui_state
 from pokeagent_bench.gameplay_commands import execute, validate
 from pokeagent_bench.session import Session
 from pokeagent_bench.visual_feedback import public_context
@@ -41,6 +41,36 @@ def test_map_filters_hidden_objects_destinations_and_offscreen_cells():
     assert local_map(mem, cat, ui_state(mem))["objects"][0]["appearance"] == "ball-shaped object"
     mem[0xC3A0 + 240] = 0x79
     assert not local_map(mem, cat, ui_state(mem))["available"]
+
+
+def test_visible_people_carry_their_sprite_kind_and_never_a_name_or_role():
+    mem = memory()
+    cat = catalog()
+    cat["world"]["0"]["objects"] = [[4, 3, "SPRITE_GIRL", "STAY", "TEXT_SAFFRONGYM_SABRINA"],
+                                    [5, 3, "SPRITE_GYM_GUIDE", "STAY", "TEXT_SAFFRONGYM_GYM_GUIDE"],
+                                    [6, 3, "SPRITE_KOGA", "STAY", "TEXT_FUCHSIAGYM_KOGA"]]
+    for slot, x in ((1, 4), (2, 5), (3, 6)):
+        mem[0xC100 + 16 * slot], mem[0xC102 + 16 * slot] = 1, 4
+        mem[0xC204 + 16 * slot], mem[0xC205 + 16 * slot] = 3 + 4, x + 4
+    # Slot 3 stands inside the viewport but its sprite is off screen, so it is not shown.
+    mem[0xC136] = 200
+    view = local_map(mem, cat, ui_state(mem))
+    assert [(o["x"], o["appearance"]) for o in view["objects"]] == [(4, "girl"), (5, "man")]
+    text = json.dumps(view).lower()
+    assert all(word not in text for word in ("sabrina", "koga", "guide", "leader", "gym"))
+    names = {"oak", "daisy", "mom", "fuji", "giovanni", "koga", "lance", "bruno", "lorelei", "agatha", "red", "blue"}
+    roles = {"leader", "gym", "guide", "clerk", "receptionist", "worker", "president", "warden", "captain",
+             "rocket", "silph", "safari", "link", "champion", "professor"}
+    for look in SPRITE_LOOKS.values():
+        assert not set(look.lower().replace("-", " ").split()) & (names | roles), look
+
+
+@pytest.mark.skipif(not os.environ.get('POKEBENCH_GAME_DATA'), reason='Game data is not distributed')
+def test_every_map_sprite_has_a_look():
+    from pokeagent_bench.gameplay import load_catalog
+    world = load_catalog(Path(os.environ['POKEBENCH_GAME_DATA']))['world']
+    sprites = {row[2] for value in world.values() for row in value['objects']}
+    assert sprites <= set(SPRITE_LOOKS), sorted(sprites - set(SPRITE_LOOKS))
 
 
 def setup(tmp_path, engine):

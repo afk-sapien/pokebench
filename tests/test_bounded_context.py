@@ -502,7 +502,7 @@ def test_bounded_prompt_states_each_rule_once_and_enum_arguments_carry_no_descri
     assert 'Preserve useful discoveries' not in prompt
     assert prompt.count('Preserve important discoveries') == 1
     assert 'are unverified agent claims.' in prompt and 'or return null, to retain' in prompt
-    assert bounded.config_identity['text_presentation'] == 'bounded-gameplay-text-v5'
+    assert bounded.config_identity['text_presentation'] == 'bounded-gameplay-text-v6'
     assert bounded.compact_at == BoundedGameplayProvider.default_compact_at == 11300
     variants = {variant['properties']['command']['enum'][0]: variant['properties']['argument']
                 for variant in bounded.decision_schema(Limits())['properties']['actions']['items']['anyOf']}

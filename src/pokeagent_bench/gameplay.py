@@ -14,8 +14,37 @@ from pokecore.gen1_ui import read_battler, read_screen, read_sprites, read_stora
 from .core import digest, encoded
 from .game import structured
 
-POLICY = "player-information-v063"
-PAIR_LEGEND = "walkable floor. A step directly between a : cell and a , cell is refused, in both directions"
+POLICY = "player-information-v064"
+# What a player sees for each map sprite. A sprite kind that names a look or an outfit keeps
+# its name. A sprite named after a person, a group or a job that only the place or the
+# dialogue reveals is shown as a plain look, so no name or role reaches the model.
+SPRITE_LOOKS = {
+    "SPRITE_YOUNGSTER": "youngster", "SPRITE_GIRL": "girl", "SPRITE_LITTLE_GIRL": "little girl",
+    "SPRITE_LITTLE_BOY": "little boy", "SPRITE_BRUNETTE_GIRL": "brunette girl",
+    "SPRITE_BALDING_GUY": "balding man", "SPRITE_MIDDLE_AGED_MAN": "middle-aged man",
+    "SPRITE_MIDDLE_AGED_WOMAN": "middle-aged woman", "SPRITE_GRAMPS": "old man",
+    "SPRITE_GRANNY": "old woman", "SPRITE_COOLTRAINER_M": "young man",
+    "SPRITE_COOLTRAINER_F": "young woman", "SPRITE_BEAUTY": "beauty", "SPRITE_GENTLEMAN": "gentleman",
+    "SPRITE_SUPER_NERD": "super nerd", "SPRITE_HIKER": "hiker", "SPRITE_BIKER": "biker",
+    "SPRITE_SWIMMER": "swimmer", "SPRITE_SAILOR": "sailor", "SPRITE_FISHER": "fisher",
+    "SPRITE_GAMBLER": "gambler", "SPRITE_GAMBLER_ASLEEP": "sleeping man", "SPRITE_CHANNELER": "channeler",
+    "SPRITE_ROCKER": "rocker", "SPRITE_SCIENTIST": "scientist", "SPRITE_COOK": "cook",
+    "SPRITE_WAITER": "waiter", "SPRITE_NURSE": "nurse", "SPRITE_GUARD": "guard",
+    "SPRITE_GAMEBOY_KID": "boy", "SPRITE_FISHING_GURU": "old man",
+    "SPRITE_RED": "boy", "SPRITE_BLUE": "boy", "SPRITE_OAK": "old man", "SPRITE_DAISY": "girl",
+    "SPRITE_MOM": "woman", "SPRITE_MR_FUJI": "old man", "SPRITE_GIOVANNI": "man", "SPRITE_KOGA": "man",
+    "SPRITE_LANCE": "man", "SPRITE_BRUNO": "man", "SPRITE_LORELEI": "woman", "SPRITE_AGATHA": "old woman",
+    "SPRITE_ROCKET": "man in black", "SPRITE_GYM_GUIDE": "man", "SPRITE_CLERK": "man",
+    "SPRITE_BIKE_SHOP_CLERK": "man", "SPRITE_LINK_RECEPTIONIST": "woman",
+    "SPRITE_SAFARI_ZONE_WORKER": "man", "SPRITE_SILPH_WORKER_M": "man", "SPRITE_SILPH_WORKER_F": "woman",
+    "SPRITE_SILPH_PRESIDENT": "man", "SPRITE_WARDEN": "old man", "SPRITE_CAPTAIN": "man",
+    "SPRITE_BIRD": "bird", "SPRITE_MONSTER": "Pokemon", "SPRITE_FAIRY": "Pokemon", "SPRITE_SEEL": "Pokemon",
+    "SPRITE_SNORLAX": "large Pokemon",
+    "SPRITE_POKE_BALL": "ball-shaped object", "SPRITE_POKEDEX": "book-shaped object",
+    "SPRITE_BOULDER": "boulder", "SPRITE_FOSSIL": "fossil-shaped object", "SPRITE_OLD_AMBER": "small object",
+    "SPRITE_PAPER": "paper", "SPRITE_CLIPBOARD": "clipboard",
+}
+PAIR_LEGEND ="walkable floor. A step directly between a : cell and a , cell is refused, in both directions"
 TYPES = {0: "Normal", 1: "Fighting", 2: "Flying", 3: "Poison", 4: "Ground", 5: "Rock",
          7: "Bug", 8: "Ghost", 20: "Fire", 21: "Water", 22: "Grass", 23: "Electric",
          24: "Psychic", 25: "Ice", 26: "Dragon"}
@@ -201,8 +230,7 @@ def local_map(memory, catalog, ui):
             continue
         index = sprite["slot"] - 1
         raw = world["objects"][index][2] if index < len(world["objects"]) else ""
-        appearance = {"SPRITE_POKE_BALL": "ball-shaped object", "SPRITE_POKEDEX": "book-shaped object",
-                      "SPRITE_BOULDER": "boulder", "SPRITE_FOSSIL": "fossil-shaped object"}.get(raw, "person or object")
+        appearance = SPRITE_LOOKS.get(raw, "person or object")
         objects.append({"id": f"object-{sprite['slot']}", "x": px, "y": py, "appearance": appearance})
         grid[py - top][px - left] = "O"
     for px, py, *_ in world["backgrounds"]:

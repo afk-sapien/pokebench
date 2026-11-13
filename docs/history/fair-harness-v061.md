@@ -243,3 +243,22 @@ Send at least one controller action or request look_back from 1 to 8.` Before
 this change the Claude feedback said that no action was executed twice. The
 correction policy is `three-metered-invalid-decisions-v2` and the Claude
 response adapter is `claude-interface-v8`.
+
+## People are labeled by how they look
+
+The local map listed every person as `person or object`. A player sees each
+sprite on screen, but a text-only model got no screenshot and could not tell
+people apart. The warp puzzle asks the model to reach the tile south of
+Sabrina. In a Sonnet test run the model stood at (17,2) for most of its
+decisions, below a youngster it took for her.
+
+Each visible person and Pokemon on the map now carries what a player sees, the
+sprite kind, for example `youngster`, `girl` or `hiker`. A sprite named after a
+person, a group or a job that only the place or the dialogue reveals gets a
+plain look instead: `man`, `woman`, `old man`, `old woman` or `boy`. The
+Rocket sprite is `man in black`. No label is a name or a role such as gym
+leader, and nothing off screen is listed. In Saffron Gym, Sabrina is the only
+`girl`, the trainers are `channeler` and `youngster`, and the guide is `man`.
+Items keep their labels. Every sprite in the game data has a label. The
+observation policy is `player-information-v064` and the text presentation is
+`bounded-gameplay-text-v6`.

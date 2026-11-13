@@ -59,7 +59,7 @@ Current location, result and screenshot are current.
 Do not confuse a requested action with its result.''')
         self.config_identity.update(context_turns=context_turns, context_detail=context_detail,
                                     decision_timeout_seconds=self.decision_timeout_seconds, compaction_protocol='deterministic-checkpoint-no-summary-v1',
-                                    text_presentation='bounded-gameplay-text-v5',
+                                    text_presentation='bounded-gameplay-text-v6',
                                     ordinary_packet_bytes=bounded_context.PACKET_BYTES,
                                     inspection_packet_bytes=bounded_context.INSPECTION_BYTES)
 
