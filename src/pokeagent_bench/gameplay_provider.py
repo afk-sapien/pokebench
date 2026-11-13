@@ -1,5 +1,6 @@
 """Subscription-backed decision benchmark with explicit information assistance."""
 from .continuous_provider import ContinuousCodexProvider
+from .gameplay import POLICY
 from .rules import NICKNAME_RULE
 
 
@@ -77,7 +78,7 @@ in notes if needed. No shell, walkthrough or human assistance.
                         "\nEach decision starts fresh. Your notes, observed exploration memory and recent command results persist.\n")
         self.config_identity.update(observation_format=observation_format,
                                     text_presentation="observed-gameplay-text-v2" if observation_format == "text" else None,
-                                    observation_policy="player-information-v062",
+                                    observation_policy=POLICY,
                                     controller_timing="core-shortcuts-v060",
                                     action_contract="gen1-commands-v2",
                                     planning_policy="optional-planning-v1",

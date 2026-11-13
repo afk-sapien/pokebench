@@ -24,7 +24,7 @@ The adapter inherits the exact bounded gameplay prompt, action schema, readable 
 
 Claude runs in an empty temporary directory with safe mode, restricted mode, no built-in tools, empty strict MCP configuration, disabled slash commands, disabled Chrome, disabled hooks and no user or project settings. The only exposed tool is Claude's schema-only `StructuredOutput`. Initialization and response events reject outside tools, an unexpected model, or automatic compaction. Provider environment overrides and API keys are removed from the child environment. The adapter keeps the official CLI login mechanism.
 
-The model can emit at most 4,096 output tokens per request through the CLI environment setting. This is a Claude transport control, not a claim that the Codex transport enforces the same output cap. Effort names are provider-specific controls, not equivalent amounts of computation. Haiku does not advertise adjustable effort, so its results must identify that limitation.
+The model can emit at most 8,192 output tokens per request through the CLI environment setting. This is a Claude transport control, not a claim that the Codex transport enforces the same output cap. Effort names are provider-specific controls, not equivalent amounts of computation. Haiku does not advertise adjustable effort, so its results must identify that limitation.
 
 ## Accounting
 

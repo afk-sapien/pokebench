@@ -8,6 +8,7 @@ import tempfile
 import time
 import tomllib
 
+from . import __version__
 from .app_server import AppServer
 from .codex_provider import CodexProvider
 from .core import digest
@@ -127,7 +128,7 @@ object labels, automatic navigation or human help are available.
             if value is not None:
                 command.extend(["-c", key + "=" + json.dumps(value)])
         self.server = AppServer(command, cwd=directory, env=self.env)
-        self.server.request("initialize", {"clientInfo": {"name": "pokeagent_bench", "version": "0.11.0"},
+        self.server.request("initialize", {"clientInfo": {"name": "pokeagent_bench", "version": __version__},
                                           "capabilities": {"experimentalApi": True}}, deadline)
         self.server.send({"method": "initialized", "params": {}})
         effective = self.server.request("config/read", {"includeLayers": False, "cwd": directory}, deadline)["config"]
