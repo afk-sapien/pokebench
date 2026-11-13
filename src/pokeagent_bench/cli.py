@@ -137,6 +137,20 @@ def parser():
             command.add_argument("--max-output-tokens", type=int, default=2048, help="Per-response API cap, not supported by Codex CLI")
             command.add_argument("--input-price", type=float, help="USD per million input tokens")
             command.add_argument("--output-price", type=float, help="USD per million output tokens")
+    pack = sub.add_parser("submit", help="Pack a finished suite run into a bundle for a community submission")
+    pack.add_argument("run", type=Path, help="Folder written by run --suite")
+    pack.add_argument("--output", type=Path, help="Bundle path. Defaults to MODEL-SUITE.pokebench.zip")
+    pack.add_argument("--handle", help="Your GitHub user name, shown on the leaderboard row")
+    pack.add_argument("--attempts", type=int, default=1, help="How many times you ran this suite with this model")
+    pack.add_argument("--include-endpoint-host", action="store_true",
+                      help="Record the host name of the model endpoint. Left out by default")
+    pack.add_argument("--skip-name-check", action="store_true",
+                      help="Do not scan for your user and host name. Paths and keys are still scanned")
+    confirm = sub.add_parser("verify", help="Check a submission bundle by replaying its inputs. Calls no model")
+    confirm.add_argument("bundle", type=Path)
+    confirm.add_argument("--rom", type=Path, help="Defaults to the ROM that setup recorded")
+    confirm.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
+    confirm.add_argument("--output", type=Path, help="Report path. Defaults to BUNDLE.verified.json")
     check = sub.add_parser("replay", help="Replay actions and verify frame, score, and image evidence")
     check.add_argument("--rom", type=Path, required=True)
     check.add_argument("--run", type=Path, required=True)
@@ -298,6 +312,17 @@ def execute(args):
         return setup(args.rom, args.output, args.reference_archive)
     if args.command == "prepare":
         return prepare(args.rom, args.output)
+    if args.command == "submit":
+        from .submission import submit
+        return submit(args.run, args.output, handle=args.handle, attempts=args.attempts,
+                      endpoint_host=args.include_endpoint_host, check_names=not args.skip_name_check)
+    if args.command == "verify":
+        from .quick_run import locate
+        from .submission import verify
+        fixtures, _, rom = locate(args.data, args.rom)
+        if not verify(args.bundle, rom, fixtures, args.output)['verified']:
+            raise SystemExit(1)
+        return None
     if args.command == "replay":
         return replay(args.rom, args.run)
     if args.command == "report":
