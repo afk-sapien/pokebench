@@ -169,7 +169,7 @@ def build_analysis(root, web, repeat_root=None):
             'models': models, 'tasks': tasks, 'cells': cells, 'categories': list(CATEGORIES),
             'task_sensitivity': task_sensitivity(cells),
             'counts': {'tasks': len(tasks), 'score_groups': len({c['score_group'] for c in cells}),
-                       'starts': len(cells) // len(models), 'models': len(models), 'attempts': len(cells),
+                       'starts': len(cells) // len(models) if models else 0,'models': len(models), 'attempts': len(cells),
                        'finished': sum(c['state'] == 'finished' for c in cells),
                        'evaluation_errors': sum(c['state'] == 'evaluation_error' for c in cells),
                        'all_full_score_tasks': sum(t['all_full_score'] for t in tasks),

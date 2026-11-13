@@ -6,6 +6,7 @@ import fcntl
 import os
 from pathlib import Path
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -205,85 +206,111 @@ def _run_pass(fixtures, rom, game_data, output, web, models, *, budget, workers=
     env['PYTHONPATH'] = str(root / 'runtime')
     status = 'running'
     last_export = 0
-    while True:
-        repaired = [key for key, state in states.items() if state == 'evaluation_error'
-                    and (root / key / 'reassessment.json').exists()]
-        if repaired:
-            refreshed = {row['id']: row for row in report(root)['cells']}
-            for key in repaired:
-                states[key] = refreshed[key]['state']
-                results[key] = cell_result(root / key)
-        for key, (process, log) in list(running.items()):
-            raw = cell_result(root / key)
-            if raw is not None:
-                results[key] = raw
-            if process.poll() is None:
-                continue
-            log.close()
-            del running[key]
-            if process.returncode or raw is None or raw.get('state') in ('running', 'paused', 'interrupted'):
-                destination = root / key
-                destination.mkdir(exist_ok=True)
-                prior_error = destination / 'error.json'
-                if prior_error.exists():
-                    shutil.copy2(prior_error, destination / 'worker-error.json')
-                write_json(destination / 'error.json', {'evaluation_error': 'Worker stopped before a clean completion. Inspect worker log.',
-                    'usage': raw.get('usage', {}) if raw else {'accounting_complete': False}})
-                results[key] = cell_result(destination)
-            result_row = next(row for row in report(root)['cells'] if row['id'] == key)
-            states[key] = result_row['state']
-        budget = min(budget, effective_budget(root, manifest))
-        spent, reserved, unknown = ledger(cells, states, running, results)
-        carried, missing_reserve, unknown = budget_adjustments(root, cells, results, unknown)
-        spent += carried
-        reserved += missing_reserve
-        if (root / 'pause.dispatch').exists():
-            status = 'dispatch paused'
-        elif unknown:
-            status = 'accounting needs inspection'
-        else:
-            while True:
-                cell = choose_cell(cells, states, running, results, workers, provider_workers)
-                if cell is None:
-                    break
-                if spent + reserved + cell['token_limit'] + RESERVE > budget:
-                    status = 'shared token backstop reached'
-                    break
-                destination = root / cell['id']
-                command = [sys.executable, '-m', 'pokeagent_bench', 'catalog-run',
-                    '--fixtures', str(fixtures), '--rom', str(rom), '--game-data', str(game_data),
-                    '--output', str(destination), '--task', cell['task_id'], '--variant', cell['variant'],
-                    '--provider', cell['provider'], '--model', cell['model'],
-                    '--decision-limit', str(cell['decision_limit']), '--token-limit', str(cell['token_limit']),
-                    '--reasoning-effort', 'low', '--presentation', 'current']
-                log = (root / (cell['id'] + '.log')).open('w')
-                process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=root)
-                running[cell['id']] = (process, log)
-                states[cell['id']] = 'running'
-                status = 'running'
-                reserved += cell['token_limit'] + RESERVE
-                print(json.dumps({'started': cell['id'], 'task': cell['task_id'], 'model': cell['model']}), flush=True)
-        if not running:
-            if all(s == 'finished' for s in states.values()):
-                status = 'complete'
-            elif status == 'running':
-                status = 'task errors need inspection'
-        if time.monotonic() - last_export >= 15 or not running:
-            progress = report(root)
-            for row in progress['cells']:
-                if row['id'] in running:
-                    row['state'] = 'running'
-            progress.update(status=status, token_budget=budget, tokens_used=spent + sum(token_usage(results.get(k, {})) for k in running),
-                            reserved_tokens=reserved, unknown_usage=unknown, archived_reported_tokens=carried,
-                            unreported_usage_reserve=missing_reserve, updated_at=time.time())
-            write_json(root / 'progress.json', progress)
-            export_progress(root, Path(web), progress)
-            last_export = time.monotonic()
-        if not running:
-            break
-        time.sleep(3)
-    write_json(root / 'stopped.json', {'status': status, 'time': time.time()})
+    try:
+        while True:
+            repaired = [key for key, state in states.items() if state == 'evaluation_error'
+                        and (root / key / 'reassessment.json').exists()]
+            if repaired:
+                refreshed = {row['id']: row for row in report(root)['cells']}
+                for key in repaired:
+                    states[key] = refreshed[key]['state']
+                    results[key] = cell_result(root / key)
+            for key, (process, log) in list(running.items()):
+                # Poll before reading, so a worker that exits in between is read after its final write.
+                exited = process.poll() is not None
+                raw = cell_result(root / key)
+                if raw is not None:
+                    results[key] = raw
+                if not exited:
+                    continue
+                log.close()
+                del running[key]
+                if process.returncode or raw is None or raw.get('state') in ('running', 'paused', 'interrupted'):
+                    destination = root / key
+                    destination.mkdir(exist_ok=True)
+                    prior_error = destination / 'error.json'
+                    if prior_error.exists():
+                        shutil.copy2(prior_error, destination / 'worker-error.json')
+                    write_json(destination / 'error.json', {'evaluation_error': 'Worker stopped before a clean completion. Inspect worker log.',
+                        'usage': raw.get('usage', {}) if raw else {'accounting_complete': False}})
+                    results[key] = cell_result(destination)
+                result_row = next(row for row in report(root)['cells'] if row['id'] == key)
+                states[key] = result_row['state']
+            budget = min(budget, effective_budget(root, manifest))
+            spent, reserved, unknown = ledger(cells, states, running, results)
+            carried, missing_reserve, unknown = budget_adjustments(root, cells, results, unknown)
+            spent += carried
+            reserved += missing_reserve
+            if (root / 'pause.dispatch').exists():
+                status = 'dispatch paused'
+            elif unknown:
+                status = 'accounting needs inspection'
+            else:
+                while True:
+                    cell = choose_cell(cells, states, running, results, workers, provider_workers)
+                    if cell is None:
+                        break
+                    if spent + reserved + cell['token_limit'] + RESERVE > budget:
+                        status = 'shared token backstop reached'
+                        break
+                    destination = root / cell['id']
+                    command = [sys.executable, '-m', 'pokeagent_bench', 'catalog-run',
+                        '--fixtures', str(fixtures), '--rom', str(rom), '--game-data', str(game_data),
+                        '--output', str(destination), '--task', cell['task_id'], '--variant', cell['variant'],
+                        '--provider', cell['provider'], '--model', cell['model'],
+                        '--decision-limit', str(cell['decision_limit']), '--token-limit', str(cell['token_limit']),
+                        '--reasoning-effort', 'low', '--presentation', 'current']
+                    log = (root / (cell['id'] + '.log')).open('w')
+                    # A separate session keeps a terminal interrupt from reaching workers twice.
+                    process = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, env=env, cwd=root,
+                                               start_new_session=True)
+                    running[cell['id']] = (process, log)
+                    states[cell['id']] = 'running'
+                    status = 'running'
+                    reserved += cell['token_limit'] + RESERVE
+                    print(json.dumps({'started': cell['id'], 'task': cell['task_id'], 'model': cell['model']}), flush=True)
+            if not running:
+                if all(s == 'finished' for s in states.values()):
+                    status = 'complete'
+                elif status == 'running':
+                    status = 'task errors need inspection'
+            if time.monotonic() - last_export >= 15 or not running:
+                progress = report(root)
+                for row in progress['cells']:
+                    if row['id'] in running:
+                        row['state'] = 'running'
+                progress.update(status=status, token_budget=budget, tokens_used=spent + sum(token_usage(results.get(k, {})) for k in running),
+                                reserved_tokens=reserved, unknown_usage=unknown, archived_reported_tokens=carried,
+                                unreported_usage_reserve=missing_reserve, updated_at=time.time())
+                write_json(root / 'progress.json', progress)
+                export_progress(root, Path(web), progress)
+                last_export = time.monotonic()
+            if not running:
+                break
+            time.sleep(3)
+    except BaseException as error:
+        status = 'interrupted' if isinstance(error, KeyboardInterrupt) else f'coordinator error: {type(error).__name__}'
+        raise
+    finally:
+        write_json(root / 'stopped.json', {'status': status, 'time': time.time(),
+                                           'stopped_workers': stop_workers(running)})
     return progress
+
+
+def stop_workers(running, grace=60):
+    """Interrupt live workers so each records an interrupted result, then close their logs."""
+    for process, _ in running.values():
+        if process.poll() is None:
+            process.send_signal(signal.SIGINT)
+    deadline = time.monotonic() + grace
+    for process, log in running.values():
+        try:
+            process.wait(timeout=max(0, deadline - time.monotonic()))
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+        log.close()
+    return sorted(running)
 
 
 

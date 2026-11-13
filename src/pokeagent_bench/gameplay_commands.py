@@ -41,11 +41,15 @@ def execute(session, operation_id, command, on_action=None):
         visible_before = (local_map(session.engine.memory, session.gameplay_catalog,
                                     ui_state(session.engine.memory)) if kind == "move" else {})
 
+        def stop_outcome():
+            # Completion ends the run after the model's last decision, so this text is trace-only.
+            return "Task complete." if session.reason == "completed" else "stopped at budget boundary"
+
         def raw_send(button, hold=8, release=24):
             nonlocal raw_count
             remaining = phase_end - session.frame
             if session.reason or remaining <= 0:
-                result["outcome"] = "stopped at budget boundary"
+                result["outcome"] = stop_outcome()
                 return False
             remaining = min(remaining, session.limits.max_action_frames)
             hold = min(hold, remaining)
@@ -136,7 +140,7 @@ def execute(session, operation_id, command, on_action=None):
                     break
                 if not continuing:
                     completed += abs(current[1] - location[1]) + abs(current[2] - location[2])
-                    result["outcome"] = "stopped at budget boundary"
+                    result["outcome"] = stop_outcome()
                     break
                 if current == location:
                     result["outcome"] = f"Moved {completed} tiles, then blocked or no further movement."

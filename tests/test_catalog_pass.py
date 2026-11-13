@@ -136,3 +136,65 @@ def test_explicit_dispatch_priority_preserves_pilot_and_provider_limits():
     assert choose_cell(group, states, set(), {}, 2, 1)['id'] != 'b'
     states.update(a='finished', c='running')
     assert choose_cell(group, states, {'c'}, {'a': outcome()}, 2, 1) is None
+
+
+def test_worker_that_finishes_between_poll_and_read_is_not_an_error(tmp_path, monkeypatch):
+    import pokeagent_bench.catalog_pass as module
+    monkeypatch.setattr(module, 'plan', lambda *args: {'cells': cells()[:1], 'protocol': 'test'})
+    monkeypatch.setattr(module.time, 'sleep', lambda value: None)
+    class Process:
+        returncode = 0
+        def __init__(self, command, **kwargs):
+            self.destination = Path(command[command.index('--output') + 1])
+            self.destination.mkdir()
+            write_json(self.destination / 'result.json', {**outcome(), 'state': 'running'})
+            self.polls = 0
+        def poll(self):
+            # The final result lands as the process exits, between any two coordinator calls.
+            self.polls += 1
+            if self.polls < 2:
+                return None
+            write_json(self.destination / 'result.json', outcome())
+            return 0
+    monkeypatch.setattr(module.subprocess, 'Popen', Process)
+    result = run_pass(tmp_path, 'rom', 'game', tmp_path / 'pass', tmp_path / 'web', ['codex:sol'],
+                      budget=5000000, workers=1)
+    assert result['status'] == 'complete'
+    assert not (tmp_path / 'pass' / 'a' / 'error.json').exists()
+
+
+def test_coordinator_failure_stops_workers_and_records_stop(tmp_path, monkeypatch):
+    import json
+    import signal
+    import pytest
+    import pokeagent_bench.catalog_pass as module
+    monkeypatch.setattr(module, 'plan', lambda *args: {'cells': cells()[:1], 'protocol': 'test'})
+    launched = []
+    class Process:
+        returncode = None
+        def __init__(self, command, **kwargs):
+            destination = Path(command[command.index('--output') + 1])
+            destination.mkdir()
+            write_json(destination / 'result.json', {**outcome(), 'state': 'running'})
+            self.signals, self.log = [], kwargs['stdout']
+            assert kwargs['start_new_session']
+            launched.append(self)
+        def poll(self):
+            return self.returncode
+        def send_signal(self, value):
+            self.signals.append(value)
+        def wait(self, timeout=None):
+            self.returncode = 130
+            return self.returncode
+    monkeypatch.setattr(module.subprocess, 'Popen', Process)
+    def broken(*args):
+        raise RuntimeError('export failed')
+    monkeypatch.setattr(module, 'export_progress', broken)
+    with pytest.raises(RuntimeError, match='export failed'):
+        run_pass(tmp_path, 'rom', 'game', tmp_path / 'pass', tmp_path / 'web', ['codex:sol'],
+                 budget=5000000, workers=1)
+    assert launched[0].signals == [signal.SIGINT]
+    assert launched[0].log.closed
+    stopped = json.loads((tmp_path / 'pass' / 'stopped.json').read_text())
+    assert stopped['status'] == 'coordinator error: RuntimeError'
+    assert stopped['stopped_workers'] == ['a']
