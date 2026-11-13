@@ -20,7 +20,7 @@ The adapter requires an exact model identifier and refuses aliases. Fable remain
 
 ## Shared protocol and isolation
 
-The adapter inherits the exact bounded gameplay prompt, action schema, readable state packets, screenshot presentation, notes and goal plan. Context rotates after eight decisions or the 12,000-token context threshold. There are no model-generated summaries. A new segment receives the same deterministic state snapshot and observed history used by the Codex provider.
+The adapter inherits the exact bounded gameplay prompt, action schema, readable state packets, screenshot presentation, notes and goal plan. Context rotates after eight decisions or the 11,300-token context threshold. There are no model-generated summaries. A new segment receives the same deterministic state snapshot and observed history used by the Codex provider.
 
 Claude runs in an empty temporary directory with safe mode, restricted mode, no built-in tools, empty strict MCP configuration, disabled slash commands, disabled Chrome, disabled hooks and no user or project settings. The only exposed tool is Claude's schema-only `StructuredOutput`. Initialization and response events reject outside tools, an unexpected model, or automatic compaction. Provider environment overrides and API keys are removed from the child environment. The adapter keeps the official CLI login mechanism.
 

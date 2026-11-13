@@ -10,6 +10,14 @@ RESULT_FIELDS = ('request', 'outcome', 'shortcut', 'position_before', 'position_
                  'requested_tiles', 'tiles_moved', 'dialogue', 'visible_object_changes', 'blocked_at')
 PACKET_BYTES = 32000
 INSPECTION_BYTES = 64000
+# Rendered text leaves out what the model cannot act on or already has. The recorded packet keeps all of it.
+# Internal ids, sequence counters, the enforcement mode, the dialogue format tag and the recall pointer
+# (the system prompt already says to inspect memory and that notes are unverified).
+UNSHOWN = (('protocol',), ('sequence',), ('base_sequence',), ('segment',), ('detail_policy',),
+           ('token_budget', 'enforcement'), ('task', 'goal'), ('task', 'track'), ('task', 'action_policy'),
+           ('last_result', 'dialogue', 'format'), ('recall', 'more'),
+           # Top-level location is in every packet, so the copy inside replace.game repeats it.
+           ('replace', 'game', 'location'))
 
 
 class ObservationBudgetError(ValueError):
@@ -114,13 +122,22 @@ def build(public, notes, recent, previous, sequence, segment, detail="full"):
     return packet, current
 
 
+def unshown(data):
+    for path in UNSHOWN:
+        node = data
+        for key in path[:-1]:
+            node = node.get(key) if isinstance(node, dict) else None
+        if isinstance(node, dict):
+            node.pop(path[-1], None)
+    return data
+
+
 def render(packet, *, compact_inspection=False):
-    data = json.loads(json.dumps(packet, sort_keys=True, ensure_ascii=False))
+    data = unshown(json.loads(json.dumps(packet, sort_keys=True, ensure_ascii=False)))
     recall = data.pop('recall', None)
     inspection = data.pop('requested_inspection', None) if compact_inspection else None
-    lines = ['GAME UPDATE. Replace listed fields, remove listed paths, retain other fields in this segment.',
-             'A snapshot starts a new segment and replaces all earlier state.',
-             *(['Party and move updates use one-based slots. Replace/remove only listed fields. Retain the rest.']
+    # The system prompt states the replace, remove and snapshot rules, so the packet carries no header for them.
+    lines = [*(['Party and move updates use one-based slots. Replace/remove only listed fields. Retain the rest.']
                if 'party_updates' in data else []), *tree(data)]
     if recall is not None:
         decisions = recall.pop('recent_decisions')

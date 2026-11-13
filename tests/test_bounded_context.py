@@ -451,3 +451,46 @@ def test_visible_object_motion_and_blocked_feedback_reach_model_without_private_
     packet, _ = build(obs, '', [], previous, 2, 1)
     assert 'visible_object_changes' not in packet['last_result']
     assert 'Blocked at:' in render(packet)
+
+
+def test_rendered_packets_leave_out_unused_fields_but_the_record_keeps_them():
+    obs = public()
+    obs['token_budget']['enforcement'] = 'reported-between-decisions-with-reserve'
+    obs.update(goal='challenge', track='gameplay', action_policy='assisted', tested_skill='navigation')
+    obs['game']['last_command'] = {'outcome': 'Moved 3 tiles.',
+                                   'dialogue': {'format': 'screen-text-pages-v1', 'pages': [], 'frames': 0}}
+    snapshot, previous = build(obs, 'notes', [], None, 1, 1)
+    obs['game']['location'] = {'map_id': 40, 'x': 5, 'y': 7}
+    update, _ = build(obs, 'notes', [], previous, 2, 1)
+    for packet in (snapshot, update):
+        text = render(packet)
+        before = deepcopy(packet)
+        assert packet['protocol'] == 'bounded-gameplay-context-v3' and packet['sequence'] and packet['segment'] == 1
+        assert packet['replace']['game']['location'] == packet['location']
+        for gone in ('GAME UPDATE', 'Protocol:', 'Sequence:', 'Base sequence:', 'Segment:', 'Detail policy:',
+                     'Enforcement:', 'Goal: challenge', 'Track:', 'Action policy:', 'Format:', 'More:'):
+            assert gone not in text
+        # The location is shown once, at the top level, even when it changed.
+        assert text.count('Location:\n') == 1
+        assert 'Used: 123' in text and 'Limit: 456' in text and 'Kind: ' + packet['kind'] in text
+        assert 'Frames: 0' in text
+        render(packet)
+        assert packet == before
+    snapshot_text = render(snapshot)
+    assert 'Objective: Find a new conversation' in snapshot_text and 'Tested skill: navigation' in snapshot_text
+    assert 'CHECKPOINT RECALL' in snapshot_text and 'Omitted encounters: 2' in snapshot_text
+
+
+def test_bounded_prompt_states_each_rule_once_and_enum_arguments_carry_no_description(bounded):
+    prompt = bounded.prompt
+    assert 'Sequence numbers' not in prompt and 'Use null to keep notes' not in prompt
+    assert 'Preserve useful discoveries' not in prompt
+    assert prompt.count('Preserve important discoveries') == 1
+    assert 'are unverified agent claims.' in prompt and 'or return null, to retain' in prompt
+    assert bounded.config_identity['text_presentation'] == 'bounded-gameplay-text-v4'
+    assert bounded.compact_at == BoundedGameplayProvider.default_compact_at == 11300
+    variants = {variant['properties']['command']['enum'][0]: variant['properties']['argument']
+                for variant in bounded.decision_schema(Limits())['properties']['actions']['items']['anyOf']}
+    assert 'description' not in variants['move'] and variants['move']['enum']
+    assert all('description' not in argument for argument in variants.values() if 'enum' in argument)
+    assert variants['choose']['description'] and variants['use_item']['description']

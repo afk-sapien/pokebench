@@ -45,7 +45,7 @@ def test_prompt_schema_and_bounded_policy_match_codex(monkeypatch):
     assert claude.prompt == codex.prompt
     assert claude.decision_schema(Limits()) == codex.decision_schema(Limits())
     assert claude.context_turns == codex.context_turns == 8
-    assert claude.compact_at == codex.compact_at == 12000
+    assert claude.compact_at == codex.compact_at == BoundedGameplayProvider.default_compact_at == 11300
     assert claude.memory_protocol == codex.memory_protocol
     with pytest.raises(ValueError, match='exact'):
         ClaudeCodeProvider('sonnet')

@@ -103,7 +103,8 @@ Unknown modal screens are withheld from movement and never guessed through.
 Detection reads the pinned English Red routine and live stack. No ROM, RAM,
 register or emulator hook is written.
 
-Gameplay's retained-context threshold defaults to 12000 tokens. The visual
+Gameplay's retained-context threshold defaults to 11300 tokens (12000 before
+v061). The visual
 provider keeps 24000. Explicit invalid values are rejected. `--fresh-decisions`
 uses a new session for each decision, retaining bounded notes, observed terrain
 and recent command results in the supplied state. It makes no summary calls.

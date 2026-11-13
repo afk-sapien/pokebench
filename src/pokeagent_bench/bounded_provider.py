@@ -10,7 +10,9 @@ from .visual_feedback import public_context
 class BoundedGameplayProvider(GameplayCodexProvider):
     harness = 'codex-app-server-gameplay-fair-bounded-v046'
     memory_protocol = 'bounded-segments-deltas-v1'
-    default_compact_at = 12000
+    # 12000 before the v061 prompt and packet trim. The trim saves about 700 tokens by the decision that
+    # used to cross 12000, so this threshold keeps the old segment boundaries (docs/history/fair-harness-v061.md).
+    default_compact_at = 11300
     decision_timeout_seconds = 600
 
     def __init__(self, *args, context_turns=8, context_detail="full", **kwargs):
@@ -34,20 +36,34 @@ class BoundedGameplayProvider(GameplayCodexProvider):
         self.prompt = self.prompt[:start] + '''The full observed action and dialogue archive stays outside this conversation.
 Inspect memory to recall it. Your notebook holds persistent agent-authored notes.
 ''' + self.prompt[end:]
+        # Sentences said twice in the gameplay prompt keep their first statement only.
+        for repeated in (' Preserve useful discoveries\nin notes if needed.',):
+            if repeated not in self.prompt:
+                raise ValueError('Bounded prompt trim no longer matches the gameplay prompt')
+            self.prompt = self.prompt.replace(repeated, '')
         self.prompt = self.prompt.replace('Your conversation is retained between decisions and periodically summarized.', '''Your conversation is retained for short segments. No model-generated summary is made.
 Each new segment starts with a snapshot, your saved notebook and goal, and bounded
 exact observed history. Preserve important discoveries and uncertainties in notes
-during normal decisions. Use null to keep notes. Segment boundaries do not advance
+during normal decisions. Segment boundaries do not advance
 the game. They do discard earlier conversational guesses not saved in your notes.
 Updates name fields to replace and paths to remove. Omitted fields are unchanged
-within this segment. A snapshot replaces all previous state. Sequence numbers
-identify the previous packet. Current location, result and screenshot are current.
-Agent notes and plans are unverified. Do not confuse a requested action with its result.''')
+within this segment. A snapshot replaces all previous state.
+Current location, result and screenshot are current.
+Do not confuse a requested action with its result.''')
         self.config_identity.update(context_turns=context_turns, context_detail=context_detail,
                                     decision_timeout_seconds=self.decision_timeout_seconds, compaction_protocol='deterministic-checkpoint-no-summary-v1',
-                                    text_presentation='bounded-gameplay-context-v3',
+                                    text_presentation='bounded-gameplay-text-v4',
                                     ordinary_packet_bytes=bounded_context.PACKET_BYTES,
                                     inspection_packet_bytes=bounded_context.INSPECTION_BYTES)
+
+    def decision_schema(self, limits):
+        schema = super().decision_schema(limits)
+        for variant in schema['properties']['actions']['items']['anyOf']:
+            argument = variant['properties']['argument']
+            if 'enum' in argument:
+                # The enum already lists every allowed value, so a description would only restate it.
+                argument.pop('description', None)
+        return schema
 
     def prepare_packet(self, observation, notes, recent):
         rotate = (self.packet_baseline is None or self.segment_turns >= self.context_turns or

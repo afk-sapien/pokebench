@@ -97,3 +97,52 @@ would hold 8.2 steps on average when present and up to 17, it would change
 with every step the player takes, and the known map would need its own longer
 list. The two glyphs add about 45 tokens per decision in these maps and none
 elsewhere. The observation policy is `player-information-v063`.
+
+## Prompt and packet trim
+
+The trim deletes text the model does not use. Nothing it can act on is
+removed, and the recorded packet keeps every field. Only the rendered text
+changes, so the context protocol stays `bounded-gameplay-context-v3`. The text
+presentation is `bounded-gameplay-text-v4`.
+
+Removed from every snapshot and update:
+
+- the two header lines, which restate the replace, remove and snapshot rules
+  of the system prompt
+- protocol, sequence, base sequence, segment and detail policy
+- the token budget enforcement mode, the dialogue format tag and the recall
+  line that repeats the prompt
+- the task goal, track and action policy, which the prompt already states
+- the copy of the location inside the replaced game fields. The location is
+  shown once at the top of every packet.
+
+The system prompt loses four sentences. Three repeat other sentences: a second
+request to preserve discoveries in notes, "use null to keep notes" and a second
+"notes and plans are unverified". The fourth, "sequence numbers identify the
+previous packet", explained a field the text no longer shows. The action schema drops the description of each argument that
+already lists its allowed values. `choose` and `use_item` keep theirs. The
+system prompt goes from 5,048 to 4,891 bytes and the schema from 4,648 to
+4,277 bytes.
+
+Measured by rendering every recorded packet of four Claude runs both ways:
+
+| Run | Snapshot bytes | Update bytes |
+|---|---|---|
+| Short, Fable | 10,492 to 9,872 | 2,163 to 1,767 |
+| Long, Sonnet | 10,005 to 9,376 | 2,171 to 1,767 |
+| Long, Opus | 10,915 to 10,286 | 2,046 to 1,654 |
+| Long, Fable | 11,303 to 10,673 | 2,122 to 1,726 |
+
+Snapshots shrink by 6% and updates by 18 to 19%. Cache writes on continued
+decisions give about 0.45 tokens per byte, so a snapshot saves about 280
+tokens, an update about 180 and the prompt and schema about 240.
+
+A segment ends after eight decisions or once the context reaches the
+threshold. A smaller context would reach a 12000 threshold later, and
+segments would run longer than in the published runs. The threshold is
+lowered by the tokens the trim saves, so segments end where they did. By the
+decision that first crossed 12000, the trim had saved a median of 816
+tokens. Over 7,470 recorded segments, a threshold of 11,300 ends 94% of them
+at the same decision as before. Keeping 12000 would end 52% at the same
+decision. 11,300 is the default for every bounded provider. Explicit
+`--compact-at` values and the frozen basic and v1 beta protocols are unchanged.

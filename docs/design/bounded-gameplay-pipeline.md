@@ -28,8 +28,9 @@ No separate model call is required to maintain or summarize them.
 
 ## Conversation segments
 
-Retain up to eight model responses or 12000 observed context tokens, whichever
-comes first. Check boundaries before the next request. The threshold can be
+Retain up to eight model responses or 11300 observed context tokens, whichever
+comes first. The threshold was 12000 before the v061 prompt and packet trim,
+which keeps the old boundaries by lowering it by the tokens the trim saves. Check boundaries before the next request. The threshold can be
 exceeded by the last response in a segment. It is not a backend context hard cap.
 At a boundary, close the conversation and start a new one with a deterministic
 snapshot. This advances no game frames and consumes no separate model turn.

@@ -125,7 +125,7 @@ def parser():
             command.add_argument("--context-detail", choices=("full", "on-demand"), default="full",
                                  help="Bounded gameplay detail policy. On-demand omits move mechanics until party inspection")
             command.add_argument("--context-turns", type=int, default=8, help="Maximum responses per bounded conversation segment")
-            command.add_argument("--compact-at", type=int, help="Context threshold, default 12000 for bounded, 32000 for legacy gameplay and 24000 for visual")
+            command.add_argument("--compact-at", type=int, help="Context threshold, default 11300 for bounded, 32000 for legacy gameplay and 24000 for visual")
             command.add_argument("--observation-format", choices=("json", "text"), default="json",
                                  help="Gameplay input format. Text is an experimental deterministic presentation")
             command.add_argument("--presentation", choices=("current", "before-after", "strip"), default="current")
@@ -378,7 +378,7 @@ def execute(args):
                 raise ValueError("openai-compatible requires --track gameplay --codex-policy bounded, current or before-after images and the simple response contract")
             provider = OpenAICompatibleProvider(args.model or "", reasoning_effort=args.reasoning_effort,
                 context_turns=args.context_turns, context_detail=args.context_detail, presentation=args.presentation,
-                compact_at=12000 if args.compact_at is None else args.compact_at)
+                compact_at=OpenAICompatibleProvider.default_compact_at if args.compact_at is None else args.compact_at)
         elif args.provider == "claude":
             from .claude_provider import ClaudeCodeProvider
             if args.track != "gameplay" or args.codex_policy != "bounded" or args.presentation not in ("current", "before-after") or args.response_contract != "simple" or args.fresh_decisions:
@@ -387,7 +387,7 @@ def execute(args):
                 raise ValueError("Subscription usage is not API-priced")
             provider = ClaudeCodeProvider(args.model, reasoning_effort=args.reasoning_effort,
                 context_turns=args.context_turns, context_detail=args.context_detail, presentation=args.presentation,
-                compact_at=12000 if args.compact_at is None else args.compact_at)
+                compact_at=ClaudeCodeProvider.default_compact_at if args.compact_at is None else args.compact_at)
         elif args.provider == "codex":
             from .codex_provider import CodexProvider
             if args.input_price is not None or args.output_price is not None:
