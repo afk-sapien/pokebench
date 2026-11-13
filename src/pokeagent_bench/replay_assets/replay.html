@@ -472,7 +472,7 @@ body {overflow:hidden}
 <div class="result"><button id="thumb-btn" type="button" title="Go to the next decision"><canvas id="thumb" role="img" aria-label="Game screen after the input ran" width="160" height="144"></canvas></button><div><p id="outcome"></p><span id="same" class="tag" hidden>Screen did not change</span><span id="reached" class="tag" hidden></span></div></div>
 <div id="plan-box"><h3>Model's plan <span id="plan-since" class="since"></span></h3><p id="plan-goal"></p><p class="plan-more"><b>Done when</b> <span id="plan-done"></span></p><p class="plan-more"><b>Why</b> <span id="plan-why"></span></p></div>
 <div id="notes-box"><h3>Model's notes <span id="notes-since" class="since"></span></h3><p id="notes"></p></div>
-<p id="no-notes" hidden>This replay carries game screens and controller input only. The model's plan and notes are not included.</p>
+<p id="no-notes" hidden>This replay carries game screens, controller input and what the harness reported. The model's plan and notes are not included.</p>
 </aside>
 </div>
 <footer class="transport" aria-label="Playback">
@@ -791,9 +791,9 @@ $('label').textContent = meta.label || data.model
 $('model-id').textContent = meta.label ? data.model : ''
 document.title = (meta.label || data.model) + ' replay | PokeBench'
 const harness = meta.harness || {}
-const versions = [harness.name, harness.package && 'harness ' + harness.package,
+const versions = [...new Set([harness.name, harness.package && 'harness ' + harness.package,
   harness.benchmark || (data.benchmark !== 'unrecorded' && data.benchmark),
-  harness.core && 'core ' + harness.core, harness.emulator].filter(Boolean)
+  harness.core && 'core ' + harness.core, harness.emulator].filter(Boolean))]
 $('versions').textContent = versions.join('  /  ')
 if (!versions.length) $('versions').remove()
 const policy = data.action_policy === 'manual-menu-v1' ? 'Manual menus.' : 'Assisted gameplay.'
