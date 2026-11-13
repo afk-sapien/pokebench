@@ -199,6 +199,36 @@ def test_yes_no_options_exclude_adjacent_hud(tmp_path, engine):
         session.close()
 
 
+@pytest.mark.parametrize('names,argument,presses', [
+    (['POLIWRATH', 'KADABRA'], 'KADABRA', ['down', 'a']),
+    (['POLIWRATH', 'KADABRA'], '1: POLIWRATH', ['a']),
+    (['POLIWRATH', 'POLIWRATH'], 'POLIWRATH', []),
+])
+def test_party_choice_accepts_bare_unique_name(tmp_path, engine, monkeypatch, names, argument, presses):
+    from pokeagent_bench import gameplay_commands
+    session = setup(tmp_path, engine)
+    cursor = {'y': 1}
+    def ui(_):
+        return {'kind': 'menu', 'cursor_tile': [0, cursor['y']]}
+    def options(memory, screen, kind):
+        return [{'text': f'{slot}: {name}', 'cursor': [0, 2 * slot - 1]}
+                for slot, name in enumerate(names, 1)]
+    def move_cursor(fake):
+        if engine.inputs and engine.inputs[-1][1] == 'down':
+            cursor['y'] = 3
+    monkeypatch.setattr(gameplay_commands, 'ui_state', ui)
+    monkeypatch.setattr(gameplay_commands, 'menu_options', options)
+    monkeypatch.setattr(gameplay_commands, 'read_screen', lambda _: None)
+    engine.on_tick = move_cursor
+    try:
+        result = execute(session, 'party', {'command': 'choose', 'argument': argument, 'count': 1})
+        assert [row[1] for row in engine.inputs if row[0] == 'press'] == presses
+        if not presses:
+            assert result['outcome'] == 'Requested option is not uniquely visible. No confirmation sent.'
+    finally:
+        session.close()
+
+
 def test_rejected_command_does_not_trigger_auto_continue(tmp_path, engine, monkeypatch):
     session = setup(tmp_path, engine)
     fake_ui(engine, monkeypatch, lambda frame: 'dialogue')

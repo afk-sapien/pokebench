@@ -99,7 +99,7 @@ def public_preparation_state(session, task_id=None):
     return result
 
 
-def request_submission(provider, task, public_state, token_limit, timeout=180, *, record_usage=None):
+def request_submission(provider, task, public_state, token_limit, timeout=180, *, item_labels, record_usage=None):
     """One text-only structured turn using the existing subscription transport.
 
     Like the gameplay transports, this is a reported-usage ceiling. An individual
@@ -125,15 +125,16 @@ def request_submission(provider, task, public_state, token_limit, timeout=180, *
     provider.schema = schema
     provider.response_normalizer = normalize_preparation_response
     provider.decision_limits = Limits()
-    from pokecore.shortcuts import item_names
-    names = item_names('red')
+    # The same game data labels name the bag in public_state.
+    def name(item):
+        return item_labels[str(item)]
     rule = RULES[task['id']]
     payload = {'task': {key: task[key] for key in ('id', 'agent_goal', 'scenario_details')},
                'state': public_state, 'allowed_operations': rule.operations,
-               'legal_restoratives': [{'id': item, 'name': names.get(item)} for item in rule.items],
-               'shop': [{'id': item, 'name': names.get(item), 'unit_price': price}
+               'legal_restoratives': [{'id': item, 'name': name(item)} for item in rule.items],
+               'shop': [{'id': item, 'name': name(item), 'unit_price': price}
                         for item, price in rule.shop],
-               'teaching': [{'item_id': item, 'name': names.get(item),
+               'teaching': [{'item_id': item, 'name': name(item),
                              'recipient_species_ids': list(species)} for item, species in rule.teaching],
                'max_teaching_actions': rule.max_teaching}
     deadline = time.monotonic() + min(timeout, 180)
@@ -232,8 +233,10 @@ class PreparationSession:
                     'teach_move': {'item', 'slot', 'forget'}, 'buy_item': {'item', 'quantity'},
                     'deposit_pokemon': {'slot'}, 'withdraw_pokemon': {'slot'},
                     'heal_at_center': set()}[operation]
+        # use_item always uses one item, so quantity 1 states the same action.
+        ignored = {'quantity'} if operation == 'use_item' and action.get('quantity') == 1 else set()
         if any(value is not None for key, value in action.items()
-               if key not in relevant | {'operation'}):
+               if key not in relevant | {'operation'} | ignored):
             raise InvalidPreparationAction('Unexpected non-null argument for preparation operation')
         if operation == 'reorder_party':
             first = _integer(action, 'first', 0, len(party)-1)
@@ -742,7 +745,8 @@ def run_preparation(rom, scenario, output, game_data, task_id, *, actions=None,
         record_usage(usage)
         if provider:
             model_record = request_submission(provider, task, public_preparation_state(session, task_id),
-                                              token_limit, record_usage=record_usage)
+                                              token_limit, item_labels=session.gameplay_catalog['labels']['items'],
+                                              record_usage=record_usage)
             write_json(output / 'model-submission.json', model_record)
             session.usage.update(calls=1, input_tokens=model_record['usage']['input_tokens'],
                                  output_tokens=model_record['usage']['output_tokens'])
