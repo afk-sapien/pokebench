@@ -262,3 +262,17 @@ leader, and nothing off screen is listed. In Saffron Gym, Sabrina is the only
 Items keep their labels. Every sprite in the game data has a label. The
 observation policy is `player-information-v064` and the text presentation is
 `bounded-gameplay-text-v6`.
+
+## Released as package 0.36.0
+
+The harness is released as package 0.36.0, git tag `v0.36.0`. Its entry is the
+only one in [accepted_harness.json](../../src/pokeagent_bench/accepted_harness.json),
+so `submit` and `verify` accept runs from that tag unchanged and refuse every
+other build. The release includes two fixes made after the first candidate.
+Each suite task runs at its own decision and token caps, and the suite budget
+is only reported. A command that starts a warp waits for the warp to land
+before it returns. The fixture pack is the one built for this tag. The only
+catalog change since then retired two Pikachu quests, which changes no start
+state. Runs made before the release stay tests. A later fix ships as a patch
+release, for example 0.36.1, with its own entry in the accepted list, and each
+leaderboard row keeps the package version it ran on.

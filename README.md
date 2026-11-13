@@ -62,7 +62,7 @@ uv run pokebench run --provider openai-compatible --model llama3.2-vision --suit
 
 The key is read from the environment and is never written to a run. The run records the endpoint address without credentials. The endpoint must report token usage, because budgets and results count it. These calls are billed by whoever runs the endpoint.
 
-To send a finished suite run for the community leaderboard, run `uv run pokebench submit runs/short-MODEL` and attach the file it writes to a "Run submission" issue. `uv run pokebench verify BUNDLE` checks any bundle by replay without a model call. Submissions open with the frozen v0.61 release, and both commands refuse until then. See [SUBMITTING.md](SUBMITTING.md).
+To send a finished suite run for the community leaderboard, run `uv run pokebench submit runs/short-MODEL` and attach the file it writes to a "Run submission" issue. `uv run pokebench verify BUNDLE` checks any bundle by replay without a model call. Both commands accept only runs from the frozen v0.61 release, tag `v0.36.0`, checked out unchanged. See [SUBMITTING.md](SUBMITTING.md).
 
 `setup` checks the ROM hash and writes two folders under `data/`, which git ignores. It takes a few seconds and makes no model calls.
 

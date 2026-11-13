@@ -27,4 +27,4 @@ The hash does not cover the fixture pack, the task catalogs or the lock file. St
 
 ## Later changes
 
-Development after the tag changes the source hash, so `main` stops matching the entry. That is intended. Submitters and verifiers check out the tag. To accept a newer release, add its entry. Remove an old entry only when runs from it should no longer be accepted.
+Development after the tag changes the source hash, so `main` stops matching the entry. That is intended. Submitters and verifiers check out the tag. A harness fix is a normal pull request. Release it as a patch version, for example 0.36.1, with the steps above, and add its entry next to the older ones. Each run records its package version, so rows from different releases stay labelled. Remove an old entry only when runs from it should no longer be accepted.

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pokeagent-bench"
-version = "0.35.0"
+version = "0.36.0"
 description = "Controlled Pokemon Red benchmarks for AI agents"
 requires-python = ">=3.11"
 readme = "README.md"

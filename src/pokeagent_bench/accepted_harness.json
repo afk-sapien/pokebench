@@ -1,4 +1,10 @@
 {
   "note": "Frozen harness releases that community submissions are accepted from. Empty means submissions are closed. Every entry needs benchmark, package_version and source_sha256, the three values a run manifest records. See docs/release-checklist.md.",
-  "accepted": []
+  "accepted": [
+    {
+      "benchmark": "red-v0.61-fair-harness",
+      "package_version": "0.36.0",
+      "source_sha256": "6d63fe8be227129c4bf967bc4c0748e7bddc41ace10b7b7d647b76e8d6ea4fb3"
+    }
+  ]
 }

@@ -1,12 +1,14 @@
 # Submitting a run
 
-Submissions are not open yet. They open with the frozen v0.61 release. Until then `submit` and `verify` refuse every run and say so. The rest of this page describes how it works once they open.
+Submissions are open for the frozen v0.61 release, tag `v0.36.0`. Run from that tag unchanged. `submit` and `verify` refuse a run from any other code.
 
 Anyone with the required Pokemon Red ROM and a model can send a result. A maintainer checks it by replay and then decides whether to publish it.
 
 ## The three commands
 
 ```sh
+git checkout v0.36.0
+uv sync --locked --extra dev
 uv run pokebench setup --rom /path/to/red.gb
 uv run pokebench run --model MODEL --suite short
 uv run pokebench submit runs/short-MODEL --handle YOUR_GITHUB_NAME
@@ -30,7 +32,7 @@ Before writing, `submit` scans the bundle for absolute paths, key shaped text, t
 
 ## Which versions are accepted
 
-Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json). It is empty today, because the v0.61 harness is still changing, so nothing is accepted yet.
+Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json). It holds one release, harness `red-v0.61-fair-harness`, package 0.36.0, tag `v0.36.0`.
 
 Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Check out that release unchanged, run `uv sync --locked --extra dev` and run again.
 
