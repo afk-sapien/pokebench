@@ -6,6 +6,13 @@ under its MIT License. The original decoder was adapted from
 [PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 AFK Sapien,
 under the MIT License reproduced in [LICENSE](LICENSE).
 
+The game table generators in `src/pokeagent_bench/game_data_tables.py` and
+`src/pokeagent_bench/game_data_strategy.py` are copied from
+[PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 AFK Sapien,
+under the MIT License. They read the public
+[pret/pokered](https://github.com/pret/pokered) disassembly on the user's machine.
+No pret/pokered file is stored in this repository.
+
 The replay page embeds the PokeSim Panel typeface from
 [PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 the PokeSim
 authors, under the MIT License. It is stored as base64 text in

@@ -72,6 +72,11 @@ def parser():
     campaign_report.add_argument('--game-data', type=Path)
     catalog_report = sub.add_parser('catalog-report', help='Summarize a catalog batch by task and category')
     catalog_report.add_argument('--batch', type=Path, required=True)
+    local = sub.add_parser("setup", help="Build fixtures and game data from your own Pokemon Red ROM")
+    local.add_argument("--rom", type=Path, required=True)
+    local.add_argument("--output", type=Path, default=Path("data"))
+    local.add_argument("--reference-archive", type=Path,
+                       help="A pret/pokered archive at the pinned commit, for setup without network access")
     setup = sub.add_parser("prepare", help="Create a fixed opening scenario using fresh SRAM")
     setup.add_argument("--rom", type=Path, required=True)
     setup.add_argument("--output", type=Path, required=True)
@@ -276,6 +281,9 @@ def execute(args):
     if args.command == "checkpoint":
         return checkpoint(args.rom, args.state, args.output, name=args.name,
                           objective=json.loads(args.objective.read_text()))
+    if args.command == "setup":
+        from .local_setup import setup
+        return setup(args.rom, args.output, args.reference_archive)
     if args.command == "prepare":
         return prepare(args.rom, args.output)
     if args.command == "replay":
