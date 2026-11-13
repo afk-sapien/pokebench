@@ -1,43 +1,887 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PokeBench replay</title>
-<style>body {margin:0} body {background:#111b17} body {color:#edf3ef} body {font:16px/1.5 system-ui} main {max-width:1000px} main {margin:auto} main {padding:20px} a {color:#91d8b4} .screens {display:flex} .screens {gap:20px} .screens img {width:100%} .screens img {image-rendering:pixelated} .screens figure {flex:1} .screens figure {margin:0} .controls {position:sticky} .controls {top:0} .controls {background:#111b17} .controls {padding:16px 0} button,select {padding:12px} button,select {font:inherit} #seek {width:100%} pre {white-space:pre-wrap} #actions {height:130px} #actions {overflow:auto}</style>
-<main><a href="../index.html">PokeBench</a><h1 id="title"></h1><p>Recorded controller replay. No private notes or provider transcripts. Before and after each decision.</p><div class="controls"><button id="prev">Previous</button> <button id="play">Play</button> <button id="next">Next</button> <label>Speed <select id="speed"><option value="500">2 decisions / sec</option><option value="125" selected>8 decisions / sec</option><option value="50">20 decisions / sec</option></select></label><input id="seek" type="range" min="0" value="0" aria-label="Decision"><div id="position"></div></div><div class="screens"><figure><figcaption>Before</figcaption><img id="before" alt="Before action"></figure><figure><figcaption>After</figcaption><img id="after" alt="After action"></figure></div><pre id="actions"></pre></main>
-<script id="data" type="application/json">{"model": "claude-haiku-5-5", "completed": false, "action_policy": "assisted-gameplay-v1", "benchmark": "unrecorded", "steps": [{"decision": 1, "before_frame": 0, "after_frame": 24, "tokens": 16242, "cumulative_tokens": 16242, "before": "590341a0621652aa887f915e0efc5287d8249f4382a60065c4415aad1d734456", "after": "6b635d251176d61cc6631fd0ca83187ade53251f4daa0b481c60fc03862284da", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 2, "before_frame": 24, "after_frame": 72, "tokens": 8108, "cumulative_tokens": 24350, "before": "6b635d251176d61cc6631fd0ca83187ade53251f4daa0b481c60fc03862284da", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}, {"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 3, "before_frame": 72, "after_frame": 72, "tokens": 10239, "cumulative_tokens": 34589, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 4, "before_frame": 72, "after_frame": 72, "tokens": 11885, "cumulative_tokens": 46474, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 5, "before_frame": 72, "after_frame": 72, "tokens": 13507, "cumulative_tokens": 59981, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 6, "before_frame": 72, "after_frame": 72, "tokens": 8255, "cumulative_tokens": 68236, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 7, "before_frame": 72, "after_frame": 72, "tokens": 9826, "cumulative_tokens": 78062, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 8, "before_frame": 72, "after_frame": 72, "tokens": 23023, "cumulative_tokens": 101085, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 9, "before_frame": 72, "after_frame": 72, "tokens": 8169, "cumulative_tokens": 109254, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 10, "before_frame": 72, "after_frame": 72, "tokens": 9782, "cumulative_tokens": 119036, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 11, "before_frame": 72, "after_frame": 72, "tokens": 11443, "cumulative_tokens": 130479, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 12, "before_frame": 72, "after_frame": 72, "tokens": 13101, "cumulative_tokens": 143580, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 13, "before_frame": 72, "after_frame": 72, "tokens": 8188, "cumulative_tokens": 151768, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 14, "before_frame": 72, "after_frame": 72, "tokens": 9778, "cumulative_tokens": 161546, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 15, "before_frame": 72, "after_frame": 72, "tokens": 11390, "cumulative_tokens": 172936, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 16, "before_frame": 72, "after_frame": 72, "tokens": 13029, "cumulative_tokens": 185965, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 17, "before_frame": 72, "after_frame": 72, "tokens": 8227, "cumulative_tokens": 194192, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 18, "before_frame": 72, "after_frame": 72, "tokens": 9914, "cumulative_tokens": 204106, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 19, "before_frame": 72, "after_frame": 72, "tokens": 11506, "cumulative_tokens": 215612, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 20, "before_frame": 72, "after_frame": 72, "tokens": 12960, "cumulative_tokens": 228572, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 21, "before_frame": 72, "after_frame": 72, "tokens": 8206, "cumulative_tokens": 236778, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 22, "before_frame": 72, "after_frame": 72, "tokens": 9808, "cumulative_tokens": 246586, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 23, "before_frame": 72, "after_frame": 72, "tokens": 11380, "cumulative_tokens": 257966, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 24, "before_frame": 72, "after_frame": 72, "tokens": 12845, "cumulative_tokens": 270811, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 25, "before_frame": 72, "after_frame": 72, "tokens": 8241, "cumulative_tokens": 279052, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 26, "before_frame": 72, "after_frame": 72, "tokens": 9811, "cumulative_tokens": 288863, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 27, "before_frame": 72, "after_frame": 72, "tokens": 11381, "cumulative_tokens": 300244, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 28, "before_frame": 72, "after_frame": 72, "tokens": 12933, "cumulative_tokens": 313177, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 29, "before_frame": 72, "after_frame": 72, "tokens": 8236, "cumulative_tokens": 321413, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 30, "before_frame": 72, "after_frame": 72, "tokens": 9636, "cumulative_tokens": 331049, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 31, "before_frame": 72, "after_frame": 72, "tokens": 11241, "cumulative_tokens": 342290, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 32, "before_frame": 72, "after_frame": 72, "tokens": 26717, "cumulative_tokens": 369007, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 33, "before_frame": 72, "after_frame": 72, "tokens": 9027, "cumulative_tokens": 378034, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 34, "before_frame": 72, "after_frame": 72, "tokens": 11435, "cumulative_tokens": 389469, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}, {"decision": 35, "before_frame": 72, "after_frame": 72, "tokens": 13923, "cumulative_tokens": 403392, "before": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "after": "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f", "actions": []}], "images": {"590341a0621652aa887f915e0efc5287d8249f4382a60065c4415aad1d734456": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFCElEQVR4nO2c2dGrMAxGzZ2/NFowJUBNpgTSQnrjPmiiccwSdmxzzkMmCEIcf8iyvKRwzpkPdV3r+7ZtD7EXRdH3fVEU5hdy2dnlSd2+tj7//bwOkgaBMweBM+fv7PixlhjiXMz2teDBmYPAmYPAmXN63kkefKydPBi+QODMQeDMIQ9OzL4WPDhzEDhzEDhzyIMTs5MHwxcInDkInDnkwYnZ14IHZw4CZw4CZ87j8uBRpHh93w9PxRB399Tn38/rskQV9aUdNabOEwXWdqIoCmvt6/XSU9ZaMZZlKb5yXzGP4YkxuO/7pmmMMdZa8xFVdJXDsiybpslAXWPM10N6RvyQmloeM84uj9rVfUVXQQ5fr9dUPJYnIyj2lfF4bX0+0YPNR11jTN/32kSrruLTw08N1TWfyB0tTxTYl6SqKvVga21VVaOX+Yfq3PpmVPhIeFwnS6OACmat7bqubdv3+63erNcEbbUc+hpH7sG78s4lrI0Z1+TlKmdQNjlUyZumkfJon2s0rTLeo3D2OPwVefDPcQNlz689CZVQ+lOBj+qpqqpEfv0JM9IGXxFV/TyuiTbf7WrQn9J47HektRGaGRgZpgCRcEwnq6oqv3sSOdqFNsZ0Xdd7dF0n9mFHWqOvH4CDkDzFjfWzej54iBa9qiqtoM1ckEc6597vtzHGH8NS1OicE6es61o6B3pPuaF/KLcdraj5+ol9Pjh4MFPxYx3fGM2FgvFL8xn80ovruvYHTLQvNuT2+tklsBa36zp9NlPRuOs6a63ETqXve+lCBxfLKblY/altW7WPpsIx1M/2TpZfen0jxkPa6lOR5td8x2Pz8eAgWwtommbJyEYk9fN35fqgJZw9rjuUZzQS6zVyH30gnHPSqda4G8wtrq2fDeVfdf/tHjx8HofPbJwE0wOjTPXCpH41GM9UdyT1sysP9n+Db9xbqEuYdwW/3RbEd0cvnkqTYqifvb3ooLipqCv0Eyz54EyQ9rm9fg7Ig/U5PaT0sa0rHh13bNvWz5T21M/Z5T9mqDItx1Uumwi6sX4eNxYtY5DOufk2VuaahpE4ObYIHOEc0SqstUuSjc3qRlU/j1sXnbqd/cHwBQJnDgJnDvuDE7OvBQ/OHATOHATOHPLgxOzkwfAFAmcOAmdObnnw7ft3Y6vPrKYLR9cnzy+RzJ58mugpIWfWUj2BfASGUQ5bF33ULPeG8vgbt6fwtyS93++yLINXscu24Lqu5evEvrY8p9qvWBcd1f5XUUgEHo3BWiOjugavqm5d11VVlWV5dvnPJvlOlv7lkQzuzCxdlgvmNfY9WO2X/p6jSX5/sLaiM+uZ9dQqD85AXZPB/mDRYOo/FXyLxOC1Huz/oifmwcP9rxevAfZjsAqpZ32xicGrCXZT3bJ3NIjBQdarh5tj8PIeZZxsj8Gj+1+DUxcQZDLGGOecbDEa9qifGINT3x8s+Ps5/f/KUG+Wca4NMdj/lhTz4O0ePPTXW/a/ijbirPqnZYoal6ibpQfvSpN8je/a/R1ESn/Tkf9+ibpynxkPTpG9vWjdG6mHO2+4FvU8fyGL+Ku2ZvIX0A/tRae+P9iPnTr1q63rQl3Jg39w4/7XKc9bpWvGHpz8dOFU7Nz2Sgw2JrL9r3gwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABczX/SLTPDBcvKNwAAAABJRU5ErkJggg==", "6b635d251176d61cc6631fd0ca83187ade53251f4daa0b481c60fc03862284da": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFZElEQVR4nO2dUZKsIAxF6Ve9NLcAS9A14RLsLbg330eqUzQgIyoK8Z6PqZF2kOYakiA4SgHRvJZlKXuBV/FLgDVer9cVl4HAt0Dd/u/uZoCyQGDhQGDhQGDhvK21RS8wDMM4jqWvAu5kYxSNYHsjWf351loXbc3n88k6v3R7Wie3P99d1xVqCpHboNLtaZ1sged5LtSUfdTWntZBFC0cDNGNgSEaXA7SpHPJS5PcKYi+7/n3cRxPKc99YlW6Pa2X5/YngizhQGDhQGDhvEv7j1xq8HM1l+cCCxYOBBYOBBbO64I8eFmWLdkbnYY8OF2e25+wYOFAYOFAYOEgD26sPBdYsHAgsHAgsHCQBzdWjjwY/ACBhQOBhYM8uLHyXGDBwoHAwoHAwnlcHhyFmhddUF6D3z3Sn+8/zxMJK+pKGy1snScKzOPE6/XSWrvbubTWVNh1nYxXuD3RBy/LMgyD+r5NgEQlXemw67phGASoq7xXGZbwH9RT231G6fZwOZuv+9IIOvx8Pmv+mO4Mr9lX+uPc/nyiBauvukqpZVl4iGZdyabDvwrVVZe9D3IvTxTYlcQYwxastTbGRE9zD9m4+Zeo8JXwuCCLvQALprWepmkcx3me2Zr5HG+spkNX48ot+FDeuYVcn3FNXs5yem2jQ5Z8GAZqD8dc0bRKObdC6Xn4K/LgP+cNmCPfthAsIcVTno3yR8YYkp+/QkJa7xJV9c/jhmj1O6568RT7YzeQ5kEoMTESpgCVcE6QZYxxw5PK4RBaKTVN0+IwTROVh4E0e1/XAXsueY0b+yf7eXAIN90Ywx20mwvySGstvcsn+koiLrTWklH2fU/BAddJFbqHVG20o9L9U/vzYO/GbMWOeX4jmgt585fqO/nFJ/d9706YcCwWcnv/HBKYmztNE9+brWg8TZPWmnwnsywLhdDeyfQRncz2NI4jl0dT4Rr6Z3+Q5baef6HCU8bqotDwq379sfpasJeteQzDsGVmo5L+eV+5PmgLped1Q3minpjPoXr4hrDWUlDNftd7tpjbPzvan1X/fgsO78fwnq0T7/FAlLUojPqXnXGiuyvpn0N5sPsd3MKjjbqEtCmE7yUn242evJYm1dA/R6Nor7mtqEssK2z5w43/heL2/jkhD+b79JTWH/S7fz6vPdIe90JupnSkf0rHPedMVVZiuNF8NBESX/Yg6Mb+kTMXvSYk+U7+iOYgrbXpMZaeNQn4DyF7BK7wGVEWWustycZudavqHyHrokmwNaOkT8PntTWsc8b+4AyidlnzepoLkOCD3UUjiVS1zue1pZFjwQnxHqgrI2Rd9NoaGreEPHQNfvTK/pQwRDOukG7Jk5EgsBtYejPGfBiG6A9Bjg9mrLU0pfxAOUNE5cGEW4Nbjjy4YUhUXqTOcOFjA2kJPtiFNVbrE1uPQo7AbnjFS2r48L523YyQPPg55dgfDH6AwMKBwMI5bV30WU+5d7Rnnmfaztv3PZ1Gi17nee66zvuZLo/Wk9ueouVXrIuuav8rKcSq9H1vjAn12/gzrKd0+0vT/BBN2rAq4zjuVjdaz93f7yjN7w8OLW+3utF6bvlSJ5Kdd6pgiE4s26fZhqJ5sFrxnfs0Dutxv9ET8+Db97/CgtM0vz8YPjjNfoGj+1+9jy4AFpym+f3BKvDBRyw4rMe9UIt58H4LDu31lv2vsOA0h3ywq/Fdu7/hg9M0vz8YFpzmhDxYfQfnUF3kwaeX37Mu+sb9r6HlYS7aBXPRwn1w8/uDYcEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoGb+AwbkjP7a9QWkAAAAAElFTkSuQmCC", "5b2aae9abfbe01466795b5c0c950f09fdc2ee731e9dd4ba7519aa8c3fc92a75f": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFUElEQVR4nO2d3ZXjIAyF5T1bmluAEnBNdglOC+7N+6CNDgPYA0kgMr7fw5wJcYiGayHEj4cIdM1ARPu+f9uMmzIMQ4vGh8BfoU2z/2nwHeCLQODOgcCdA4E75y8RLcsyz/O3LbkpLVo+cziHwXYmqtrzb+kHjDE17OiGx+NRdH3t9iwWeBzHGnZ0Q6nAtduzWOBt22rYcVtqtydG0Z2DLvrDoIsGP2jRnqqG9R2gqj2LPdhPzJ1z8vuyLCgnomEYqITa7YlBVudA4M6BwJ3zf8tOTuTgy/yhgbb4p6F8miZV7QkP7hwI3DkQuHOKYzDy4PNyDqt62hMe3DkQuHMgcOcgD/5wOfJg0BQI3DkQuHOQB3+4HHkwaAoE7hwI3DnIgz9cjjwYNAUCdw4E7hx1eXDayuHwcU8a4q7mPLh443sbRFFf2mQhOEejwHJfD8NgjPGPcxljuHAcx0ZPEbs4GmPwvu/TNNHz9DuLyrryy3EcORv5sqFXQG8eLO7rP+SAXz4ej6N4zHdGYDbyYHWIv+77Ll206Mo+HX8qVpfKT4N1hkaBfUmsteLBxhhrbfIy/6X4hPySFP4mqBtkSa8lghlj1nVdlmXbNvFmuSboq/mlr/HNPVhdHsyaiZyBbfxSJJ+mie2RMVcyrSLvVvC/txRteXAO6jxYJOTxVOCj8pa1luWXP/hE2uArfp1XEd65G+pRZL86gelnjxKMpyQe+wNpGbieTIzEQ9aboHSQJUKu67p7rOvK5fFAWqKvH4CDkHyEtdYfvl2OE/uLPbhBHjnPMz97JvlIIimc55md0jnHwUzq5Ar9l1xtssuVprHWyg30sv2lvF//uf0aPZieExp0kAsF85f0nPySi51z/oSJjMVighv/cn78q/1KBSaidV2NMRw7hX3feQgdXMxv8cVyvy/LIuXJVFiaY11XqfNCGufYr3GQRc/ul37GY3p6cJBdBEzTlDOz4beO/MKFyb5OG5n2Fwtce143licZieUarkduiHmeeVAtcTdYWyyNly/YX7X+y+fBFC0PJDkahXH7SjA+ae74fo99QjOZ9msUmDl3hfg52uy7yYuP0iS/jfzCMkO/R479egdZ9ExkY3I+mPm/EILmuJC6zK/2q8uD37GHoi6aMjp88YOkuvrz4HP79XbRVL6Um8x3z4fczOUcN+DEfnUC8xzkPM/nqvBaU5BBJT/Csfm2/zdIncBEZIzJSTYy/1+Jc45TL9FY5xpRPkX2q1sPfq1cbojAU5MrzVXtwb7ouviuL6sLXHjDtULqT2DB38hx5z22qvPgfKSjy0yU74PefdEvlB/t2fBDHfZFXxVWkVcVpZBXDG+bI1FPAjNyqIm5c/RlehOYFY33vt8WdevBn53HDjZnNbCn5XrwvfJgWS6UlX86mJ2+Ff0ITKm5IdCVwBSlfBC7qzxYQznyYNAUCNw5ELhzWuTB27bxcV7nHF/Gm163bRvHMfh5Xp6sp9SequXf2hd9VF59FM0KiSrOOWttrF/mz7ie2vYrpOh8cPUumrURVZZleVndZD217b861QWOPe9ldZP11Lb/EpycD66eB9NB7HxN47gef8foHfJgirrok2MNLbpoeHBVvn8+GDG4Hjnng+HBVyV5Pjh4ixrkwRTF4Hc8OK7H/6I758FHwIOvSuyvyfPBiMEXxtf46PQ6PPja/Ho+GHnwh8vb58H07JxjdZcGjzKMPQ9z0R/n5HwwYnDnwIOvR2mmBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAC+yD/IGphEMaoyMAAAAABJRU5ErkJggg=="}}</script><script>
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>PokeBench replay</title>
+<style>
+:root {--font-panel:"PokeSim Panel","Courier New",monospace}
+:root {--font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+:root {--font-text:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root {--key:inset 1px 1px 0 var(--bevel-hi),inset -1px -1px 0 var(--bevel-lo)}
+:root {--bezel-ink:#8E9A6B}
+[data-theme=dark] {color-scheme:dark}
+[data-theme=dark] {--chassis:#0A0C0A}
+[data-theme=dark] {--panel:#171A18}
+[data-theme=dark] {--panel-2:#20241F}
+[data-theme=dark] {--ink:#DEE1D8}
+[data-theme=dark] {--ink-2:#AEB2A9}
+[data-theme=dark] {--ink-3:#8D9289}
+[data-theme=dark] {--signal:#F0913F}
+[data-theme=dark] {--signal-ink:#0A0C0A}
+[data-theme=dark] {--ok:#72C983}
+[data-theme=dark] {--rule:#6C7169}
+[data-theme=dark] {--rule-faint:#31352F}
+[data-theme=dark] {--cell-off:#2B2F2A}
+[data-theme=dark] {--bevel-hi:rgba(224,232,216,.07)}
+[data-theme=dark] {--bevel-lo:rgba(0,0,0,.75)}
+[data-theme=dark] {--wash:rgba(240,145,63,.14)}
+[data-theme=dark] {--bezel:#000000}
+[data-theme=light] {color-scheme:light}
+[data-theme=light] {--chassis:#CFCCC2}
+[data-theme=light] {--panel:#E7E4DB}
+[data-theme=light] {--panel-2:#DDDAD0}
+[data-theme=light] {--ink:#191C1A}
+[data-theme=light] {--ink-2:#3B3F39}
+[data-theme=light] {--ink-3:#4B4F48}
+[data-theme=light] {--signal:#8A3110}
+[data-theme=light] {--signal-ink:#F5F3EC}
+[data-theme=light] {--ok:#24572F}
+[data-theme=light] {--rule:#6E6B63}
+[data-theme=light] {--rule-faint:#B6B3A9}
+[data-theme=light] {--cell-off:#BFBCB1}
+[data-theme=light] {--bevel-hi:rgba(255,255,255,.6)}
+[data-theme=light] {--bevel-lo:rgba(28,26,20,.16)}
+[data-theme=light] {--wash:rgba(138,49,16,.1)}
+[data-theme=light] {--bezel:#14170F}
+* {box-sizing:border-box}
+[hidden] {display:none!important}
+body {margin:0}
+body {background:var(--chassis)}
+body {color:var(--ink)}
+body {font:15px/1.55 var(--font-text)}
+button,select {font:inherit}
+button,select {color:inherit}
+button,select {border-radius:0}
+button {cursor:pointer}
+button {touch-action:manipulation}
+:focus-visible {outline:2px solid var(--signal)}
+:focus-visible {outline-offset:2px}
+
+.rail {display:flex}
+.rail {align-items:center}
+.rail {gap:6px 16px}
+.rail {min-height:44px}
+.rail {padding:0 16px}
+.rail {background:var(--panel)}
+.rail {border-bottom:1px solid var(--rule)}
+.home {font:16px/1 var(--font-panel)}
+.home {letter-spacing:.1em}
+.home {text-transform:uppercase}
+.home {text-decoration:none}
+.home {color:var(--signal)}
+.crumb {font:12px/1 var(--font-mono)}
+.crumb {color:var(--ink-3)}
+.who {display:flex}
+.who {align-items:baseline}
+.who {gap:10px}
+.who {margin-left:8px}
+.who strong {font-size:15px}
+#model-id,#versions {font:12px/1.3 var(--font-mono)}
+#model-id {color:var(--ink-2)}
+#versions {color:var(--ink-3)}
+#versions {margin-left:auto}
+#theme {margin-left:auto}
+#versions + #theme {margin-left:0}
+.key-btn {height:32px}
+.key-btn {min-width:40px}
+.key-btn {padding:0 12px}
+.key-btn {background:var(--panel-2)}
+.key-btn {border:1px solid var(--rule)}
+.key-btn {box-shadow:var(--key)}
+.key-btn {font-size:13px}
+.key-btn:active {background:var(--chassis)}
+.key-btn:disabled {opacity:.4}
+.key-btn:disabled {cursor:default}
+
+.brief {display:grid}
+.brief {grid-template-columns:minmax(0,1fr) auto}
+.brief {gap:8px 32px}
+.brief {align-items:center}
+.brief {padding:10px 16px}
+.brief {border-bottom:1px solid var(--rule-faint)}
+#goal {margin:0}
+#goal {max-width:92ch}
+#goal {font-size:14px}
+#goal {line-height:1.5}
+#goal {color:var(--ink-2)}
+#goal b {color:var(--ink)}
+#goal b {margin-right:8px}
+.outcome {display:flex}
+.outcome {align-items:center}
+.outcome {gap:16px}
+.outcome div {white-space:nowrap}
+#score {font:32px/1 var(--font-panel)}
+#score {color:var(--signal)}
+#score.word {font-size:24px}
+#score.word {letter-spacing:.06em}
+#score.word {text-transform:uppercase}
+#score-max {font:16px/1 var(--font-panel)}
+#score-max {color:var(--ink-2)}
+#score-max {margin-left:8px}
+.badge-meter {display:flex}
+.badge-meter {gap:3px}
+.badge-meter i {width:10px}
+.badge-meter i {height:18px}
+.badge-meter i {background:var(--cell-off)}
+.badge-meter i.lit {background:var(--signal)}
+#stop {margin:0}
+#stop {font-size:12px}
+#stop {line-height:1.4}
+#stop {color:var(--ink-3)}
+#stop {max-width:24ch}
+
+.work {display:grid}
+.work {grid-template-columns:264px minmax(0,1fr) 384px}
+.work {min-height:0}
+.index {display:grid}
+.index {grid-template-rows:auto minmax(0,1fr)}
+.index {min-height:0}
+.index {background:var(--panel)}
+.index {border-right:1px solid var(--rule-faint)}
+.tabs {display:flex}
+.tabs {border-bottom:1px solid var(--rule-faint)}
+.tabs button {flex:1}
+.tabs button {height:36px}
+.tabs button {background:none}
+.tabs button {border:0}
+.tabs button {font-size:13px}
+.tabs button {color:var(--ink-2)}
+.tabs button[aria-pressed=true] {color:var(--signal)}
+.tabs button[aria-pressed=true] {box-shadow:inset 0 -3px 0 var(--signal)}
+.pane {overflow-y:auto}
+.pane {min-height:0}
+.ms {display:grid}
+.ms {grid-template-columns:12px minmax(0,1fr)}
+.ms {gap:10px}
+.ms {width:100%}
+.ms {padding:8px 12px}
+.ms {text-align:left}
+.ms {background:none}
+.ms {border:0}
+.ms {border-bottom:1px solid var(--rule-faint)}
+.ms {font-size:13px}
+.ms {line-height:1.35}
+.ms i {width:9px}
+.ms i {height:9px}
+.ms i {margin-top:4px}
+.ms i {border:1px solid var(--ink-3)}
+.ms.badge i {height:13px}
+.ms.badge i {border-color:var(--signal)}
+.ms.reached i {background:var(--ok)}
+.ms.reached i {border-color:var(--ok)}
+.ms.badge.reached i {background:var(--signal)}
+.ms.badge.reached i {border-color:var(--signal)}
+.ms small {display:block}
+.ms small {font:11px/1.5 var(--font-mono)}
+.ms small {color:var(--ink-3)}
+.ms[aria-current=true] {background:var(--wash)}
+#rows {position:relative}
+.row {position:absolute}
+.row {left:0}
+.row {right:0}
+.row {height:28px}
+.row {display:grid}
+.row {grid-template-columns:44px 64px minmax(0,1fr)}
+.row {gap:8px}
+.row {align-items:center}
+.row {padding:0 12px}
+.row {background:none}
+.row {border:0}
+.row {text-align:left}
+.row {font:12px/1 var(--font-mono)}
+.row {color:var(--ink-2)}
+.row {white-space:nowrap}
+.row span {overflow:hidden}
+.row span {text-overflow:ellipsis}
+.row .n {color:var(--ink-3)}
+.row.same .do {color:var(--ink-3)}
+.row .flag {color:var(--signal)}
+.row.on {background:var(--wash)}
+.row.on .n {color:var(--signal)}
+.row:hover {background:var(--panel-2)}
+
+.stage {display:flex}
+.stage {flex-direction:column}
+.stage {align-items:center}
+.stage {justify-content:center}
+.stage {gap:8px}
+.stage {padding:12px}
+.stage {min-width:0}
+.stage {min-height:0}
+.bezel {background:var(--bezel)}
+.bezel {padding:10px 10px 0}
+.bezel {box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+#screen,#thumb {display:block}
+#screen,#thumb {image-rendering:pixelated}
+#screen,#thumb {background:#000}
+#screen {width:320px}
+#screen {height:288px}
+.plate {display:flex}
+.plate {justify-content:space-between}
+.plate {align-items:center}
+.plate {gap:16px}
+.plate {height:28px}
+.plate {font:16px/1 var(--font-panel)}
+.plate {letter-spacing:.1em}
+.plate {text-transform:uppercase}
+.plate {color:var(--bezel-ink)}
+.plate {white-space:nowrap}
+.plate {overflow:hidden}
+.status {display:flex}
+.status {flex-wrap:wrap}
+.status {justify-content:center}
+.status {align-items:center}
+.status {gap:4px 20px}
+.status {min-height:22px}
+.status {font:12px/1.4 var(--font-mono)}
+.status {color:var(--ink-2)}
+.status b {font-weight:400}
+.status b {color:var(--ink-3)}
+.status b {margin-right:6px}
+.hp {display:inline-flex}
+.hp {gap:2px}
+.hp {margin:0 6px}
+.hp {vertical-align:-1px}
+.hp i {width:5px}
+.hp i {height:10px}
+.hp i {background:var(--cell-off)}
+.hp i.lit {background:var(--ok)}
+
+.inspect {min-height:0}
+.inspect {overflow-y:auto}
+.inspect {overflow-wrap:anywhere}
+.inspect {padding:16px}
+.inspect {background:var(--panel)}
+.inspect {border-left:1px solid var(--rule-faint)}
+.inspect h2 {margin:0}
+.inspect h2 {font:24px/1 var(--font-panel)}
+.inspect h2 {letter-spacing:.06em}
+.inspect h2 {text-transform:uppercase}
+.inspect h3 {margin:18px 0 6px}
+.inspect h3 {font-size:12px}
+.inspect h3 {font-weight:600}
+.inspect h3 {color:var(--ink-3)}
+.inspect p {margin:0}
+#cost {font:12px/1.5 var(--font-mono)}
+#cost {color:var(--ink-3)}
+#cost {margin-top:6px}
+#command {font-size:17px}
+#command {line-height:1.35}
+#command {margin-bottom:8px}
+.keys {display:flex}
+.keys {flex-wrap:wrap}
+.keys {gap:6px}
+.key {display:inline-flex}
+.key {align-items:center}
+.key {justify-content:center}
+.key {min-width:28px}
+.key {height:28px}
+.key {padding:0 7px}
+.key {background:var(--panel-2)}
+.key {border:1px solid var(--rule)}
+.key {box-shadow:var(--key)}
+.key {font:12px/1 var(--font-mono)}
+.key em {font-style:normal}
+.key em {color:var(--signal)}
+.key em {margin-left:5px}
+.key.idle {border-style:dashed}
+.key.idle {box-shadow:none}
+.key.idle {background:none}
+.key.idle {color:var(--ink-3)}
+.result {display:grid}
+.result {grid-template-columns:auto minmax(0,1fr)}
+.result {gap:12px}
+.result {align-items:start}
+.result button {padding:4px}
+.result button {background:var(--bezel)}
+.result button {border:0}
+#thumb {width:160px}
+#thumb {height:144px}
+#outcome {font-size:14px}
+.tag {display:inline-block}
+.tag {margin-top:6px}
+.tag {padding:1px 6px}
+.tag {border:1px solid currentColor}
+.tag {font:11px/1.5 var(--font-mono)}
+.tag {color:var(--signal)}
+.since {font:11px/1.5 var(--font-mono)}
+.since {color:var(--ink-3)}
+.since.fresh {color:var(--signal)}
+#plan-goal {font-size:15px}
+.plan-more {font-size:13px}
+.plan-more {color:var(--ink-2)}
+.plan-more {margin-top:4px}
+.plan-more b {font-weight:600}
+.plan-more b {color:var(--ink-3)}
+#notes {white-space:pre-wrap}
+#notes {font-size:14px}
+#notes {color:var(--ink-2)}
+#no-notes {font-size:13px}
+#no-notes {color:var(--ink-3)}
+#no-notes {margin-top:18px}
+
+.transport {background:var(--panel)}
+.transport {border-top:1px solid var(--rule)}
+.transport {padding:8px 16px 10px}
+.track {position:relative}
+.track {height:38px}
+.mark {position:absolute}
+.mark {top:3px}
+.mark {width:9px}
+.mark {height:9px}
+.mark {margin-left:-3px}
+.mark {padding:0}
+.mark {background:var(--chassis)}
+.mark {border:1px solid var(--ink-3)}
+.mark.badge {top:0}
+.mark.badge {height:13px}
+.mark.badge {border-color:var(--signal)}
+.mark.reached {background:var(--ok)}
+.mark.reached {border-color:var(--ok)}
+.mark.badge.reached {background:var(--signal)}
+.mark.badge.reached {border-color:var(--signal)}
+#cells {position:absolute}
+#cells {left:0}
+#cells {top:18px}
+#cells {width:100%}
+#cells {height:20px}
+#seek {position:absolute}
+#seek {left:0}
+#seek {top:16px}
+#seek {width:100%}
+#seek {height:24px}
+#seek {margin:0}
+#seek {opacity:0}
+#seek {cursor:pointer}
+.track:focus-within #cells {outline:2px solid var(--signal)}
+.track:focus-within #cells {outline-offset:2px}
+.controls {display:flex}
+.controls {align-items:center}
+.controls {gap:8px}
+.controls {margin-top:8px}
+.controls .key-btn {height:36px}
+#play {min-width:88px}
+#play {background:var(--signal)}
+#play {border-color:var(--signal)}
+#play {color:var(--signal-ink)}
+#play {font-weight:600}
+#speed {margin-left:8px}
+#position {font:16px/1 var(--font-panel)}
+#position {letter-spacing:.1em}
+#position {margin-left:16px}
+#position {white-space:nowrap}
+#spent {font:12px/1 var(--font-mono)}
+#spent {color:var(--ink-2)}
+#spent {white-space:nowrap}
+.hint {margin-left:auto}
+.hint {font:11px/1 var(--font-mono)}
+.hint {color:var(--ink-3)}
+.hint {white-space:nowrap}
+
+@media (min-width:821px) {
+body {height:100dvh}
+body {display:grid}
+body {grid-template-rows:auto auto minmax(0,1fr) auto}
+body {overflow:hidden}
+}
+@media (max-width:1180px) and (min-width:821px) {
+.work {grid-template-columns:216px minmax(0,1fr) 320px}
+.hint,#versions {display:none}
+}
+@media (max-width:820px) {
+.rail {flex-wrap:wrap}
+.rail {padding:8px 16px}
+.who {margin-left:0}
+.crumb {display:none}
+#theme {margin-left:auto}
+#versions + #theme {margin-left:auto}
+#versions {order:5}
+#versions {width:100%}
+#versions {margin-left:0}
+.brief {grid-template-columns:minmax(0,1fr)}
+.outcome {order:-1}
+.outcome {flex-wrap:wrap}
+.outcome {gap:6px 16px}
+#stop {max-width:none}
+#stop {width:100%}
+#goal {display:-webkit-box}
+#goal {-webkit-box-orient:vertical}
+#goal {-webkit-line-clamp:2}
+#goal {overflow:hidden}
+#goal.open {display:block}
+.work {display:flex}
+.work {flex-direction:column}
+.stage {padding:12px 16px}
+.inspect {border-left:0}
+.inspect {border-top:1px solid var(--rule-faint)}
+.inspect {overflow:visible}
+.index {order:3}
+.index {border-right:0}
+.index {border-top:1px solid var(--rule)}
+.pane {height:336px}
+#thumb {width:120px}
+#thumb {height:108px}
+.transport {position:sticky}
+.transport {bottom:0}
+.transport {padding:6px 16px 10px}
+.controls {flex-wrap:wrap}
+.controls .key-btn {height:44px}
+.controls .key-btn {flex:1}
+#speed {margin-left:0}
+#position {margin-left:0}
+#position,#spent {order:-1}
+#spent {margin-left:auto}
+.controls .wide {display:none}
+.hint {display:none}
+}
+@media (prefers-reduced-motion:no-preference) {
+.key-btn,.row,.ms {transition:background-color 80ms linear}
+}
+</style>
+</head>
+<body>
+<header class="rail">
+<a class="home" href="../index.html">PokeBench</a><span class="crumb">/ replay</span>
+<div class="who"><strong id="label"></strong><span id="model-id"></span></div>
+<span id="versions"></span>
+<button id="theme" class="key-btn" type="button"></button>
+</header>
+<section class="brief" aria-label="Task and result">
+<p id="goal"></p>
+<div class="outcome"><div><span id="score"></span><span id="score-max"></span></div><div id="badge-meter" class="badge-meter" hidden></div><p id="stop"></p></div>
+</section>
+<div class="work">
+<nav class="index" aria-label="Jump through the run">
+<div class="tabs"><button id="tab-ms" type="button" aria-pressed="true">Milestones</button><button id="tab-all" type="button" aria-pressed="false">Every decision</button></div>
+<div id="pane-ms" class="pane"></div>
+<div id="pane-all" class="pane" hidden><div id="rows"></div></div>
+</nav>
+<section class="stage" id="stage" aria-label="Game screen the model saw">
+<div class="bezel"><canvas id="screen" role="img" aria-label="Game screen at the start of this decision" width="160" height="144"></canvas><div class="plate"><span id="plate-decision"></span><span id="plate-place"></span></div></div>
+<div class="status" id="status"></div>
+</section>
+<aside class="inspect" aria-label="What the model did">
+<h2 id="heading"></h2>
+<p id="cost"></p>
+<h3 id="did-title">Command</h3>
+<p id="command"></p>
+<div id="keys" class="keys"></div>
+<h3>Result</h3>
+<div class="result"><button id="thumb-btn" type="button" title="Go to the next decision"><canvas id="thumb" role="img" aria-label="Game screen after the input ran" width="160" height="144"></canvas></button><div><p id="outcome"></p><span id="same" class="tag" hidden>Screen did not change</span><span id="reached" class="tag" hidden></span></div></div>
+<div id="plan-box"><h3>Model's plan <span id="plan-since" class="since"></span></h3><p id="plan-goal"></p><p class="plan-more"><b>Done when</b> <span id="plan-done"></span></p><p class="plan-more"><b>Why</b> <span id="plan-why"></span></p></div>
+<div id="notes-box"><h3>Model's notes <span id="notes-since" class="since"></span></h3><p id="notes"></p></div>
+<p id="no-notes" hidden>This replay carries game screens, controller input and what the harness reported. The model's plan and notes are not included.</p>
+</aside>
+</div>
+<footer class="transport" aria-label="Playback">
+<div class="track"><div id="marks"></div><canvas id="cells" aria-hidden="true"></canvas><input id="seek" type="range" min="0" value="0" step="1" aria-label="Decision"></div>
+<div class="controls">
+<button id="ms-prev" class="key-btn wide" type="button" aria-label="Previous milestone" title="Previous milestone ( [ )">◀◀</button>
+<button id="prev" class="key-btn" type="button" aria-label="Previous decision" title="Previous decision (Left arrow)">◀</button>
+<button id="play" class="key-btn" type="button">Play</button>
+<button id="next" class="key-btn" type="button" aria-label="Next decision" title="Next decision (Right arrow)">▶</button>
+<button id="ms-next" class="key-btn wide" type="button" aria-label="Next milestone" title="Next milestone ( ] )">▶▶</button>
+<select id="speed" class="key-btn" aria-label="Playback speed"><option value="2">2 per second</option><option value="4">4 per second</option><option value="8" selected>8 per second</option><option value="16">16 per second</option></select>
+<span id="position"></span><span id="spent"></span>
+<span class="hint" id="hint"></span>
+</div>
+</footer>
+<script id="face" type="text/plain">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</script>
+<script id="data" type="application/json">{"format": 2, "model": "claude-haiku-5-5", "completed": false, "action_policy": "assisted-gameplay-v1", "benchmark": "unrecorded", "meta": {"goal": "Reach the tile directly south of Sabrina in Saffron Gym. Do not start her battle.", "stop_reason": "invalid_model_response"}, "places": ["Saffron Gym"], "outcomes": ["Moved 1 tiles.", "Moved 2 tiles.", "Inspection available in next observation. No frames advanced."], "steps": {"decision": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35], "before_frame": [0, 24, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72], "after_frame": [24, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72, 72], "tokens": [16242, 8108, 10239, 11885, 13507, 8255, 9826, 23023, 8169, 9782, 11443, 13101, 8188, 9778, 11390, 13029, 8227, 9914, 11506, 12960, 8206, 9808, 11380, 12845, 8241, 9811, 11381, 12933, 8236, 9636, 11241, 26717, 9027, 11435, 13923], "screen": [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2], "actions": [[["up", 8, 16, 1]], [["right", 8, 16, 2]], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []], "place": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "outcome": [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, -1], "start": 0, "breaks": {}}, "frames": {"width": 160, "height": 144, "columns": 16, "per_sheet": 256, "count": 3, "sheets": ["data:image/png;base64,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"]}}</script>
+<script>
 const data = JSON.parse(document.getElementById('data').textContent)
 const $ = id => document.getElementById(id)
-let index = 0
+
+// Format 2 packs screens into sprite sheets and steps into columns.
+// Replays published before it carry one image per screen and one object per step.
+function unpack() {
+  if (data.format !== 2) {
+    const lone = key => ({src: data.images[key], x: 0, y: 0})
+    return data.steps.map(s => ({...s, before: lone(s.before), after: lone(s.after), same: s.before === s.after}))
+  }
+  const f = data.frames
+  const c = data.steps
+  const ref = n => {
+    const slot = n % f.per_sheet
+    return {src: f.sheets[Math.floor(n / f.per_sheet)], x: slot % f.columns * f.width,
+      y: Math.floor(slot / f.columns) * f.height, w: f.width, h: f.height}
+  }
+  const pick = (list, column, i) => column && column[i] >= 0 ? list[column[i]] : undefined
+  const changed = (column, i) => Boolean(column) && column[i] >= 0 && (i === 0 || column[i] !== column[i - 1])
+  let total = 0
+  let previous = c.start
+  return c.decision.map((decision, i) => {
+    const before = c.breaks[i] === undefined ? previous : c.breaks[i]
+    previous = c.screen[i]
+    total += c.tokens[i]
+    return {decision, tokens: c.tokens[i], cumulative_tokens: c.cumulative ? c.cumulative[i] : total,
+      before_frame: c.before_frame[i], after_frame: c.after_frame[i],
+      before: ref(before), after: ref(previous), same: before === previous,
+      actions: c.actions[i].flatMap(([button, hold_frames, release_frames, times]) =>
+        Array.from({length: times}, () => ({button, hold_frames, release_frames}))),
+      location: pick(data.places, c.place, i), outcome: pick(data.outcomes, c.outcome, i),
+      commands: c.commands ? c.commands[i] : undefined, seconds: c.seconds ? c.seconds[i] : undefined,
+      plan: c.plan ? c.plan[i] : -1, plan_changed: changed(c.plan, i),
+      note: c.note ? c.note[i] : -1, note_changed: changed(c.note, i)}
+  })
+}
+
+const steps = unpack()
+const meta = data.meta || {}
+const last = steps.length - 1
+const rich = Boolean(data.plans || data.notes)
+const milestones = (meta.milestones || []).map(m => ({...m, at: Math.max(0, steps.findIndex(s => s.decision >= m.decision))}))
+const flagged = new Map(milestones.map(m => [m.at, m]))
+const GLYPH = {up: '▲', down: '▼', left: '◀', right: '▶', a: 'A', b: 'B', start: 'START', select: 'SELECT'}
+const ROW = 28
+const pictures = new Map()
+let W = 160
+let H = 144
+let cursor = 0
 let timer = null
-$('title').textContent = data.model+' · '+(data.completed ? 'Passed' : 'Failed')+' · '+(data.action_policy === 'manual-menu-v1' ? 'Manual menus' : 'Assisted gameplay')
-$('seek').max = data.steps.length-1
+let cellCount = 1
+let hashTimer = null
+
+const count = n => Number(n || 0).toLocaleString('en-US')
+const millions = n => (n / 1e6).toFixed(2) + 'M'
+const words = value => String(value).replaceAll('_', ' ')
+function el(tag, cls, text) {
+  const node = document.createElement(tag)
+  if (cls) node.className = cls
+  if (text !== undefined) node.textContent = text
+  return node
+}
+function picture(src) {
+  let pending = pictures.get(src)
+  if (!pending) {
+    pending = new Promise(done => {
+      const image = new Image()
+      image.onload = () => done(image)
+      image.src = src
+    })
+    pictures.set(src, pending)
+    if (pictures.size > 6) pictures.delete(pictures.keys().next().value)
+  }
+  return pending
+}
+function paint(canvas, ref) {
+  canvas.wanted = ref
+  picture(ref.src).then(image => {
+    if (canvas.wanted !== ref) return
+    const w = ref.w || image.naturalWidth
+    const h = ref.h || image.naturalHeight
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w
+      canvas.height = h
+    }
+    canvas.getContext('2d').drawImage(image, ref.x, ref.y, w, h, 0, 0, w, h)
+    if (canvas.id !== 'screen' || (w === W && h === H)) return
+    W = w
+    H = h
+    fit()
+  })
+}
+function presses(actions) {
+  const groups = []
+  let wait = 0
+  for (const a of actions) {
+    if (!a.button) {
+      wait += a.hold_frames + a.release_frames
+      continue
+    }
+    const g = groups[groups.length - 1]
+    if (g && g.button === a.button) g.count += 1
+    else groups.push({button: a.button, count: 1})
+  }
+  return {groups, wait}
+}
+function short(step) {
+  const p = presses(step.actions)
+  if (!p.groups.length) return step.actions.length ? 'wait' : 'none'
+  const g = p.groups[0]
+  return GLYPH[g.button] + (g.count > 1 ? ' ×' + g.count : '') + (p.groups.length > 1 ? ' …' : '')
+}
+function sentence(c) {
+  const verb = words(c.command || '')
+  const what = c.argument === undefined || c.argument === null ? '' : ' ' + c.argument
+  return verb.charAt(0).toUpperCase() + verb.slice(1) + what + (c.count > 1 ? ' ×' + c.count : '')
+}
+function cellMeter(lit, total, cls) {
+  const box = el('span', cls)
+  Array.from({length: total}).forEach((_, k) => box.append(el('i', k < lit ? 'lit' : '')))
+  return box
+}
+
+function fit() {
+  const stage = $('stage')
+  const phone = matchMedia('(max-width:820px)').matches
+  const wide = (stage.clientWidth - 24 - 20) / W
+  const tall = phone ? wide : (stage.clientHeight - 24 - 10 - 28 - 8 - 22) / H
+  const scale = Math.max(1, Math.floor(Math.min(wide, tall)))
+  $('screen').style.width = W * scale + 'px'
+  $('screen').style.height = H * scale + 'px'
+  const canvas = $('cells')
+  const ratio = window.devicePixelRatio || 1
+  canvas.width = canvas.clientWidth * ratio
+  canvas.height = canvas.clientHeight * ratio
+  cellCount = Math.max(2, Math.floor((canvas.clientWidth + 1) / 4))
+  const span = (cellCount - 1) * 4
+  for (const mark of $('marks').children) mark.style.left = Math.round(Number(mark.dataset.at) / Math.max(1, last) * span) + 'px'
+  drawCells()
+  drawRows()
+}
+function drawCells() {
+  const canvas = $('cells')
+  const ratio = window.devicePixelRatio || 1
+  const g = canvas.getContext('2d')
+  const css = getComputedStyle(document.documentElement)
+  const lit = Math.round(cursor / Math.max(1, last) * (cellCount - 1))
+  g.setTransform(ratio, 0, 0, ratio, 0, 0)
+  g.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight)
+  Array.from({length: cellCount}).forEach((_, k) => {
+    g.fillStyle = css.getPropertyValue(k < lit ? '--signal' : k === lit ? '--ink' : '--cell-off')
+    g.fillRect(k * 4, 0, 3, canvas.clientHeight)
+  })
+}
+function drawRows() {
+  const pane = $('pane-all')
+  if (pane.hidden) return
+  const first = Math.max(0, Math.floor(pane.scrollTop / ROW) - 4)
+  const shown = steps.slice(first, first + Math.ceil(pane.clientHeight / ROW) + 8)
+  $('rows').replaceChildren(...shown.map((s, k) => {
+    const at = first + k
+    const flag = flagged.get(at)
+    const row = el('button', 'row' + (at === cursor ? ' on' : '') + (s.same ? ' same' : ''))
+    row.type = 'button'
+    row.style.top = at * ROW + 'px'
+    row.append(el('span', 'n', String(s.decision)), el('span', 'do', short(s)),
+      el('span', flag ? 'flag' : '', flag ? flag.label : s.location || ''))
+    row.onclick = () => seek(at)
+    return row
+  }))
+}
+function reveal() {
+  const pane = $('pane-all')
+  if (pane.hidden) return
+  const top = cursor * ROW
+  if (top < pane.scrollTop || top + ROW > pane.scrollTop + pane.clientHeight) pane.scrollTop = top - pane.clientHeight / 2
+}
+
 function render() {
- const step = data.steps[index]
- $('before').src = data.images[step.before]
- $('after').src = data.images[step.after]
- $('position').textContent = 'Decision '+step.decision+' · '+(index+1)+' / '+data.steps.length+' · '+step.cumulative_tokens.toLocaleString()+' cumulative tokens'
- $('actions').textContent = step.actions.map(a=>(a.button || 'wait')+' · hold '+a.hold_frames+' frames · release '+a.release_frames+' frames').join('\n') || 'No controller input'
- $('seek').value = index
- $('prev').disabled = index===0
- $('next').disabled = index===data.steps.length-1
+  const s = steps[cursor]
+  paint($('screen'), s.before)
+  paint($('thumb'), s.after)
+  $('plate-decision').textContent = 'Decision ' + s.decision
+  $('plate-place').textContent = s.location || ''
+  $('heading').textContent = 'Decision ' + s.decision
+  $('cost').textContent = count(s.tokens) + ' tokens' + (s.seconds ? ', ' + s.seconds.toFixed(1) + ' s model time' : '')
+
+  const commands = s.commands || []
+  $('did-title').textContent = commands.length ? 'Command' : 'Controller input'
+  $('command').hidden = !commands.length
+  $('command').textContent = commands.map(sentence).join(', then ')
+  const p = presses(s.actions)
+  $('keys').replaceChildren(...p.groups.map(g => {
+    const key = el('span', 'key', GLYPH[g.button])
+    if (g.count > 1) key.append(el('em', '', '×' + g.count))
+    return key
+  }))
+  if (p.wait) $('keys').append(el('span', 'key idle', 'wait ' + p.wait + ' frames'))
+  if (!s.actions.length) $('keys').append(el('span', 'key idle', 'no controller input'))
+
+  $('outcome').textContent = s.outcome || (cursor === last ? 'Last recorded decision.' : 'Screen after the input ran.')
+  $('same').hidden = !s.same
+  const flag = flagged.get(cursor)
+  $('reached').hidden = !flag
+  if (flag) $('reached').textContent = flag.label + ', +' + flag.points + ' points'
+
+  $('status').replaceChildren()
+  if (s.lead && s.lead.name) {
+    const lead = el('span')
+    lead.append(el('b', '', 'Lead'), s.lead.name + ' L' + s.lead.level,
+      cellMeter(Math.ceil(10 * s.lead.hp / Math.max(1, s.lead.max_hp)), 10, 'hp'), s.lead.hp + '/' + s.lead.max_hp + ' HP')
+    $('status').append(lead)
+  }
+  $('status').hidden = !$('status').children.length
+
+  const plan = rich && s.plan >= 0 ? data.plans[s.plan] : null
+  const note = rich && s.note >= 0 ? data.notes[s.note] : null
+  $('plan-box').hidden = !plan
+  $('notes-box').hidden = !note
+  $('no-notes').hidden = rich
+  if (plan) {
+    $('plan-goal').textContent = plan.goal
+    $('plan-done').textContent = plan.done_when
+    $('plan-why').textContent = plan.revision_reason
+    $('plan-since').textContent = s.plan_changed ? 'revised at this decision' : 'since decision ' + plan.decision
+    $('plan-since').classList.toggle('fresh', Boolean(s.plan_changed))
+  }
+  if (note) {
+    $('notes').textContent = note.text
+    $('notes-since').textContent = s.note_changed ? 'rewritten at this decision' : 'since decision ' + note.decision
+    $('notes-since').classList.toggle('fresh', Boolean(s.note_changed))
+  }
+
+  $('seek').value = cursor
+  $('position').textContent = s.decision + ' / ' + steps[last].decision
+  $('spent').textContent = millions(s.cumulative_tokens) + ' of ' + millions(steps[last].cumulative_tokens) + ' tokens'
+  $('prev').disabled = cursor === 0
+  $('next').disabled = cursor === last
+  $('ms-prev').disabled = !milestones.some(m => m.at < cursor)
+  $('ms-next').disabled = !milestones.some(m => m.at > cursor)
+  const current = milestones.filter(m => m.at <= cursor).pop()
+  const lists = [$('pane-ms').children, $('marks').children]
+  milestones.forEach((m, k) => {
+    for (const list of lists) list[k].classList.toggle('reached', m.at <= cursor)
+    lists[0][k].setAttribute('aria-current', String(m === current))
+  })
+  drawCells()
+  reveal()
+  drawRows()
+  if (hashTimer === null) hashTimer = setTimeout(() => {
+    hashTimer = null
+    history.replaceState(null, '', '#d=' + steps[cursor].decision)
+  }, 400)
 }
-function stop() {clearInterval(timer)
- timer=null
- $('play').textContent='Play'
+function go(index) {
+  cursor = Math.max(0, Math.min(last, index))
+  render()
 }
-function play() {stop()
- if(index===data.steps.length-1) index=0
- $('play').textContent='Pause'
- timer=setInterval(()=>{if(index<data.steps.length-1) {index+=1
- render()
- } else stop()},Number($('speed').value))
+function stop() {
+  clearInterval(timer)
+  timer = null
+  $('play').textContent = cursor === last && last > 0 ? 'Replay' : 'Play'
 }
-$('prev').onclick=()=>{index=Math.max(0,index-1)
- render()}
-$('next').onclick=()=>{index=Math.min(data.steps.length-1,index+1)
- render()}
-$('play').onclick=()=>timer ? stop() : play()
-$('speed').onchange=()=>{if(timer) play()}
-$('seek').oninput=()=>{index=Number($('seek').value)
- render()}
-document.onkeydown=e=>{if(e.key==='ArrowRight') $('next').click()
- if(e.key==='ArrowLeft') $('prev').click()}
+function seek(index) {
+  stop()
+  go(index)
+  stop()
+}
+function play() {
+  if (timer) return stop()
+  if (cursor === last) go(0)
+  $('play').textContent = 'Pause'
+  timer = setInterval(() => {
+    go(cursor + 1)
+    if (cursor === last) stop()
+  }, 1000 / Number($('speed').value))
+}
+function milestone(direction) {
+  const target = direction > 0 ? milestones.find(m => m.at > cursor) : milestones.filter(m => m.at < cursor).pop()
+  if (target) seek(target.at)
+}
+function showTab(all) {
+  $('pane-all').hidden = !all
+  $('pane-ms').hidden = all
+  $('tab-all').setAttribute('aria-pressed', String(all))
+  $('tab-ms').setAttribute('aria-pressed', String(!all))
+  reveal()
+  drawRows()
+}
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme
+  $('theme').textContent = theme === 'dark' ? 'Light' : 'Dark'
+  $('theme').setAttribute('aria-label', 'Switch to the ' + (theme === 'dark' ? 'light' : 'dark') + ' theme')
+  drawCells()
+}
+
+$('label').textContent = meta.label || data.model
+$('model-id').textContent = meta.label ? data.model : ''
+document.title = (meta.label || data.model) + ' replay | PokeBench'
+const harness = meta.harness || {}
+const versions = [...new Set([harness.name, harness.package && 'harness ' + harness.package,
+  harness.benchmark || (data.benchmark !== 'unrecorded' && data.benchmark),
+  harness.core && 'core ' + harness.core, harness.emulator].filter(Boolean))]
+$('versions').textContent = versions.join('  /  ')
+if (!versions.length) $('versions').remove()
+const policy = data.action_policy === 'manual-menu-v1' ? 'Manual menus.' : 'Assisted gameplay.'
+if (meta.goal) {
+  $('goal').append(el('b', '', 'Goal'), meta.goal)
+  $('goal').onclick = () => $('goal').classList.toggle('open')
+} else {
+  $('goal').textContent = policy + ' ' + count(steps.length) + ' recorded decisions.'
+}
+const scored = typeof meta.score === 'number'
+$('score').textContent = scored ? meta.score : data.completed ? 'Completed' : 'Not completed'
+$('score').classList.toggle('word', !scored)
+if (scored && meta.maximum) $('score-max').textContent = '/ ' + meta.maximum + ' pts'
+if (typeof meta.badges === 'number') {
+  $('badge-meter').replaceWith(Object.assign(cellMeter(meta.badges, 8, 'badge-meter'), {title: meta.badges + ' of 8 badges'}))
+}
+$('stop').textContent = [typeof meta.badges === 'number' && meta.badges + ' of 8 badges.',
+  meta.stop_reason && 'Stopped at ' + count(meta.decisions || steps[last].decision) + ' decisions: ' + words(meta.stop_reason) + '.']
+  .filter(Boolean).join(' ')
+if (milestones.length) {
+  milestones.forEach(m => {
+    const badge = String(m.id).startsWith('badge:') ? ' badge' : ''
+    const item = el('button', 'ms' + badge)
+    item.type = 'button'
+    const text = el('span', '', m.label)
+    text.append(el('small', '', 'Decision ' + count(m.decision) + ', +' + m.points + ' points'))
+    item.append(el('i'), text)
+    item.onclick = () => seek(m.at)
+    $('pane-ms').append(item)
+    const mark = el('button', 'mark' + badge)
+    mark.type = 'button'
+    mark.title = m.label + ' (decision ' + m.decision + ')'
+    mark.setAttribute('aria-label', mark.title)
+    mark.dataset.at = m.at
+    mark.onclick = () => seek(m.at)
+    $('marks').append(mark)
+  })
+} else {
+  $('tab-ms').hidden = true
+  $('ms-prev').hidden = true
+  $('ms-next').hidden = true
+  showTab(true)
+}
+$('hint').textContent = 'Arrows step, Shift for 10, Space plays' + (milestones.length ? ', [ ] milestones' : '')
+$('rows').style.height = steps.length * ROW + 'px'
+$('seek').max = last
+$('seek').oninput = event => seek(Number(event.target.value))
+$('pane-all').onscroll = drawRows
+$('tab-ms').onclick = () => showTab(false)
+$('tab-all').onclick = () => showTab(true)
+$('prev').onclick = () => seek(cursor - 1)
+$('next').onclick = () => seek(cursor + 1)
+$('thumb-btn').onclick = () => seek(cursor + 1)
+$('ms-prev').onclick = () => milestone(-1)
+$('ms-next').onclick = () => milestone(1)
+$('play').onclick = play
+$('speed').onchange = () => {
+  if (!timer) return
+  stop()
+  play()
+}
+$('theme').onclick = () => {
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+  setTheme(theme)
+  try { localStorage.setItem('pokebench-theme', theme) } catch (error) {}
+}
+document.addEventListener('keydown', event => {
+  if (event.target.tagName === 'SELECT' || event.metaKey || event.ctrlKey || event.altKey) return
+  const moves = {ArrowRight: () => seek(cursor + (event.shiftKey ? 10 : 1)), ArrowLeft: () => seek(cursor - (event.shiftKey ? 10 : 1)),
+    Home: () => seek(0), End: () => seek(last), BracketLeft: () => milestone(-1), BracketRight: () => milestone(1), Space: play}
+  const move = moves[event.code]
+  if (!move || (event.code === 'Space' && event.target.tagName === 'BUTTON')) return
+  event.preventDefault()
+  move()
+})
+window.addEventListener('resize', fit)
+
+let saved = null
+try { saved = localStorage.getItem('pokebench-theme') } catch (error) {}
+const wanted = new URLSearchParams(location.hash.slice(1))
+setTheme(wanted.get('theme') === 'light' || (!wanted.get('theme') && saved === 'light') ? 'light' : 'dark')
+if (wanted.get('tab') === 'all') showTab(true)
+cursor = Math.max(0, steps.findIndex(s => s.decision >= Number(wanted.get('d') || 0)))
+const face = new FontFace('PokeSim Panel', Uint8Array.from(atob($('face').textContent.trim()), c => c.charCodeAt(0)).buffer)
+face.load().then(loaded => document.fonts.add(loaded)).catch(() => {})
+fit()
 render()
-</script></html>
+stop()
+</script>
+</body>
+</html>

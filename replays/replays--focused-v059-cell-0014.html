@@ -1,43 +1,887 @@
-<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PokeBench replay</title>
-<style>body {margin:0} body {background:#111b17} body {color:#edf3ef} body {font:16px/1.5 system-ui} main {max-width:1000px} main {margin:auto} main {padding:20px} a {color:#91d8b4} .screens {display:flex} .screens {gap:20px} .screens img {width:100%} .screens img {image-rendering:pixelated} .screens figure {flex:1} .screens figure {margin:0} .controls {position:sticky} .controls {top:0} .controls {background:#111b17} .controls {padding:16px 0} button,select {padding:12px} button,select {font:inherit} #seek {width:100%} pre {white-space:pre-wrap} #actions {height:130px} #actions {overflow:auto}</style>
-<main><a href="../index.html">PokeBench</a><h1 id="title"></h1><p>Recorded controller replay. No private notes or provider transcripts. Before and after each decision.</p><div class="controls"><button id="prev">Previous</button> <button id="play">Play</button> <button id="next">Next</button> <label>Speed <select id="speed"><option value="500">2 decisions / sec</option><option value="125" selected>8 decisions / sec</option><option value="50">20 decisions / sec</option></select></label><input id="seek" type="range" min="0" value="0" aria-label="Decision"><div id="position"></div></div><div class="screens"><figure><figcaption>Before</figcaption><img id="before" alt="Before action"></figure><figure><figcaption>After</figcaption><img id="after" alt="After action"></figure></div><pre id="actions"></pre></main>
-<script id="data" type="application/json">{"model": "gpt-5.6-terra", "completed": false, "action_policy": "assisted-gameplay-v1", "benchmark": "unrecorded", "steps": [{"decision": 1, "before_frame": 0, "after_frame": 24, "tokens": 7447, "cumulative_tokens": 7447, "before": "590341a0621652aa887f915e0efc5287d8249f4382a60065c4415aad1d734456", "after": "9c65726c4f2b269eb20b915be74117a65001f67fe9782a572f5851a53a101bdd", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 2, "before_frame": 24, "after_frame": 48, "tokens": 8565, "cumulative_tokens": 16012, "before": "9c65726c4f2b269eb20b915be74117a65001f67fe9782a572f5851a53a101bdd", "after": "6b042edc65db1a2aa7e3c1662288690f3e7463c52b0a883bb97c067921eb8aa6", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 3, "before_frame": 48, "after_frame": 96, "tokens": 9719, "cumulative_tokens": 25731, "before": "6b042edc65db1a2aa7e3c1662288690f3e7463c52b0a883bb97c067921eb8aa6", "after": "b0406e18a081e18e148f0e856e9a2adfe366037571a8043161b3c3421928a880", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}, {"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 4, "before_frame": 96, "after_frame": 120, "tokens": 10682, "cumulative_tokens": 36413, "before": "b0406e18a081e18e148f0e856e9a2adfe366037571a8043161b3c3421928a880", "after": "9bc3c42afc638fdafbd34cea151ee83c9c68a10b24ce1837aa9a5d3d34b0a331", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 5, "before_frame": 120, "after_frame": 144, "tokens": 11618, "cumulative_tokens": 48031, "before": "9bc3c42afc638fdafbd34cea151ee83c9c68a10b24ce1837aa9a5d3d34b0a331", "after": "00f5e40a3a3994be42f01e6ef53da25209c1966562891be0932f95e7444217b7", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 6, "before_frame": 144, "after_frame": 264, "tokens": 12744, "cumulative_tokens": 60775, "before": "00f5e40a3a3994be42f01e6ef53da25209c1966562891be0932f95e7444217b7", "after": "1d1f2fb50f0280c800f22aaeecf6181be27edf96419ecea96311203a46b4332a", "actions": [{"button": "a", "hold_frames": 8, "release_frames": 24}, {"button": null, "hold_frames": 60, "release_frames": 0}, {"button": null, "hold_frames": 28, "release_frames": 0}]}, {"decision": 7, "before_frame": 264, "after_frame": 264, "tokens": 15817, "cumulative_tokens": 76592, "before": "1d1f2fb50f0280c800f22aaeecf6181be27edf96419ecea96311203a46b4332a", "after": "1d1f2fb50f0280c800f22aaeecf6181be27edf96419ecea96311203a46b4332a", "actions": []}, {"decision": 8, "before_frame": 264, "after_frame": 288, "tokens": 9881, "cumulative_tokens": 86473, "before": "1d1f2fb50f0280c800f22aaeecf6181be27edf96419ecea96311203a46b4332a", "after": "cafe6218e9e31ea2a62b77a92db3c035fa4a78f635247714067fe86234441cf1", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 9, "before_frame": 288, "after_frame": 312, "tokens": 10808, "cumulative_tokens": 97281, "before": "cafe6218e9e31ea2a62b77a92db3c035fa4a78f635247714067fe86234441cf1", "after": "5c792ede7cc7882dce2b16d93776f1d9092727ab246b4aa23f7b4540bb724b16", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 10, "before_frame": 312, "after_frame": 432, "tokens": 11784, "cumulative_tokens": 109065, "before": "5c792ede7cc7882dce2b16d93776f1d9092727ab246b4aa23f7b4540bb724b16", "after": "c7b896f28d683bd03d18f451fa45443eca399b929342bf2d3942eeda5c1985d7", "actions": [{"button": "a", "hold_frames": 8, "release_frames": 24}, {"button": null, "hold_frames": 60, "release_frames": 0}, {"button": null, "hold_frames": 28, "release_frames": 0}]}, {"decision": 11, "before_frame": 432, "after_frame": 504, "tokens": 12818, "cumulative_tokens": 121883, "before": "c7b896f28d683bd03d18f451fa45443eca399b929342bf2d3942eeda5c1985d7", "after": "c6457f9ba8bb07f0d8904dea4fef0286f94fb380405e62f2dc677a4312f20ebc", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}, {"button": "up", "hold_frames": 8, "release_frames": 16}, {"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 12, "before_frame": 504, "after_frame": 552, "tokens": 16715, "cumulative_tokens": 138598, "before": "c6457f9ba8bb07f0d8904dea4fef0286f94fb380405e62f2dc677a4312f20ebc", "after": "6cf217ff6c14194157f9bb1bbc9b99859862f16fe111073cda3650bf7cc5944e", "actions": [{"button": "down", "hold_frames": 8, "release_frames": 16}, {"button": "down", "hold_frames": 8, "release_frames": 16}]}, {"decision": 13, "before_frame": 552, "after_frame": 672, "tokens": 9458, "cumulative_tokens": 148056, "before": "6cf217ff6c14194157f9bb1bbc9b99859862f16fe111073cda3650bf7cc5944e", "after": "17a591702c25f0fee90407e7209fa5a71ee52333f373f0906cf8de1b6fd0ea21", "actions": [{"button": "a", "hold_frames": 8, "release_frames": 24}, {"button": null, "hold_frames": 60, "release_frames": 0}, {"button": null, "hold_frames": 28, "release_frames": 0}]}, {"decision": 14, "before_frame": 672, "after_frame": 768, "tokens": 10432, "cumulative_tokens": 158488, "before": "17a591702c25f0fee90407e7209fa5a71ee52333f373f0906cf8de1b6fd0ea21", "after": "e237f2f03a6426db849e8aa83f45d332341cb7284c590273b5a8033b00198641", "actions": [{"button": "left", "hold_frames": 8, "release_frames": 16}, {"button": "left", "hold_frames": 8, "release_frames": 16}, {"button": "left", "hold_frames": 8, "release_frames": 16}, {"button": "left", "hold_frames": 8, "release_frames": 16}]}, {"decision": 15, "before_frame": 768, "after_frame": 888, "tokens": 11423, "cumulative_tokens": 169911, "before": "e237f2f03a6426db849e8aa83f45d332341cb7284c590273b5a8033b00198641", "after": "8bce47a63dc5108e2237800b4cd64dced8e8885139de656259faf15477e34b56", "actions": [{"button": "a", "hold_frames": 8, "release_frames": 24}, {"button": null, "hold_frames": 60, "release_frames": 0}, {"button": null, "hold_frames": 28, "release_frames": 0}]}, {"decision": 16, "before_frame": 888, "after_frame": 984, "tokens": 12374, "cumulative_tokens": 182285, "before": "8bce47a63dc5108e2237800b4cd64dced8e8885139de656259faf15477e34b56", "after": "46830d7be8651477627a0eaecea63197b01aa89143e9232eda3fb6bb25287c95", "actions": [{"button": "left", "hold_frames": 8, "release_frames": 16}, {"button": "left", "hold_frames": 8, "release_frames": 16}, {"button": "left", "hold_frames": 8, "release_frames": 16}, {"button": "left", "hold_frames": 8, "release_frames": 16}]}, {"decision": 17, "before_frame": 984, "after_frame": 1104, "tokens": 16622, "cumulative_tokens": 198907, "before": "46830d7be8651477627a0eaecea63197b01aa89143e9232eda3fb6bb25287c95", "after": "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951", "actions": [{"button": "a", "hold_frames": 8, "release_frames": 24}, {"button": null, "hold_frames": 60, "release_frames": 0}, {"button": null, "hold_frames": 28, "release_frames": 0}]}, {"decision": 18, "before_frame": 1104, "after_frame": 1104, "tokens": 9715, "cumulative_tokens": 208622, "before": "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951", "after": "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951", "actions": []}, {"decision": 19, "before_frame": 1104, "after_frame": 1224, "tokens": 12661, "cumulative_tokens": 221283, "before": "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951", "after": "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951", "actions": [{"button": "a", "hold_frames": 8, "release_frames": 24}, {"button": null, "hold_frames": 60, "release_frames": 0}, {"button": null, "hold_frames": 28, "release_frames": 0}]}, {"decision": 20, "before_frame": 1224, "after_frame": 1248, "tokens": 8552, "cumulative_tokens": 229835, "before": "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951", "after": "1cccc4375c7179450e2ed09c3281abd4807d91aef9e5aa1260de1f981fac318d", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 21, "before_frame": 1248, "after_frame": 1272, "tokens": 9549, "cumulative_tokens": 239384, "before": "1cccc4375c7179450e2ed09c3281abd4807d91aef9e5aa1260de1f981fac318d", "after": "6e257238ffd41652ccfb4a96de291d8974e8232640043e5dc1aca05eb30ed277", "actions": [{"button": "left", "hold_frames": 8, "release_frames": 16}]}, {"decision": 22, "before_frame": 1272, "after_frame": 1272, "tokens": 10662, "cumulative_tokens": 250046, "before": "6e257238ffd41652ccfb4a96de291d8974e8232640043e5dc1aca05eb30ed277", "after": "6e257238ffd41652ccfb4a96de291d8974e8232640043e5dc1aca05eb30ed277", "actions": []}, {"decision": 23, "before_frame": 1272, "after_frame": 1476, "tokens": 14069, "cumulative_tokens": 264115, "before": "6e257238ffd41652ccfb4a96de291d8974e8232640043e5dc1aca05eb30ed277", "after": "2670bb7881db14fc351fde08d92c84edfd76db01e8310524c2a2bc86e0dd9812", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}, {"button": null, "hold_frames": 30, "release_frames": 0}, {"button": null, "hold_frames": 30, "release_frames": 0}, {"button": null, "hold_frames": 30, "release_frames": 0}, {"button": null, "hold_frames": 30, "release_frames": 0}, {"button": null, "hold_frames": 30, "release_frames": 0}, {"button": null, "hold_frames": 30, "release_frames": 0}]}, {"decision": 24, "before_frame": 1476, "after_frame": 1500, "tokens": 8420, "cumulative_tokens": 272535, "before": "2670bb7881db14fc351fde08d92c84edfd76db01e8310524c2a2bc86e0dd9812", "after": "457573537323d2099faa89f2f6e900cc38c1bf8be69e9a3c001b56b492832940", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 25, "before_frame": 1500, "after_frame": 1548, "tokens": 9474, "cumulative_tokens": 282009, "before": "457573537323d2099faa89f2f6e900cc38c1bf8be69e9a3c001b56b492832940", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}, {"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 26, "before_frame": 1548, "after_frame": 1548, "tokens": 10469, "cumulative_tokens": 292478, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 27, "before_frame": 1548, "after_frame": 1580, "tokens": 11273, "cumulative_tokens": 303751, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 28, "before_frame": 1580, "after_frame": 1612, "tokens": 12088, "cumulative_tokens": 315839, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 29, "before_frame": 1612, "after_frame": 1644, "tokens": 8245, "cumulative_tokens": 324084, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 30, "before_frame": 1644, "after_frame": 1676, "tokens": 9040, "cumulative_tokens": 333124, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 31, "before_frame": 1676, "after_frame": 1708, "tokens": 9791, "cumulative_tokens": 342915, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 32, "before_frame": 1708, "after_frame": 1740, "tokens": 10538, "cumulative_tokens": 353453, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 33, "before_frame": 1740, "after_frame": 1772, "tokens": 11282, "cumulative_tokens": 364735, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 34, "before_frame": 1772, "after_frame": 1804, "tokens": 11951, "cumulative_tokens": 376686, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 35, "before_frame": 1804, "after_frame": 1836, "tokens": 12586, "cumulative_tokens": 389272, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 36, "before_frame": 1836, "after_frame": 1836, "tokens": 8118, "cumulative_tokens": 397390, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 37, "before_frame": 1836, "after_frame": 1868, "tokens": 8872, "cumulative_tokens": 406262, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 38, "before_frame": 1868, "after_frame": 1900, "tokens": 9551, "cumulative_tokens": 415813, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 39, "before_frame": 1900, "after_frame": 1932, "tokens": 10207, "cumulative_tokens": 426020, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 40, "before_frame": 1932, "after_frame": 1964, "tokens": 10914, "cumulative_tokens": 436934, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 41, "before_frame": 1964, "after_frame": 1996, "tokens": 11626, "cumulative_tokens": 448560, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 42, "before_frame": 1996, "after_frame": 2028, "tokens": 12271, "cumulative_tokens": 460831, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 43, "before_frame": 2028, "after_frame": 2028, "tokens": 8118, "cumulative_tokens": 468949, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 44, "before_frame": 2028, "after_frame": 2060, "tokens": 8884, "cumulative_tokens": 477833, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 45, "before_frame": 2060, "after_frame": 2092, "tokens": 9573, "cumulative_tokens": 487406, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 46, "before_frame": 2092, "after_frame": 2093, "tokens": 10320, "cumulative_tokens": 497726, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 47, "before_frame": 2093, "after_frame": 2125, "tokens": 11171, "cumulative_tokens": 508897, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 48, "before_frame": 2125, "after_frame": 2157, "tokens": 11942, "cumulative_tokens": 520839, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 49, "before_frame": 2157, "after_frame": 2189, "tokens": 12671, "cumulative_tokens": 533510, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 50, "before_frame": 2189, "after_frame": 2189, "tokens": 8108, "cumulative_tokens": 541618, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 51, "before_frame": 2189, "after_frame": 2221, "tokens": 8855, "cumulative_tokens": 550473, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 52, "before_frame": 2221, "after_frame": 2253, "tokens": 9571, "cumulative_tokens": 560044, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 53, "before_frame": 2253, "after_frame": 2285, "tokens": 10281, "cumulative_tokens": 570325, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 54, "before_frame": 2285, "after_frame": 2285, "tokens": 10957, "cumulative_tokens": 581282, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 55, "before_frame": 2285, "after_frame": 2286, "tokens": 12092, "cumulative_tokens": 593374, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 56, "before_frame": 2286, "after_frame": 2286, "tokens": 8098, "cumulative_tokens": 601472, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 57, "before_frame": 2286, "after_frame": 2287, "tokens": 8852, "cumulative_tokens": 610324, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 58, "before_frame": 2287, "after_frame": 2288, "tokens": 9586, "cumulative_tokens": 619910, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 59, "before_frame": 2288, "after_frame": 2289, "tokens": 10318, "cumulative_tokens": 630228, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 60, "before_frame": 2289, "after_frame": 2290, "tokens": 11011, "cumulative_tokens": 641239, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 61, "before_frame": 2290, "after_frame": 2322, "tokens": 11672, "cumulative_tokens": 652911, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "0f126c8c0aa4f2f848077073d069dc98a1055525db0781c353b451b1e0cfec38", "actions": [{"button": "left", "hold_frames": 8, "release_frames": 24}]}, {"decision": 62, "before_frame": 2322, "after_frame": 2346, "tokens": 12579, "cumulative_tokens": 665490, "before": "0f126c8c0aa4f2f848077073d069dc98a1055525db0781c353b451b1e0cfec38", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 63, "before_frame": 2346, "after_frame": 2346, "tokens": 8137, "cumulative_tokens": 673627, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 64, "before_frame": 2346, "after_frame": 2378, "tokens": 8934, "cumulative_tokens": 682561, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 65, "before_frame": 2378, "after_frame": 2410, "tokens": 9892, "cumulative_tokens": 692453, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 66, "before_frame": 2410, "after_frame": 2442, "tokens": 10581, "cumulative_tokens": 703034, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 67, "before_frame": 2442, "after_frame": 2474, "tokens": 11462, "cumulative_tokens": 714496, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 68, "before_frame": 2474, "after_frame": 2498, "tokens": 12278, "cumulative_tokens": 726774, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "a105ddc65c28732f961b763020383ef348b3ac3f74d5391bd240a1edd2b44ff8", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 69, "before_frame": 2498, "after_frame": 2522, "tokens": 8161, "cumulative_tokens": 734935, "before": "a105ddc65c28732f961b763020383ef348b3ac3f74d5391bd240a1edd2b44ff8", "after": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "actions": [{"button": "left", "hold_frames": 8, "release_frames": 16}]}, {"decision": 70, "before_frame": 2522, "after_frame": 2522, "tokens": 9162, "cumulative_tokens": 744097, "before": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "after": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "actions": []}, {"decision": 71, "before_frame": 2522, "after_frame": 2523, "tokens": 9855, "cumulative_tokens": 753952, "before": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "after": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 72, "before_frame": 2523, "after_frame": 2555, "tokens": 10535, "cumulative_tokens": 764487, "before": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "after": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 73, "before_frame": 2555, "after_frame": 2587, "tokens": 11243, "cumulative_tokens": 775730, "before": "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe", "after": "e4814c30abf064be6b89d629e951bfbbb0e7b72fd509edf2ad83090ae5711d37", "actions": [{"button": "down", "hold_frames": 8, "release_frames": 24}]}, {"decision": 74, "before_frame": 2587, "after_frame": 2611, "tokens": 12296, "cumulative_tokens": 788026, "before": "e4814c30abf064be6b89d629e951bfbbb0e7b72fd509edf2ad83090ae5711d37", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "up", "hold_frames": 8, "release_frames": 16}]}, {"decision": 75, "before_frame": 2611, "after_frame": 2611, "tokens": 8131, "cumulative_tokens": 796157, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 76, "before_frame": 2611, "after_frame": 2643, "tokens": 8892, "cumulative_tokens": 805049, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 77, "before_frame": 2643, "after_frame": 2675, "tokens": 9795, "cumulative_tokens": 814844, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 78, "before_frame": 2675, "after_frame": 2707, "tokens": 10588, "cumulative_tokens": 825432, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 79, "before_frame": 2707, "after_frame": 2739, "tokens": 11384, "cumulative_tokens": 836816, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 80, "before_frame": 2739, "after_frame": 2771, "tokens": 12167, "cumulative_tokens": 848983, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 81, "before_frame": 2771, "after_frame": 2771, "tokens": 8116, "cumulative_tokens": 857099, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 82, "before_frame": 2771, "after_frame": 2803, "tokens": 8882, "cumulative_tokens": 865981, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 83, "before_frame": 2803, "after_frame": 2835, "tokens": 9655, "cumulative_tokens": 875636, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 84, "before_frame": 2835, "after_frame": 2867, "tokens": 10348, "cumulative_tokens": 885984, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 85, "before_frame": 2867, "after_frame": 2899, "tokens": 11029, "cumulative_tokens": 897013, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 86, "before_frame": 2899, "after_frame": 2931, "tokens": 11688, "cumulative_tokens": 908701, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 87, "before_frame": 2931, "after_frame": 2963, "tokens": 12340, "cumulative_tokens": 921041, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 88, "before_frame": 2963, "after_frame": 2963, "tokens": 8136, "cumulative_tokens": 929177, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 89, "before_frame": 2963, "after_frame": 2995, "tokens": 8813, "cumulative_tokens": 937990, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 90, "before_frame": 2995, "after_frame": 3027, "tokens": 9534, "cumulative_tokens": 947524, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 91, "before_frame": 3027, "after_frame": 3059, "tokens": 10444, "cumulative_tokens": 957968, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 92, "before_frame": 3059, "after_frame": 3059, "tokens": 11218, "cumulative_tokens": 969186, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 93, "before_frame": 3059, "after_frame": 3060, "tokens": 12203, "cumulative_tokens": 981389, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 94, "before_frame": 3060, "after_frame": 3060, "tokens": 8134, "cumulative_tokens": 989523, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 95, "before_frame": 3060, "after_frame": 3092, "tokens": 8895, "cumulative_tokens": 998418, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 96, "before_frame": 3092, "after_frame": 3124, "tokens": 9748, "cumulative_tokens": 1008166, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 97, "before_frame": 3124, "after_frame": 3156, "tokens": 10442, "cumulative_tokens": 1018608, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 98, "before_frame": 3156, "after_frame": 3276, "tokens": 11181, "cumulative_tokens": 1029789, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 120, "release_frames": 0}]}, {"decision": 99, "before_frame": 3276, "after_frame": 3396, "tokens": 11934, "cumulative_tokens": 1041723, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 120, "release_frames": 0}]}, {"decision": 100, "before_frame": 3396, "after_frame": 3516, "tokens": 12718, "cumulative_tokens": 1054441, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 120, "release_frames": 0}]}, {"decision": 101, "before_frame": 3516, "after_frame": 3516, "tokens": 8102, "cumulative_tokens": 1062543, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 102, "before_frame": 3516, "after_frame": 3517, "tokens": 8765, "cumulative_tokens": 1071308, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 103, "before_frame": 3517, "after_frame": 3518, "tokens": 9434, "cumulative_tokens": 1080742, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 104, "before_frame": 3518, "after_frame": 3519, "tokens": 10146, "cumulative_tokens": 1090888, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 105, "before_frame": 3519, "after_frame": 3639, "tokens": 10897, "cumulative_tokens": 1101785, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 120, "release_frames": 0}]}, {"decision": 106, "before_frame": 3639, "after_frame": 3759, "tokens": 11791, "cumulative_tokens": 1113576, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 120, "release_frames": 0}]}, {"decision": 107, "before_frame": 3759, "after_frame": 3879, "tokens": 12551, "cumulative_tokens": 1126127, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 120, "release_frames": 0}]}, {"decision": 108, "before_frame": 3879, "after_frame": 3879, "tokens": 8113, "cumulative_tokens": 1134240, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 109, "before_frame": 3879, "after_frame": 3880, "tokens": 8897, "cumulative_tokens": 1143137, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 110, "before_frame": 3880, "after_frame": 3881, "tokens": 9614, "cumulative_tokens": 1152751, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 111, "before_frame": 3881, "after_frame": 3882, "tokens": 10329, "cumulative_tokens": 1163080, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": null, "hold_frames": 1, "release_frames": 0}]}, {"decision": 112, "before_frame": 3882, "after_frame": 3914, "tokens": 11123, "cumulative_tokens": 1174203, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 113, "before_frame": 3914, "after_frame": 3946, "tokens": 11844, "cumulative_tokens": 1186047, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 114, "before_frame": 3946, "after_frame": 3946, "tokens": 12587, "cumulative_tokens": 1198634, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 115, "before_frame": 3946, "after_frame": 3946, "tokens": 8401, "cumulative_tokens": 1207035, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 116, "before_frame": 3946, "after_frame": 3978, "tokens": 9156, "cumulative_tokens": 1216191, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 117, "before_frame": 3978, "after_frame": 4010, "tokens": 9933, "cumulative_tokens": 1226124, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 118, "before_frame": 4010, "after_frame": 4042, "tokens": 10711, "cumulative_tokens": 1236835, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 119, "before_frame": 4042, "after_frame": 4074, "tokens": 11502, "cumulative_tokens": 1248337, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 120, "before_frame": 4074, "after_frame": 4106, "tokens": 12235, "cumulative_tokens": 1260572, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 121, "before_frame": 4106, "after_frame": 4106, "tokens": 8113, "cumulative_tokens": 1268685, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": []}, {"decision": 122, "before_frame": 4106, "after_frame": 4138, "tokens": 8863, "cumulative_tokens": 1277548, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 123, "before_frame": 4138, "after_frame": 4170, "tokens": 9620, "cumulative_tokens": 1287168, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 124, "before_frame": 4170, "after_frame": 4202, "tokens": 10420, "cumulative_tokens": 1297588, "before": "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb", "after": "0f126c8c0aa4f2f848077073d069dc98a1055525db0781c353b451b1e0cfec38", "actions": [{"button": "left", "hold_frames": 8, "release_frames": 24}]}, {"decision": 125, "before_frame": 4202, "after_frame": 4226, "tokens": 11442, "cumulative_tokens": 1309030, "before": "0f126c8c0aa4f2f848077073d069dc98a1055525db0781c353b451b1e0cfec38", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "right", "hold_frames": 8, "release_frames": 16}]}, {"decision": 126, "before_frame": 4226, "after_frame": 4258, "tokens": 12574, "cumulative_tokens": 1321604, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 127, "before_frame": 4258, "after_frame": 4258, "tokens": 8112, "cumulative_tokens": 1329716, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 128, "before_frame": 4258, "after_frame": 4290, "tokens": 8858, "cumulative_tokens": 1338574, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 129, "before_frame": 4290, "after_frame": 4322, "tokens": 9640, "cumulative_tokens": 1348214, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 130, "before_frame": 4322, "after_frame": 4354, "tokens": 10358, "cumulative_tokens": 1358572, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 131, "before_frame": 4354, "after_frame": 4386, "tokens": 11141, "cumulative_tokens": 1369713, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 132, "before_frame": 4386, "after_frame": 4418, "tokens": 11820, "cumulative_tokens": 1381533, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 133, "before_frame": 4418, "after_frame": 4450, "tokens": 12526, "cumulative_tokens": 1394059, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 134, "before_frame": 4450, "after_frame": 4450, "tokens": 8119, "cumulative_tokens": 1402178, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 135, "before_frame": 4450, "after_frame": 4482, "tokens": 8874, "cumulative_tokens": 1411052, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 136, "before_frame": 4482, "after_frame": 4514, "tokens": 9632, "cumulative_tokens": 1420684, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 137, "before_frame": 4514, "after_frame": 4546, "tokens": 10457, "cumulative_tokens": 1431141, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 138, "before_frame": 4546, "after_frame": 4578, "tokens": 11240, "cumulative_tokens": 1442381, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 139, "before_frame": 4578, "after_frame": 4610, "tokens": 11938, "cumulative_tokens": 1454319, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 140, "before_frame": 4610, "after_frame": 4642, "tokens": 12680, "cumulative_tokens": 1466999, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 141, "before_frame": 4642, "after_frame": 4642, "tokens": 8111, "cumulative_tokens": 1475110, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 142, "before_frame": 4642, "after_frame": 4674, "tokens": 8859, "cumulative_tokens": 1483969, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 143, "before_frame": 4674, "after_frame": 4706, "tokens": 9617, "cumulative_tokens": 1493586, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 144, "before_frame": 4706, "after_frame": 4738, "tokens": 10407, "cumulative_tokens": 1503993, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 145, "before_frame": 4738, "after_frame": 4770, "tokens": 11265, "cumulative_tokens": 1515258, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 146, "before_frame": 4770, "after_frame": 4802, "tokens": 12024, "cumulative_tokens": 1527282, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 147, "before_frame": 4802, "after_frame": 4802, "tokens": 8117, "cumulative_tokens": 1535399, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 148, "before_frame": 4802, "after_frame": 4834, "tokens": 8863, "cumulative_tokens": 1544262, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 149, "before_frame": 4834, "after_frame": 4866, "tokens": 9615, "cumulative_tokens": 1553877, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 150, "before_frame": 4866, "after_frame": 4898, "tokens": 10369, "cumulative_tokens": 1564246, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 151, "before_frame": 4898, "after_frame": 4930, "tokens": 11133, "cumulative_tokens": 1575379, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 152, "before_frame": 4930, "after_frame": 4962, "tokens": 11849, "cumulative_tokens": 1587228, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 153, "before_frame": 4962, "after_frame": 4994, "tokens": 12607, "cumulative_tokens": 1599835, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 154, "before_frame": 4994, "after_frame": 4994, "tokens": 8114, "cumulative_tokens": 1607949, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 155, "before_frame": 4994, "after_frame": 5026, "tokens": 8865, "cumulative_tokens": 1616814, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 156, "before_frame": 5026, "after_frame": 5058, "tokens": 9685, "cumulative_tokens": 1626499, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 157, "before_frame": 5058, "after_frame": 5090, "tokens": 10383, "cumulative_tokens": 1636882, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 158, "before_frame": 5090, "after_frame": 5122, "tokens": 11193, "cumulative_tokens": 1648075, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 159, "before_frame": 5122, "after_frame": 5154, "tokens": 11885, "cumulative_tokens": 1659960, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 160, "before_frame": 5154, "after_frame": 5186, "tokens": 12550, "cumulative_tokens": 1672510, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 161, "before_frame": 5186, "after_frame": 5186, "tokens": 8103, "cumulative_tokens": 1680613, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 162, "before_frame": 5186, "after_frame": 5218, "tokens": 8856, "cumulative_tokens": 1689469, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 163, "before_frame": 5218, "after_frame": 5250, "tokens": 9640, "cumulative_tokens": 1699109, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 164, "before_frame": 5250, "after_frame": 5282, "tokens": 10356, "cumulative_tokens": 1709465, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 165, "before_frame": 5282, "after_frame": 5314, "tokens": 11051, "cumulative_tokens": 1720516, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 166, "before_frame": 5314, "after_frame": 5346, "tokens": 11685, "cumulative_tokens": 1732201, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 167, "before_frame": 5346, "after_frame": 5378, "tokens": 12336, "cumulative_tokens": 1744537, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 168, "before_frame": 5378, "after_frame": 5378, "tokens": 8129, "cumulative_tokens": 1752666, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 169, "before_frame": 5378, "after_frame": 5410, "tokens": 8886, "cumulative_tokens": 1761552, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 170, "before_frame": 5410, "after_frame": 5442, "tokens": 9626, "cumulative_tokens": 1771178, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 171, "before_frame": 5442, "after_frame": 5474, "tokens": 10326, "cumulative_tokens": 1781504, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 172, "before_frame": 5474, "after_frame": 5506, "tokens": 11022, "cumulative_tokens": 1792526, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "select", "hold_frames": 8, "release_frames": 24}]}, {"decision": 173, "before_frame": 5506, "after_frame": 5506, "tokens": 11750, "cumulative_tokens": 1804276, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 174, "before_frame": 5506, "after_frame": 5538, "tokens": 12745, "cumulative_tokens": 1817021, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 175, "before_frame": 5538, "after_frame": 5538, "tokens": 8095, "cumulative_tokens": 1825116, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 176, "before_frame": 5538, "after_frame": 5570, "tokens": 8835, "cumulative_tokens": 1833951, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 177, "before_frame": 5570, "after_frame": 5602, "tokens": 9526, "cumulative_tokens": 1843477, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 178, "before_frame": 5602, "after_frame": 5634, "tokens": 10226, "cumulative_tokens": 1853703, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 179, "before_frame": 5634, "after_frame": 5634, "tokens": 10922, "cumulative_tokens": 1864625, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 180, "before_frame": 5634, "after_frame": 5666, "tokens": 14451, "cumulative_tokens": 1879076, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 181, "before_frame": 5666, "after_frame": 5666, "tokens": 8036, "cumulative_tokens": 1887112, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 182, "before_frame": 5666, "after_frame": 5698, "tokens": 8706, "cumulative_tokens": 1895818, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 183, "before_frame": 5698, "after_frame": 5730, "tokens": 9517, "cumulative_tokens": 1905335, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 184, "before_frame": 5730, "after_frame": 5762, "tokens": 10237, "cumulative_tokens": 1915572, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 185, "before_frame": 5762, "after_frame": 5794, "tokens": 10918, "cumulative_tokens": 1926490, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 186, "before_frame": 5794, "after_frame": 5826, "tokens": 11596, "cumulative_tokens": 1938086, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 187, "before_frame": 5826, "after_frame": 5858, "tokens": 12235, "cumulative_tokens": 1950321, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 188, "before_frame": 5858, "after_frame": 5858, "tokens": 8143, "cumulative_tokens": 1958464, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 189, "before_frame": 5858, "after_frame": 5890, "tokens": 8906, "cumulative_tokens": 1967370, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 190, "before_frame": 5890, "after_frame": 5922, "tokens": 9668, "cumulative_tokens": 1977038, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 191, "before_frame": 5922, "after_frame": 5954, "tokens": 10428, "cumulative_tokens": 1987466, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 192, "before_frame": 5954, "after_frame": 5986, "tokens": 11185, "cumulative_tokens": 1998651, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 193, "before_frame": 5986, "after_frame": 6018, "tokens": 11921, "cumulative_tokens": 2010572, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 194, "before_frame": 6018, "after_frame": 6050, "tokens": 12674, "cumulative_tokens": 2023246, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 195, "before_frame": 6050, "after_frame": 6050, "tokens": 8123, "cumulative_tokens": 2031369, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": []}, {"decision": 196, "before_frame": 6050, "after_frame": 6082, "tokens": 8800, "cumulative_tokens": 2040169, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 197, "before_frame": 6082, "after_frame": 6114, "tokens": 9463, "cumulative_tokens": 2049632, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 198, "before_frame": 6114, "after_frame": 6146, "tokens": 10150, "cumulative_tokens": 2059782, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 199, "before_frame": 6146, "after_frame": 6178, "tokens": 10808, "cumulative_tokens": 2070590, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}, {"decision": 200, "before_frame": 6178, "after_frame": 6210, "tokens": 11446, "cumulative_tokens": 2082036, "before": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "after": "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0", "actions": [{"button": "b", "hold_frames": 8, "release_frames": 24}]}], "images": {"590341a0621652aa887f915e0efc5287d8249f4382a60065c4415aad1d734456": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFCElEQVR4nO2c2dGrMAxGzZ2/NFowJUBNpgTSQnrjPmiiccwSdmxzzkMmCEIcf8iyvKRwzpkPdV3r+7ZtD7EXRdH3fVEU5hdy2dnlSd2+tj7//bwOkgaBMweBM+fv7PixlhjiXMz2teDBmYPAmYPAmXN63kkefKydPBi+QODMQeDMIQ9OzL4WPDhzEDhzEDhzyIMTs5MHwxcInDkInDnkwYnZ14IHZw4CZw4CZ87j8uBRpHh93w9PxRB399Tn38/rskQV9aUdNabOEwXWdqIoCmvt6/XSU9ZaMZZlKb5yXzGP4YkxuO/7pmmMMdZa8xFVdJXDsiybpslAXWPM10N6RvyQmloeM84uj9rVfUVXQQ5fr9dUPJYnIyj2lfF4bX0+0YPNR11jTN/32kSrruLTw08N1TWfyB0tTxTYl6SqKvVga21VVaOX+Yfq3PpmVPhIeFwnS6OACmat7bqubdv3+63erNcEbbUc+hpH7sG78s4lrI0Z1+TlKmdQNjlUyZumkfJon2s0rTLeo3D2OPwVefDPcQNlz689CZVQ+lOBj+qpqqpEfv0JM9IGXxFV/TyuiTbf7WrQn9J47HektRGaGRgZpgCRcEwnq6oqv3sSOdqFNsZ0Xdd7dF0n9mFHWqOvH4CDkDzFjfWzej54iBa9qiqtoM1ckEc6597vtzHGH8NS1OicE6es61o6B3pPuaF/KLcdraj5+ol9Pjh4MFPxYx3fGM2FgvFL8xn80ovruvYHTLQvNuT2+tklsBa36zp9NlPRuOs6a63ETqXve+lCBxfLKblY/altW7WPpsIx1M/2TpZfen0jxkPa6lOR5td8x2Pz8eAgWwtommbJyEYk9fN35fqgJZw9rjuUZzQS6zVyH30gnHPSqda4G8wtrq2fDeVfdf/tHjx8HofPbJwE0wOjTPXCpH41GM9UdyT1sysP9n+Db9xbqEuYdwW/3RbEd0cvnkqTYqifvb3ooLipqCv0Eyz54EyQ9rm9fg7Ig/U5PaT0sa0rHh13bNvWz5T21M/Z5T9mqDItx1Uumwi6sX4eNxYtY5DOufk2VuaahpE4ObYIHOEc0SqstUuSjc3qRlU/j1sXnbqd/cHwBQJnDgJnDvuDE7OvBQ/OHATOHATOHPLgxOzkwfAFAmcOAmdObnnw7ft3Y6vPrKYLR9cnzy+RzJ58mugpIWfWUj2BfASGUQ5bF33ULPeG8vgbt6fwtyS93++yLINXscu24Lqu5evEvrY8p9qvWBcd1f5XUUgEHo3BWiOjugavqm5d11VVlWV5dvnPJvlOlv7lkQzuzCxdlgvmNfY9WO2X/p6jSX5/sLaiM+uZ9dQqD85AXZPB/mDRYOo/FXyLxOC1Huz/oifmwcP9rxevAfZjsAqpZ32xicGrCXZT3bJ3NIjBQdarh5tj8PIeZZxsj8Gj+1+DUxcQZDLGGOecbDEa9qifGINT3x8s+Ps5/f/KUG+Wca4NMdj/lhTz4O0ePPTXW/a/ijbirPqnZYoal6ibpQfvSpN8je/a/R1ESn/Tkf9+ibpynxkPTpG9vWjdG6mHO2+4FvU8fyGL+Ku2ZvIX0A/tRae+P9iPnTr1q63rQl3Jg39w4/7XKc9bpWvGHpz8dOFU7Nz2Sgw2JrL9r3gwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABczX/SLTPDBcvKNwAAAABJRU5ErkJggg==", "9c65726c4f2b269eb20b915be74117a65001f67fe9782a572f5851a53a101bdd": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFJklEQVR4nO2c0dGrIBBG8c5fmi1gCVqTlmBasDfvw042BNFEjQp4zkMmEkOQz2VZcFO0bWue1HWt77uuC5YXRTGOY1EU5hNy2tr671Z+dH/++1gvJA0CZw4CZ04xjqMefOM/mqZZ5TPW1n+38qP7EwvOHATOHATOnNVxFXHwb8uJg2EXCJw5CJw5xMEXlxMHwy4QOHMQOHOIgy8uJw6GXSBw5iBw5hAHX1xOHAy7QODMQeDMST4ODiLNc93Vz383lTj472O9SaCKutIGC+9GDgLrfV0UhbX28XjoR9ZaKSzL0puC3oQcfPA4jk3TGGOsteYpqugqh2VZSjRycUOvIJ84WM1XdBXk8PF4zPljuTO8ZhMHR4fa6ziOOkSrrmLT029N1TVPz50NOQjsSlJVlVqwtbaqquBp7qHahL4JCp8oyU+ydNRSway1fd93XTcMg1qznuON1XLoapyZBb/FVd+w1mccHQeLZiqn1zY5VMmbppH26JwrGFYZ51Zwf3ctscTBH9cNgrVEgkoo8ynPRvWjqqpEfr2EBWm9n0i6f5Ifos37uOrNp9QfuxNpHYQWFkamU9ZECU+yqqpypyeRo1NoY0zf96ND3/dSPp1Iq/d1HbDnkudIqH8CFqxNr6pKO2gzJ8SRbdsOw2CMcdewFC1s21aMsq5rcWZap1ToHkq1wSF3uX/Wtn8ta+v3Ldi7MVO5T3V9IxgLeeuX5rn4pSfXde0umOhcbEpy/fMmsDa373u9N+O/BqHve2ut+E5lHEeZQnsny0dyst7vXddpeTAUTrF/XkO023p9I4U/GasPRYZf8+6PzdOCvejCo2mab1Y2Eu2fw2fRR6/rTuUJemI9R+rRG6JtW5lUq9/19hbX+ssN7T+0/pfA0/txes/Gibc9EGRuFib9q854obsT7Z83C3avwS08u1GbWDYFd9wWxHaDJ8+FSSn2jz+L9pobees9xhm++eKXS7bJ9U/AB+t9+pPWHx0H72mPW6EbKS3Xv9w/scXB4UlW/DdmkNM2ghLqn+TXomUNsm3b5TFW9pqmnjh7/kyUeyCrsNZ+E2xsVjfp/kn+uejUy8kPhl0gcOYgcObk81x0ouU8Fw27QODMQeDMIQ6+uJw4GHaBwJmDwJmTWxx8eb5vbHFw8tuFLsHnmZcfqcyefIboOSEXnr26A/kIPIeMXbfV+G9uN/tXu9wb/NMwDJLOW9e1nCYPvQ7DUJal92qeT2uY0BAtNWvyoLfnH4M/PuO56KjyX0U5Vbeu66qqprp6r/rAs9tfmj2m/8FTluXR7Y+N6CZZoplrwR/VFTv2cBP11bLl/LMv6VKiyw+eWvBHdcuy1LF37kForefcq7me6PKDt1mwKOf95Yp5TzHSmle1J+bnupPMD95mwTLPktQxd9FAMkIl1/ueFhxdfrCopequsmBjjP5ppSDe163nzGuJgZfAwfxX76MT2GzB8nVZ+dORWdW9rQVHlx9sjNnmg4NpwdORwPt0cztTiYNfFjy110vyXzdbsC5JyuAsySxFUdzcgt98sKvxVdnNm32waGyM8fKUFiz4DvhDtOZG6uG57dm4kjW1Y8H1wVLPyZdzOW9/F6XM5b/Khuuh+5dm4oPNzCr0N6/TemKLg6/ZD74w/3WnBXuv03quuq6riG67cI8Pnr4uz6LvQHT5wVgwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADEzn/nCNO+xU4egQAAAABJRU5ErkJggg==", "6b042edc65db1a2aa7e3c1662288690f3e7463c52b0a883bb97c067921eb8aa6": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAE0klEQVR4nO2c3bWjOgxGxawpLS2YEqAmKIG0QG/cB91oeWyHQH6IcPZ+OCsYjlH4kGUZlEZElmVpmkYeoYcNw2AtXdfZ53EcaReRpmlcXc8/D+2AU4PAlYPAldPIzhi8LIu1eIt/Htr7vnd1PfHgykHgykHgytkdg8mD19vJg+FQELhyELhyyIPf3E4eDIeCwJWDwJVDHvzmdvJgOBQErhwErhzy4De3kwfDoSBw5SBw5bjLg8tWNv/bme/yEHc958F/H9rxFUzRWNpiI6zjUWC7r5umCSFcr1fbFULQxsvlkkxBoYjHGLwsS9/3IhJCkJuoqqtuXi4XzUa+bOgZ8JsHm/uqropuXq/Xe/FY74zEbPJgd5i/LstiQ7Tpqj6d/1eurtwi98/iUeBYkrZtzYNDCG3bFg+LN80n7ENR+B/B3STLRi0TLIQwTdM4jvM8mzfbMclYrZuxxj/uwe7yYNXM5Exs002TvO97tcfmXMW0SqJbIT7vXrzlwVtw58Emoc6nEh+1XW3bqvz2hVekTU7xcF3FeOVu+By77HcnsPw7oiTzKYvH8UTaJq4rCyP5lPVHcDrJMiGnaVoipmnS9nwibdE3DsBJSL5H27bx9O10rNi/24MPyCOHYZjnWUTiNSzDGodhUKfsuk6DmfWpHcab2m1xyLVL07at3UBP27+X1/tft9+jB8ttQUPu5ELJ+qXcFr/s4K7r4gUTm4vlJDf+6fz4of1OBRaRaZpCCBo7jWVZdAqdHKy79GC738dxtPZiKmyXY5om6/NEGm+x3+MkS27Dr/wbj+XmwUl2kdD3/ZaVjfjq2AdtLI513tho/26BP72um8tTjMR2jPZjN8QwDDqptribPFvcGy+fsP+j/Z8+D5bs8UCRe7Mwvb4WjFcud36/5z7hmY32exRYWXeFeNxW1HeLB99Lk+JrFDfuM/R7bLHf7yRLbolszpZ/XAnSMcnlOJG6ykP73eXBr9gTdxhnSuv9mx8U1fWfB6/b73eIlgMf5Z7OcRNW7HcnsK5BDsOwPsbqs6Y8EkOCO4FFJISwJdl4Wl2fz4i2s8t+d8+Dz97u7b1o17NoeB0ErhwErhy/70WftJ33ouFQELhyELhyyIPf3E4eDIeCwJWDwJVTWx5MfXDS7vFp0tMU339efwWzeuoZou8JufKu1i9Qj8D30LHrZzU+Ig+e51nLebuu08Pmeb5cLk/8LfYjkX6JExcrj/fav6v95+qDVQNTpeu6tm2fU7fYT3K62FOt2kwbq6kd9VUfnHve0+re66d43riw/5d/c+njMTj3vKfVLfajZ7GBbuOL05WxUh/88TxYRD4ag+M3Ru/V8Meh7ux5sGRD9EpZwziOlXiw3FTUKtP4G9adB3+/Pli1MVVejMF5P8np7Eculbqj75b64Ho8WFFF45/p+PQX/BbF+uBklxxQHyxZDH7vLHqLtUeuh3urD67Hg21JUgdnLX6peAEr99fv1AcfmQfna0N1s6U+uLaVrCRFqV5s09g2kwOqyoM9PJ8+Pg+Wmwfn6h6xVHmwB/8mK/XBteXBkIAHn4+9mRIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALyZ/wDGHn9fVBSsXQAAAABJRU5ErkJggg==", "b0406e18a081e18e148f0e856e9a2adfe366037571a8043161b3c3421928a880": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFYklEQVR4nO2dUbarKgyG411naE4BhqBjwiHYKTg3z0NusziAbOkuGPH/Hvaq1NpsfkMSBUsEumYgon3frzbjoQzD0KLzIfAltOn2/xp8B7gQCNw5ELhzIHDn/CGiZVmcc1db8lBa9PzJdA7J9klU9eef0g8YY2rY0Q2v16to/9r9WSzwOI417OiGUoFr92exwNu21bDjsdTuT2TRnYMh+stgiAb/0KI/VaX1HaCqP4s92C/Mp2mS18uyoJ2IhmGgEmr3J5KszoHAnQOBO+f/KTtnIgfv5qcG2uKfhvZ5nlX1Jzy4cyBw50DgzimOwaiD8+0cVvX0Jzy4cyBw50DgzkEd/OV21MGgKRC4cyBw56AO/nI76mDQFAjcORC4c1AHf7kddTBoCgTuHAjcOerq4LSVw+HjnjTEXc11cPHE9zaIor60yUaQR6PAcl4Pw2CM8ZdzGWO4cRzHRk8RuzkaY/C+7/M803v1O4vKuvLmOI5cjVxs6B3QWweL+/oPOeDN1+t1FI/5zAjMRh2sDvHXfd9liBZd2afjT8XqUvlqsM7QKLAvibVWPNgYY61N7uZvik/Ii6TwD0FdkiWjlghmjFnXdVmWbdvEm2WfYKzmTV/jh3uwujqYNRM5A9t4UySf55ntkZwrWVaRdyr431uKtjr4DOo8WCTkfCrwUXnLWsvyyz+ckTb4ih+vqwi/ORvqUWS/OoHp3xElyKckHvuJtCSumQsjccr6EJQmWSLkuq67x7qu3B4n0hJ9/QAchOQjrLV++nY7MvYXe3CDOtI5x8+eST6SSBqdc+yU0zRxMJNj8gH9TT5scsiVrrHWygn0sf2l/P74efs1ejC9L2jQQS0UXL+k98Uv2XmaJv+CieRiMcGJfzs//tF+pQIT0bquxhiOncK+75xCBzvzW7yznO/Lskh7shSW7ljXVY55I43P2K8xyaL38Ev/xmN6e3BQXQTM83zmyobfO/KCG5NjnTZO2l8scO3rurE8yUgs+/Bx5IRwznFSLXE3uLdYGi8/sL/q8W9fB1N0eyDJURbG/SvBONPd8fke+4RmTtqvUWAm7wrxc7TZd5M7H5VJfh/5jWWGXscZ+/UmWfQuZGPOfPDkbyEE3XEjdZkf7VdXB//GHoqGaDox4IsfJNXVXwfn7dc7RFP5rdxkvZtPuZnbOW5Axn51AvM1SOdcXhW+1xRUUMmPcGx+7O8GqROYiIwxZ4qNj3+vROc9ovMU2a+uDmb4Qffnj/PjCSE3jBvU8XlLAmrbozqLLiXZuU+er0M6h+hS/ImMmVIY94PvTUa8B+oq6J0XXdR+NEfHb+FE+mnzonsYogVfSL/lyfQgsD8bK7giLZvxFMaH0E8MFpxzfMn6gXLGqJsX/Vl74LXy2m9vUwdrWx/ciQdzN8kkeEEaH5tI9xCDfURjavPr6erpR2A/vZIpO7J5nV0X00kdrKddWx3cSQwGR0DgzoHAndPifvC2bbycd5om3o0nvW7bNo5j8DffnjxOqT1V26+aF33UXj2LZoVElWmarLWxfif/xsepbb9CitYHVx+iWRtRZVmWj9VNHqe2/XenusCx532sbvI4te2/BZn1wdXrYDqInZ9pHB/HnzH6hDqYoiE6s6yhxRAND67K9euDEYPrcWZ9MDz4riTXBwdvUYM6mKIY/BsPjo/jf9GT6+Aj4MF3JfbX5PpgxOAb42t8tHodHnxvflwfjDr4y+3t62B6D86xukuDRxnGnodr0V8nsz4YMbhz4MH3o7RSAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAX8heckqA8B4ohvAAAAABJRU5ErkJggg==", "9bc3c42afc638fdafbd34cea151ee83c9c68a10b24ce1837aa9a5d3d34b0a331": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFOElEQVR4nO2d27GrMAxFzZ2URgumBKgJSiAt0Bv3QxONDzgPCDbCWevjTOJwHMUbWZYfiXNQNNU8z2fbUA5VRXuWi01p/51tAKQFgQsHgQsHgQvn1vf92TYUBe15PT4cHtscRd+892fbYJr7/b7pemvteavr+mwbTLNVYGvteZum6WwbisJaezKKLhy66DfQRcMfaM/rce00KUzM27bVx8MwUO6cq6rKbcFaezLIKhwELhwELpw/W0ysxT8L5V3XzfP8SSSWy6y1Jx5cOAhcOAhcOJW1vM1auYTVz2OwtfbEgwsHgQsHgQvHXN5mrZw8GEyDwIWDwIVjLm+zVk4eDKZB4MJB4MIxl7dZKycPBtMgcOEgcOEkz9vi71pV7slOcQtxq6Q8+PbW7kNQRUNpo4VwLDkE1vu6qirvfXicy3svhXVd8y1iKcgRg+d57rrOPU6/i6iiqzyt61qykQzG/Br58jZ13/BLDuTp/X5/Fo/lzgiZ55k8+PPyTKNo9dd5nrWLVl3Fp9f/tVbXbT8N9uPkEDiUpGka9WDvfdM00cvCp+oT+iAqPERJPsjSXksF896P4zgMwzRN6s16zaKvlqehxnjwJpLnbaKZyrlQSJ6q5F3XiT065oqmVS64FcL33Yq1PHgrJvJglVDGUwsf1ZeaphH51dAX0i7e4u28ivJNa6Yjqf058uDQAxbjKY3H4UBaB64vJkbWQ1aIkmmQpUKO4zgHjOMo5euBtEbfMAAvQvIzmqYJh2+X40D7bxnyyL7v5btnol9JpIV934tTtm0rwUzrlArDp1JttMvSpmmaRm+g3fZv5fv6j7U/Ux6s8xvRXGgxf+kek196cdu24YSJjsXWLG78y/nx4fbnWy4cx9F7L7FTmedZhtCLi+UluVjvx2EYtDyaCmtzjOOodV5I4xT2Z1pNku7X/Y3H7uHBi+xiQdd1n8xshK2jD6Qw2tdZI5H9t9Tzomt5opFYr5F69Ibo+14G1Rp3F2uLW+PlDvuT1p/a/kxp0tuP8WwUJu2rwfhFc6/v97VPWCaR/Zm6aPfOFdbfoy2+G734WZoUtlFYuM3Q80hhf9Y9WfMTPvnHD38LYdEcF1JXONz+5HnwVqLzdsMwhJnSi/rXadjiBrKfB6sfR9XdWn++LtqlX8qNjsavOKN5YMeTXGCZg+z7/nUfK2tN3/yixbNcSyfIdtd8aXJ4sPf+k2Rjt7qve7y2bWVSzOwvGiVd4zK3j3dfud5ACxWjK9Ob6mdftC3CrkJXI6TwN3vp0gRWwo0fv7wnt5CzSdoxfphY/w7m9vF+v//LrQhDI/uir4qoKKuQWigrjGbHzxkoR2BBD0EJvxx9hdIEFkXXe+V/luTrwTnL1yw2c+2oP+d6MHnwK3R5UXcKuMeWv5MtO5VyBHaxuSQoSmC3OryE2ObyNmvl5MFgGgQuHAQunD3rl9M0yXHetm3lsmma6rre8Tdaz1Z7kpb/3Plg0UBVadu2aZp96kbr2f1pr0vS88Gbu2jRRlUZhmG3utF6ttoDr9ks8NrzdqsbrSfFh7wcB54P3py3OeeSxuBwx6iFPDJ1HuxWXfSLYw3SVpvqx4Ntcf75YGJwOlKcD8aDrRA9H7x4aQeb14PdKgZ/48HresI3spAHX/18MB5shbW/HnI+mBhsiFDjo06v48G2OPx8MHnwm/L8ebB7dM5rdXfkwcxFW+TA88HE4MLBg8/nmxVDAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwzn8roa7ih0JqRgAAAABJRU5ErkJggg==", "00f5e40a3a3994be42f01e6ef53da25209c1966562891be0932f95e7444217b7": "data:image/png;base64,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", "1d1f2fb50f0280c800f22aaeecf6181be27edf96419ecea96311203a46b4332a": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAADMklEQVR4nO3dUZKjIBSFYZxyi3EJuiayBDfpPFC5jWhS6Rmg4PB/T8Z0lRQnVyRpisl7717WdbXj5/OZ8fy2bXahbduO45imKb50OJn9utfz0zS5kcw1L7Zt2+3LOGnkVSNgK9lQo0F8HN5K/gBZ/Kl2JStTu0naARVczqloyo1/IctwLavU+MC9Yi73HBAkw4S8qmNwSPQ4jtDjcboopEbAcaXGcVox2bvcq7OrNwYHoYKvxyhkqjYPDi+998m7SR0zD86rUgXH33JMkSRdZFf1Fn0cRzLKeu+Jtqiq82ArWUs6FDQZl1NpHtzO+dHmwbWfolEZAYsjYHGV5sHtnGceDCkELI6Axc0tjIs1z4+GChZHwOIIWBzzYHFUsDgCFkfA4pgHi6OCxRGwOAIW91+LCXocX0f7n6zZnfvrszafVnpvf1HcosXdB7wsy7IslZuSUe/tz+hmdaF1zbIs+74n77Y/7n5u/2jSCk4++N3VQe/tz+4UsHXHvu/22e+oj3pvfwk/Ace9kxx00Ue9t7+QX6/wb2Hc5Xvm7/1U8PXzfq2JlvXe/kJOY3DcRz32Tu/tLyF9ik66o7ve6b392d2Mwfu+h4//be+0P+5+bv9o7h+yeu+a3tufEd9Fi5td/zON3ttf1OkW3dr4WuL8aL8Hc4sWR8DiCFgc/xctjgoWR8DiCFgc64PFUcHiCFgcAYtTmwdfv2q2XXzGVHXfpNLiLTDN4Lv16Nyi3wXpvR/tF6SYTsC4Nb8bn74538i46774lff27j0CkfXBIeDbFC37dV3bbH9RCg9Ztv2we1/K1z3HB6GzPvjD5ksj78uksD7Yyve6X218ZswJcRrwdX1tR/9jHG80HZ8Z2SngZD1PeNl+xvEYnMx67SVjsM762rDh5XUjzDEprA+28nWvmZL9sVVzqPIBx2CR9cHhYcp2NDV2ctgH6VMF27q8+J7cfroxy9idn7aGld6iLWN7Wbc9/y6+UT8eDxfdn4ctXye2PtiCDO0fOVfD+mBx/FwojvXBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAv/QXmjaLzQXZGeQAAAAASUVORK5CYII=", "cafe6218e9e31ea2a62b77a92db3c035fa4a78f635247714067fe86234441cf1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAADdklEQVR4nO3d3XXiMBCGYXuPS6MFXAKuyZRgWkhv3gudnQjZsGxWGluf3ufKMTmHiYbRD0Si6yCtX9f16Bhc9X1/dAgAAACoXT/P89ExuJqm6egQgHz66/V6dAyuHo/H0SG4Gi6Xy9ExuGouwV9fX0fHgIIG/6eMa6i1AcKfaxcdZrDxvH17p7TWumi/Sdbj8XiVyGmaPMPweaKT8PtoJSncJNksTwsZ4oa+3W52fb/fM96P8zdN07qufZ++xxI+uMz7vNv7rX1c6DrJSsrUfmzt3TRPHgm2ko3/uSC+Dg8lv4Asfrk9k5WpdZJ2QQWX81Q05ca/kMvwXFap8UX3J83l5gFBa7M51zE4ZHRd19DicXZRiEeC40qN02nFZI/SV2fnNwYHoYK31yikd14Hz/OcPJrUMevgvJwq2F5G0zT1kSS7yM61i17XNRll53kmtUW5roOtZC3ToaDJcTlO6+Dz3G9tHew9i4YzEiyOBItzWgef5z7rYEghweJIsLjhDOOi5/3WUMHiSLA4EiyOdbA4KlgcCRZHgsWxDhZHBYsjweJIsLj/2kxQ4/ja2v9kDd1ze713ztlK7fEXRRctbj/B4ziO4+gcSka1x5/Rzu5Ca5pxHJdlSR49/7j7Pv7WpBWcvPCrq4Pa48/uKcHWHMuy2Gu/ojaqPf4SvhMct05yUUUb1R5/If+8w/8M4y7vM3/uu4K3r/dtTZxZ7fEX8jQGx21UY+vUHn8J6Sw6aY7qWqf2+LPbGYOXZQkv/93WOfm4m/zLFbvL9ydZlb7wdw9iajzHOu9FvzpmKxwd4R/PSQxd/SuNT+Kv/W/8sacu+mzj68/Oo94VTrz95DfF6HTR3YvktZbRxAHfupKdnUfdvU5ns+dR61Twm+Q1mFcjck5Wch61Pbo9j7q1HluhizZxIuM7LVNIsH3lQ9d18zzHNWo/7n7PSwt0xmATDjjdHnzaJpH9wUnV2nV8v81vEBCp4JBUm0YZu9nsRFphDI7FU2W66E4pwfH0KnyxC8fJdzLr4M/vt7YOFhmD8QoJFkeCxbE/WBz7g8XRRYtjf7A49geLY3+wOPYHi2N/sDj2B4tjf7A49geLY3+wOLX9wX+NvzVS+4NN7fFnxHvR4lrZHwwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAc4jdBCbUXZRGpEQAAAABJRU5ErkJggg==", "5c792ede7cc7882dce2b16d93776f1d9092727ab246b4aa23f7b4540bb724b16": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAADmUlEQVR4nO3dUZKjIBSFYZlyaW4hLiGsiSxBF+k8UKERbXsyLSiH/3tyTKqGcL0oAo1xznX/6/l8huPX63X5+X9hrf3o+7Xru3V9Hfu0NsuovfxZ/bm6AMhrP8DjOI7jWLgoJ6q9/Cfqt6dC1YzjOE1T8un977vH5W9NmsHJhV9dHtRe/tOtAhyqY5qmcO1XVEe1lz+HrwDHtZMcVFFHtZc/k5178LE73Hd/0w9uzVcGb6/3bU7cWe3lz2R1D47rqMbaqb38OaRP0Ul1VFc7tZf/dDv34Gma/OW/Wzv3v+8el781+w9Z9VaNMSY5XpbluuJc7+On6DszxmwHx4wxLce47+rvafjyW2t3hz6dc7uBb4T5+Sv1+C6KrY0BrywSws9xzsXn45An3wQUiDTRy7IcPEz5j+IH7HbozOgI0Q2BDActt8wi3aTjLm+bueuJBLh7d4f8k5TvOPl4h9i3GWaRDqK19scQ+l/adJepdtuOkMbl+xvm8XhcXYZzzPMc2uQkWePfOM/zJcW7Sj8Mw9VlOMcwDL6Jds750IYwx7+xtQDrZHAiBDL5ga0F+IKn6LiK811eqhfup4o20XHL+d2Z3FrL4HJN9DzPB6M9JYtR5j+6iXJ9/yRxk2DTPc2kjys63/ypOH7hpUQSY9/JyT2fq7X3WUUfspI0Df/kdUQ+JQIcUjZ+zRQfh+G8lod9Mik3XBjSdDucRwbns0qafPe/eDgvZGp80L3DnHsedWtPc0XvwQfDecikRIDjTI3DGZIpGSTAiUpP2YlH9JjmWIAp3A92ziWfJnlMP/hchTI4XEbWWhNJoovTFW2ik5no3XueeskytKZoPzikbIi0T2hinE+hfvB9zrfWD9aZ+I5dBFgcARZXqB98n/P0gyGFAIsjwOL6O9wX+XuW+ZDB4giwOAIsjn6wODJYHAEWR4DF0Q8WRwaLI8DiCLC4Xy0mqPH+2tqcLPYPFkcTLY79g8Wxf7A49g8Wx/7B4tg/WBz7B4tj/2Bx7B8sjv2DxbF/sDi1/YO92st/It5Fi9PZPxi7Vk303e6vOc63Nh5MEy2OAIsjwOKYFy2ODBZHgMURYHGsDxZHBosjwOIIsDj6weLIYHEEWBwBFsf6YHGsDxZHEy2O9cHiWB8sjvXB4lgfLI71weJYHyyO9cHiWB8sjvXB4lgfLI71weJ4Fy2O9cEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcBN/AV7bL1pVaiSZAAAAAElFTkSuQmCC", "c7b896f28d683bd03d18f451fa45443eca399b929342bf2d3942eeda5c1985d7": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFDElEQVR4nO2d3ZWjMAyFYQ+lpYVJCXFNTAnQQnpjH3xGK2ySTSaWsKT7PREn54zGF/kHJGuc53n4Lbfbja6/v79Pb3+FlNJbv7fONOz76znv9qYO1u0X5c/ZBgBZjgW+Xq/X61XZlIZYt78hU91EXXO9XpdlKb7tf959bn80Sg8ubnxzfmDd/ubsBKbuWJaF7n1DfWTdfgn+Ccx7p7gw0UfW7RfiYA5+Tg/z7if74Gj88+D6fq99omes2y/Ebg7mfWSxd6zbL0G5ii66w1zvWLe/OQdz8LIs+fY/7J3+593n9kfjeJFlvWus298QPIt2zjTY32lYtx+A3zNu23a2DaqM43i2CQAAAAAAwDrjJ2GzFokWNgucM359fZ1tgyrrup5tgirT5XI52wZVwgl8v9/PtgEI8nZM1udwH4o2QeijOkTnFSxft9ct0kQbovUWWeu6PhIypaRphs4f6gS9VyuF4xZiY3sqxMQ7Wi5+iuuXUtq2bRzLZyz5xaV0PFe014Wqi6zCTeljtKdpmmgITC7Lgwv4df6q+AFogl7QHbkpDZJ0AQ+WY+c0cvNf1jL/LfJUfjH8yCwdRx1tNac6B2dFt23LPc7VBUJoCMw9lctJzkTfYqxujnbge/bg+hoIMSrvg+d5Lr4t/Bj74LYoeTDdRimlkVGoC5qjOkRv21bMsvM8Q1pRVPfB5LKkdHZoaCyH0j64n/Zo+2CkjzoHAjsHAjtHaR/cTzv2wcAVENg5ENg5Uw/zIs6zlAMe7BwI7BwI7Bzsg50DD3YOBHYOBHaOt31w/bqXonRjckICuBx10uIQPhrXzxD9SMh5nqNFcXD8CAwOmR7NT6+0dzLvDi9EWh2O3hFwUj84C3yoIml/u936tF8UD4ssSi8eHrvy4ZkCEfBTP/hJcHXkuGsP9YPJfet8VN4Sc0NcClzX3zVUg4gnkvOWyOwELur95Y/9a8zn4GLXSx8xB/upv5sT2upEt5h4qB9M7jv87JTox+TN2csDzsFO6gfnxRRlLBLUGHYhvfNgqtvJx+T+1eWQxgNOZxqGoR6iSWP6qGvP7+EDdT7aFMcHDM7qB5OQ2f7IuhKoH+wcvC50DuoHO2c3RPc2v0q0R4vuwBDtHAjsHAjsHG9x0f9tjwY82DkQ2DkQ2DnID3YOPNg5ENg5ENg52Ac7Bx7sHAjsHAjsnI+C/S3Or9HeBzvJD37xl33aLwqGaOf4yQ/mWLe/IR7yg9+yPxqlB9f5wYrGNMC6/c3ZCcyzzSzmjlq3XwI/+cHW7RfCQ37we/9AMJzkBw/27RdiNwfzPrLYO9btl6BcRRfdYa53rNvfHFf5wa/YHw3kBzsHz6Kdg/xgACwzRjupJFrgOwAAAAAAECDcGdnRwmaBc8Z8MGsc1nU92wRVpsvlcrYNqoQT+H6/n20DEOSEymfch6JNEPqoDtH1Sfv6Z+9HG6L1Flnruj4SMqWkaYbOH+oEvVcrheMWYmN7KsSkc04W1y+ldFiHLL+4xDlZbVFdZBVuSh+jPU3TRENgclkeXMCvqfhgtOgDBfSC7shNaZCkC3iwHDunkZv/ivq+9cXwI7N0HHW01ZzqHJwVpSKRdT1n0BwNgbmncjmL0nMx6/tKox34nj24vgZCKJ0XzXdExbeFH2Mf3BYlD6bbKKU0MlAgVBrVIbouu57LsWvaEA3VfTC5LCmdHRoay6G0D+6nPdo+GOmjzoHAzoHAzvkLJcpsB9Jab4YAAAAASUVORK5CYII=", "c6457f9ba8bb07f0d8904dea4fef0286f94fb380405e62f2dc677a4312f20ebc": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAD3UlEQVR4nO2dUZKrIBBF9ZVLyxbiEuKayBLMFrI358N6PYgmNYmAcjnny+AU6eLaDRh6unXONd9yu93s+n6/H97+F4Zh+OjvS6drluP1nk9HMw+l25+Uf0cbAGnZFrjv+77vM5sSkdLtj0i3brKh6ft+HMfg7vnn3ff210bowcGDX5wflG5/dBYC23CM42jPfkFjVLr9KfgV2B+d4KKIMSrd/kRszMHvOcO8u2cfXBu/Hrx+3tc+cWZKtz8RiznYH6MSR6d0+1MQrqKD4ShudEq3Pzobc/A4jvPjvzk6559339tfG9uLrNKHpnT7I8K7aHG6pvydRun2J2URos82v6Zor+33YEK0OAgsDgKL051hXuR9dTrwYHEQWBwEFqf1z0Wfbb5M0d62bVMTeLA4CCwOAovDPlgcPFgcBBYHgcVpyQ/WhvxgcQjR4pAfLA75weKQHywO+cHikB8sDvnB4pAfLA75weKQHywO+cHikB8sDu+ixSE/GKBk2mmajrYhK7UdfAcAAACABOw6NlsitR2bBXHa6/V6tA1ZeTweR5uQle5yuRxtQ1aqE/j5fB5tAyTk4zNZ+/F9KPoEsXbQ2uaggKwhel7B+uv2dcvO/tddBY21heh8i6zH4/FKyGEY9pvxx/6rEzjbNwWOG4gRZXv6RuD9nRdKl+f/ZPlDPAzDNE1tG75jmX+43N//K+b+a/u5MOsiK5DBPqaeg6N0Xig5BDaX9Q8X+NfzreAPvui/eS3nnv6LJt+hO/MtC5J2EcWD34hXoa7G4qFOd5551tJmwfVF81/mKP3b3XX/tUXsrHPwrOg0TbNC0Vc9vpB+S83kENj3VH/EzZns7nex2qbwpmmcc76P2sfNdXsN5D74Pnvw+joizrm55wrlXJPp/0X7O6LgbuDH+/fB61ehfv+1Be1MHmyDPgxD6xGou7N/W0YZ1ljtQjpriF6HzTmcRvwK55x9hX9dLflW0c45C4/zQtr8LIrG/vLK+reP+/svlEz74PO017YPJn1UHAQWB4HFoW6SOHiwOAgsDgKLQ90kcfBgcRBYHAQWh32wOHiwOAgsDgKLwz5YHDxYHAQWB4HFoX6wONQPFocQLQ71g8WhfrA41A8Wh/rB4lA/WBzqB4tD/WBxqB8sDvWDxaF+sDjUDxaHd9HiUD9YnEWIPtv8mqK9tt+DCdHiILA4CCwO56LFwYPFQWBxEFgc8oPFwYPFQWBxEFgc9sHi4MHiILA4CCwO+cHikB8sDiFaHPKDxSE/WBzyg8UhP1gc8oPFIT9YHPKDxSE/WBzyg8UhP1gc8oPF4V20OOQHi/MDnPGP3vXax6AAAAAASUVORK5CYII=", "6cf217ff6c14194157f9bb1bbc9b99859862f16fe111073cda3650bf7cc5944e": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAD9UlEQVR4nO2dUZajIBBFwxyX5hbiEuKayBJ0C70354MTGtG2JxMBedz7ZZuc02U9CiihgrHW3v6Xx+Phr5/PZ/H7/8I4jm99v3a629pfx7zrzTzUbn9S/pQ2ANKyL/AwDMMwZDblRGq3/0S67S3vmmEYpmmKPr3+uHtsf2vEERw1/OrioHb7T2clsHfHNE2+7Vfko9rtT8G3wKF3oosqfFS7/YnYGYOPucK4+0ke3BrfEbxt79uYuDK125+I1Rgc+qhG79RufwriWXTkjuq8U7v9p7MzBk/T5Jr/rneuP+4e298a+5Osel1jjImul2UpZ0553p5FXxljzHZxzBjTssbdrf5Mw9k/juPu0qe1dlf4RjC/f6UeflKxtTXgFYsE/nGsteH9UPLomwAKiHTRy7IcTKbcR+EEux10dnR4db2Q/qLlnlkkTTpOeduMXYeIwLdXOuRmUi5xcnp77duUWSRBHMfxVwndkzadMtXONhHSaL6fYO73e2kbzmGeZ98nR8EaPuM8z0XMK0XX931pG86h73vXRVtrnbRe5vAZWxNYJ4IjvJDRA7YmcIFZdOjidM1LteG+S9YuOuw5f7qTmtYiOF8XPc/zwWpPTjPy/KOLkC/3jwI3Epv0NBFd6Oh0+6dC/fxLiUhjl+Sk3s/V2vusrJOsKEz9n7yOSEcOgX3Ihq+Zwmu/nNfysk8i8i0X+jDdLucRwelYBU268S9czvORGl7cXjKn3kfd2mwu6xh8sJwHicghcBipoZw+mKJFAjiR3Ft2whU9tjlmwGTOg6210adRHJMHn0umCPbNaBxHExCpC6eTtYuOdqLfXvvUc9rQGlnzYB+yXmkX0Gicjkx58HXut5YH62x8h10QWBwEFidTHnyd++TBIAUCi4PA4nRXGBf5Pct0EMHiILA4CCwOebA4RLA4CCwOAotDHiwOESwOAouDwOJ8VExQ4/ja2p4szg8Why5aHM4PFofzg8Xh/GBxOD9YHM4PFofzg8Xh/GBxOD9YHM4PFofzg8VROz/YUbv9J8K7aHF0zg+GXVZd9NXG1xT3W1sPposWB4HFQWBx2BctDhEsDgKLg8DiUB8sDhEsDgKLg8DikAeLQwSLg8DiILA41AeLQ32wOHTR4lAfLA71weJQHywO9cHiUB8sDvXB4lAfLA71weJQHywO9cHiUB8sDu+ixaE+GKBmzLIspW3ISmsb3wEAAAAgAR9tm62R1rbNgjjmfr+XtiEr8zyXNiErXd/3pW3ISnMCf319lbYBEsJqkjh00eLQRQPUDL+TJQ6TLHEQWBwEFoffyRKHCBYHgcVBYHHIg8UhgsVBYHEQWBzyYHGIYHEQWBwEFucvM4m6k7aYPyMAAAAASUVORK5CYII=", "17a591702c25f0fee90407e7209fa5a71ee52333f373f0906cf8de1b6fd0ea21": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAED0lEQVR4nO3d0XGrMBCFYbjj0tJCKCGqiZSAW0hv5EHjjRDE146RYI/+78nBnsla65UQlkw/jmP3Vx8fH/b48/Pz8OOPCCE89XrvLt2yve57tjXr8B5/Uf+ODgBlbSd4GIZhGCqHsiPv8e/osj5kTTMMwzRN2bPnH3fvx9+avIKzD767OvAe/+4WCbbmmKbJPvuO2sh7/CX8JDhtneyBizbyHn8hG2PwfWcYd1+ZB7fmp4LXn/d1TZyZ9/gLWYzBaRt5bB3v8ZeQn0VnzeGudbzHv7uNMXiapvjx32yd84+79+NvzfZJlvem8R7/jrgWLe7S+Z9peI8f+Lt+nuejY6iq7/ujQwAAAIB3/SvLZj1qbdksxPXv7+9Hx1DV9Xo9OoSqLm9vb0fHUFVzCf76+jo6BhT09Jqs16U11NoAUV/VLjqewabn7esjpbXWRdc7ybper78lMoRQM4w6/+gk6n21khVulmymp4Vc0oYut34qzV8IYZ7nvs+vscQvLkuv52rt68KqJ1lZmdqfrV1Nq6lGgq1k08UF6eP4VPYC7KLeojsrU+sk7QEVXM6iaMqNfzGX8X9ZpaYPuluaS6+jbu1sruoYHDM6z3Ns8TS7KKRGgtNKTdNpxWTP0lfvrvbC91jB68copK88Dx7HMXs2q2PmwfuqVMH2MQoh9Iksu9hd1S56nudslB3HkdQWVXUebCVrmY4FTY7LqTQPPs/x1ubBbB8VR4LFkWBxlebB5znOPBhSSLA4EizucoZxkd+zLIcKFkeCxZFgccyDxVHB4kiwOBIsTm0evP6611bptumADeDlrDctds2vxtXpon9L5DiOra3iSOkkGJte6r5OMu52j627tmV+j7w1GSL3D7bFmula6ygejC87Z/xFKXTR6cLbecWOt3YNK9K5f7Dlcr3/uOV11wr3D7bq/C2R9myDXXSe4PX9dx3dg4j9x2sK9w+2vHa3LcghBNvl1t0G5jYzrXP/YGxSuH9wWp3pZDfd39YxBts9HW3cdXSHVvtltSy13e1SZbMn0osKTnOcHqwd1AvWFdy4vIu2HNufdeP5u7Sjjj9tys8HdGL3D7ZExvhbzqvh/sHiFK5F4w7uHyxu0UWfbXwtcby174PposWRYHEkWJzauuj/Hm8NFSyOBIsjweLYHyyOChZHgsWRYHHMg8VRweJIsDgSLE5kf/DjWvs+WGR/8IOvPGf8RdFFi9PZH5zyHv+OFPYHPxV/a/IKXu8PrhjMDrzHvzuF/cHGe/wl6OwP9h5/IQr7g597A435qeD1593R/uDOf/yFLMbgtI08to73+EvIz6Kz5nDXOt7j353U/uBH4m8N+4PFcS1aHPuDAQAAAAAAAAAAAAAAAAAAAAAAAAAAAOAkvgF2jHJI7yJInwAAAABJRU5ErkJggg==", "e237f2f03a6426db849e8aa83f45d332341cb7284c590273b5a8033b00198641": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEYElEQVR4nO3d0ZWrIBCAYb3H0tLCpoRYE1uCtrC9eR84YRFYAypmmPzfUy6bayaOEyRo6I0x3V6Px8M9/v7+Trb3fb8sS9/3L7dmn+bHk7N9v71U6fZrt+cYx7Ho+UPwetuO7M16iH/Dv9L/gLakE3y/3+/3+8WhnIj4nSG5dfdgmqbgr9L6xdi58V/f727HXyqs4ODAaa4OiD+wSrDb3DRN7thpaB8Rf+w3wf7WgwdN7CPiT0r0wdtK+5vScVvtcaSEfves85UcvxUcHy/xMSUZ8Set+mD/NdraOxbxx8Kz6GBzDe0di/gDiT54miZ7+CS3Ln8cfG781/e72/GXSp9kNXfgO/6shn28LMv7wtnpxP1ffBYtWTAZ5RpbzPFZhk7qHEs+G/84jsmpT2NMMvFyVN3/r6dpG/JXFkvH4qoskuyOx70dY4zf7qf8jADf7w2HyFnajl4qJSdZy7JsnEzlXzakj54rOlx2XSLdg0/+bFBSwdtD3s+sXUtJgrvncMieidiBh823y/1nplnQAPHxeOwesI7j+DKFct7pERKHfJld4PGeMh5I6EjqEf3X11fVF5jnOfPj0T5tdzz2hTrvC0t3sNd+j1ea57no+cPtdqsUilUa0O54brebPYyMMTa1Ls213+OVSvenngqOX9c+0FS+3Y4KrhTH29XLq7+L5R89ej6iL+B/8v/VUltxBf/8/FQKZR9p8TjzPMeJdN282FK+Yuxf1AdfEM8+QeEGyZY4PO26ruuGI/fjZt4fXBRQ7Xj2tfv5c1+qBDm2g7Ta8ZTuT7UnWTUEZer+KfnrFBL8mitZ/2sy/7GbjhQ4baVnurA2V6bxdKTkCl4ddDX6j5xpACsuAgnXLdt2fzrSBek/6J5prh3Pnt/oQKaN6UixSPBrfqX66XTFFExyiEIfXMafkWziMsdDv0sl7XeyLhgHG2OCvwZ1LG0cTAVncYfdOI69J8iuQCS4wLK+kr57Xmf/rnhykOBc9qI+W7Iu07agJeeYcXBj7aXjYCpYORKsHAlWjnFwY+2Mg7FCgpUjwcoN0n5/UUI/J7m9FBWsHAlWjgQrxzi4sXbGwVghwcqRYOUYBzfWXooKVo4EK0eClTt0Mb60cXCpFvtX1g/e8oHx8xGtHOsHS8T6wVvbZ/1gH+sHy8L6wVuIP8b6wVKwfvA5/b2Efves85UcrB8sBesHv0b8MdYPloX1g19vn/WDfdrWD7aI3+G7aOX0rB/crqrxc110Y+1cF40VEqwcCVaO66Ibay9FBStHgpUjwcoxDm6snXEwVkiwciRYOcbBjbWXooKVI8HKkWDlVI2DS7XYv37i2oXcH7yBj2jldCaY+4Od5sfBMe4P9mmrYO4PDqhKMPcHx/QkmPuDk4ba/Q33B58bfyk9Fcz9wUl6Etxxf3CKqgR33B8cUTgO5v5gn4bvomPNFW6A+4ORS0MFy5wjytd6/AAAAAAAAAAAAAAAAAAAAAAAAAAAAABO8h8qSEPTY3fnxQAAAABJRU5ErkJggg==", "8bce47a63dc5108e2237800b4cd64dced8e8885139de656259faf15477e34b56": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEkElEQVR4nO2dYXLjIAyF8Y6PlivERzBnokewr5C70R+aaglO2u0sEiC97xfFmbGal4fARnYIAAAAAAAAAAAAAAAAAAAAAAAAAJiOJefcOwZVlmXpHQIAAAAAAJidJaXUOwZVYoy9QwCgHcv9fu8dgyrnefYOQZX1drv1jkEVdwI/Ho/eMQBBVv1Tlh7yliD0UR2iaQZbztuvPdJ4G6L1Jlnneb4TMsaoGYbOiQZB79ZKZdxKbCxPhVjLL3rfd25/fHw07C/1izHmnJelvsZCNy7bnvfa7+12oeokq7Ip/+ntapomGgKzZcvNBWWbDlUfAE34o3YmtikPktyAg+V4Mo1c/iMt6Vzs1LIRvmSWmwcQ3mZzqjmYFM050zdeqguE0BC4dGopJ5uJj2Ksbo5eDibIwdc2EGJRXgenlKqjlY+xDm6LkoP5ZxRjXAoqdUFzVIfonHOVZVNKkFYU1XUwW5aVJkNDYzmU1sHj9HtbB2vPooEyENg4ENg4SuvgcfqxDgamgMDGgcDGWUfIi5r93oCDjQOBjQOBjYN1sHHgYONAYONAYONYWwdfb/fyLl2fdCgAl+NatBjc78a1M0S/EzKl5G0XR4kRgWnxUw7XgPiv4WucvPtuZ1m4FKl6c/MafvPDH3O2QqWn4Xn39fVj+76PGb8oRiZZpPG+77QJlxq9gxqC1zl427Zt25RDaU5VB9U3mF68cDBLu23bcRzV0UHy7qv/JYRCyHdPE/BG7eDKuBP5mEbpUnsqf6KKio6B9eVJYJbzOA727kQa3+/3srgt4OEQpcClulVjCo0pSH6gGiVgb4uiK7+eRY+Qd7Hf6t/56+CrX6+eHhkKkh6YSHmXRunqMog3nnJwqfFc6hJlqCRz8D2FDtch+jiOMuNOpC7BV7X4z47BjMCLHMwav1R3/Lybc/4mfm+8nmTN/tXMHn9DjNwuBO9Yw/wrjdnjF+VpiB4tv0r0e7v0gSHaOBDYOBDYONb2Rf/Y7w042DgQ2DgQ2DioDzYOHGwcCGwcCGwcrIONAwcbBwIbBwIbx0J98K9i9nY/2EJ98Ozxi4Ih2jg264Nnj78h1uqDf4zfG3bqg4nZ42+Oqfrg2eOXwFp9cJg2fiFQH2wca/XBYdr4hbBZHzxp/BLUs+jq65ju25k9/uYYrA/+Pn5voD7YOLgWbRzUBwMwM4u359B42/gOAAAAAAAEcPdWMG/bZoFxFn5EuhPO8+wdgirr7XbrHYMq7gR+PB69YwCCdHjzWekhbwlCH9Uhmmaw5bz92iONtyFab5JFr8t4eSjGqBmGzokGQe/WSmXcSmwsT4VYdZ6TVepH77m5vrCbblziOVltUZ1kVTatXt0MJNAQmC377o2gdKj6AGiC3qY7tikPktyAg+V4Mo1c/iMt6Vzs1LIRvmSW3kftbTanmoNJ0ZwzfeOlukAIDYFLp5Zyspn4KMbq5mhvfCcHX9tACKXnRZcroupo5WOsg9ui5GD+GZWvYF+WpVIXNEd1iM45V1k2pQRpRVFdB7NlWWkyNDSWQ2kdPE6/t3UwykeNA4GNA4GN8wmUsqezG07WMQAAAABJRU5ErkJggg==", "46830d7be8651477627a0eaecea63197b01aa89143e9232eda3fb6bb25287c95": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFHUlEQVR4nO2c0bWrIBBF8S1Ls4VYQqiJW4K2kN54H6xMEIxhjOgwOfvLS+7SEw/DOAIxBgAAAAAAAAAAAAAAAAAAAIB3dFcLOBjnXNJirb1EiRD+XS3gSHJ33zX+DqoMBit4SezWQ1/HORe3x+F7hMDruaCLHEXb6qXSXy3gGLz3Xde96yLho67T9kRZgp4cTO6SkXTwy2ODkggOXm5E8LlyBKHEYGOMcy4Mxd77v78/8/SbvP9Nmzs5ZeL9fu+6nXqstR8tlPNNv0Hie5vCFPh9pswLCR2mfkN3u92qXmCe58LhMfzbbj3hQsYYGgaos9f+jmcyzzPr//thGCpJCXAF7dYzDEPoRs65YC3ZXPs7ngn3fuqJ4Py64UBT+JodEVxJx+XU8zW+xfJ7j54h+gTikf9dS23YEfx4PCpJ2Yc0PcQ8z7mRlObFhvIZtT8rB5+gZx9J4CZmSyxPjTHG9LHQ+/1Ox+Fl0PftXM9q69nXHvtHL1USj0ORVlsP936qfciqQRKm9Kfk1ykw+DMUsvFrsviYpiMFTlvpmS6sDYVpPh0pOYIXna5G/iiZBgjkQXBt3o3b4+lIEhkfmKfNtfVwn+YwRDPYmI4UCwz+TBypsZ0UTMkkhyiQg3nEM5JNLHPsTqiDWTlYeB3snEs+TeJYWh2MCC6Cup21totI3BUIDGbglyvpzXOd/VV6SoDBpYRFfSFkyekQ0JI9Rh3cWDu3DkYEKwcGKwcGKwd1cGPtqIPBAhisHBisnL52/uAiIc9JbueCCFYODFYODFYO6uDG2lEHgwUwWDkwWDmogxtr54IIVg4MVg4MVs5Xi/Gl1cFcWsyve/Ymxdfb5pu7WQ/o3wBDtHLWDR7HcRzHk6UcCPQTK7sL6dTjOE7TlHwqLS/mHKv//Ly7rZ9LGsFJx2kuDqA/YWEwnW6aJuo7Dd0j6M95GRyfPTlo4h5B/yrsHf7cfMOt22rXkRLy7lHPKyW8IjjvL3mfkgz0r7LIwfE12ro7AejPSZ+ik9M1dHcC0J+wkoOnaQrdZ/Xs8uvgY/Wfn3e39XNZf8hqruMnQD+Bd9HK6Y3UOZZyoH8DrIturB3rosECGKwcGKwcrIturJ0LIlg5MFg5MFg5qIMba0cdDBbAYOXAYOWgDm6snQsiWDkwWDkwWDnYH8w4v4T8iv3BW/ygfgzRysH+YIlgf/DW+bE/OAb7g2WB/cFbQH8O9gdLAfuDj8n3EvIu9gfvAfpXwf5gQWB/8GegPwH7gy9u5+rngv3BEsH+YFAK9gdfT+v6wZV03vurNbwIqwOuViEa7sJ3QcDaGuAhSzkwWDkwWDkwWDn9N8tmayBNjzS4069nUPh4jKfoGvS3263qBeZ5Zv1/bT2tw72f/TAMlaQEuIJq62kdtsGPx6OSlH1I09M67DVZII4h+QkFQzSD8AQbP+fnLbXBEF2LeZ5zI0OLtVZsKJ8xNcHaPnqCnn0kgZuYLbE8NcYkLzok/K6TzN/Jiv2z1uZbmc2zjpf2O1l4yGKQhCn9KfntGwz+DIVs/K4tPqZfMRD4Mg6TDaVQmNIgSQeSI3jR6WrkD+r+H6XkQSBh3XJoD/qDNhIZH5inzbX17PmNDlBIcNR7H+547K5YYPBn4kiN7aRgok8FjtXIwTxCBOfHYsHvRRe1xxVR8mkSx9LqYERwEdTtrLVdROKuQGAwA+99kmWdc2KtDcDgUpxzFLLkdAhoyR6jDm6snVsHI4KVA4OVA4OV8x+2qszUu7itCAAAAABJRU5ErkJggg==", "d58beff793f0975d4dbe2a36320a73260e2539734cb2f28d1b40864757cff951": "data:image/png;base64,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", "1cccc4375c7179450e2ed09c3281abd4807d91aef9e5aa1260de1f981fac318d": "data:image/png;base64,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", "6e257238ffd41652ccfb4a96de291d8974e8232640043e5dc1aca05eb30ed277": "data:image/png;base64,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", "2670bb7881db14fc351fde08d92c84edfd76db01e8310524c2a2bc86e0dd9812": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFM0lEQVR4nO2d4ZGjMAyFzQ2lpYVQAtTkLQFaSG++H5rTGpFNUBaBrHvfL9Zk2Dd+lm0BNikBAAAAAAAAAAAAAAAAAAAAAAAAoDm6UsrVGr7pOl96HNJ13dUSPgXWWvDnagHAFhgcHBgcHBgcnD7nfLWGFd70eGOapqslbNg5PcYs2oL+fr+b/oNlWVS/t9bTOtr67G+3m5EUQivIWk/rqA1+PB5GUj7Dm57W6a8W0B51DPkfUNBFK6AZbD3P35ZYgy7aimVZtkZSyTRNbkP5jEcTpZQ9z0B2/uwqROAKsz2mpyklcaNjHEc+/vr6OqRc65m1ns/Ka/+maaK2KDymPN5aj7Y+MclSIMKU//R89w0Gv4dDtr7XVh/TKZ9vK+Bhw144TLmT5APPEbxqdBbjBzf/t1K2QXDtuFuXk37SxiLrg/TPZms92tkcumgF5GgphWq8dtctMPg9daTWdnIw8VmHfTXGYB0Uwdtjt3Qn5MGqMdh5HpxzFmdFHHvLgxHBu+BmN01TVyHcdQgMVlBKEaNsztmttQQM3kvOmUOWnaaA9uwx8uDGyrV5MCI4ODA4ODA4OMiDGytHHgxWwODgwODg9NbjhxYP45znci2I4ODA4ODA4OAgD26sHHkwWAGDgwODgxMtD94+LuW3XA+5/uXlWkK9Nrtd9Je8vs16GnG66J+MzDm7Xdt5AkEMpuSh7tYA8avuy0keTK99Pf1lernIs8Xx9ZO1Sfsb/m9Gezu4AdVvL29/No6jT/2m9R9kkkUej+NIHQYdXC3KBc/H4GEYhmE4WcrhiHVE14pRcWD9P4lgvvQwDPM8i7Pe8mDBU0frY//j7uv61yIjWDSchuKYeum67mj5EK1IuFCYisPrf2UwX26eZ247DXl8v9/rxWHJ9+YKWyzq/9vg+urioAmPSSRvSEYDcEO3OIzqXz2L1o432iq2ziM9jLtHzVf28B3B2/aybVOeIZG04SCNu9RLi9sgbjGq/9UYXP+Pttwlaqlkc2oqQbKof9lFz/Nc9/gNuUuI26INuUscXv9PxmD+H0+v7jwPTimVUg7Uf/64+7r+tTyfZDUXuALoZ4I8LgQ/0Sevz4j2A/0vwHvRjZXjvWiwAgYHBwYHJ9p70eHLtSCCgwODgwODg4M8uLFy5MFgBQwODgwODvLgxsq1IIKDA4ODA4ODE2F9sF74h9f3ML7+j+uDof8F6KKDE3N9MPQz0dYHp6P1Y32wL6BfEGp9MPRvibY+OEH/GqwPdlRuQbT1wQn618RcHwz9jJxFi8s1VDsE9AsCrg8+Vj/WB3sE+hnciw4O1gdfT+v6wZV0rvahobcDrlbhmob23ZTAWgswyQoODA4ODA4ODA5O723LbG96vOFxB+yd02PMoi3oeYt0I5ZlUf3eWk/raOuzv91uRlIIrSBrPa2jNvjxeBhJ+QxvelonyJfPzqSOIf8DCrpoBTSDref52xJr0EVbQZ/7EIVUMk2T21A+49GEavnoCXo+QwSuMNtjeppSEjc6POzr5HOfrNo/+k7P9oPjlMd72ycLkywFIkxffHraDzD4PRyyP33RlHcxcHgzDg8b9sJhyp0kH3iO4FWjsxg/uPm/lbINAg/vLVM56SdtLLI+SP9sttbzyR4dYCfkaCmFarx21y0w+D11pNZ2cjDxWYd9NcZgHRTB22O3YL/oXeV1RiTOijj2lgcjgnfBza7+hHzXdcJdh8BgBaUUMcrmnN1aS8DgvdBXxSlk2WkKaM8eIw9urFybByOCgwODgwODg/MXgrkmxlDVWNEAAAAASUVORK5CYII=", "457573537323d2099faa89f2f6e900cc38c1bf8be69e9a3c001b56b492832940": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEO0lEQVR4nO3dUXarIBCAYb3HpWULcQl1TXQJuoXszT5wLiVgjJOKDuP/PaWkx0wdEUbCadMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFRo53k+O4ZfbasrHoXatj07hE+R2hL+nR0AyiLBxpFg40iwcZ1z7uwYnmiLR5thGM4OIbNxeswsuoTufr8X/YBpmkS/Xzqe2knPZ3e73QqF4kkDKh1P7cQJfjwehUL5jLZ4atedHUB94j6kf0DhFi3gZ7DxPD9vKY1bdCnTNOWJ9C3DMKjtykcsTczzvGUNZOOvnSXpuEmyNZanTdMkDzq+vr7C6+/v713apTkrHc9n7XH+hmHw12KSY1/Hl45Hej6ZZAkk3TT8qPnpGwl+L3TZ+Flb/Nq/pfPbCiw2bBW6abhJhheae/DTRVdi/AiX/9tQ8k5w7rgbt/v4fWwhyPhF8z/NpeORzua4RQv4jM7z7M94nF21SPB7cU+N0xk6U3hX4b2aMVjG9+D8tVrtAXWwaAxWXgc755J3k36srQ6mB28SLrthGNpIkl2FSLDAPM/JKOucU5tajwRv5ZwLXTZk2ndozTm2VgfnZWKoavb9u85qv3QdnC/yNFqrl8PYuUW/SqRzTu1a3gHsJBiLjNTB61+dCTOjHf+us9ovXQcv3oqvfH9ubEyy4on6q3SqXa8tzU4PXkneBfMaGKmDk/Xa+JjNseu11MEFxYmMW67MQoLjiXpS9YYfF78HeQV2xuDALwDkCwPXZKoO9vKtJeH4O/5d1MGH8kkNKzxBaLzsRNrCGBwLOW50f5v1MHYSHE+v/BKh/q9bHMBIHXyddmkdbGQMxisk2DgSbNyfHu7oqYM/o2183eKTZ9Hx5637y9ksh/hXcIs2bjnBfd/3fX9wKDsi/mDhQUc4dN/34zgm72obF3P7xn/8uLsev1Tag5MLp7p+QPyJpwSHw43jGK6dis4R8ed+ExwfPXlRxTki/kXixQbpeCOt20rXkRrG3b3mK1v89uD8esmvKc2If9HTGBx/Rl1nxyP+XDqLTg5X0dnxiD+xMAaP4+gvn8Wj66+D943/+HF3PX6p5UlWdRd+gvgDnkUb1zVa11i2I/4VRr4XfZ32i34vGq+QYONIsHGdtuerGsY5ze1S9GDjSLBxJNg46uDK2qmD8YQEG0eCjaMOrqxdih5sHAk2jgQbx/5gwfE1jK/sD15zwfi5RRvH/mCN2B+8dnz2B8fYH6wL+4PXEH+O/cFasD94n/Few7jL/uBPEP8i9gcrwv7g94g/wf7gk9ul8UuxP1gj9gdjK/YHn6/2+HEmXf9x9Zr/AVak4v/GSGpLYJJlHAk2jgQbR4KN67T9B0dt8WgjXX49wsbpMbPoErr7/V70A6ZpEv1+6XhqJz2f3e12KxSKJw2odDy1Eyf48XgUCuUz2uKpHbNo47hFV4ZbNA5HmXSiH+09/1J3ucQ1AAAAAElFTkSuQmCC", "f25563679b0f94372c731f1991453959da6c18048238a4e40b64970bcb004ff0": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEJ0lEQVR4nO2d0ZXbIBBFpZwtzS1YJVg1oRKkFtyb8kHMYZHtFRsDM8O9Xworb154GmYAEQ8DAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAiGDc9z3j7jHv/g4Zx7G1hN+CtRr501oAlAWDjYPBxsFg43w557I+kHt/b8zz3FrCgZPlMVW0Rr5yP3C9XkvoMMO2ba0lfCPb4MvlUkKHGdQbfL/fS+iAQmQbLJ84hkgopoZoX8HGdf6xpTQM0aXYtu1opG+Z57nbUB6HYdj3/cweyMnbWpEEbmK2xOlpFbIjOO642+0Wrpdladge+zfPs38WE4/9PL60HmkxYKrISsI0/LHn1TcLBoeQjdfa4mv/oz7fVrCz2RDCNAyS4aLnCM4usuIgaJt343av32sLIuOL4WFzaT3SqjkLQ3TAO7rvu+/x2N1usWBwHKmxnSGYwk87HKvt5GCPj+DjdbdkR7CcvBvanXMhcJdlud1uwVf/qThDl9YjLQcbieAw9s7zPEYko3SHGDHYs+97kmWdc91a67FjsB+ofcgGp31A9+xxdg4Wkneftg+PFBjX0mHWVEePNCxMkwLHTaSh19lRwM4Q/cpI55y0yrYmdgx+hR9Lu/U4ey1a+H5wEsTJTm2FfCxtZdRUDh6+R6pzLra/z1ramsGBeEPJbxi3VtQGIzk4jMysPycY2Q/+9495saYRlw697QcbieDh4WKyY7gsC/NgU3gv482GzkdsawZ7R+Mt4bZ6mmNhP/hHtTX1SMvBdqZJYUkyfsXu6ep0V9gxeHi21gamDB4OUz7MNjUPltAuLQdbq6IhAYONg8HGqbofnIu0/HoGaTm4RhWdvBf3Bplvr6nWzxBtnDYGT9M0TVOTv/ojKNJf/L3oI6Frpmla1/U/f3/9vPtevzRqR3Dy4GuJg4A6/VUNDt2xrmt49uX3UUCj/noGx72TXAjvI49S/VX3g0v/fgnzYGnUi+Dj836MCcko1V81B8d9pKJ3EjTqr11FJ90hvHeOqNPfYB68rqt//J/2jvy8+16/NNq80aGia96gSD9r0capEcHaZxqq9Rs5HyynXdr5YIZo42CwcTDYOKb+nywJ7dIggo2DwcbBYOMwD/5wO/NgqAoGGweDjcM8+MPt0iCCjYPBxsFg43A+OKP9DJwPfofMakW1foZo43A++Dco0s/54A/rlwbng/NQp5/zwRlo1M/54LMo1c/54A/rlwbng8+iVD/ngzPQqJ/zwXmo08/54A/rlwbng3+DIv2sRRuH88E/o10/WOb5tzm+vPvFtz9CQNqL7xlgrUYosoyDwcbBYONgsHG+cr/dj28DfI+012aH4XR5TBWtkeyVrOv1WkKHGbZtay3hG9kGXy6XEjrMoN7g+/1eQgcUgiraOAzRH4YhGqrDNMkwfwHCh5d/KMN7BgAAAABJRU5ErkJggg==", "0f126c8c0aa4f2f848077073d069dc98a1055525db0781c353b451b1e0cfec38": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEV0lEQVR4nO2d0ZHjIAyGnRuXlhbiEkJNbAl2C+nN98AcQyCbC/ZqEeL7nrwkwRp+hBCY9TQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACACi77vgvWfpGt3wCXy6W1CUdBWg38aW0AyILAxkFg4yCwcWbvvegNpOvvHedcaxMKPpweM4vWwHy73ap+sG1b1fdr6x+N2vasZb5er1U/qDWotv7REBf48XiI3kC6fnjP3NqA9qQ+ZC+gDD1EhxlsOs8vS6RhiJZi27ZSyFDinDPjyke2MvZ9/2QP5MOvtSJz3ExsjenpIZ4WOu73e7z++vp6WV6rWW39v1Oe6uecC30x0zjk8dL2SPvA0JOszE3jn5ZW30YUOLpsutaWXoePbDytMO5mQ3TTOEjGC0se/NRJP4kfsfv/t+rSCdrG3bQ82B9si0amF9M/maXtkZ7NjThER4Ki+76HFk/VNcOIAqeemsoZnSl+amCsHjcGB4IHl9dmuBzIg6tisPI82HuffZr5ce958KAeHLudc+6SkKlrgEEFDuz7nkVZ770ZaQPjCuy9jy4blQ4ObUlja3lwmVbGLEj0vofLyYMrKDeFJivZzmHsDNHfCem9N7P3dwAjAoeQkQ6DELCQB4dpwctvTsX6lIa4y35wHWE+PD1nt00tUoSRITru/Djn7ve7pTznJEYEfkm2ztzWmFbYyYO/W6BQux4ekI4mdjw49Ke07cLyMmmSHYKWcedgsvXwzTFMCTwlioYAPLLvBizkwVl59rxVcOsYnjXEXfLg48QuFRsuWwYZDWtDdMR7H5QePAxb8+AsfAyu7mQpD+60nDwYToHAxkFg46jOg2vRFl8/YcRnsj5/MONMb5BDlf0M0cbpQ+BlWZZlaW3FcRraP2uLiyWxaZZlWdf1ZP2/H3ff2y+Ndg/OOn53ftzcftUCx+ZY1zX2/Y401mC/XoHT1skuutBYif1zbbypzduk80gNcfen5isS6PXgsr+XPqEZJfbrFXh6bqO+1A1osF+1wFPRHB2pG2hufwd58Lquofu/bB39cfe9/dJoXIsu6c5xMxrar32IhpNo9GBtmUYtquxXvR88Qjn/JwtOgcDGQWDjqMuDRyuXBg82DgIbB4GNQx7cuJw8GE6BwMZBYOOQBzculwYPNg4CGweBjaM6D66lx/jK+eB3qHp2IqLKfoZo4/QhMOeDD6MuDy7hfPAZtHtw8/O1J2luv2qBNZyvPYMG+/UKrOR87WGU2M/5YMFyDej1YCXnaw+jxH69Ak86zteeQYP9qgWeFJyvPUlz+zvIgzkffAaNa9El3TluBueDQQqNHqwt06ild/uhJ16/0PHHav/mhZEQkX7wXRCk1QCTLOMgsHEQ2DgIbJxZ+u1+vD3wPRrfcPzh9JhZtAbm2+1W9YNt26q+X1v/aNS2Zy3z9Xqt+kGtQbX1j4a4wI/HQ/QG0vXDe5hFG4chujEM0fDrkCZ1xF+L9EzmSFeRCQAAAABJRU5ErkJggg==", "a105ddc65c28732f961b763020383ef348b3ac3f74d5391bd240a1edd2b44ff8": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAD0ElEQVR4nO3d4ZGzIBCAYfwmpaWFWEKsiZSgLaQ37wdzDIdRUePH7vo+vzxzk9lhXRCRiXMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGacRxrxyBa0zS1QwAAAIA0jfe+dgyidV1XOwRgXvN4PGrHINowDLVDOOR2v99rxyCa+gS/3+/aMeBEt9oBrEtriAFlK9FddLiDTe/zp2fOpr2LlnuTNQzDXCK7rvtvYatPcO0AZmWFmyWb6WmhW9pwz+czHr9er4rn0/x1XTeOY9Pkz2TCQufZ8WhfLhR9k5WVafyTp2/lJCY4lmz6MkJ6HD7K/gEf/asdwKxYprGTjAdUcLk/RVB33E3Ph1yG2GKlpgfuN81nx6P9bk5iFx2FjI7jGFo8zS4KSUxwWqlpOmMxxU/pq1fJHYODUMHTYxRqhM+DvffZp1kdMw9eJrSC42XXdV2TyLKLVUITHIzjmI2y3ntSu4ncBHvvY8nGTIeCJsflhM6Dd5+fTlvjLGvf9zMPFmS66OQuP5uS20VvNZdI7732KjzCToLnhL73sjkWOg/een5uJTGb0e4Yj7XPg02Nwe5vpXrv0/Rf897bWoKjdAEqLDDXjqgOI2Nw7Jl5Xp0xNQ+eewaS3mBfbR5spILdbxazFcbX68U82JSQy3Rx4uI9trUEh4ymS8h146nuJm0cPXJ+Knx65Pu1j8F2pknxkWT6St7Hp9OXYifBzrmPGyAuzlSC3W+O458k29Q8mPeip6zdRSNDgo0jwcYdWg/eStr4WkL7GLznLjptr2VHrobzaI9/E7po476T4LZt27b9yldVoT3+Bbfj41ZsmrZt+77PPpU/7i7Hr93RCs4ufHV1oD3+VYcSHJuj7/t47StqI+3xl9if4LR1sgMVbaQ9/kKH1oNLSBh3vzWP12h/BU+v92lNSKY9/kKHxuC0jTS2jvb4Sxy9i86aQ13raI9/1RfmwX3fh8v/Y+vIH3eX49fuO290aG8a7fEv4Fm0cXsqWPtMQ3v8mxjZH3zeee37g+mijSPBxpFg4zbPg692Xjsq2DgSbBwJNo558Mp55sEQjQQbR4KNYx68cl47Ktg4EmwcCTaO/cEr2B+8RObdivb4N6GLNo79wc7pj38B+4PZH7xI+/5a7fGvYn+wc2rjL8H+YK3xF2J/sHHsD9YafyH2BzunNv4S7A/WHf8q9gezP7iA9qbRHv8CnkUbx/5gQLPPv+aISPuL7wAAADgBP+W4QvtrszCueTwetWMQbRiG2iEccrvf77VjEE19gt/vd+0YcCJWk4yji15BFw2gnh/Oo0AMKtbNeAAAAABJRU5ErkJggg==", "dcfe40da7eaa9af4113342b83cc1f17f654f70eeef1a93c4eb208b7318da2dbe": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEK0lEQVR4nO2dUZbiIBBFcY5LcwtmCbKmuIRkC+4t88FpDk3UCY5AVXHvV4aOPe/wUlVAoHUOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARHDatq3g7lPZ/QNyOp16S/gUrNXIn94CoC4YbBwMNg4GG+c8z3PRB0rvHw3vfW8JOw4OjxlFa+Rc+oHr9VpDhxnWde0t4RfFBl8ulxo6zKDe4MfjUUMHVKLYYPmkMURBMZWiwwg2HefvW2pDiq7Fuq57I0OL937YUD4557ZtO/IO5OBtvcgCNzNb4vS0CcURnHbc7XaL1/f7vWN76p/3PjyLmcdhHl9bj7QYMDXIysI0/nPk1TcLBseQTdfa0uvwozF3K9h52RDDNCbJeDFyBBcPstIg6Ft30/agP2iLItML92NzbT3SRnMWUnQkOLptW+jx1N1hsWBwGqmpnTGY4k8HzNV2anAgRPD+eliKI1hO3Y3t8zzHwL3f77fbLfoaPpVW6Np6pNVgIxEcc6/3/pSQZekBMWJwYNu2rMrO8zystQE7BodEHUI2Oh0CemSPi2uwkLr7tN39lMB0LB1nTW30SMPCNCmyf4nkRp0dReyk6FdGzvMsbWTbEiMGh5ycpWtwH6xFC3wfHN4mPb3T7dazeB+sj7jQkc6GuyoShJEUHd8Uee/TlSwwYvBTsnXpvmJ6YeR9sHv95yUajxukVQc7ERyev7Svw3I00yQ7BC/jmwY39madgCmDXeJoKMAjx27Awjw4a8/2Z4Wwzt4Q19PDPLgu8RGMHZ0tg4yGtRQdmec5OD14GbYWwVm5GdxdZ2keLKRd2rDObIqGAAYbB4ON03QeXIq0+noEaTW4xSj6+EYLmbvXVOsnRRunj8HTNE3T1OW//gqK9FffF70nds00Tcuy/Ofvb1933+uXRusIzh58LXEQUae/qcGxO5Zlic++/D6KaNTfzuC0d7IL4X0UUKq/6fng2r9fwjxYGu0ieP+872NCMkr1N63BaR+p6J0Mjfpbj6Kz7hDeO3vU6e8wD16WJTz+T3tHft19r18afXZ0qOiaNyjSz1q0cVpEsPaZhmr9BvdF922Xti+aFG0cDDYOBhvH1N/JktAuDSLYOBhsHAw2DvPgL7czD4amYLBxMNg4zIO/3C4NItg4GGwcDDYO54ML2o/A+eB3yBytqNZPijYO54M/QZF+zgd/Wb80OB9chjr9nA8uQKN+zgcfRal+zgd/Wb80OB98FKX6OR9cgEb9nA8uQ51+zgd/Wb80OB/8CYr0sxZtHM4H/xvt+sEyz7/Q8eXdL74AEiLSNr4XgLUaYZBlHAw2DgYbB4ONcy79dj++DfA90rbNOnd4eMwoWiPFK1nX67WGDjOs69pbwi+KDb5cLjV0mEG9wY/Ho4YOqASjaOOQor8MKRqawzTJMH8BfjafQGkLvIIAAAAASUVORK5CYII=", "e4814c30abf064be6b89d629e951bfbbb0e7b72fd509edf2ad83090ae5711d37": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAFHUlEQVR4nO2d25GrMBBE8a0NzSmYECAmEQKk4Ny4H1OemhW7XmQYIbX6fGH5UV1qj15oUNcRQgghhBBCCCGEEEIIIYQQQgghpDpu67omfPqW9vkGud1uV0v4FFpbI/+uFkB8ocHg0GBwaDA4XyGEpC+kfr41xnG8WsKGncNjjqJr5Cv1C4/Hw0MHDMuyXC3hG8kG3+93Dx0wVG/w8/n00EGcSDa4fGwMsUOBaqJlBGvH+dsSb9hEe7Esy9ZIKRnHsdlQvnVdt67rnnsgOz92FVHgRmaXOD3NQnIE24obhkGvp2m6sNz6N46j/Bcjj2Ue762ntBiAGmRFYaovW159QzBYQ9autdlreavN3Qo4Nxs0TLWR1IuWIzh5kGWD4Np+15aLftGmIu1F97LZW09pozmEJloRR9d1lRq37jYLgsE2Uq2dGkz6boNtNU4fLEgEb6+bJTmCy+l3tTyEoIE7TdMwDOqrfMv20N56SuuDQSJY295xHG+GqJVuEBCDhXVdo142hNCstQKOwdJQS8iq0xLQLXsMMg8up5x9MMkKDQaHBoOT3AeXeT+4nPLSVkYZweDQYHBoMDjJa9El9HMll5cGIxgcGgwODQaH8+CTyzkPJlmhweDQYHDQ5sHb27G6izaPntJA2DarbJMKu1Z3yyo4TfRvRoYQSttlkRMcg8mPZJ0Hp/JBfnAI4bde+fi+6D2U1lrk6INtfb3n4GhF/oJRFR9/MEE2/R4gDLI0P7j7fYM784Oz0vd93/fn/qaat80PPt1XD/1OuM+Dt2jV9H0/z/PB3x+GYRiG9+Gr+cGSueSqvzRyR3D0xz83DtTmaZqmafLID3bV70FWg7U65nnW//7xOtK87+6VIjyOo2ahda880uPjWyf9ruQz2NZOdFF4HQmV6s+aH+z0+zY/WHPO7PVZ+cE1ki+Ct//3bUx8jHgpq5KyIm2vuzMG0q76/cg6D57nWSrFtmnn1s42gk8kg/7Tyb3QoXWkL8/6ZXtTQQbSHun9fvqduGAerHX0Y+0cuS9rPyDz489+54j+0rhmqbKKqnlDRfp5uxCcHBFc+0yjav3cF31yOfdFk6zQYHBoMDho+6IvLy8NRjA4NBgcGgwO58Enl3MeTLJCg8GhweBwHnxyeWkwgsGhweDQYHBA8oPzlO+B+cHvKHO0UrV+NtHg4OQH56Qi/Qj5wa7lqfpLAyo/OAPV6UfID85GjfqZH7yXSvUj5AdnK68RkPzgDFSqP2sfbOuoitqJqFF/7lF0VB2F186W6vRD5Qfn6XeZH/w3VVTNGyrSz7VocJgf/De16yfIpD1ht80n8iZR2sb3BGhtjXCQBQ4NBocGg0ODwflKfWJny6eI7aG0bbNdt3t4zFF0jSSvZD0eDw8dMCzLcrWEbyQbfL/fPXTAUL3Bz+fTQwdxAuHkswgbQ+xQoJro7ZP8nZ7t/wY20V4sy7I1Uo9waDaUk9NH/SV9SBS4kdklTk+zkBzBZT4ny/qnh5FGHh8/N6nG52RBDbKiMLWnRl8hpwgQDNaQtWtt9lreanO3As7NBg3T7fnBLUdw8iDLBkEJ+5al3J5OqCLtRfey2VtPaaM5hCZa0XNmpcY9zg+uDgSDbaRaO6Oj7bbj6hbA6YMFPSk6um6WrPnBTuX2/GA5tVB9lW+ddX7wnvLS+mCQCNa2V09217PepbzZUAYxWFjXNeplQwjNWivgGCwNtYSsOi0B3bLHIPPgcsrZB5Os0GBwaDA4/wGXv9oim8UCHgAAAABJRU5ErkJggg==", "a87e41d53de5a53e877e89536b82a8c9f00cbbe4af5b7bcef470520632fd35bb": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACQCAIAAAAA1/fXAAAEF0lEQVR4nO2dUXajMAxFzZwsLVsISwhrIkuALWRvzIdPdVxIGdzBRpLv/aJukr7jhywZ200IAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoIJuWZaMV3d5r2+QruuulvBbsNYif64WAGXBYOdgsHMw2Dm3cRyz3pD7+tYYhuFqCRsOlsdU0Ra55b7h8XiU0OGGeZ6vlvCNbIPv93sJHW4wb/D7/S6hAwqRbbB+0hgiobgaomMFm9b525bSMESXYp7nrZGxZRiGZkO5CyEsy3JkDeTgy65iFbgrszVOT6uQHcFpxz2fT7l+vV4Xtqf+DcMQ78WVx3EeX1qPthhwVWStwlR+bPnpmweDJWTTZ23pdfxVm7sV/Cw2SJjKICkXLUdwdpGVBsG1eTdtj/qjNhGZXoQvm0vr0VbNeRiihejosiyxx1N3m8WDwWmkpnZKMMlvGxyr/eTgSIzg7XWzZEewnrwr7eM4SuC+Xq/n8ym+xnelGbq0Hm052EkEy9g7DEOXsBqlG8SJwZFlWVZZdhzHZq2N+DE4DtQxZMXpGNAte5ydg5Xk3Y/t4SsFprW0zJrq6NGGh2mSsF1ECq3OjgQ/Q/RPRo7jqK2yrYkfg+EjHubB4cDsM644VdCjbbRwFcEfO1dbj1fGQ5El68HhZztZDzbPjnkN+ir4XA9ONQfWg92QGpm2tIwHg2XLVdjMeuXHj/ssW8BPDhbiAsN24aFNsnOw/n3R26Mror+CHm1JwUkER1NlBUmQxmYLaQ85OEU8Dm3vlhX8GJyWV3GJkO0cwc08WE+7tnmwkxwMP4HBzsFg51SdB+eiLb8eQVsOrlFFr/bF7aBz95pp/QzRzrnG4L7v+76/5E+fgiH9xfdFb5Gu6ft+mqb//Pz6eXdfvzZqR/DqxrcSB4I5/VUNlu6Ypknuff19JFjUX8/gtHdWF8r7KGJUf9V90aU/X8M8WBv1Inh7v29jQjNG9VfNwWkfmeidFRb1166iV92hvHe2mNN/wTx4mqZ4+3/sHf15d1+/Nq7Z0WGia3YwpJ9n0c6pEcHWZxqm9TvZF62nnX3RUBUMdg4GO8fV/8nS0K4NItg5GOwcDHYO8+CT25kHQ1Uw2DkY7BzmwSe3a4MIdg4GOweDncP54Iz2I3A+eA+d1Ypp/QzRzuF88G8wpJ/zwSfr1wbng/Mwp5/zwRlY1M/54KMY1c/54JP1a4PzwUcxqp/zwRlY1M/54DzM6ed88Mn6tcH54N9gSD/Pop3D+eB/Y10/eCbvG1fb/IbWLLRtfM8Aay1CkeUcDHYOBjsHg51zy/0GR77xcR9t22ZDOFweU0VbJPtJ1uPxKKHDDfM8Xy3hG9kG3+/3EjrcYN7g9/tdQgcUgiraOQzRJ8MQDdVhmuSYv4cio3k8OQ5+AAAAAElFTkSuQmCC"}}</script><script>
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>PokeBench replay</title>
+<style>
+:root {--font-panel:"PokeSim Panel","Courier New",monospace}
+:root {--font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+:root {--font-text:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+:root {--key:inset 1px 1px 0 var(--bevel-hi),inset -1px -1px 0 var(--bevel-lo)}
+:root {--bezel-ink:#8E9A6B}
+[data-theme=dark] {color-scheme:dark}
+[data-theme=dark] {--chassis:#0A0C0A}
+[data-theme=dark] {--panel:#171A18}
+[data-theme=dark] {--panel-2:#20241F}
+[data-theme=dark] {--ink:#DEE1D8}
+[data-theme=dark] {--ink-2:#AEB2A9}
+[data-theme=dark] {--ink-3:#8D9289}
+[data-theme=dark] {--signal:#F0913F}
+[data-theme=dark] {--signal-ink:#0A0C0A}
+[data-theme=dark] {--ok:#72C983}
+[data-theme=dark] {--rule:#6C7169}
+[data-theme=dark] {--rule-faint:#31352F}
+[data-theme=dark] {--cell-off:#2B2F2A}
+[data-theme=dark] {--bevel-hi:rgba(224,232,216,.07)}
+[data-theme=dark] {--bevel-lo:rgba(0,0,0,.75)}
+[data-theme=dark] {--wash:rgba(240,145,63,.14)}
+[data-theme=dark] {--bezel:#000000}
+[data-theme=light] {color-scheme:light}
+[data-theme=light] {--chassis:#CFCCC2}
+[data-theme=light] {--panel:#E7E4DB}
+[data-theme=light] {--panel-2:#DDDAD0}
+[data-theme=light] {--ink:#191C1A}
+[data-theme=light] {--ink-2:#3B3F39}
+[data-theme=light] {--ink-3:#4B4F48}
+[data-theme=light] {--signal:#8A3110}
+[data-theme=light] {--signal-ink:#F5F3EC}
+[data-theme=light] {--ok:#24572F}
+[data-theme=light] {--rule:#6E6B63}
+[data-theme=light] {--rule-faint:#B6B3A9}
+[data-theme=light] {--cell-off:#BFBCB1}
+[data-theme=light] {--bevel-hi:rgba(255,255,255,.6)}
+[data-theme=light] {--bevel-lo:rgba(28,26,20,.16)}
+[data-theme=light] {--wash:rgba(138,49,16,.1)}
+[data-theme=light] {--bezel:#14170F}
+* {box-sizing:border-box}
+[hidden] {display:none!important}
+body {margin:0}
+body {background:var(--chassis)}
+body {color:var(--ink)}
+body {font:15px/1.55 var(--font-text)}
+button,select {font:inherit}
+button,select {color:inherit}
+button,select {border-radius:0}
+button {cursor:pointer}
+button {touch-action:manipulation}
+:focus-visible {outline:2px solid var(--signal)}
+:focus-visible {outline-offset:2px}
+
+.rail {display:flex}
+.rail {align-items:center}
+.rail {gap:6px 16px}
+.rail {min-height:44px}
+.rail {padding:0 16px}
+.rail {background:var(--panel)}
+.rail {border-bottom:1px solid var(--rule)}
+.home {font:16px/1 var(--font-panel)}
+.home {letter-spacing:.1em}
+.home {text-transform:uppercase}
+.home {text-decoration:none}
+.home {color:var(--signal)}
+.crumb {font:12px/1 var(--font-mono)}
+.crumb {color:var(--ink-3)}
+.who {display:flex}
+.who {align-items:baseline}
+.who {gap:10px}
+.who {margin-left:8px}
+.who strong {font-size:15px}
+#model-id,#versions {font:12px/1.3 var(--font-mono)}
+#model-id {color:var(--ink-2)}
+#versions {color:var(--ink-3)}
+#versions {margin-left:auto}
+#theme {margin-left:auto}
+#versions + #theme {margin-left:0}
+.key-btn {height:32px}
+.key-btn {min-width:40px}
+.key-btn {padding:0 12px}
+.key-btn {background:var(--panel-2)}
+.key-btn {border:1px solid var(--rule)}
+.key-btn {box-shadow:var(--key)}
+.key-btn {font-size:13px}
+.key-btn:active {background:var(--chassis)}
+.key-btn:disabled {opacity:.4}
+.key-btn:disabled {cursor:default}
+
+.brief {display:grid}
+.brief {grid-template-columns:minmax(0,1fr) auto}
+.brief {gap:8px 32px}
+.brief {align-items:center}
+.brief {padding:10px 16px}
+.brief {border-bottom:1px solid var(--rule-faint)}
+#goal {margin:0}
+#goal {max-width:92ch}
+#goal {font-size:14px}
+#goal {line-height:1.5}
+#goal {color:var(--ink-2)}
+#goal b {color:var(--ink)}
+#goal b {margin-right:8px}
+.outcome {display:flex}
+.outcome {align-items:center}
+.outcome {gap:16px}
+.outcome div {white-space:nowrap}
+#score {font:32px/1 var(--font-panel)}
+#score {color:var(--signal)}
+#score.word {font-size:24px}
+#score.word {letter-spacing:.06em}
+#score.word {text-transform:uppercase}
+#score-max {font:16px/1 var(--font-panel)}
+#score-max {color:var(--ink-2)}
+#score-max {margin-left:8px}
+.badge-meter {display:flex}
+.badge-meter {gap:3px}
+.badge-meter i {width:10px}
+.badge-meter i {height:18px}
+.badge-meter i {background:var(--cell-off)}
+.badge-meter i.lit {background:var(--signal)}
+#stop {margin:0}
+#stop {font-size:12px}
+#stop {line-height:1.4}
+#stop {color:var(--ink-3)}
+#stop {max-width:24ch}
+
+.work {display:grid}
+.work {grid-template-columns:264px minmax(0,1fr) 384px}
+.work {min-height:0}
+.index {display:grid}
+.index {grid-template-rows:auto minmax(0,1fr)}
+.index {min-height:0}
+.index {background:var(--panel)}
+.index {border-right:1px solid var(--rule-faint)}
+.tabs {display:flex}
+.tabs {border-bottom:1px solid var(--rule-faint)}
+.tabs button {flex:1}
+.tabs button {height:36px}
+.tabs button {background:none}
+.tabs button {border:0}
+.tabs button {font-size:13px}
+.tabs button {color:var(--ink-2)}
+.tabs button[aria-pressed=true] {color:var(--signal)}
+.tabs button[aria-pressed=true] {box-shadow:inset 0 -3px 0 var(--signal)}
+.pane {overflow-y:auto}
+.pane {min-height:0}
+.ms {display:grid}
+.ms {grid-template-columns:12px minmax(0,1fr)}
+.ms {gap:10px}
+.ms {width:100%}
+.ms {padding:8px 12px}
+.ms {text-align:left}
+.ms {background:none}
+.ms {border:0}
+.ms {border-bottom:1px solid var(--rule-faint)}
+.ms {font-size:13px}
+.ms {line-height:1.35}
+.ms i {width:9px}
+.ms i {height:9px}
+.ms i {margin-top:4px}
+.ms i {border:1px solid var(--ink-3)}
+.ms.badge i {height:13px}
+.ms.badge i {border-color:var(--signal)}
+.ms.reached i {background:var(--ok)}
+.ms.reached i {border-color:var(--ok)}
+.ms.badge.reached i {background:var(--signal)}
+.ms.badge.reached i {border-color:var(--signal)}
+.ms small {display:block}
+.ms small {font:11px/1.5 var(--font-mono)}
+.ms small {color:var(--ink-3)}
+.ms[aria-current=true] {background:var(--wash)}
+#rows {position:relative}
+.row {position:absolute}
+.row {left:0}
+.row {right:0}
+.row {height:28px}
+.row {display:grid}
+.row {grid-template-columns:44px 64px minmax(0,1fr)}
+.row {gap:8px}
+.row {align-items:center}
+.row {padding:0 12px}
+.row {background:none}
+.row {border:0}
+.row {text-align:left}
+.row {font:12px/1 var(--font-mono)}
+.row {color:var(--ink-2)}
+.row {white-space:nowrap}
+.row span {overflow:hidden}
+.row span {text-overflow:ellipsis}
+.row .n {color:var(--ink-3)}
+.row.same .do {color:var(--ink-3)}
+.row .flag {color:var(--signal)}
+.row.on {background:var(--wash)}
+.row.on .n {color:var(--signal)}
+.row:hover {background:var(--panel-2)}
+
+.stage {display:flex}
+.stage {flex-direction:column}
+.stage {align-items:center}
+.stage {justify-content:center}
+.stage {gap:8px}
+.stage {padding:12px}
+.stage {min-width:0}
+.stage {min-height:0}
+.bezel {background:var(--bezel)}
+.bezel {padding:10px 10px 0}
+.bezel {box-shadow:inset 0 0 0 1px rgba(255,255,255,.06)}
+#screen,#thumb {display:block}
+#screen,#thumb {image-rendering:pixelated}
+#screen,#thumb {background:#000}
+#screen {width:320px}
+#screen {height:288px}
+.plate {display:flex}
+.plate {justify-content:space-between}
+.plate {align-items:center}
+.plate {gap:16px}
+.plate {height:28px}
+.plate {font:16px/1 var(--font-panel)}
+.plate {letter-spacing:.1em}
+.plate {text-transform:uppercase}
+.plate {color:var(--bezel-ink)}
+.plate {white-space:nowrap}
+.plate {overflow:hidden}
+.status {display:flex}
+.status {flex-wrap:wrap}
+.status {justify-content:center}
+.status {align-items:center}
+.status {gap:4px 20px}
+.status {min-height:22px}
+.status {font:12px/1.4 var(--font-mono)}
+.status {color:var(--ink-2)}
+.status b {font-weight:400}
+.status b {color:var(--ink-3)}
+.status b {margin-right:6px}
+.hp {display:inline-flex}
+.hp {gap:2px}
+.hp {margin:0 6px}
+.hp {vertical-align:-1px}
+.hp i {width:5px}
+.hp i {height:10px}
+.hp i {background:var(--cell-off)}
+.hp i.lit {background:var(--ok)}
+
+.inspect {min-height:0}
+.inspect {overflow-y:auto}
+.inspect {overflow-wrap:anywhere}
+.inspect {padding:16px}
+.inspect {background:var(--panel)}
+.inspect {border-left:1px solid var(--rule-faint)}
+.inspect h2 {margin:0}
+.inspect h2 {font:24px/1 var(--font-panel)}
+.inspect h2 {letter-spacing:.06em}
+.inspect h2 {text-transform:uppercase}
+.inspect h3 {margin:18px 0 6px}
+.inspect h3 {font-size:12px}
+.inspect h3 {font-weight:600}
+.inspect h3 {color:var(--ink-3)}
+.inspect p {margin:0}
+#cost {font:12px/1.5 var(--font-mono)}
+#cost {color:var(--ink-3)}
+#cost {margin-top:6px}
+#command {font-size:17px}
+#command {line-height:1.35}
+#command {margin-bottom:8px}
+.keys {display:flex}
+.keys {flex-wrap:wrap}
+.keys {gap:6px}
+.key {display:inline-flex}
+.key {align-items:center}
+.key {justify-content:center}
+.key {min-width:28px}
+.key {height:28px}
+.key {padding:0 7px}
+.key {background:var(--panel-2)}
+.key {border:1px solid var(--rule)}
+.key {box-shadow:var(--key)}
+.key {font:12px/1 var(--font-mono)}
+.key em {font-style:normal}
+.key em {color:var(--signal)}
+.key em {margin-left:5px}
+.key.idle {border-style:dashed}
+.key.idle {box-shadow:none}
+.key.idle {background:none}
+.key.idle {color:var(--ink-3)}
+.result {display:grid}
+.result {grid-template-columns:auto minmax(0,1fr)}
+.result {gap:12px}
+.result {align-items:start}
+.result button {padding:4px}
+.result button {background:var(--bezel)}
+.result button {border:0}
+#thumb {width:160px}
+#thumb {height:144px}
+#outcome {font-size:14px}
+.tag {display:inline-block}
+.tag {margin-top:6px}
+.tag {padding:1px 6px}
+.tag {border:1px solid currentColor}
+.tag {font:11px/1.5 var(--font-mono)}
+.tag {color:var(--signal)}
+.since {font:11px/1.5 var(--font-mono)}
+.since {color:var(--ink-3)}
+.since.fresh {color:var(--signal)}
+#plan-goal {font-size:15px}
+.plan-more {font-size:13px}
+.plan-more {color:var(--ink-2)}
+.plan-more {margin-top:4px}
+.plan-more b {font-weight:600}
+.plan-more b {color:var(--ink-3)}
+#notes {white-space:pre-wrap}
+#notes {font-size:14px}
+#notes {color:var(--ink-2)}
+#no-notes {font-size:13px}
+#no-notes {color:var(--ink-3)}
+#no-notes {margin-top:18px}
+
+.transport {background:var(--panel)}
+.transport {border-top:1px solid var(--rule)}
+.transport {padding:8px 16px 10px}
+.track {position:relative}
+.track {height:38px}
+.mark {position:absolute}
+.mark {top:3px}
+.mark {width:9px}
+.mark {height:9px}
+.mark {margin-left:-3px}
+.mark {padding:0}
+.mark {background:var(--chassis)}
+.mark {border:1px solid var(--ink-3)}
+.mark.badge {top:0}
+.mark.badge {height:13px}
+.mark.badge {border-color:var(--signal)}
+.mark.reached {background:var(--ok)}
+.mark.reached {border-color:var(--ok)}
+.mark.badge.reached {background:var(--signal)}
+.mark.badge.reached {border-color:var(--signal)}
+#cells {position:absolute}
+#cells {left:0}
+#cells {top:18px}
+#cells {width:100%}
+#cells {height:20px}
+#seek {position:absolute}
+#seek {left:0}
+#seek {top:16px}
+#seek {width:100%}
+#seek {height:24px}
+#seek {margin:0}
+#seek {opacity:0}
+#seek {cursor:pointer}
+.track:focus-within #cells {outline:2px solid var(--signal)}
+.track:focus-within #cells {outline-offset:2px}
+.controls {display:flex}
+.controls {align-items:center}
+.controls {gap:8px}
+.controls {margin-top:8px}
+.controls .key-btn {height:36px}
+#play {min-width:88px}
+#play {background:var(--signal)}
+#play {border-color:var(--signal)}
+#play {color:var(--signal-ink)}
+#play {font-weight:600}
+#speed {margin-left:8px}
+#position {font:16px/1 var(--font-panel)}
+#position {letter-spacing:.1em}
+#position {margin-left:16px}
+#position {white-space:nowrap}
+#spent {font:12px/1 var(--font-mono)}
+#spent {color:var(--ink-2)}
+#spent {white-space:nowrap}
+.hint {margin-left:auto}
+.hint {font:11px/1 var(--font-mono)}
+.hint {color:var(--ink-3)}
+.hint {white-space:nowrap}
+
+@media (min-width:821px) {
+body {height:100dvh}
+body {display:grid}
+body {grid-template-rows:auto auto minmax(0,1fr) auto}
+body {overflow:hidden}
+}
+@media (max-width:1180px) and (min-width:821px) {
+.work {grid-template-columns:216px minmax(0,1fr) 320px}
+.hint,#versions {display:none}
+}
+@media (max-width:820px) {
+.rail {flex-wrap:wrap}
+.rail {padding:8px 16px}
+.who {margin-left:0}
+.crumb {display:none}
+#theme {margin-left:auto}
+#versions + #theme {margin-left:auto}
+#versions {order:5}
+#versions {width:100%}
+#versions {margin-left:0}
+.brief {grid-template-columns:minmax(0,1fr)}
+.outcome {order:-1}
+.outcome {flex-wrap:wrap}
+.outcome {gap:6px 16px}
+#stop {max-width:none}
+#stop {width:100%}
+#goal {display:-webkit-box}
+#goal {-webkit-box-orient:vertical}
+#goal {-webkit-line-clamp:2}
+#goal {overflow:hidden}
+#goal.open {display:block}
+.work {display:flex}
+.work {flex-direction:column}
+.stage {padding:12px 16px}
+.inspect {border-left:0}
+.inspect {border-top:1px solid var(--rule-faint)}
+.inspect {overflow:visible}
+.index {order:3}
+.index {border-right:0}
+.index {border-top:1px solid var(--rule)}
+.pane {height:336px}
+#thumb {width:120px}
+#thumb {height:108px}
+.transport {position:sticky}
+.transport {bottom:0}
+.transport {padding:6px 16px 10px}
+.controls {flex-wrap:wrap}
+.controls .key-btn {height:44px}
+.controls .key-btn {flex:1}
+#speed {margin-left:0}
+#position {margin-left:0}
+#position,#spent {order:-1}
+#spent {margin-left:auto}
+.controls .wide {display:none}
+.hint {display:none}
+}
+@media (prefers-reduced-motion:no-preference) {
+.key-btn,.row,.ms {transition:background-color 80ms linear}
+}
+</style>
+</head>
+<body>
+<header class="rail">
+<a class="home" href="../index.html">PokeBench</a><span class="crumb">/ replay</span>
+<div class="who"><strong id="label"></strong><span id="model-id"></span></div>
+<span id="versions"></span>
+<button id="theme" class="key-btn" type="button"></button>
+</header>
+<section class="brief" aria-label="Task and result">
+<p id="goal"></p>
+<div class="outcome"><div><span id="score"></span><span id="score-max"></span></div><div id="badge-meter" class="badge-meter" hidden></div><p id="stop"></p></div>
+</section>
+<div class="work">
+<nav class="index" aria-label="Jump through the run">
+<div class="tabs"><button id="tab-ms" type="button" aria-pressed="true">Milestones</button><button id="tab-all" type="button" aria-pressed="false">Every decision</button></div>
+<div id="pane-ms" class="pane"></div>
+<div id="pane-all" class="pane" hidden><div id="rows"></div></div>
+</nav>
+<section class="stage" id="stage" aria-label="Game screen the model saw">
+<div class="bezel"><canvas id="screen" role="img" aria-label="Game screen at the start of this decision" width="160" height="144"></canvas><div class="plate"><span id="plate-decision"></span><span id="plate-place"></span></div></div>
+<div class="status" id="status"></div>
+</section>
+<aside class="inspect" aria-label="What the model did">
+<h2 id="heading"></h2>
+<p id="cost"></p>
+<h3 id="did-title">Command</h3>
+<p id="command"></p>
+<div id="keys" class="keys"></div>
+<h3>Result</h3>
+<div class="result"><button id="thumb-btn" type="button" title="Go to the next decision"><canvas id="thumb" role="img" aria-label="Game screen after the input ran" width="160" height="144"></canvas></button><div><p id="outcome"></p><span id="same" class="tag" hidden>Screen did not change</span><span id="reached" class="tag" hidden></span></div></div>
+<div id="plan-box"><h3>Model's plan <span id="plan-since" class="since"></span></h3><p id="plan-goal"></p><p class="plan-more"><b>Done when</b> <span id="plan-done"></span></p><p class="plan-more"><b>Why</b> <span id="plan-why"></span></p></div>
+<div id="notes-box"><h3>Model's notes <span id="notes-since" class="since"></span></h3><p id="notes"></p></div>
+<p id="no-notes" hidden>This replay carries game screens, controller input and what the harness reported. The model's plan and notes are not included.</p>
+</aside>
+</div>
+<footer class="transport" aria-label="Playback">
+<div class="track"><div id="marks"></div><canvas id="cells" aria-hidden="true"></canvas><input id="seek" type="range" min="0" value="0" step="1" aria-label="Decision"></div>
+<div class="controls">
+<button id="ms-prev" class="key-btn wide" type="button" aria-label="Previous milestone" title="Previous milestone ( [ )">◀◀</button>
+<button id="prev" class="key-btn" type="button" aria-label="Previous decision" title="Previous decision (Left arrow)">◀</button>
+<button id="play" class="key-btn" type="button">Play</button>
+<button id="next" class="key-btn" type="button" aria-label="Next decision" title="Next decision (Right arrow)">▶</button>
+<button id="ms-next" class="key-btn wide" type="button" aria-label="Next milestone" title="Next milestone ( ] )">▶▶</button>
+<select id="speed" class="key-btn" aria-label="Playback speed"><option value="2">2 per second</option><option value="4">4 per second</option><option value="8" selected>8 per second</option><option value="16">16 per second</option></select>
+<span id="position"></span><span id="spent"></span>
+<span class="hint" id="hint"></span>
+</div>
+</footer>
+<script id="face" type="text/plain">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</script>
+<script id="data" type="application/json">{"format": 2, "model": "gpt-5.6-terra", "completed": false, "action_policy": "assisted-gameplay-v1", "benchmark": "unrecorded", "meta": {"goal": "Reach the tile directly south of Sabrina in Saffron Gym. Do not start her battle.", "stop_reason": "model_call_budget"}, "places": ["Saffron Gym"], "outcomes": ["Moved 1 tiles.", "Moved 1 tiles, then blocked or no further movement.", "executed", "Inspection available in next observation. No frames advanced.", "Moved 2 tiles, then blocked or no further movement.", "Moved 2 tiles.", "Moved 4 tiles.", "Moved 0 tiles during input. Position changed while the game settled. Now at map 178, (15, 3)."], "steps": {"decision": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200], "before_frame": [0, 24, 48, 96, 120, 144, 264, 264, 288, 312, 432, 504, 552, 672, 768, 888, 984, 1104, 1104, 1224, 1248, 1272, 1272, 1476, 1500, 1548, 1548, 1580, 1612, 1644, 1676, 1708, 1740, 1772, 1804, 1836, 1836, 1868, 1900, 1932, 1964, 1996, 2028, 2028, 2060, 2092, 2093, 2125, 2157, 2189, 2189, 2221, 2253, 2285, 2285, 2286, 2286, 2287, 2288, 2289, 2290, 2322, 2346, 2346, 2378, 2410, 2442, 2474, 2498, 2522, 2522, 2523, 2555, 2587, 2611, 2611, 2643, 2675, 2707, 2739, 2771, 2771, 2803, 2835, 2867, 2899, 2931, 2963, 2963, 2995, 3027, 3059, 3059, 3060, 3060, 3092, 3124, 3156, 3276, 3396, 3516, 3516, 3517, 3518, 3519, 3639, 3759, 3879, 3879, 3880, 3881, 3882, 3914, 3946, 3946, 3946, 3978, 4010, 4042, 4074, 4106, 4106, 4138, 4170, 4202, 4226, 4258, 4258, 4290, 4322, 4354, 4386, 4418, 4450, 4450, 4482, 4514, 4546, 4578, 4610, 4642, 4642, 4674, 4706, 4738, 4770, 4802, 4802, 4834, 4866, 4898, 4930, 4962, 4994, 4994, 5026, 5058, 5090, 5122, 5154, 5186, 5186, 5218, 5250, 5282, 5314, 5346, 5378, 5378, 5410, 5442, 5474, 5506, 5506, 5538, 5538, 5570, 5602, 5634, 5634, 5666, 5666, 5698, 5730, 5762, 5794, 5826, 5858, 5858, 5890, 5922, 5954, 5986, 6018, 6050, 6050, 6082, 6114, 6146, 6178], "after_frame": [24, 48, 96, 120, 144, 264, 264, 288, 312, 432, 504, 552, 672, 768, 888, 984, 1104, 1104, 1224, 1248, 1272, 1272, 1476, 1500, 1548, 1548, 1580, 1612, 1644, 1676, 1708, 1740, 1772, 1804, 1836, 1836, 1868, 1900, 1932, 1964, 1996, 2028, 2028, 2060, 2092, 2093, 2125, 2157, 2189, 2189, 2221, 2253, 2285, 2285, 2286, 2286, 2287, 2288, 2289, 2290, 2322, 2346, 2346, 2378, 2410, 2442, 2474, 2498, 2522, 2522, 2523, 2555, 2587, 2611, 2611, 2643, 2675, 2707, 2739, 2771, 2771, 2803, 2835, 2867, 2899, 2931, 2963, 2963, 2995, 3027, 3059, 3059, 3060, 3060, 3092, 3124, 3156, 3276, 3396, 3516, 3516, 3517, 3518, 3519, 3639, 3759, 3879, 3879, 3880, 3881, 3882, 3914, 3946, 3946, 3946, 3978, 4010, 4042, 4074, 4106, 4106, 4138, 4170, 4202, 4226, 4258, 4258, 4290, 4322, 4354, 4386, 4418, 4450, 4450, 4482, 4514, 4546, 4578, 4610, 4642, 4642, 4674, 4706, 4738, 4770, 4802, 4802, 4834, 4866, 4898, 4930, 4962, 4994, 4994, 5026, 5058, 5090, 5122, 5154, 5186, 5186, 5218, 5250, 5282, 5314, 5346, 5378, 5378, 5410, 5442, 5474, 5506, 5506, 5538, 5538, 5570, 5602, 5634, 5634, 5666, 5666, 5698, 5730, 5762, 5794, 5826, 5858, 5858, 5890, 5922, 5954, 5986, 6018, 6050, 6050, 6082, 6114, 6146, 6178, 6210], "tokens": [7447, 8565, 9719, 10682, 11618, 12744, 15817, 9881, 10808, 11784, 12818, 16715, 9458, 10432, 11423, 12374, 16622, 9715, 12661, 8552, 9549, 10662, 14069, 8420, 9474, 10469, 11273, 12088, 8245, 9040, 9791, 10538, 11282, 11951, 12586, 8118, 8872, 9551, 10207, 10914, 11626, 12271, 8118, 8884, 9573, 10320, 11171, 11942, 12671, 8108, 8855, 9571, 10281, 10957, 12092, 8098, 8852, 9586, 10318, 11011, 11672, 12579, 8137, 8934, 9892, 10581, 11462, 12278, 8161, 9162, 9855, 10535, 11243, 12296, 8131, 8892, 9795, 10588, 11384, 12167, 8116, 8882, 9655, 10348, 11029, 11688, 12340, 8136, 8813, 9534, 10444, 11218, 12203, 8134, 8895, 9748, 10442, 11181, 11934, 12718, 8102, 8765, 9434, 10146, 10897, 11791, 12551, 8113, 8897, 9614, 10329, 11123, 11844, 12587, 8401, 9156, 9933, 10711, 11502, 12235, 8113, 8863, 9620, 10420, 11442, 12574, 8112, 8858, 9640, 10358, 11141, 11820, 12526, 8119, 8874, 9632, 10457, 11240, 11938, 12680, 8111, 8859, 9617, 10407, 11265, 12024, 8117, 8863, 9615, 10369, 11133, 11849, 12607, 8114, 8865, 9685, 10383, 11193, 11885, 12550, 8103, 8856, 9640, 10356, 11051, 11685, 12336, 8129, 8886, 9626, 10326, 11022, 11750, 12745, 8095, 8835, 9526, 10226, 10922, 14451, 8036, 8706, 9517, 10237, 10918, 11596, 12235, 8143, 8906, 9668, 10428, 11185, 11921, 12674, 8123, 8800, 9463, 10150, 10808, 11446], "screen": [1, 2, 3, 4, 5, 6, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 16, 16, 17, 18, 18, 19, 20, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 22, 21, 21, 21, 21, 21, 21, 23, 24, 24, 24, 24, 25, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 22, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21], "actions": [[["right", 8, 16, 1]], [["right", 8, 16, 1]], [["up", 8, 16, 2]], [["right", 8, 16, 1]], [["up", 8, 16, 1]], [["a", 8, 24, 1], [null, 60, 0, 1], [null, 28, 0, 1]], [], [["up", 8, 16, 1]], [["up", 8, 16, 1]], [["a", 8, 24, 1], [null, 60, 0, 1], [null, 28, 0, 1]], [["up", 8, 16, 3]], [["down", 8, 16, 2]], [["a", 8, 24, 1], [null, 60, 0, 1], [null, 28, 0, 1]], [["left", 8, 16, 4]], [["a", 8, 24, 1], [null, 60, 0, 1], [null, 28, 0, 1]], [["left", 8, 16, 4]], [["a", 8, 24, 1], [null, 60, 0, 1], [null, 28, 0, 1]], [], [["a", 8, 24, 1], [null, 60, 0, 1], [null, 28, 0, 1]], [["right", 8, 16, 1]], [["left", 8, 16, 1]], [], [["up", 8, 16, 1], [null, 30, 0, 6]], [["up", 8, 16, 1]], [["right", 8, 16, 2]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [[null, 1, 0, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [[null, 1, 0, 1]], [], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [["left", 8, 24, 1]], [["right", 8, 16, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["right", 8, 16, 1]], [["left", 8, 16, 1]], [], [[null, 1, 0, 1]], [["b", 8, 24, 1]], [["down", 8, 24, 1]], [["up", 8, 16, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [[null, 1, 0, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [[null, 120, 0, 1]], [[null, 120, 0, 1]], [[null, 120, 0, 1]], [], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [[null, 120, 0, 1]], [[null, 120, 0, 1]], [[null, 120, 0, 1]], [], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [[null, 1, 0, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["left", 8, 24, 1]], [["right", 8, 16, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["select", 8, 24, 1]], [], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]], [["b", 8, 24, 1]]], "place": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "outcome": [0, 0, 1, 0, 0, 2, 3, 0, 0, 2, 4, 5, 2, 6, 2, 6, 2, 3, 2, 0, 0, 3, 7, 0, 5, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 2, 2, 2, 2, 0, 0, 0, 2, 2, 2, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, -1], "start": 0, "breaks": {}}, "frames": {"width": 160, "height": 144, "columns": 16, "per_sheet": 256, "count": 27, "sheets": ["data:image/png;base64,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"]}}</script>
+<script>
 const data = JSON.parse(document.getElementById('data').textContent)
 const $ = id => document.getElementById(id)
-let index = 0
+
+// Format 2 packs screens into sprite sheets and steps into columns.
+// Replays published before it carry one image per screen and one object per step.
+function unpack() {
+  if (data.format !== 2) {
+    const lone = key => ({src: data.images[key], x: 0, y: 0})
+    return data.steps.map(s => ({...s, before: lone(s.before), after: lone(s.after), same: s.before === s.after}))
+  }
+  const f = data.frames
+  const c = data.steps
+  const ref = n => {
+    const slot = n % f.per_sheet
+    return {src: f.sheets[Math.floor(n / f.per_sheet)], x: slot % f.columns * f.width,
+      y: Math.floor(slot / f.columns) * f.height, w: f.width, h: f.height}
+  }
+  const pick = (list, column, i) => column && column[i] >= 0 ? list[column[i]] : undefined
+  const changed = (column, i) => Boolean(column) && column[i] >= 0 && (i === 0 || column[i] !== column[i - 1])
+  let total = 0
+  let previous = c.start
+  return c.decision.map((decision, i) => {
+    const before = c.breaks[i] === undefined ? previous : c.breaks[i]
+    previous = c.screen[i]
+    total += c.tokens[i]
+    return {decision, tokens: c.tokens[i], cumulative_tokens: c.cumulative ? c.cumulative[i] : total,
+      before_frame: c.before_frame[i], after_frame: c.after_frame[i],
+      before: ref(before), after: ref(previous), same: before === previous,
+      actions: c.actions[i].flatMap(([button, hold_frames, release_frames, times]) =>
+        Array.from({length: times}, () => ({button, hold_frames, release_frames}))),
+      location: pick(data.places, c.place, i), outcome: pick(data.outcomes, c.outcome, i),
+      commands: c.commands ? c.commands[i] : undefined, seconds: c.seconds ? c.seconds[i] : undefined,
+      plan: c.plan ? c.plan[i] : -1, plan_changed: changed(c.plan, i),
+      note: c.note ? c.note[i] : -1, note_changed: changed(c.note, i)}
+  })
+}
+
+const steps = unpack()
+const meta = data.meta || {}
+const last = steps.length - 1
+const rich = Boolean(data.plans || data.notes)
+const milestones = (meta.milestones || []).map(m => ({...m, at: Math.max(0, steps.findIndex(s => s.decision >= m.decision))}))
+const flagged = new Map(milestones.map(m => [m.at, m]))
+const GLYPH = {up: '▲', down: '▼', left: '◀', right: '▶', a: 'A', b: 'B', start: 'START', select: 'SELECT'}
+const ROW = 28
+const pictures = new Map()
+let W = 160
+let H = 144
+let cursor = 0
 let timer = null
-$('title').textContent = data.model+' · '+(data.completed ? 'Passed' : 'Failed')+' · '+(data.action_policy === 'manual-menu-v1' ? 'Manual menus' : 'Assisted gameplay')
-$('seek').max = data.steps.length-1
+let cellCount = 1
+let hashTimer = null
+
+const count = n => Number(n || 0).toLocaleString('en-US')
+const millions = n => (n / 1e6).toFixed(2) + 'M'
+const words = value => String(value).replaceAll('_', ' ')
+function el(tag, cls, text) {
+  const node = document.createElement(tag)
+  if (cls) node.className = cls
+  if (text !== undefined) node.textContent = text
+  return node
+}
+function picture(src) {
+  let pending = pictures.get(src)
+  if (!pending) {
+    pending = new Promise(done => {
+      const image = new Image()
+      image.onload = () => done(image)
+      image.src = src
+    })
+    pictures.set(src, pending)
+    if (pictures.size > 6) pictures.delete(pictures.keys().next().value)
+  }
+  return pending
+}
+function paint(canvas, ref) {
+  canvas.wanted = ref
+  picture(ref.src).then(image => {
+    if (canvas.wanted !== ref) return
+    const w = ref.w || image.naturalWidth
+    const h = ref.h || image.naturalHeight
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width = w
+      canvas.height = h
+    }
+    canvas.getContext('2d').drawImage(image, ref.x, ref.y, w, h, 0, 0, w, h)
+    if (canvas.id !== 'screen' || (w === W && h === H)) return
+    W = w
+    H = h
+    fit()
+  })
+}
+function presses(actions) {
+  const groups = []
+  let wait = 0
+  for (const a of actions) {
+    if (!a.button) {
+      wait += a.hold_frames + a.release_frames
+      continue
+    }
+    const g = groups[groups.length - 1]
+    if (g && g.button === a.button) g.count += 1
+    else groups.push({button: a.button, count: 1})
+  }
+  return {groups, wait}
+}
+function short(step) {
+  const p = presses(step.actions)
+  if (!p.groups.length) return step.actions.length ? 'wait' : 'none'
+  const g = p.groups[0]
+  return GLYPH[g.button] + (g.count > 1 ? ' ×' + g.count : '') + (p.groups.length > 1 ? ' …' : '')
+}
+function sentence(c) {
+  const verb = words(c.command || '')
+  const what = c.argument === undefined || c.argument === null ? '' : ' ' + c.argument
+  return verb.charAt(0).toUpperCase() + verb.slice(1) + what + (c.count > 1 ? ' ×' + c.count : '')
+}
+function cellMeter(lit, total, cls) {
+  const box = el('span', cls)
+  Array.from({length: total}).forEach((_, k) => box.append(el('i', k < lit ? 'lit' : '')))
+  return box
+}
+
+function fit() {
+  const stage = $('stage')
+  const phone = matchMedia('(max-width:820px)').matches
+  const wide = (stage.clientWidth - 24 - 20) / W
+  const tall = phone ? wide : (stage.clientHeight - 24 - 10 - 28 - 8 - 22) / H
+  const scale = Math.max(1, Math.floor(Math.min(wide, tall)))
+  $('screen').style.width = W * scale + 'px'
+  $('screen').style.height = H * scale + 'px'
+  const canvas = $('cells')
+  const ratio = window.devicePixelRatio || 1
+  canvas.width = canvas.clientWidth * ratio
+  canvas.height = canvas.clientHeight * ratio
+  cellCount = Math.max(2, Math.floor((canvas.clientWidth + 1) / 4))
+  const span = (cellCount - 1) * 4
+  for (const mark of $('marks').children) mark.style.left = Math.round(Number(mark.dataset.at) / Math.max(1, last) * span) + 'px'
+  drawCells()
+  drawRows()
+}
+function drawCells() {
+  const canvas = $('cells')
+  const ratio = window.devicePixelRatio || 1
+  const g = canvas.getContext('2d')
+  const css = getComputedStyle(document.documentElement)
+  const lit = Math.round(cursor / Math.max(1, last) * (cellCount - 1))
+  g.setTransform(ratio, 0, 0, ratio, 0, 0)
+  g.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight)
+  Array.from({length: cellCount}).forEach((_, k) => {
+    g.fillStyle = css.getPropertyValue(k < lit ? '--signal' : k === lit ? '--ink' : '--cell-off')
+    g.fillRect(k * 4, 0, 3, canvas.clientHeight)
+  })
+}
+function drawRows() {
+  const pane = $('pane-all')
+  if (pane.hidden) return
+  const first = Math.max(0, Math.floor(pane.scrollTop / ROW) - 4)
+  const shown = steps.slice(first, first + Math.ceil(pane.clientHeight / ROW) + 8)
+  $('rows').replaceChildren(...shown.map((s, k) => {
+    const at = first + k
+    const flag = flagged.get(at)
+    const row = el('button', 'row' + (at === cursor ? ' on' : '') + (s.same ? ' same' : ''))
+    row.type = 'button'
+    row.style.top = at * ROW + 'px'
+    row.append(el('span', 'n', String(s.decision)), el('span', 'do', short(s)),
+      el('span', flag ? 'flag' : '', flag ? flag.label : s.location || ''))
+    row.onclick = () => seek(at)
+    return row
+  }))
+}
+function reveal() {
+  const pane = $('pane-all')
+  if (pane.hidden) return
+  const top = cursor * ROW
+  if (top < pane.scrollTop || top + ROW > pane.scrollTop + pane.clientHeight) pane.scrollTop = top - pane.clientHeight / 2
+}
+
 function render() {
- const step = data.steps[index]
- $('before').src = data.images[step.before]
- $('after').src = data.images[step.after]
- $('position').textContent = 'Decision '+step.decision+' · '+(index+1)+' / '+data.steps.length+' · '+step.cumulative_tokens.toLocaleString()+' cumulative tokens'
- $('actions').textContent = step.actions.map(a=>(a.button || 'wait')+' · hold '+a.hold_frames+' frames · release '+a.release_frames+' frames').join('\n') || 'No controller input'
- $('seek').value = index
- $('prev').disabled = index===0
- $('next').disabled = index===data.steps.length-1
+  const s = steps[cursor]
+  paint($('screen'), s.before)
+  paint($('thumb'), s.after)
+  $('plate-decision').textContent = 'Decision ' + s.decision
+  $('plate-place').textContent = s.location || ''
+  $('heading').textContent = 'Decision ' + s.decision
+  $('cost').textContent = count(s.tokens) + ' tokens' + (s.seconds ? ', ' + s.seconds.toFixed(1) + ' s model time' : '')
+
+  const commands = s.commands || []
+  $('did-title').textContent = commands.length ? 'Command' : 'Controller input'
+  $('command').hidden = !commands.length
+  $('command').textContent = commands.map(sentence).join(', then ')
+  const p = presses(s.actions)
+  $('keys').replaceChildren(...p.groups.map(g => {
+    const key = el('span', 'key', GLYPH[g.button])
+    if (g.count > 1) key.append(el('em', '', '×' + g.count))
+    return key
+  }))
+  if (p.wait) $('keys').append(el('span', 'key idle', 'wait ' + p.wait + ' frames'))
+  if (!s.actions.length) $('keys').append(el('span', 'key idle', 'no controller input'))
+
+  $('outcome').textContent = s.outcome || (cursor === last ? 'Last recorded decision.' : 'Screen after the input ran.')
+  $('same').hidden = !s.same
+  const flag = flagged.get(cursor)
+  $('reached').hidden = !flag
+  if (flag) $('reached').textContent = flag.label + ', +' + flag.points + ' points'
+
+  $('status').replaceChildren()
+  if (s.lead && s.lead.name) {
+    const lead = el('span')
+    lead.append(el('b', '', 'Lead'), s.lead.name + ' L' + s.lead.level,
+      cellMeter(Math.ceil(10 * s.lead.hp / Math.max(1, s.lead.max_hp)), 10, 'hp'), s.lead.hp + '/' + s.lead.max_hp + ' HP')
+    $('status').append(lead)
+  }
+  $('status').hidden = !$('status').children.length
+
+  const plan = rich && s.plan >= 0 ? data.plans[s.plan] : null
+  const note = rich && s.note >= 0 ? data.notes[s.note] : null
+  $('plan-box').hidden = !plan
+  $('notes-box').hidden = !note
+  $('no-notes').hidden = rich
+  if (plan) {
+    $('plan-goal').textContent = plan.goal
+    $('plan-done').textContent = plan.done_when
+    $('plan-why').textContent = plan.revision_reason
+    $('plan-since').textContent = s.plan_changed ? 'revised at this decision' : 'since decision ' + plan.decision
+    $('plan-since').classList.toggle('fresh', Boolean(s.plan_changed))
+  }
+  if (note) {
+    $('notes').textContent = note.text
+    $('notes-since').textContent = s.note_changed ? 'rewritten at this decision' : 'since decision ' + note.decision
+    $('notes-since').classList.toggle('fresh', Boolean(s.note_changed))
+  }
+
+  $('seek').value = cursor
+  $('position').textContent = s.decision + ' / ' + steps[last].decision
+  $('spent').textContent = millions(s.cumulative_tokens) + ' of ' + millions(steps[last].cumulative_tokens) + ' tokens'
+  $('prev').disabled = cursor === 0
+  $('next').disabled = cursor === last
+  $('ms-prev').disabled = !milestones.some(m => m.at < cursor)
+  $('ms-next').disabled = !milestones.some(m => m.at > cursor)
+  const current = milestones.filter(m => m.at <= cursor).pop()
+  const lists = [$('pane-ms').children, $('marks').children]
+  milestones.forEach((m, k) => {
+    for (const list of lists) list[k].classList.toggle('reached', m.at <= cursor)
+    lists[0][k].setAttribute('aria-current', String(m === current))
+  })
+  drawCells()
+  reveal()
+  drawRows()
+  if (hashTimer === null) hashTimer = setTimeout(() => {
+    hashTimer = null
+    history.replaceState(null, '', '#d=' + steps[cursor].decision)
+  }, 400)
 }
-function stop() {clearInterval(timer)
- timer=null
- $('play').textContent='Play'
+function go(index) {
+  cursor = Math.max(0, Math.min(last, index))
+  render()
 }
-function play() {stop()
- if(index===data.steps.length-1) index=0
- $('play').textContent='Pause'
- timer=setInterval(()=>{if(index<data.steps.length-1) {index+=1
- render()
- } else stop()},Number($('speed').value))
+function stop() {
+  clearInterval(timer)
+  timer = null
+  $('play').textContent = cursor === last && last > 0 ? 'Replay' : 'Play'
 }
-$('prev').onclick=()=>{index=Math.max(0,index-1)
- render()}
-$('next').onclick=()=>{index=Math.min(data.steps.length-1,index+1)
- render()}
-$('play').onclick=()=>timer ? stop() : play()
-$('speed').onchange=()=>{if(timer) play()}
-$('seek').oninput=()=>{index=Number($('seek').value)
- render()}
-document.onkeydown=e=>{if(e.key==='ArrowRight') $('next').click()
- if(e.key==='ArrowLeft') $('prev').click()}
+function seek(index) {
+  stop()
+  go(index)
+  stop()
+}
+function play() {
+  if (timer) return stop()
+  if (cursor === last) go(0)
+  $('play').textContent = 'Pause'
+  timer = setInterval(() => {
+    go(cursor + 1)
+    if (cursor === last) stop()
+  }, 1000 / Number($('speed').value))
+}
+function milestone(direction) {
+  const target = direction > 0 ? milestones.find(m => m.at > cursor) : milestones.filter(m => m.at < cursor).pop()
+  if (target) seek(target.at)
+}
+function showTab(all) {
+  $('pane-all').hidden = !all
+  $('pane-ms').hidden = all
+  $('tab-all').setAttribute('aria-pressed', String(all))
+  $('tab-ms').setAttribute('aria-pressed', String(!all))
+  reveal()
+  drawRows()
+}
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme
+  $('theme').textContent = theme === 'dark' ? 'Light' : 'Dark'
+  $('theme').setAttribute('aria-label', 'Switch to the ' + (theme === 'dark' ? 'light' : 'dark') + ' theme')
+  drawCells()
+}
+
+$('label').textContent = meta.label || data.model
+$('model-id').textContent = meta.label ? data.model : ''
+document.title = (meta.label || data.model) + ' replay | PokeBench'
+const harness = meta.harness || {}
+const versions = [...new Set([harness.name, harness.package && 'harness ' + harness.package,
+  harness.benchmark || (data.benchmark !== 'unrecorded' && data.benchmark),
+  harness.core && 'core ' + harness.core, harness.emulator].filter(Boolean))]
+$('versions').textContent = versions.join('  /  ')
+if (!versions.length) $('versions').remove()
+const policy = data.action_policy === 'manual-menu-v1' ? 'Manual menus.' : 'Assisted gameplay.'
+if (meta.goal) {
+  $('goal').append(el('b', '', 'Goal'), meta.goal)
+  $('goal').onclick = () => $('goal').classList.toggle('open')
+} else {
+  $('goal').textContent = policy + ' ' + count(steps.length) + ' recorded decisions.'
+}
+const scored = typeof meta.score === 'number'
+$('score').textContent = scored ? meta.score : data.completed ? 'Completed' : 'Not completed'
+$('score').classList.toggle('word', !scored)
+if (scored && meta.maximum) $('score-max').textContent = '/ ' + meta.maximum + ' pts'
+if (typeof meta.badges === 'number') {
+  $('badge-meter').replaceWith(Object.assign(cellMeter(meta.badges, 8, 'badge-meter'), {title: meta.badges + ' of 8 badges'}))
+}
+$('stop').textContent = [typeof meta.badges === 'number' && meta.badges + ' of 8 badges.',
+  meta.stop_reason && 'Stopped at ' + count(meta.decisions || steps[last].decision) + ' decisions: ' + words(meta.stop_reason) + '.']
+  .filter(Boolean).join(' ')
+if (milestones.length) {
+  milestones.forEach(m => {
+    const badge = String(m.id).startsWith('badge:') ? ' badge' : ''
+    const item = el('button', 'ms' + badge)
+    item.type = 'button'
+    const text = el('span', '', m.label)
+    text.append(el('small', '', 'Decision ' + count(m.decision) + ', +' + m.points + ' points'))
+    item.append(el('i'), text)
+    item.onclick = () => seek(m.at)
+    $('pane-ms').append(item)
+    const mark = el('button', 'mark' + badge)
+    mark.type = 'button'
+    mark.title = m.label + ' (decision ' + m.decision + ')'
+    mark.setAttribute('aria-label', mark.title)
+    mark.dataset.at = m.at
+    mark.onclick = () => seek(m.at)
+    $('marks').append(mark)
+  })
+} else {
+  $('tab-ms').hidden = true
+  $('ms-prev').hidden = true
+  $('ms-next').hidden = true
+  showTab(true)
+}
+$('hint').textContent = 'Arrows step, Shift for 10, Space plays' + (milestones.length ? ', [ ] milestones' : '')
+$('rows').style.height = steps.length * ROW + 'px'
+$('seek').max = last
+$('seek').oninput = event => seek(Number(event.target.value))
+$('pane-all').onscroll = drawRows
+$('tab-ms').onclick = () => showTab(false)
+$('tab-all').onclick = () => showTab(true)
+$('prev').onclick = () => seek(cursor - 1)
+$('next').onclick = () => seek(cursor + 1)
+$('thumb-btn').onclick = () => seek(cursor + 1)
+$('ms-prev').onclick = () => milestone(-1)
+$('ms-next').onclick = () => milestone(1)
+$('play').onclick = play
+$('speed').onchange = () => {
+  if (!timer) return
+  stop()
+  play()
+}
+$('theme').onclick = () => {
+  const theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'
+  setTheme(theme)
+  try { localStorage.setItem('pokebench-theme', theme) } catch (error) {}
+}
+document.addEventListener('keydown', event => {
+  if (event.target.tagName === 'SELECT' || event.metaKey || event.ctrlKey || event.altKey) return
+  const moves = {ArrowRight: () => seek(cursor + (event.shiftKey ? 10 : 1)), ArrowLeft: () => seek(cursor - (event.shiftKey ? 10 : 1)),
+    Home: () => seek(0), End: () => seek(last), BracketLeft: () => milestone(-1), BracketRight: () => milestone(1), Space: play}
+  const move = moves[event.code]
+  if (!move || (event.code === 'Space' && event.target.tagName === 'BUTTON')) return
+  event.preventDefault()
+  move()
+})
+window.addEventListener('resize', fit)
+
+let saved = null
+try { saved = localStorage.getItem('pokebench-theme') } catch (error) {}
+const wanted = new URLSearchParams(location.hash.slice(1))
+setTheme(wanted.get('theme') === 'light' || (!wanted.get('theme') && saved === 'light') ? 'light' : 'dark')
+if (wanted.get('tab') === 'all') showTab(true)
+cursor = Math.max(0, steps.findIndex(s => s.decision >= Number(wanted.get('d') || 0)))
+const face = new FontFace('PokeSim Panel', Uint8Array.from(atob($('face').textContent.trim()), c => c.charCodeAt(0)).buffer)
+face.load().then(loaded => document.fonts.add(loaded)).catch(() => {})
+fit()
 render()
-</script></html>
+stop()
+</script>
+</body>
+</html>
