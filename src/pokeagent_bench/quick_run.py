@@ -117,6 +117,10 @@ def summary(result, output):
             lines.append('Shown but not ranked:')
             lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in shown]
     lines.append(f'Tokens used {millions(result["tokens_used"])} of {millions(result["token_budget"])}.')
+    for cell in result['cells']:
+        if cell['state'] == 'paused' and cell.get('provider_errors'):
+            lines.append(f'{cell["task_id"]} paused after a provider error with no model reply. '
+                         'Its checkpoint is kept and the same command resumes it.')
     if row['completed'] < row['planned']:
         lines.append('Not every run finished. Run the same command again to continue, or raise --budget.')
     elif result.get('suite') == 'smoke':
@@ -141,7 +145,10 @@ def recover(output, rom):
             folder.rmdir()
         elif (folder / 'recovery.json').is_file():
             print(f'Resuming {row["task_id"]} from its checkpoint.', flush=True)
-            execute(parser().parse_args(['resume', '--rom', str(rom), '--run', str(folder)]))
+            result = execute(parser().parse_args(['resume', '--rom', str(rom), '--run', str(folder)]))
+            if isinstance(result, dict) and result.get('state') == 'paused':
+                raise ValueError(f'{row["task_id"]} paused again after a provider error with no model reply. '
+                                 'No tokens were spent on it. Run the same command again later')
 
 
 def run_suite(args):

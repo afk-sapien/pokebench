@@ -2,14 +2,32 @@
 from __future__ import annotations
 
 from collections import deque
+from datetime import datetime, timezone
 import time
 
 from .core import action, digest, encoded, write_json
 from .providers import PROMPT, ProviderError
 from .visual_feedback import VisualFeedback
-from .recovery import checkpoint, mark_pending
+from .recovery import NO_REPLY, atomic, checkpoint, mark_pending
 from .memory import validate as validate_journal
 from . import loop_budget
+
+# Waits in seconds before each new attempt after a provider error with no model reply.
+RETRY_DELAYS = (15, 60, 240)
+
+
+def no_reply(error, provider):
+    """True when the model answered nothing, so the attempt used no tokens and the decision can run again."""
+    return error.details.get("no_reply") is True and hasattr(provider, "packet_baseline")
+
+
+def note_provider_error(session, decision, attempt, error, seconds):
+    row = {"at": datetime.now(timezone.utc).isoformat(), "decision": decision, "attempt": attempt,
+           "message": str(error), "kind": error.details.get("kind"), "status": error.details.get("status"),
+           "seconds": round(seconds, 3)}
+    session.provider_errors.append(row)
+    with (session.output / "provider-errors.jsonl").open("a") as stream:
+        stream.write(encoded(row).decode() + "\n")
 
 
 def run(session, provider, *, input_price=None, output_price=None, pause_after_decisions=None):
@@ -49,6 +67,9 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
             feedback.__dict__.update(saved["feedback"])
         for key, value in saved["provider"].items():
             setattr(provider, key, value)
+        if session.resume_metadata.get("after_provider_error"):
+            # The failed turn may sit in the old CLI transcript, so the decision runs in a fresh segment.
+            provider.packet_baseline = None
         session.audit_memory("resume", session.resume_metadata)
     session.manifest["agent"].update(identity)
     invocation_start = decision_index
@@ -87,6 +108,7 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
     (session.output / "prompt.txt").write_text(prompt)
     session._persist()
     save_boundary()
+    held = False
     try:
         while session.status()["state"] == "running":
             pause_request = session.output / "pause.request"
@@ -135,17 +157,40 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                 if estimate > remaining_tokens:
                     session.finish("token_budget")
                     break
-            started = time.monotonic()
             if provider.provider != "random":
                 session.usage["calls"] += 1
             decision_index += 1
             session.current_decision = decision_index
             mark_pending(session, decision_index)
-            try:
-                decision, usage, record = provider.decide(
-                    observation, session.notes, list(recent), session.limits,
-                    session.limits.max_wall_seconds - session.elapsed())
-            except ProviderError as error:
+            error = None
+            for attempt in range(len(RETRY_DELAYS) + 1):
+                started = time.monotonic()
+                try:
+                    decision, usage, record = provider.decide(
+                        observation, session.notes, list(recent), session.limits,
+                        session.limits.max_wall_seconds - session.elapsed())
+                    error = None
+                    break
+                except ProviderError as failure:
+                    error = failure
+                    if not no_reply(error, provider):
+                        break
+                    note_provider_error(session, decision_index, attempt + 1, error, time.monotonic() - started)
+                    # The failed turn may sit in the CLI transcript, so the next attempt starts a fresh segment.
+                    provider.close()
+                    provider.packet_baseline = None
+                    if error.details.get("kind") != "provider_error" or attempt == len(RETRY_DELAYS):
+                        break
+                    time.sleep(RETRY_DELAYS[attempt])
+            if error is not None and no_reply(error, provider):
+                # Nothing was answered or spent. Keep the last checkpoint so the same command resumes here.
+                if provider.provider != "random":
+                    session.usage["calls"] -= 1
+                atomic(session.output / "pending.json", {"decision": decision_index, "phase": NO_REPLY})
+                held = True
+                session.finish("paused")
+                break
+            if error is not None:
                 session.usage["accounting_complete"] = False
                 session.usage["model_seconds"] += time.monotonic() - started
                 write_json(session.output / "error.json", {"kind": "provider_error", "message": str(error),
@@ -288,7 +333,7 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
         session.finish("infrastructure_error")
         raise
     finally:
-        if session.usage["accounting_complete"] and session.reason not in ("infrastructure_error", "interrupted"):
+        if session.usage["accounting_complete"] and session.reason not in ("infrastructure_error", "interrupted") and not held:
             save_boundary()
         provider.close()
         session.close()

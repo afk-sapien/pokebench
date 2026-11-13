@@ -354,6 +354,10 @@ def check_cell(cell, files, fixtures, rom, work, replay):
         raise ValueError('Run did not finish')
     if result.get('score_max') != maximum:
         raise ValueError('Maximum score differs from the benchmark')
+    # A provider error with no model reply spent nothing, and its decision ran again after a resume.
+    errors = result.get('provider_errors', [])
+    if not isinstance(errors, list) or not all(isinstance(row, dict) for row in errors):
+        raise ValueError('Provider error record is malformed')
     folder = work / cell['id']
     folder.mkdir()
     write_json(folder / 'manifest.json', {**manifest, 'scenario': scenario})
@@ -364,7 +368,7 @@ def check_cell(cell, files, fixtures, rom, work, replay):
     awards = [award for line in actions.decode().splitlines() for award in json.loads(line)['achievements']]
     return {'state': 'finished', 'score': proof['score'], 'score_max': maximum, 'completed': bool(result.get('completed')),
             'achievements': awards, 'actions': proof['actions'], 'frames': proof['frames'],
-            'stop_reason': str(result.get('stop_reason')), 'usage': {**usage, 'calls': calls},
+            'stop_reason': str(result.get('stop_reason')), 'usage': {**usage, 'calls': calls}, 'provider_errors': errors,
             'wall_seconds': result.get('wall_seconds') if isinstance(result.get('wall_seconds'), (int, float)) else None}
 
 

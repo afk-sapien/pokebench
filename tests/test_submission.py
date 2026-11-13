@@ -108,6 +108,48 @@ def test_bundle_holds_only_logs_and_results_and_verifies(world, capsys):
     assert json.loads((world['bundle'].with_name('bundle.verified.json')).read_text())['verified']
 
 
+def test_a_cell_resumed_after_a_provider_error_verifies(world, monkeypatch):
+    """Rebuild cell 1 through the runner: a provider outage pauses it, a resume finishes it, and verify accepts it."""
+    from pokeagent_bench import runner
+    from pokeagent_bench.providers import ProviderError
+    from pokeagent_bench.recovery import resume
+
+    class Provider:
+        provider, model, reasoning_effort, prompt = 'openai-compatible', 'local-model', 'low', 'test'
+        config_identity = {}
+
+        def __init__(self, outage):
+            self.outage, self.packet_baseline = outage, None
+
+        def decide(self, observation, *args):
+            if self.outage and observation['frame'] == 10:
+                raise ProviderError('No reply', details={'kind': 'provider_error', 'status': 503, 'no_reply': True})
+            return {'actions': [{'button': 'a', 'hold_frames': 3, 'release_frames': 2}], 'notes': None}, {
+                'input_tokens': 10, 'output_tokens': 5}, {}
+
+        def close(self):
+            pass
+
+    monkeypatch.setattr(runner, 'RETRY_DELAYS', (0, 0, 0))
+    folder = world['run'] / 'cell-0001'
+    for path in folder.iterdir():
+        path.unlink()
+    folder.rmdir()
+    scenario = json.loads((world['fixtures'] / 'battle-one' / 'scenario.json').read_text())
+    session = Session(FakeEngine(), folder, scenario, limits=Limits(max_total_tokens=1000, max_model_calls=5),
+                      agent={'provider': 'openai-compatible', 'model': 'local-model', 'reasoning_effort': 'low'})
+    assert runner.run(session, Provider(outage=True))['state'] == 'paused'
+    restored = resume(world['rom'], folder, engine_factory=lambda rom, state: FakeEngine())
+    restored.engine.frame = 10
+    assert runner.run(restored, Provider(outage=False))['stop_reason'] == 'model_call_budget'
+    result = json.loads((folder / 'result.json').read_text())
+    assert result['state'] == 'finished' and len(result['provider_errors']) == 4
+    submission.submit(world['run'], world['bundle'], handle='octocat')
+    verified = check(world)
+    assert verified['verified'] and verified['problems'] == []
+    assert [cell['provider_errors'] for cell in verified['cells']] == [4, 0]
+
+
 def test_endpoint_host_needs_the_flag(world):
     submission.submit(world['run'], world['bundle'], endpoint_host=True)
     with zipfile.ZipFile(world['bundle']) as archive:

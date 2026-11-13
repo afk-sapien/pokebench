@@ -18,6 +18,8 @@ from .catalog_runtime import CatalogEvaluator
 
 
 LOGS = ('actions.jsonl', 'decisions.jsonl', 'memory.jsonl')
+# Pending phase for a decision the provider failed with no model reply. Nothing was spent or played.
+NO_REPLY = 'provider-error-no-reply'
 FIELDS = ('campaign_tracking', 'frame', 'actions', 'notes', 'reason', 'operation_ids', 'operations', 'trace_head',
           'usage', 'usage_available', 'journal_enabled', 'journal_entries', 'journal_results', 'current_decision',
           'gameplay_catalog', 'gameplay_memory', 'gameplay_inspection', 'gameplay_result', 'gameplay_operations')
@@ -145,7 +147,9 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
             if actual != expected:
                 raise ValueError('Uncommitted or changed run log. Refusing rollback or duplicated actions')
         pending = root / 'pending.json'
-        if pending.exists() and json.loads(pending.read_text())['decision'] > saved['runner']['decision_index']:
+        in_flight = json.loads(pending.read_text()) if pending.exists() else {}
+        after_provider_error = in_flight.get('phase') == NO_REPLY
+        if in_flight.get('decision', 0) > saved['runner']['decision_index'] and not after_provider_error:
             raise ValueError('In-flight decision has uncertain usage or actions. Automatic retry is unsafe')
         engine_checkpoint = saved.get('engine_checkpoint')
         engine = (engine_factory or RedEngine)(Path(rom), None if engine_checkpoint is not None else saved['engine'])
@@ -180,6 +184,10 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
         session.resume_metadata = {'checkpoint_saved_at': saved['saved_at'], 'restored_elapsed': saved['elapsed'],
                                    'resumed_at': resumed_at.isoformat(),
                                    'offline_seconds': max(0, (resumed_at - datetime.fromisoformat(saved['saved_at'])).total_seconds())}
+        if after_provider_error:
+            session.resume_metadata['after_provider_error'] = in_flight['decision']
+        errors = root / 'provider-errors.jsonl'
+        session.provider_errors = [json.loads(line) for line in errors.read_text().splitlines()] if errors.exists() else []
         return session
     except BaseException:
         if engine:

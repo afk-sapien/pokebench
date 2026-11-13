@@ -133,6 +133,7 @@ class Session:
         self.current_decision = 0
         self.resume_state = None
         self.resume_metadata = None
+        self.provider_errors = []
         self.started = clock()
         self.ended = None
         self.reason = None
@@ -416,6 +417,9 @@ class Session:
                   "emulated_seconds": self.frame / FPS, "wall_seconds": round(self.elapsed(), 6),
                   "actions": self.actions, "usage": self._public_usage(), "trace_head": self.trace_head,
                   "updated_at": datetime.now(timezone.utc).isoformat()}
+        if getattr(self, "provider_errors", None):
+            # Provider failures with no model reply. Each used no tokens and its decision ran again.
+            result["provider_errors"] = self.provider_errors
         if self.campaign_tracking:
             from .campaign_report import enrich_current_profile
             result['campaign'] = enrich_current_profile(self.engine, self.evaluator.report())

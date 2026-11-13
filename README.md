@@ -48,6 +48,8 @@ The last command runs three cheap tasks to check that your setup works. Two lead
 
 Short and smoke run at low reasoning effort and Long at medium, as the leaderboard runs did. `run --suite` prints the plan and the token budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see a rough dollar ceiling for the whole budget. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the token budget.
 
+If the Claude provider fails before the model replies, the call counts no tokens. The harness tries the decision again after 15 s, 60 s and 4 min. A usage limit is not retried. If the provider is still failing, the task pauses at its last checkpoint and the suite stops there. Run the same command later and the task resumes from that checkpoint.
+
 Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 
 Local and third party models run through any OpenAI compatible chat endpoint. The model must accept images.

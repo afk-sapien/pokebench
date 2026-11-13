@@ -205,10 +205,21 @@ def test_synthetic_subscription_error_preserves_reset_without_claiming_model_swi
     with pytest.raises(ProviderError, match='subscription usage limit') as error:
         complete(provider([event]))
     assert error.value.details == {'kind': 'subscription_limit', 'provider_code': 'usage_limit_reached',
-                                   'status': 429, 'resets_at': 1791967200, 'limit_type': 'five_hour'}
+                                   'status': 429, 'resets_at': 1791967200, 'limit_type': 'five_hour',
+                                   'no_reply': True}
 
 
 def test_unknown_synthetic_error_still_stops_without_a_game_decision():
     event = {'type': 'assistant', 'message': {'model': '<synthetic>', 'content': []}}
-    with pytest.raises(ProviderError, match='synthetic provider error'):
+    with pytest.raises(ProviderError, match='synthetic provider error') as error:
         complete(provider([event]))
+    assert error.value.details['no_reply'] is True
+
+
+def test_a_synthetic_error_after_a_model_message_is_not_a_clean_failure():
+    # The model already answered part of this decision, so its usage is unknown and the decision cannot rerun.
+    events = [{'type': 'assistant', 'message': {'model': MODEL, 'content': [{'type': 'text', 'text': 'thinking'}]}},
+              {'type': 'assistant', 'message': {'model': '<synthetic>', 'content': []}}]
+    with pytest.raises(ProviderError, match='synthetic provider error') as error:
+        complete(provider(events))
+    assert error.value.details['no_reply'] is False

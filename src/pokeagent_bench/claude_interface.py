@@ -55,6 +55,8 @@ def install(module):
         native_commands = []
         from .gameplay_contract import COMMANDS
         commands = set(COMMANDS)
+        # A synthetic error before any model message means the model never answered this decision.
+        replied = False
         while True:
             event = self.server.event(deadline)
             kind = event.get('type')
@@ -75,11 +77,13 @@ def install(module):
                     limited = event.get('apiError') == 'usage_limit_reached' or event.get('error') == 'rate_limit'
                     details = {'kind': 'subscription_limit' if limited else 'provider_error',
                                'provider_code': event.get('apiError'), 'status': event.get('apiErrorStatus'),
-                               'resets_at': quota.get('resetsAt'), 'limit_type': quota.get('rateLimitType')}
+                               'resets_at': quota.get('resetsAt'), 'limit_type': quota.get('rateLimitType'),
+                               'no_reply': not replied}
                     raise module.ProviderError('Claude subscription usage limit reached' if limited
                                                else 'Claude returned a synthetic provider error', details=details)
                 if message.get('model') != self.model:
                     raise module.ProviderError('Claude resolved a different model')
+                replied = True
                 for block in message.get('content', []):
                     if block.get('type') == 'tool_use' and block.get('name') != 'StructuredOutput':
                         name = block.get('name')

@@ -21,7 +21,7 @@ Use `--suite long` for PokeBench Long. For a local or third party model add `--p
 `submit` prints the list before it writes anything.
 
 - The task list with its limits and start state hashes.
-- For each run: the harness and package versions, the model id, the provider, the settings, every controller input with the game facts read after it, the score, the stop reason and the token counts.
+- For each run: the harness and package versions, the model id, the provider, the settings, every controller input with the game facts read after it, the score, the stop reason, the token counts and any provider errors that came before a model reply, with their time and message.
 - Your GitHub name, if you gave one, and the number of attempts you declare with `--attempts`.
 
 It holds no ROM, save state, screenshot, prompt, model reply or note. The endpoint address and the platform string are removed. Add `--include-endpoint-host` if you want the host name of your endpoint recorded.
@@ -49,6 +49,7 @@ Anyone can run this. It needs the ROM and a finished `setup`, calls no model and
 - Each run must use the suite's reasoning effort: low for Short and smoke, medium for Long, as the leaderboard runs did.
 - Each run is replayed from the verifier's own start state. The recorded inputs must reproduce the recorded game facts, and the score is recomputed from the replay.
 - A run over its decision or token limit fails.
+- A run that paused after a provider error with no model reply and was resumed is accepted. Those calls count no tokens, and the report shows how many there were.
 
 One failed run fails the whole bundle. The result is written to `MODEL-SUITE.pokebench.verified.json`.
 

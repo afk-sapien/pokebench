@@ -111,6 +111,7 @@ def report(batch):
             row['decisions'] = raw.get('usage', {}).get('calls')
             row['controller_actions'] = raw.get('actions')
             row['accounting_complete'] = accounting_complete(raw)
+            row['provider_errors'] = len(raw.get('provider_errors') or [])
             if cell['mode'] == 'preparation':
                 assessment = raw.get('assessment') or {}
                 if raw.get('evaluation_error') or assessment.get('evaluation_errors'):
@@ -229,7 +230,8 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         write_json(output / 'report.json', latest)
         if on_cell:
             on_cell(next(row for row in latest['cells'] if row['id'] == cell['id']))
-        if not accounting_complete(value):
+        # A cell paused by a provider error waits for a rerun before any later cell starts.
+        if not accounting_complete(value) or value.get('state') == 'paused':
             break
     result = report(output)
     result.update(token_budget=budget, tokens_used=used)
