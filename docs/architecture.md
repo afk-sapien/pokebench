@@ -69,7 +69,9 @@ campaign has been used to claim gameplay capability or calibrated budgets.
 Core releases are adopted explicitly by changing the wheel URL and SHA-256, then
 regenerating `uv.lock`. Run the test suite and replay existing private ROM traces
 before upgrading. Any change to observations, scoring, prompts, or budgets also
-requires a benchmark version change. Run manifests record core version, direct
+requires a benchmark version change. The published cohort uses the tag
+`red-v0.59-lossless-inspection` for the v065 runtime, and the next protocol change
+bumps it. Run manifests record core version, direct
 installation metadata, and source hashes so locally edited builds remain distinct.
 
 ## References

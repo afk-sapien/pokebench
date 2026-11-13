@@ -22,3 +22,5 @@ scenarios/
 tables.json
 strategy.json
 collection.json
+SOURCE-FILES.json
+docs/drafts/

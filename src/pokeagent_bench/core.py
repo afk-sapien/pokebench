@@ -27,14 +27,8 @@ def core_provenance():
 
 def emulator_provenance():
     """Identify the backend selected by Core, never by installed package presence."""
-    try:
-        from pokecore.emulator_state import runtime_provenance
-    except ModuleNotFoundError as error:
-        if error.name != "pokecore.emulator_state":
-            raise
-        installed = distribution("pyboy")
-        return {"backend": "pyboy", "version": installed.version,
-                "state_format": "pyboy-format-15" if installed.version == "2.7.0" else "unknown"}
+    from pokecore.emulator_state import runtime_provenance
+
     return runtime_provenance()
 
 

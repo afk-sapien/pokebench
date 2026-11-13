@@ -6,7 +6,9 @@ not an intrinsic model capability independent of its tools and memory.
 ## Starting conditions
 
 Use the same scenario directory for every compared run. The manifest identifies
-the ROM and state by SHA-256 and pins PyBoy 2.7.0. The initial state contains the
+the ROM and state by SHA-256 and records the exact emulator build. Current runs
+use PyBoy RS 0.1.5 through PokeSim Core. Older runs that recorded PyBoy 2.7.0
+replay only under that backend. The initial state contains the
 cartridge RNG and machine state. Python's random-controller seed only controls
 that baseline's choices. It does not reseed Pokemon.
 
