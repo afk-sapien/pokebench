@@ -94,9 +94,9 @@ def parser():
     resume.add_argument("--pause-after-decisions", type=int)
     for name in ("run", "mcp"):
         command = sub.add_parser(name, help="Run a model" if name == "run" else "Expose the controller over stdio MCP")
-        command.add_argument("--rom", type=Path, required=True)
-        command.add_argument("--scenario", type=Path, required=True)
-        command.add_argument("--output", type=Path, required=True)
+        # A suite run fills these in. A single scenario run checks them in execute.
+        for required in ("rom", "scenario", "output"):
+            command.add_argument("--" + required, type=Path, required=name == "mcp")
         command.add_argument("--labels", type=Path)
         command.add_argument("--game-data", type=Path, help="Private verified game data bundle for the gameplay track")
         command.add_argument("--track", choices=("structured", "visual", "gameplay"), default="structured")
@@ -109,7 +109,12 @@ def parser():
         if name == "run":
             command.add_argument("--journal", action="store_true", help="Enable the bounded agent-authored journal for compact Codex")
             command.add_argument("--pause-after-decisions", type=int)
-            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude"), required=True)
+            command.add_argument("--suite", choices=("smoke", "short", "long"),
+                                 help="Benchmark a model on a whole suite. Smoke is a three task setup check")
+            command.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
+            command.add_argument("--budget", type=int, help="Suite token budget. Defaults to the leaderboard budget")
+            command.add_argument("--dry-run", action="store_true", help="Print the suite plan and estimate, then stop")
+            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude"))
             command.add_argument("--model")
             command.add_argument("--codex-policy", choices=("standard", "grounded", "grounded-motion", "compact", "continuous", "gameplay", "bounded"), default="compact",
                                  help="Compact is the default. Legacy policies remain selectable for comparisons")
@@ -296,6 +301,13 @@ def execute(args):
         from .dashboard import create_app
         uvicorn.run(create_app(args.runs), host="127.0.0.1", port=args.port)
         return None
+    if args.command == "run":
+        if args.suite:
+            from .quick_run import run_suite
+            return run_suite(args)
+        missing = [name for name in ("rom", "scenario", "output", "provider") if getattr(args, name) is None]
+        if missing:
+            raise ValueError("Use --suite, or supply " + ", ".join("--" + name for name in missing))
     limits = Limits(**{key: getattr(args, key) for key in asdict(Limits())})
     labels = load_labels(args.labels)
     gameplay_catalog = None

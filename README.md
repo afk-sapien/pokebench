@@ -35,18 +35,28 @@ Supply your own Pokemon Red ROM. No ROM, emulator save or game table is distribu
 ```sh
 uv sync --locked --extra dev
 uv run pokebench setup --rom /path/to/red.gb
-uv run pokebench catalog-run --task battle-prepared-gym \
-  --provider claude --model claude-sonnet-5-5 \
-  --rom /path/to/red.gb --fixtures data/fixtures --game-data data/game-data \
-  --output runs/first
+uv run pokebench run --model claude-sonnet-5-5 --suite smoke
 ```
+
+The last command runs three cheap tasks to check that your setup works. Two leaderboard models used about 40K tokens on them. When it passes, run a real suite with the same command.
+
+| Suite | What it runs | Default token budget |
+| --- | --- | --- |
+| `smoke` | Three cheap tasks that check your setup. Never a leaderboard result | 500K |
+| `short` | Every ready PokeBench task | 60M |
+| `long` | The PokeBench Long campaign, up to 2,000 decisions | 30M |
+
+`run --suite` prints the plan and the token budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see a rough dollar ceiling for the whole budget. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the token budget.
+
+Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 
 `setup` checks the ROM hash and writes two folders under `data/`, which git ignores. It takes a few seconds and makes no model calls.
 
 - `data/fixtures` holds the starting save for every task, including the PokeBench Long start. The repository ships them as one small pack that is compressed against the ROM, so the pack opens only with the required ROM.
 - `data/game-data` holds the game tables. They are generated from the public [pret/pokered](https://github.com/pret/pokered) disassembly at a pinned commit. The download is checked by hash, and the tables must match the hashes of the tables the leaderboard runs used.
 
-`setup` prints how many tasks are ready and lists any task held back because its definition changed after its fixture was last validated. Running it again builds only what is missing. The last command spends model usage through your Claude Code login.
+`setup` prints how many tasks are ready and lists any task held back because its definition changed after its fixture was last validated. Running it again builds only what is missing.
+
 ## Smoke test
 
 This checks the install with your ROM. It needs no model login, makes no paid calls and takes a few seconds.

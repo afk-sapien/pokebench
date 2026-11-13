@@ -203,6 +203,8 @@ def setup(rom, output, reference_archive=None):
         build_game_data(game_data, reference_archive)
         built.append('game-data')
     report = inventory(fixtures)
+    # `run --suite` reads the ROM path from here, so it needs no --rom.
+    (output / 'setup.json').write_text(json.dumps({'rom': str(Path(rom).resolve())}) + '\n')
     if not report['runnable']:
         raise ValueError(f'No task is ready to run. Delete {fixtures} and run setup again.')
     # A task is held back when its definition changed after its fixture was last validated.

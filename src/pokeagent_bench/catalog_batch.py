@@ -167,7 +167,7 @@ def report(batch):
 
 
 def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repeats=1,
-              budget, resume=False, benchmark=None):
+              budget, resume=False, benchmark=None, on_cell=None):
     if type(budget) is not int or budget <= 0:
         raise ValueError('Batch token budget must be a positive integer')
     output = Path(output)
@@ -223,7 +223,10 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         if value is None:
             raise ValueError('Task did not persist a final result')
         used += token_usage(value)
-        write_json(output / 'report.json', report(output))
+        latest = report(output)
+        write_json(output / 'report.json', latest)
+        if on_cell:
+            on_cell(next(row for row in latest['cells'] if row['id'] == cell['id']))
         if not accounting_complete(value):
             break
     result = report(output)
