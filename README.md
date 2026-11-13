@@ -20,7 +20,7 @@ The exploratory leaderboard preserves completed and partial results across frame
 ## Install
 
 ```sh
-git clone https://github.com/afk-sapien/pokebench.git
+git clone --single-branch https://github.com/afk-sapien/pokebench.git
 cd pokebench
 uv sync --locked --extra dev
 uv run pokebench --help
@@ -28,7 +28,20 @@ uv run pokebench --help
 
 Python 3.12 is selected for reproducibility. The Python distribution and import remain `pokeagent-bench` and `pokeagent_bench` for compatibility. Both `pokebench` and the older `pokeagent` command work.
 
-Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. PyBoy RS 0.1.5 is installed from hash-pinned wheels. Replay and fixture loading accept runs and fixtures recorded under an older build only for build pairs proven by a replay sweep ([PyBoy RS 0.1.5 notes](docs/history/pyboy-rs-015.md)). `uv sync` installs PokeSim Core 0.9.0 (the `pokecore` package) from its hash-pinned release wheel. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
+Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. The required ROM is Pokemon - Red Version (USA, Europe) (SGB Enhanced), SHA-1 `ea9bcae617fdf159b045185467ae58b2e4a48b9a` (SHA-256 `5ca7ba01642a3b27b0cc0b5349b52792795b62d3ed977e98a09390659af96b7b`). Scenarios record the ROM SHA-256 and refuse any other ROM. PyBoy RS 0.1.5 is installed from hash-pinned wheels. Replay and fixture loading accept runs and fixtures recorded under an older build only for build pairs proven by a replay sweep ([PyBoy RS 0.1.5 notes](docs/history/pyboy-rs-015.md)). `uv sync` installs PokeSim Core 0.9.0 (the `pokecore` package) from its hash-pinned release wheel. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
+
+## Smoke test
+
+This checks the install with your ROM. It needs no model login, makes no paid calls and takes a few seconds.
+
+```sh
+uv run pokebench prepare --rom /private/red.gb --output /private/opening
+uv run pokebench run --provider random --rom /private/red.gb \
+  --scenario /private/opening --max-actions 50 --output /private/random-run
+uv run pokebench replay --rom /private/red.gb --run /private/random-run
+```
+
+`prepare` boots the ROM with fresh SRAM and saves the opening scenario. The random provider presses 50 random buttons, so the run stops with `action_budget` and a score of 0. `replay` repeats the recorded inputs offline and prints `"verified": true`. Each output path must not exist yet.
 
 ## What the agent sees and controls
 

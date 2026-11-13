@@ -196,6 +196,17 @@ def test_load_engine_accepts_only_listed_pairs(tmp_path, monkeypatch, runtime, o
         session.load_engine(rom, scenario)
 
 
+def test_rom_mismatch_names_expected_and_actual_checksums(tmp_path, monkeypatch):
+    from pokeagent_bench import session
+    rom, scenario = _scenario(tmp_path)
+    rom.write_bytes(b"other rom")
+    _use_runtime(monkeypatch, NEWER)
+    monkeypatch.setattr(session, "RedEngine", _refuse_engine)
+    with pytest.raises(ValueError, match="Scenario ROM checksum mismatch") as refused:
+        session.load_engine(rom, scenario)
+    assert f"expected SHA-256 {core.digest(b'rom')}, got {core.digest(b'other rom')}" in str(refused.value)
+
+
 @pytest.mark.parametrize("runtime, message", [(NEWER, "Run state checksum mismatch"), (UNLISTED, "not verified")])
 def test_replay_accepts_only_listed_pairs(tmp_path, monkeypatch, runtime, message):
     import json
