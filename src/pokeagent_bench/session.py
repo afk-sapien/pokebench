@@ -68,8 +68,9 @@ def load_engine(rom, scenario):
     validate_emulator_manifest(manifest, verified_pairs=True)
     if manifest["state_sha256"] != digest(state):
         raise ValueError("Scenario state checksum mismatch")
-    if manifest["rom_sha256"] != digest(rom.read_bytes()):
-        raise ValueError("Scenario ROM checksum mismatch")
+    rom_sha256 = digest(rom.read_bytes())
+    if manifest["rom_sha256"] != rom_sha256:
+        raise ValueError(f"Scenario ROM checksum mismatch: expected SHA-256 {manifest['rom_sha256']}, got {rom_sha256}")
     preview = None
     if "preview_sha256" in manifest:
         preview = (scenario / "preview.png").read_bytes()
