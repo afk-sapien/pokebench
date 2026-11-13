@@ -34,7 +34,8 @@ class Flaky:
         if self.failures.get(observation['frame'], 0) > 0:
             self.failures[observation['frame']] -= 1
             raise ProviderError('Claude returned a synthetic provider error',
-                                details={'kind': self.kind, 'status': 529, 'no_reply': not self.reply})
+                                details={'kind': self.kind, 'status': 529, 'no_reply': not self.reply,
+                                         'text': 'API Error: 529 Overloaded'})
         self.packet_baseline = 'segment'
         return {'actions': [{'button': 'wait', 'hold_frames': 2, 'release_frames': 0}], 'notes': None}, {
             'input_tokens': 10, 'output_tokens': 5}, {}
@@ -75,6 +76,7 @@ def test_a_failed_attempt_is_retried_in_a_fresh_segment(tmp_path):
     assert result['usage']['calls'] == 4 and result['usage']['accounting_complete']
     assert result['usage']['input_tokens'] == 40
     assert [(row['decision'], row['attempt'], row['status']) for row in result['provider_errors']] == [(3, 1, 529), (3, 2, 529)]
+    assert {row['text'] for row in result['provider_errors']} == {'API Error: 529 Overloaded'}
     # Each failed attempt drops the segment, so the retry cannot resume a transcript that holds the failed turn.
     assert provider.seen == [None, 'segment', 'segment', None, None, 'segment']
     assert [row['index'] for row in read(session.output, 'decisions.jsonl')] == [1, 2, 3, 4]

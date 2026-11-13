@@ -1,6 +1,7 @@
 """Metered response repair without executing malformed controller requests."""
 from copy import deepcopy
 import json
+import re
 
 from .decision_contract import OPTIONAL, normalize
 
@@ -75,10 +76,15 @@ def install(module):
                 if message.get('model') == '<synthetic>':
                     quota = event.get('quotaLimits') or event.get('apiErrorParams', {}).get('rate_limit_info') or {}
                     limited = event.get('apiError') == 'usage_limit_reached' or event.get('error') == 'rate_limit'
+                    # The stream event can omit the status, but the CLI's text names it, as in "API Error: 403".
+                    text = ' '.join(block.get('text', '') for block in message.get('content', [])
+                                    if isinstance(block, dict)).strip()[:200]
+                    found = re.search(r'API Error: (\d{3})', text)
                     details = {'kind': 'subscription_limit' if limited else 'provider_error',
-                               'provider_code': event.get('apiError'), 'status': event.get('apiErrorStatus'),
+                               'provider_code': event.get('apiError') or event.get('error'),
+                               'status': event.get('apiErrorStatus') or (int(found.group(1)) if found else None),
                                'resets_at': quota.get('resetsAt'), 'limit_type': quota.get('rateLimitType'),
-                               'no_reply': not replied}
+                               'no_reply': not replied, 'text': text or None}
                     raise module.ProviderError('Claude subscription usage limit reached' if limited
                                                else 'Claude returned a synthetic provider error', details=details)
                 if message.get('model') != self.model:

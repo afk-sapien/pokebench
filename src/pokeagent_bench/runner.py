@@ -13,7 +13,8 @@ from .memory import validate as validate_journal
 from . import loop_budget
 
 # Waits in seconds before each new attempt after a provider error with no model reply.
-RETRY_DELAYS = (15, 60, 240)
+# The v0.61 test met two Cloudflare 403 outages. One lasted at least 2 min 47 s, so the waits span about 15 minutes.
+RETRY_DELAYS = (15, 60, 240, 600)
 
 
 def no_reply(error, provider):
@@ -24,7 +25,7 @@ def no_reply(error, provider):
 def note_provider_error(session, decision, attempt, error, seconds):
     row = {"at": datetime.now(timezone.utc).isoformat(), "decision": decision, "attempt": attempt,
            "message": str(error), "kind": error.details.get("kind"), "status": error.details.get("status"),
-           "seconds": round(seconds, 3)}
+           "text": error.details.get("text"), "seconds": round(seconds, 3)}
     session.provider_errors.append(row)
     with (session.output / "provider-errors.jsonl").open("a") as stream:
         stream.write(encoded(row).decode() + "\n")

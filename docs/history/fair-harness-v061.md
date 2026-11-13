@@ -210,21 +210,23 @@ lost none, so older Long rows were hurt unevenly.
 
 ## A provider error pauses the run
 
-A Sonnet test run of the Short cave task stopped at decision 333 because the
-Claude CLI returned an API error before the model wrote anything. The harness
-marked the usage as uncertain, so the run could not be resumed. The model did
-not end it.
+Two Sonnet test runs on the v0.61 harness stopped on an API error that came
+before the model wrote anything. The Short cave task stopped after 333
+decisions and the parcel task after 4. Both errors were a Cloudflare 403 page, and
+every Claude session on the machine got the same page at those times. The first
+outage lasted at least 2 min 47 s. The harness marked the usage as uncertain,
+so neither run could be resumed. The model did not end either one.
 
-The Claude adapter now records whether the model replied before an error.
-When it did not, the call counts no tokens and the harness tries the same
-decision again in a fresh segment, after 15 s, 60 s and 4 min. A usage limit
-is not retried. When the retries run out, the run pauses. The call is not
+The Claude adapter now records whether the model replied before an error, and
+keeps the error text and its status. When the model did not reply, the call
+counts no tokens and the harness tries the same decision again in a fresh
+segment, after 15 s, 1 min, 4 min and 10 min. A usage limit is not retried. When the retries run out, the run pauses. The call is not
 counted, the checkpoint stays at the last finished decision and
 `pending.json` names the phase. `pokebench run --suite` stops at the paused
 task, and the same command resumes it from its checkpoint.
 
 Each failed attempt is one row in `provider-errors.jsonl` and in the run
-result, with the time, the decision, the attempt, the message, the kind and
-the status. `verify` accepts a resumed run and reports the count. An error
+result, with the time, the decision, the attempt, the message, the kind, the
+status and the provider's own text. `verify` accepts a resumed run and reports the count. An error
 after the model replied, a timeout and a transport error still stop the run
 with uncertain usage, because the model may have spent tokens on them.

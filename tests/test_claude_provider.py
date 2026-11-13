@@ -206,7 +206,7 @@ def test_synthetic_subscription_error_preserves_reset_without_claiming_model_swi
         complete(provider([event]))
     assert error.value.details == {'kind': 'subscription_limit', 'provider_code': 'usage_limit_reached',
                                    'status': 429, 'resets_at': 1791967200, 'limit_type': 'five_hour',
-                                   'no_reply': True}
+                                   'no_reply': True, 'text': None}
 
 
 def test_unknown_synthetic_error_still_stops_without_a_game_decision():
@@ -214,6 +214,18 @@ def test_unknown_synthetic_error_still_stops_without_a_game_decision():
     with pytest.raises(ProviderError, match='synthetic provider error') as error:
         complete(provider([event]))
     assert error.value.details['no_reply'] is True
+
+
+def test_a_cloudflare_403_keeps_its_status_and_text():
+    # The shape the CLI wrote twice during the v0.61 test. The stream event has no status field of its own.
+    text = 'Failed to authenticate. API Error: 403 Attention Required! | Cloudflare'
+    event = {'type': 'assistant', 'error': 'authentication_failed',
+             'message': {'model': '<synthetic>', 'content': [{'type': 'text', 'text': text}]}}
+    with pytest.raises(ProviderError, match='synthetic provider error') as error:
+        complete(provider([event]))
+    details = error.value.details
+    assert (details['kind'], details['status'], details['provider_code']) == ('provider_error', 403, 'authentication_failed')
+    assert details['text'] == text and details['no_reply'] is True
 
 
 def test_a_synthetic_error_after_a_model_message_is_not_a_clean_failure():
