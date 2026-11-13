@@ -68,3 +68,32 @@ graders and the fixture stay in the package, so old runs can still be
 replayed. The fixture pack needs no rebuild: all 48 active task cases are
 runnable from the current pack, and the retired fixture stays in it, as the
 two retired navigation fixtures already do.
+
+## Pair collisions on the map
+
+In cave and forest maps the game refuses a step between two particular
+walkable tiles, such as raised and low floor in Mt. Moon. The game checks each
+pair in both directions (`CheckForTilePairCollisions` in `home/overworld.asm`).
+The local map drew both tiles as `.`, so the step looked open. In a Long run at
+Mt. Moon 1F (21,25) the map showed open floor below the player and the game
+refused the step.
+
+Each tileset's pairs join one hub tile to all of its partners. Among walkable
+tiles, cave floor `$05` pairs with three tiles in 19 maps and forest floor
+`$2E` with five tiles in 5 maps. No other tileset has pairs. The hub side is
+now drawn `:` and the partner side `,`. A step between a `:` cell and a `,` cell
+is refused. Every other step between walkable cells is unchanged. The glyph
+depends only on the tile, never on where the player stands, so the known map
+keeps it too. Because `@` hides the floor under the player, the `@` legend
+names that floor. The legend explains `:` and `,` only in maps that use them.
+An emulation of the ROM routine over the real ROM bytes matches this rule for
+every tileset and tile pair. Three rows of the pair table involve water and
+apply only while surfing. They are left out, because a walking step never
+reaches a water tile.
+
+A list of blocked steps was the other option. Over 16,685 map windows from
+the Long runs in these tilesets, 9,683 had at least one blocked step. The list
+would hold 8.2 steps on average when present and up to 17, it would change
+with every step the player takes, and the known map would need its own longer
+list. The two glyphs add about 45 tokens per decision in these maps and none
+elsewhere. The observation policy is `player-information-v063`.

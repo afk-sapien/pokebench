@@ -1,10 +1,12 @@
 import json
+import os
 from copy import deepcopy
+from pathlib import Path
 
 import pytest
 
 from pokeagent_bench.core import Limits
-from pokeagent_bench.gameplay import local_map, observe_gameplay, ui_state
+from pokeagent_bench.gameplay import known_map, local_map, observe_gameplay, pair_floors, ui_state
 from pokeagent_bench.gameplay_commands import execute, validate
 from pokeagent_bench.session import Session
 from pokeagent_bench.visual_feedback import public_context
@@ -261,3 +263,98 @@ def test_live_spinner_arrows_preserve_direction_without_exposing_routes(tileset,
     assert '99' not in json.dumps(view)
     cat['world']['0']['tileset'] = 'FOREST'
     assert local_map(mem, cat, {'kind': 'overworld'})['rows'][0].startswith('####')
+
+
+# The CAVERN rows of the game data. (0x14, 0x05) is water and applies only while surfing.
+CAVERN_ROWS = [(0x20, 0x05), (0x41, 0x05), (0x2A, 0x05), (0x05, 0x21), (0x14, 0x05)]
+
+
+def test_pair_floors_split_cavern_pairs_into_two_glyphs_and_skip_surf_rows():
+    floors = pair_floors(CAVERN_ROWS, [0x05, 0x20, 0x21, 0x2A, 0x41, 0x60])
+    assert floors == {0x05: ':', 0x20: ',', 0x21: ',', 0x2A: ',', 0x41: ','}
+    assert pair_floors(CAVERN_ROWS, [0x20, 0x21]) == {}
+    assert pair_floors([], [1]) == {}
+
+
+@pytest.mark.parametrize('rows', [[(1, 2), (3, 4)], [(1, 2), (2, 3), (1, 3)], [(1, 2), (2, 3), (3, 4)]])
+def test_pair_floors_refuse_pairs_two_glyphs_cannot_show(rows):
+    # Two separate groups, a triangle and a path all have steps two glyphs would misreport.
+    with pytest.raises(ValueError, match='two floor glyphs'):
+        pair_floors(rows, [1, 2, 3, 4])
+
+
+def pair_view(mem, cat, cells):
+    for (col, row), tile in cells.items():
+        mem[0xC3A0 + (2 * row + 1) * 20 + 2 * col] = tile
+    return local_map(mem, cat, {'kind': 'overworld'})
+
+
+def test_local_map_marks_pair_floors_the_same_from_any_position():
+    cat = catalog()
+    world = cat['world']['0']
+    world['tileset'], world['passable'] = 'CAVERN', [1, 0x05, 0x20]
+    world['pair_floors'] = pair_floors(CAVERN_ROWS, world['passable'])
+    # The player stands on raised floor 0x05 with low floor 0x20 to the east.
+    view = pair_view(memory(), cat, {(4, 4): 0x05, (5, 4): 0x20, (6, 4): 0x05, (1, 0): 0x20})
+    assert view['rows'][4][3:7] == '.@,:'
+    assert view['rows'][0][1] == ','
+    assert view['legend'][': ,'].startswith('walkable floor. A step directly between a : cell and a , cell is refused')
+    assert view['legend']['@'] == 'you, standing on : floor'
+    # One tile further east the same map cells keep the same glyphs.
+    moved = pair_view(memory(), cat, {(3, 4): 0x05, (4, 4): 0x20, (5, 4): 0x05, (0, 0): 0x20})
+    assert moved['rows'][4][2:6] == '.:@:'
+    assert moved['rows'][0][0] == ','
+    assert moved['legend']['@'] == 'you, standing on , floor'
+    plain = pair_view(memory(), catalog(), {})
+    assert ': ,' not in plain['legend'] and plain['legend']['@'] == 'you'
+
+
+def test_known_map_explains_pair_floors_only_when_it_shows_them():
+    history = {'tiles': {'0': {'4,4': '.', '5,4': ':', '6,4': ','}}}
+    assert known_map(history, 0, 4, 4)['legend'].endswith(' : and , walkable floor, no direct step between them.')
+    history = {'tiles': {'0': {'4,4': '.', '5,4': '.'}}}
+    assert 'direct step' not in known_map(history, 0, 4, 4)['legend']
+
+
+@pytest.mark.skipif(not all(os.environ.get(name) for name in ('POKEBENCH_ROM', 'POKEBENCH_GAME_DATA', 'POKEBENCH_PAIR_RUN')),
+                    reason='Optional local Long replay is not distributed')
+def test_native_mt_moon_pair_collision_appears_on_the_local_map():
+    """Replay long-v065-sonnet to Mt. Moon 1F (21,25), where the game refuses the step down."""
+    from pokecore.gen1 import W_CUR_MAP, W_X, W_Y
+    from pokeagent_bench.game import RedEngine
+    from pokeagent_bench.gameplay import load_catalog
+    from pokeagent_bench.navigation_conditions import install
+    from pokeagent_bench.session import initialize_controls
+    run = Path(os.environ['POKEBENCH_PAIR_RUN'])
+    manifest = json.loads((run / 'manifest.json').read_text())
+    engine = RedEngine(Path(os.environ['POKEBENCH_ROM']), (run / 'initial.state').read_bytes())
+    try:
+        install(engine, manifest['scenario'])
+        initialize_controls(engine, manifest['scenario'])
+        for line in (run / 'actions.jsonl').read_text().splitlines():
+            row = json.loads(line)
+            if row['before_frame'] >= 243458:
+                break
+            action = row['action']
+            if action['button']:
+                engine.press(action['button'])
+            for index in range(row['executed_frames']):
+                if action['button'] and index == action['hold_frames']:
+                    engine.release(action['button'])
+                engine.tick()
+            if action['button']:
+                engine.release(action['button'])
+        memory = engine.memory
+        assert (memory[W_CUR_MAP], memory[W_X], memory[W_Y]) == (59, 21, 25)
+        view = local_map(memory, load_catalog(Path(os.environ['POKEBENCH_GAME_DATA'])), ui_state(memory))
+        standing = view['legend']['@'].removeprefix('you, standing on ').removesuffix(' floor')
+        assert {standing, view['rows'][5][4]} == {':', ','}
+        engine.press('down')
+        for _ in range(24):
+            engine.tick()
+        engine.release('down')
+        for _ in range(24):
+            engine.tick()
+        assert (memory[W_X], memory[W_Y]) == (21, 25)
+    finally:
+        engine.close()

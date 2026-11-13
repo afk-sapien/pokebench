@@ -14,7 +14,8 @@ from pokecore.gen1_ui import read_battler, read_screen, read_sprites, read_stora
 from .core import digest, encoded
 from .game import structured
 
-POLICY = "player-information-v062"
+POLICY = "player-information-v063"
+PAIR_LEGEND = "walkable floor. A step directly between a : cell and a , cell is refused, in both directions"
 TYPES = {0: "Normal", 1: "Fighting", 2: "Flying", 3: "Poison", 4: "Ground", 5: "Rock",
          7: "Bug", 8: "Ghost", 20: "Fire", 21: "Water", 22: "Grass", 23: "Electric",
          24: "Psychic", 25: "Ice", 26: "Dragon"}
@@ -48,12 +49,47 @@ def load_catalog(path):
             raise ValueError("Game data checksum mismatch")
         data[name] = json.loads(raw)
     strategy, tables = data["strategy"], data["tables"]
+    world = {key: {field: value[field] for field in ("passable", "warps", "objects", "backgrounds", "tileset")}
+             for key, value in strategy["world"].items()}
+    for value in world.values():
+        rows = [(a, b) for tileset, a, b in strategy["collision_pairs"] if tileset == value["tileset"]]
+        value["pair_floors"] = pair_floors(rows, value["passable"])
     return {"revision": manifest["source_revision"],
             "labels": {key: tables[key] for key in ("maps", "species", "moves", "items")},
             "moves": {key: {field: value[field] for field in ("name", "type", "power", "accuracy", "pp", "effect")}
                       for key, value in strategy["moves"].items()},
-            "world": {key: {field: value[field] for field in ("passable", "warps", "objects", "backgrounds", "tileset")}
-                      for key, value in strategy["world"].items()}}
+            "world": world}
+
+
+def pair_floors(rows, passable):
+    """Floor glyphs that show the Gen 1 tile pair collisions of one map exactly.
+
+    The game refuses a step between the two tiles of a pair, in either direction.
+    Pairs whose tiles are not both walkable only matter while surfing, so they are left out.
+    Every tileset's pairs form one complete bipartite group, so one glyph per side is exact:
+    a step is blocked exactly when one cell shows ':' and the other ','. The glyph depends
+    only on the tile, never on where the player stands.
+    """
+    neighbours = {}
+    for a, b in rows:
+        if a in passable and b in passable and a != b:
+            neighbours.setdefault(a, set()).add(b)
+            neighbours.setdefault(b, set()).add(a)
+    if not neighbours:
+        return {}
+    side = {min(neighbours): 0}
+    queue = [min(neighbours)]
+    while queue:
+        tile = queue.pop()
+        for other in neighbours[tile]:
+            if other not in side:
+                side[other] = 1 - side[tile]
+                queue.append(other)
+    groups = [{tile for tile, value in side.items() if value == index} for index in (0, 1)]
+    if len(side) != len(neighbours) or any(neighbours[tile] != groups[1 - side[tile]] for tile in side):
+        raise ValueError("Tile pair collisions cannot be shown with two floor glyphs")
+    first = min(groups, key=lambda group: (len(group), min(group)))
+    return {tile: ":" if tile in first else "," for tile in sorted(side)}
 
 
 def status_name(value):
@@ -147,9 +183,11 @@ def local_map(memory, catalog, ui):
     # Live bottom-left subtiles include changes such as cut trees and opened doors.
     arrows = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
               "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"}}.get(world.get("tileset"), {})
+    floors = world.get("pair_floors", {})
     # Read only on-screen graphics. Never include scripted paths or destinations.
     grid = [[arrows.get(tiles[(2 * row + 1) * 20 + 2 * col],
-                        "." if tiles[(2 * row + 1) * 20 + 2 * col] in world["passable"] else "#")
+                        floors.get(tiles[(2 * row + 1) * 20 + 2 * col], ".")
+                        if tiles[(2 * row + 1) * 20 + 2 * col] in world["passable"] else "#")
              for col in range(10)] for row in range(9)]
     objects = []
     def inside(px, py):
@@ -177,11 +215,17 @@ def local_map(memory, catalog, ui):
             exits.append({"x": px, "y": py})
             grid[py - top][px - left] = "E"
     grid[4][4] = "@"
+    legend = {".": "walkable terrain", "#": "blocked terrain", "@": "you", "O": "visible object",
+              "S": "fixed interactable", "E": "exit or stairs, destination unknown",
+              "^ v < >": "visible floor arrows pointing up, down, left, right"}
+    if floors:
+        legend[": ,"] = PAIR_LEGEND
+        # "@" hides the floor under the player, and that floor decides which steps are refused.
+        under = floors.get(tiles[9 * 20 + 8])
+        if under:
+            legend["@"] = f"you, standing on {under} floor"
     return {"available": True, "origin": {"x": left, "y": top}, "rows": ["".join(row) for row in grid],
-            "legend": {".": "walkable terrain", "#": "blocked terrain", "@": "you", "O": "visible object",
-                       "S": "fixed interactable", "E": "exit or stairs, destination unknown",
-                       "^ v < >": "visible floor arrows pointing up, down, left, right"},
-            "objects": objects, "exits": exits,
+            "legend": legend, "objects": objects, "exits": exits,
             "caveat": "Terrain is local. Objects can block movement. Special directional collisions may apply."}
 
 
@@ -192,9 +236,11 @@ def known_map(history, map_id, x, y):
     points[(x, y)] = "@"
     left, right = max(x - 16, min(px for px, py in points)), min(x + 16, max(px for px, py in points))
     top, bottom = max(y - 16, min(py for px, py in points)), min(y + 16, max(py for px, py in points))
-    return {"map_id": int(map_id), "origin": {"x": left, "y": top},
-            "rows": ["".join(points.get((px, py), "?") for px in range(left, right + 1)) for py in range(top, bottom + 1)],
-            "legend": "? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable, ^ v < > observed floor arrows, @ current position. Historical terrain may change."}
+    rows = ["".join(points.get((px, py), "?") for px in range(left, right + 1)) for py in range(top, bottom + 1)]
+    legend = "? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable, ^ v < > observed floor arrows, @ current position. Historical terrain may change."
+    if any(":" in row or "," in row for row in rows):
+        legend += " : and , walkable floor, no direct step between them."
+    return {"map_id": int(map_id), "origin": {"x": left, "y": top}, "rows": rows, "legend": legend}
 
 
 def observe_gameplay(session):
