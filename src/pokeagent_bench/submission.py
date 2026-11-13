@@ -49,7 +49,7 @@ PRIVATE = re.compile(
     r'|AIza[\w-]{30,}|xox[abprs]-[\w-]{10,}|Bearer\s+[\w.~+/-]{16,}|-----BEGIN [A-Z ]*PRIVATE KEY')
 SECRET_NAME = re.compile(r'KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL', re.I)
 CELL_KEYS = ('id', 'task_id', 'variant', 'repeat', 'mode', 'category', 'fixture_sha256',
-             'evaluation_spec_sha256', 'token_limit', 'decision_limit')
+             'evaluation_spec_sha256', 'token_limit', 'decision_limit', 'reasoning_effort')
 DECISION = re.compile(r'decision-(\d+)-')
 
 
@@ -339,6 +339,8 @@ def check_cell(cell, files, fixtures, rom, work, replay):
     agent = manifest.get('agent') if isinstance(manifest.get('agent'), dict) else {}
     if agent.get('model') != cell['model']:
         raise ValueError('Manifest names a different model')
+    if agent.get('reasoning_effort') != cell['reasoning_effort']:
+        raise ValueError(f'Reasoning effort differs from the suite, which uses {cell["reasoning_effort"]}')
     usage = result.get('usage') if isinstance(result.get('usage'), dict) else {}
     tokens = sum(usage.get(key) if type(usage.get(key)) is int else 0 for key in ('input_tokens', 'output_tokens'))
     calls = usage.get('calls') if type(usage.get('calls')) is int else 0

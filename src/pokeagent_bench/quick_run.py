@@ -18,6 +18,8 @@ SUITES = {
     'long': (LONG, 30_000_000, None),
 }
 LONG_DECISIONS = 2000
+# The published Short runs used low effort and the published Long runs medium.
+EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
 SCALE = {
     'smoke': 'Two leaderboard models used about 40K tokens on these three tasks.',
     'short': 'Two leaderboard models used 27M and 49M tokens on this suite.',
@@ -58,6 +60,8 @@ def new_plan(suite, fixtures, provider, model):
     manifest = plan(fixtures, [f'{provider}:{model}'], tasks, benchmark=benchmark)
     manifest['suite'] = suite
     manifest['held_tasks'] = [] if fixed else sorted(row['id'] for row in rows if not row['runnable'])
+    for cell in manifest['cells']:
+        cell['reasoning_effort'] = EFFORT[suite]
     if suite == 'smoke':
         manifest['note'] = 'Setup check only. Not a benchmark result.'
     if suite == 'long':

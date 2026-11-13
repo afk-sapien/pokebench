@@ -161,6 +161,14 @@ field name in the prompt, under both action policies, is a packet field, a
 response field or a command. The text presentation is
 `bounded-gameplay-text-v5`.
 
+## Suites use the published effort
+
+Every published Short run used low reasoning effort and every published Long
+run used medium. `pokebench run --suite` sent low for every suite, so a new
+Long run would have played at a lower effort than the Long rows it is compared
+with. Each planned run now records its effort: low for Short and smoke, medium
+for Long. `verify` refuses a run whose manifest names another effort.
+
 ## Reporting labels
 
 Nothing in this section changes a score or what a model sees. The showcase

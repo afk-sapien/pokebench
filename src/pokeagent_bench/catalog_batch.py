@@ -212,7 +212,7 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         try:
             run_task(fixtures, cell['task_id'], rom, game_data, destination,
                      provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=allowance,
-                     decision_limit=cell.get('decision_limit'))
+                     decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'))
         except (ValueError, OSError, RuntimeError) as error:
             destination.mkdir(parents=True, exist_ok=True)
             existing = cell_result(destination)

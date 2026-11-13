@@ -46,6 +46,7 @@ Anyone can run this. It needs the ROM and a finished `setup`, calls no model and
 
 - The archive is read in memory. Only known file names are accepted and nothing is extracted.
 - The task list must be the complete suite as this checkout defines it, with the same start states, task definitions and limits.
+- Each run must use the suite's reasoning effort: low for Short and smoke, medium for Long, as the leaderboard runs did.
 - Each run is replayed from the verifier's own start state. The recorded inputs must reproduce the recorded game facts, and the score is recomputed from the replay.
 - A run over its decision or token limit fails.
 

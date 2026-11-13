@@ -46,7 +46,7 @@ The last command runs three cheap tasks to check that your setup works. Two lead
 | `short` | Every ready PokeBench task | 60M |
 | `long` | The PokeBench Long campaign, up to 2,000 decisions | 30M |
 
-`run --suite` prints the plan and the token budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see a rough dollar ceiling for the whole budget. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the token budget.
+Short and smoke run at low reasoning effort and Long at medium, as the leaderboard runs did. `run --suite` prints the plan and the token budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see a rough dollar ceiling for the whole budget. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the token budget.
 
 Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 

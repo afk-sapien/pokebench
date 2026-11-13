@@ -16,7 +16,7 @@ TASKS = ('battle-one', 'battle-two')
 def plan(provider='openai-compatible', model='local-model'):
     cells = [{'id': f'cell-{index:04d}', 'task_id': task, 'category': 'battle', 'mode': 'gameplay',
               'benchmark': 'pokebench', 'score_group': task, 'provider': provider, 'model': model,
-              'variant': 'default', 'repeat': 1, 'token_limit': 1000, 'decision_limit': 5,
+              'variant': 'default', 'repeat': 1, 'token_limit': 1000, 'decision_limit': 5, 'reasoning_effort': 'low',
               'fixture_sha256': digest(b'fake-state-0'), 'evaluation_spec_sha256': 'spec-' + task}
              for index, task in enumerate(TASKS, 1)]
     return {'protocol': 'catalog-batch-v3-decisions', 'benchmark': 'pokebench', 'suite': 'short',
@@ -38,7 +38,7 @@ def world(tmp_path, monkeypatch):
         write_json(fixtures / cell['task_id'] / 'scenario.json', scenario)
         (fixtures / cell['task_id'] / 'initial.state').write_bytes(b'fake-state-0')
         session = Session(FakeEngine(), run / cell['id'], scenario, limits=Limits(max_total_tokens=1000, max_model_calls=5),
-                          agent={'provider': 'openai-compatible', 'model': 'local-model',
+                          agent={'provider': 'openai-compatible', 'model': 'local-model', 'reasoning_effort': 'low',
                                  'configuration': {'endpoint': 'http://gpu-box.corp.example:8000/v1'}})
         session.act('decision-1-1.1', 'a', 3, 2)
         session.act('decision-2-1.1', 'b', 3, 2)
@@ -139,6 +139,14 @@ def test_swapped_start_state_fails(world, bundle):
         manifest.update(initial_sha256=other), manifest['scenario'].update(state_sha256=other))))
     assert 'Start state is not the benchmark start' in check(world)['problems'][0]
     repack(bundle, edit('plan.json', lambda plan: plan['cells'][0].update(fixture_sha256=other)))
+    with pytest.raises(ValueError, match='differ from the suite: battle-one'):
+        check(world)
+
+
+def test_a_run_at_another_effort_fails(world, bundle):
+    repack(bundle, edit('cell-0001/manifest.json', lambda manifest: manifest['agent'].update(reasoning_effort='high')))
+    assert 'Reasoning effort differs from the suite, which uses low' in check(world)['problems'][0]
+    repack(bundle, edit('plan.json', lambda plan: plan['cells'][0].update(reasoning_effort='high')))
     with pytest.raises(ValueError, match='differ from the suite: battle-one'):
         check(world)
 

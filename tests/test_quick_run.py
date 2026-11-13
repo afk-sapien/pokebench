@@ -62,6 +62,7 @@ def test_smoke_runs_three_tasks_and_prints_a_plain_summary(data, runs, monkeypat
     text = capsys.readouterr().out
     assert [task for task, _ in runs] == list(SMOKE)
     assert all(options['provider'] == 'claude' and options['model'] == 'claude-sonnet-5-5' for _, options in runs)
+    assert {options['reasoning_effort'] for _, options in runs} == {'low'}
     assert 'Suite smoke (PokeBench), model claude:claude-sonnet-5-5' in text
     assert 'Token budget 500K' in text
     assert '[3/3] battle-wild-basics finished score 100, 1K tokens' in text
@@ -112,9 +113,10 @@ def test_interrupted_task_continues_from_its_checkpoint(data, runs, monkeypatch,
     assert 'Finished 3 of 3 runs' in capsys.readouterr().out
 
 
-def test_long_suite_uses_the_published_decision_limit(data, runs, monkeypatch, capsys):
+def test_long_suite_uses_the_published_decision_limit_and_effort(data, runs, monkeypatch, capsys):
     assert command(monkeypatch, '--model', 'claude:claude-fable-5-2', '--suite', 'long') == 0
-    assert [(task, options['decision_limit']) for task, options in runs] == [('campaign-full-game', 2000)]
+    assert [(task, options['decision_limit'], options['reasoning_effort']) for task, options in runs] == [
+        ('campaign-full-game', 2000, 'medium')]
     assert 'Campaign: 1 of 1 points' in capsys.readouterr().out
 
 
