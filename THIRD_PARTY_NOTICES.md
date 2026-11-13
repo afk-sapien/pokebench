@@ -6,6 +6,11 @@ under its MIT License. The original decoder was adapted from
 [PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 AFK Sapien,
 under the MIT License reproduced in [LICENSE](LICENSE).
 
+The replay page embeds the PokeSim Panel typeface from
+[PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 the PokeSim
+authors, under the MIT License. It is stored as base64 text in
+`src/pokeagent_bench/replay_assets/pokesim-panel.woff2.b64`.
+
 WRAM addresses and event indices correspond to the
 [pret/pokered disassembly](https://github.com/pret/pokered/tree/a1a22aaf84d1675bcdbaeb194592379d586d838e).
 No cartridge code, ROM, generated game tables, or disassembly source is

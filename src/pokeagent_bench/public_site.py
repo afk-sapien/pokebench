@@ -1,7 +1,8 @@
 """Allowlisted, static PokeBench publication from audited local result snapshots.
 
 Never copy a local review page or provider transcript into this export. Public
-replays contain reencoded screenshots and controller actions, not model notes.
+replays contain reencoded screenshots, controller actions and facts the harness
+reported (goal, score, map name, command outcome), not model plans or notes.
 """
 import base64
 import csv
@@ -58,19 +59,132 @@ def sha(value):
     return value
 
 
-def png(value):
-    prefix = 'data:image/png' + chr(59) + 'base64,'
-    if not isinstance(value, str) or not value.startswith(prefix) or len(value) > 8_000_000:
+PNG_PREFIX = 'data:image/png' + chr(59) + 'base64,'
+BUTTONS = (None, 'a', 'b', 'up', 'down', 'left', 'right', 'start', 'select')
+SHEET_SIDE = 16
+
+
+def optional_text(value, maximum):
+    """Return text that is safe to publish, or None. Optional replay details are dropped, not fatal."""
+    if isinstance(value, str) and value and len(value) <= maximum and not PRIVATE.search(value):
+        return value
+    return None
+
+
+def screen(value):
+    """Decode one embedded screenshot to bare RGB pixels, dropping every metadata chunk."""
+    if not isinstance(value, str) or not value.startswith(PNG_PREFIX) or len(value) > 8_000_000:
         raise ValueError('Invalid screenshot')
-    raw = base64.b64decode(value[len(prefix):], validate=True)
+    raw = base64.b64decode(value[len(PNG_PREFIX):], validate=True)
     with Image.open(io.BytesIO(raw)) as image:
         if image.format != 'PNG' or image.width > 2048 or image.height > 2048:
             raise ValueError('Invalid screenshot dimensions')
         clean = Image.new('RGB', image.size)
         clean.paste(image.convert('RGB'))
+    return clean
+
+
+def png(value):
+    output = io.BytesIO()
+    screen(value).save(output, format='PNG')
+    return PNG_PREFIX + base64.b64encode(output.getvalue()).decode()
+
+
+def sheet_png(sheet):
+    """Encode a sheet as the smallest PNG that decodes to the same pixels."""
+    colours = len(sheet.getcolors(256) or [])
+    choices = []
+    if colours:
+        bits = next(depth for depth in (1, 2, 4, 8) if colours <= 1 << depth)
+        choices.append((sheet.quantize(colours, dither=Image.Dither.NONE), {'bits': bits}))
+    # The palette form is checked against the source pixels. Full colour is the fallback.
+    choices.append((sheet, {}))
+    for image, options in choices:
         output = io.BytesIO()
-        clean.save(output, format='PNG')
-    return prefix + base64.b64encode(output.getvalue()).decode()
+        image.save(output, format='PNG', optimize=True, **options)
+        with Image.open(io.BytesIO(output.getvalue())) as check:
+            if check.convert('RGB').tobytes() == sheet.tobytes():
+                return PNG_PREFIX + base64.b64encode(output.getvalue()).decode()
+    raise ValueError('Screens did not survive encoding')
+
+
+def frame_sheets(images, keys):
+    """Pack each distinct screen once, in first use order, into sprite sheets.
+
+    Returns the frame number of every source key and the sheet description.
+    A sheet holds at most 256 screens so a browser decodes a few megabytes at
+    a time, not the whole run.
+    """
+    order = []
+    seen = {}
+    index = {}
+    size = None
+    for key in keys:
+        image = screen(images[key])
+        size = size or image.size
+        if image.size != size:
+            raise ValueError('Replay screens differ in size')
+        mark = hashlib.sha256(image.tobytes()).digest()
+        if mark not in seen:
+            seen[mark] = len(order)
+            order.append(key)
+        index[key] = seen[mark]
+    width, height = size
+    columns = max(1, min(SHEET_SIDE, 4096 // width))
+    per_sheet = columns * max(1, min(SHEET_SIDE, 4096 // height))
+    sheets = []
+    for first in range(0, len(order), per_sheet):
+        group = [screen(images[key]) for key in order[first:first + per_sheet]]
+        rows = -(-len(group) // columns)
+        sheet = Image.new('RGB', (columns * width, rows * height), group[0].getpixel((0, 0)))
+        for slot, image in enumerate(group):
+            sheet.paste(image, (slot % columns * width, slot // columns * height))
+        sheets.append(sheet_png(sheet))
+    return index, {'width': width, 'height': height, 'columns': columns, 'per_sheet': per_sheet,
+                   'count': len(order), 'sheets': sheets}
+
+
+def replay_meta(run, details):
+    """Allowlisted run facts for the replay header. Never model plans or notes."""
+    details = details or {}
+    meta = {}
+    goal = optional_text(run.get('objective'), 1200)
+    if goal:
+        meta['goal'] = goal
+    if details.get('label') is not None:
+        meta['label'] = public_text(details['label'], 80)
+    for key in ('score', 'maximum', 'badges', 'decisions'):
+        if details.get(key) is not None:
+            meta[key] = number(details[key])
+    reason = details.get('stop_reason') or run.get('stop_reason')
+    if optional_text(reason, 80) and IDENTIFIER.fullmatch(reason):
+        meta['stop_reason'] = reason
+    milestones = [{'label': public_text(item['label'], 120), 'decision': number(item['decision']),
+                   'points': number(item['points']), 'id': identifier(item['id'])}
+                  for item in details.get('milestones') or []]
+    if milestones:
+        meta['milestones'] = milestones
+    tags = {**(details.get('versions') or {}), 'name': details.get('harness')}
+    harness = {key: identifier(str(tags[key])) for key in ('name', 'package', 'benchmark', 'core', 'emulator')
+               if tags.get(key) and tags[key] != 'unrecorded'}
+    if harness:
+        meta['harness'] = harness
+    return meta
+
+
+def packed_actions(actions):
+    """Run length encode controller input as [button, hold, release, times]."""
+    packed = []
+    for action in actions:
+        button = action.get('button')
+        if button not in BUTTONS:
+            raise ValueError('Unknown controller input')
+        item = [button, number(action['hold_frames']), number(action['release_frames'])]
+        if packed and packed[-1][:3] == item:
+            packed[-1][3] += 1
+        else:
+            packed.append(item + [1])
+    return packed
 
 
 def json_text(value):
@@ -107,8 +221,15 @@ def safe_metadata(manifest):
     return result
 
 
-def replay_payload(path, attempt):
-    """Extract only verified screen boundaries and executed gamepad actions."""
+def replay_payload(path, attempt, details=None):
+    """Extract verified screen boundaries, executed gamepad actions and harness facts.
+
+    The result is replay format 2. Screens are packed into sprite sheets and
+    steps are stored as columns. A step's first screen is the previous step's
+    last screen unless `breaks` says otherwise. The harness's map name and the
+    outcome it reported for each command are included. Model plans, notes and
+    requested commands are not.
+    """
     source = path.read_text()
     match = re.search(r'<script[^>]*id="data"[^>]*>(.*?)</script>', source, re.S)
     if not match:
@@ -121,33 +242,45 @@ def replay_payload(path, attempt):
     if (run.get('id') != expected_id or run.get('model') != attempt['model']
             or run.get('completed') != attempt['completed']):
         raise ValueError('Replay does not match its scored attempt')
-    images = {}
-    steps = []
-    for step in run['steps']:
-        out = {key: number(step[key]) for key in ('decision', 'before_frame', 'after_frame', 'tokens', 'cumulative_tokens')}
-        for key in ('before', 'after'):
-            original = step[key]
-            if original not in images:
-                images[original] = png(run['images'][original])
-            out[key] = hashlib.sha256(images[original].encode()).hexdigest()
-        out['actions'] = []
-        for action in step.get('actions', []):
-            button = action.get('button')
-            if button not in (None, 'a', 'b', 'up', 'down', 'left', 'right', 'start', 'select'):
-                raise ValueError('Unknown controller input')
-            out['actions'].append({'button': button, 'hold_frames': number(action['hold_frames']),
-                                   'release_frames': number(action['release_frames'])})
-        steps.append(out)
-    if not steps:
+    source = run['steps']
+    if not source:
         raise ValueError('Replay has no decision boundaries')
     from .action_policy import ASSISTED, resolve
     policy = resolve({}, run.get('action_policy', ASSISTED))
     if 'action_policy' in attempt and policy != attempt['action_policy']:
         raise ValueError('Replay action policy differs from its scored attempt')
-    return {'model': identifier(attempt['model']), 'completed': bool(attempt['completed']),
+    index, frames = frame_sheets(run['images'], dict.fromkeys(step[key] for step in source for key in ('before', 'after')))
+    places = {}
+    outcomes = {}
+
+    def game(step, section, field, maximum, table):
+        """Table position of one harness reported text, or -1 when absent or unsafe."""
+        value = step.get('gameplay_input')
+        value = value.get(section) if isinstance(value, dict) else None
+        value = optional_text(value.get(field) if isinstance(value, dict) else None, maximum)
+        return -1 if value is None else table.setdefault(value, len(table))
+
+    steps = {key: [number(step[key]) for step in source] for key in ('decision', 'before_frame', 'after_frame', 'tokens')}
+    steps['screen'] = [index[step['after']] for step in source]
+    steps['actions'] = [packed_actions(step.get('actions', [])) for step in source]
+    steps['place'] = [game(step, 'location', 'map_name', 80, places) for step in source]
+    # The harness reports what a command did in the context it builds for the next decision.
+    steps['outcome'] = [game(later, 'last_command', 'outcome', 400, outcomes) for later in source[1:]] + [-1]
+    steps['start'] = index[source[0]['before']]
+    steps['breaks'] = {str(at): index[step['before']] for at, step in enumerate(source)
+                       if at and index[step['before']] != steps['screen'][at - 1]}
+    totals = [number(step['cumulative_tokens']) for step in source]
+    running = 0
+    for spent, total in zip(steps['tokens'], totals):
+        running += spent or 0
+        if running != total:
+            steps['cumulative'] = totals
+            break
+    return {'format': 2, 'model': identifier(attempt['model']), 'completed': bool(attempt['completed']),
             'action_policy': policy,
-            'benchmark': identifier(attempt.get('benchmark', 'unrecorded')), 'steps': steps,
-            'images': {hashlib.sha256(value.encode()).hexdigest(): value for value in images.values()}}
+            'benchmark': identifier(attempt.get('benchmark', 'unrecorded')),
+            'meta': replay_meta(run, details), 'places': list(places), 'outcomes': list(outcomes),
+            'steps': steps, 'frames': frames}
 
 
 def clean_task(task):
@@ -471,7 +604,10 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
                 path = feed_path.parent/filename
                 if path.is_symlink():
                     raise ValueError('Replay symlinks are not publishable')
-                payload = replay_payload(path, {**attempt, 'action_policy': a['action_policy']})
+                versions = {'package': a['metadata'].get('package_version'), 'benchmark': a['metadata'].get('benchmark'),
+                            'core': a['metadata'].get('core_version')}
+                payload = replay_payload(path, {**attempt, 'action_policy': a['action_policy']},
+                                         {'harness': a['metadata'].get('harness'), 'versions': versions})
                 stem = hashlib.sha256((source_id+'/'+run_id).encode()).hexdigest()[:20]
                 a['replay'] = 'replays/'+stem+'.html'
                 (output/a['replay']).write_text(REPLAY.replace('__DATA__', json_text(payload)))
@@ -589,46 +725,8 @@ METHODOLOGY = '''<h1>How PokeBench works</h1>
 <p><a href="results.json">Download results JSON</a> · <a href="results.csv">Download attempts CSV</a> · <a href="manifest.json">Download publication manifest</a></p>'''
 
 
-REPLAY = '''<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>PokeBench replay</title>
-<style>body {margin:0} body {background:#111b17} body {color:#edf3ef} body {font:16px/1.5 system-ui} main {max-width:1000px} main {margin:auto} main {padding:20px} a {color:#91d8b4} .screens {display:flex} .screens {gap:20px} .screens img {width:100%} .screens img {image-rendering:pixelated} .screens figure {flex:1} .screens figure {margin:0} .controls {position:sticky} .controls {top:0} .controls {background:#111b17} .controls {padding:16px 0} button,select {padding:12px} button,select {font:inherit} #seek {width:100%} pre {white-space:pre-wrap} #actions {height:130px} #actions {overflow:auto}</style>
-<main><a href="../index.html">PokeBench</a><h1 id="title"></h1><p>Recorded controller replay. No private notes or provider transcripts. Before and after each decision.</p><div class="controls"><button id="prev">Previous</button> <button id="play">Play</button> <button id="next">Next</button> <label>Speed <select id="speed"><option value="500">2 decisions / sec</option><option value="125" selected>8 decisions / sec</option><option value="50">20 decisions / sec</option></select></label><input id="seek" type="range" min="0" value="0" aria-label="Decision"><div id="position"></div></div><div class="screens"><figure><figcaption>Before</figcaption><img id="before" alt="Before action"></figure><figure><figcaption>After</figcaption><img id="after" alt="After action"></figure></div><pre id="actions"></pre></main>
-<script id="data" type="application/json">__DATA__</script><script>
-const data = JSON.parse(document.getElementById('data').textContent)
-const $ = id => document.getElementById(id)
-let index = 0
-let timer = null
-$('title').textContent = data.model+' · '+(data.completed ? 'Passed' : 'Failed')+' · '+(data.action_policy === 'manual-menu-v1' ? 'Manual menus' : 'Assisted gameplay')
-$('seek').max = data.steps.length-1
-function render() {
- const step = data.steps[index]
- $('before').src = data.images[step.before]
- $('after').src = data.images[step.after]
- $('position').textContent = 'Decision '+step.decision+' · '+(index+1)+' / '+data.steps.length+' · '+step.cumulative_tokens.toLocaleString()+' cumulative tokens'
- $('actions').textContent = step.actions.map(a=>(a.button || 'wait')+' · hold '+a.hold_frames+' frames · release '+a.release_frames+' frames').join('\\n') || 'No controller input'
- $('seek').value = index
- $('prev').disabled = index===0
- $('next').disabled = index===data.steps.length-1
-}
-function stop() {clearInterval(timer)
- timer=null
- $('play').textContent='Play'
-}
-function play() {stop()
- if(index===data.steps.length-1) index=0
- $('play').textContent='Pause'
- timer=setInterval(()=>{if(index<data.steps.length-1) {index+=1
- render()
- } else stop()},Number($('speed').value))
-}
-$('prev').onclick=()=>{index=Math.max(0,index-1)
- render()}
-$('next').onclick=()=>{index=Math.min(data.steps.length-1,index+1)
- render()}
-$('play').onclick=()=>timer ? stop() : play()
-$('speed').onchange=()=>{if(timer) play()}
-$('seek').oninput=()=>{index=Number($('seek').value)
- render()}
-document.onkeydown=e=>{if(e.key==='ArrowRight') $('next').click()
- if(e.key==='ArrowLeft') $('prev').click()}
-render()
-</script></html>'''
+# The replay page reads format 2 and the older one image per screen format,
+# so replays published before the change still open.
+REPLAY_ASSETS = Path(__file__).with_name('replay_assets')
+REPLAY = (REPLAY_ASSETS / 'replay.html').read_text().replace(
+    '__FACE__', (REPLAY_ASSETS / 'pokesim-panel.woff2.b64').read_text().strip())

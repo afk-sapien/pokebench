@@ -130,6 +130,10 @@ def long_row(root, web, name, decision_limit=2000):
             'decisions': usage.get('calls', 0),
             'tokens': usage.get('input_tokens', 0) + usage.get('output_tokens', 0),
             'milestones': [{k: a.get(k) for k in ('label', 'decision', 'points', 'id')} for a in achievements],
+            'harness': manifest.get('agent', {}).get('harness'),
+            'versions': {'package': manifest.get('package_version'), 'benchmark': manifest.get('benchmark'),
+                         'core': manifest.get('core', {}).get('version'),
+                         'emulator': ' '.join(str(manifest.get('emulator', {}).get(k) or '') for k in ('backend', 'version')).strip()},
             'image': existing_link(web, f'{root.name}.png'), 'replay': replay,
             'replay_mb': round((web / replay).stat().st_size / 1e6) if replay else None}
 
@@ -183,8 +187,11 @@ def export(base, web, *, install=False):
     return data
 
 
-def public_replay(web, relative, model, output):
-    """Write a public replay with screenshots and controller actions only."""
+REPLAY_DETAILS = ('label', 'score', 'maximum', 'badges', 'stop_reason', 'decisions', 'milestones', 'harness', 'versions')
+
+
+def public_replay(web, relative, model, output, details=None):
+    """Write a public replay with screenshots, controller actions and harness facts only."""
     import re
     from .public_site import REPLAY, json_text, replay_payload
     path = web / relative
@@ -192,7 +199,7 @@ def public_replay(web, relative, model, output):
     runs = json.loads(match[1]).get('runs', []) if match else []
     if len(runs) != 1 or runs[0].get('model') != model:
         raise ValueError(f'Replay does not match its result: {relative}')
-    payload = replay_payload(path, {'id': runs[0]['id'], 'model': model, 'completed': runs[0].get('completed')})
+    payload = replay_payload(path, {'id': runs[0]['id'], 'model': model, 'completed': runs[0].get('completed')}, details)
     target = 'replays/' + relative.removesuffix('.html').replace('/', '--') + '.html'
     (output / target).write_text(REPLAY.replace('__DATA__', json_text(payload)))
     return target
@@ -226,7 +233,8 @@ def export_public(web, output, *, report=None):
     for row in data['long']:
         for run in [row, *row.get('extensions', [])]:
             run['report'] = None
-            run['replay'] = public_replay(web, run['replay'], by_label[run['label']], output) if run.get('replay') else None
+            details = {key: run.get(key) for key in REPLAY_DETAILS}
+            run['replay'] = public_replay(web, run['replay'], by_label[run['label']], output, details) if run.get('replay') else None
             run['replay_mb'] = round((output / run['replay']).stat().st_size / 1e6, 1) if run['replay'] else None
             run['image'] = public_image(web, run['image'], output) if run.get('image') else None
     data['report'] = None
