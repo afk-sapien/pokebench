@@ -69,14 +69,16 @@ campaign has been used to claim gameplay capability or calibrated budgets.
 Core releases are adopted explicitly by changing the wheel URL and SHA-256, then
 regenerating `uv.lock`. Run the test suite and replay existing private ROM traces
 before upgrading. Any change to observations, scoring, prompts, or budgets also
-requires a benchmark version change. The published cohort uses the tag
-`red-v0.59-lossless-inspection` for the v065 runtime, and the next protocol change
-bumps it. Run manifests record core version, direct
-installation metadata, and source hashes so locally edited builds remain distinct.
+requires a benchmark version change. The current tag is `red-v0.60-pokecore-0.12`,
+for PokeSim Core 0.12.0 and PyBoy RS 0.1.5. Earlier published rows used
+`red-v0.59-lossless-inspection`, the v065 runtime. Original-pass Short attempts
+recorded `red-v0.56` to `red-v0.59`. Rows on different tags are not strictly
+comparable. Run manifests record core version, direct installation metadata, and
+source hashes so locally edited builds remain distinct.
 
 ## References
 
-- [PokeSim Core](https://github.com/afk-sapien/pokesim-core)
+- [PokeSim Core 0.12.0](https://github.com/afk-sapien/pokesim/releases/tag/pokecore-v0.12.0), released from the PokeSim repository. The older pokesim-core repository is archived.
 
 - [PokeSim source](https://github.com/afk-sapien/PokeSim)
 - [PyBoy API](https://docs.pyboy.dk/)

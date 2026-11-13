@@ -104,7 +104,8 @@ def test_unresponsive_menu_stops_and_never_confirms_a_target(tmp_path, engine, m
     try:
         execute_shortcut(session,{'command':'use_item','argument':'Full Restore:1'},send,
                          lambda *args:pytest.fail('No visible menu'),result)
-        assert 'Menu did not respond' in result['outcome']
+        # Core 0.12 checks the starting menu first and stops before pressing a target.
+        assert 'No further input sent' in result['outcome']
         assert 'a' not in buttons
         assert session.frame < 2400
     finally:
