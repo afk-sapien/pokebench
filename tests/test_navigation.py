@@ -102,6 +102,24 @@ def test_global_stop_still_reports_last_movement(tmp_path, engine):
         session.close()
 
 
+def test_task_completion_during_move_is_not_a_budget_stop(tmp_path, engine, monkeypatch):
+    session = setup(tmp_path, engine)
+    session.limits = Limits(max_action_frames=600)
+    start = engine.memory[0xD362]
+    def walk(fake):
+        if fake.frame == 1:
+            fake.memory[0xD362] += 1
+    engine.on_tick = walk
+    monkeypatch.setattr(session.evaluator, 'complete', lambda goal: engine.memory[0xD362] != start)
+    try:
+        result = execute(session, 'finish', {'command': 'move', 'argument': 'right', 'count': 4})
+        assert session.reason == 'completed'
+        assert result['tiles_moved'] == 1
+        assert result['outcome'] == 'Task complete.'
+    finally:
+        session.close()
+
+
 def test_pokedex_and_unknown_modal_do_not_expose_map(tmp_path, engine):
     from pokeagent_bench.gameplay import ui_state
     from test_dialogue import screen

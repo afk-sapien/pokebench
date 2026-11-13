@@ -71,3 +71,11 @@ def test_report_separates_core_versions_origins_and_source_changes(session, tmp_
         groups.append(read_runs(tmp_path)[0]["group"])
         core[key] = original
     assert len(set(groups)) == 4
+
+
+def test_report_skips_a_run_with_a_null_score(session, tmp_path):
+    session.finish("action_budget")
+    assert len(read_runs(tmp_path)) == 1
+    path = session.output / "result.json"
+    path.write_text(json.dumps({**json.loads(path.read_text()), "score": None}))
+    assert read_runs(tmp_path) == []

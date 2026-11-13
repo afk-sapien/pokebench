@@ -17,7 +17,9 @@ def read_runs(root: Path):
         try:
             manifest = json.loads((directory / "manifest.json").read_text())
             result = json.loads((directory / "result.json").read_text())
-            config = {key: manifest[key] for key in ("benchmark", "track", "goal", "limits", "labels_sha256")}
+            if result.get("score") is None:
+                continue
+            config ={key: manifest[key] for key in ("benchmark", "track", "goal", "limits", "labels_sha256")}
             from .action_policy import from_manifest
             policy = from_manifest(manifest)
             if "action_policy" in manifest:

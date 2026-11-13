@@ -61,3 +61,12 @@ def test_task_mix_sensitivity_does_not_break_ties_by_name():
     assert {(r['best_rank'], r['worst_rank']) for r in result['rows']} == {(1, 2)}
     tied = [dict(row, value=1) for row in rows]
     assert {(r['best_rank'], r['worst_rank']) for r in task_sensitivity(tied)['rows']} == {(1, 1)}
+
+
+def test_analysis_of_a_pass_with_no_cells_reports_zero_starts(tmp_path, monkeypatch):
+    import pokeagent_bench.focused_analysis as module
+    (tmp_path / 'plan.json').write_text('{}')
+    monkeypatch.setattr(module, 'collect', lambda *args, **kwargs: ([], {}))
+    result = module.build_analysis(tmp_path, tmp_path / 'web')
+    assert result['models'] == []
+    assert result['counts']['starts'] == 0
