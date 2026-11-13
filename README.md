@@ -28,8 +28,25 @@ uv run pokebench --help
 
 Python 3.12 is selected for reproducibility. The Python distribution and import remain `pokeagent-bench` and `pokeagent_bench` for compatibility. Both `pokebench` and the older `pokeagent` command work.
 
-Supply your own Pokemon Red ROM and locally prepared fixtures. ROMs, emulator saves and generated game tables are not distributed. The required ROM is Pokemon - Red Version (USA, Europe) (SGB Enhanced), SHA-1 `ea9bcae617fdf159b045185467ae58b2e4a48b9a` (SHA-256 `5ca7ba01642a3b27b0cc0b5349b52792795b62d3ed977e98a09390659af96b7b`). Scenarios record the ROM SHA-256 and refuse any other ROM. PyBoy RS 0.1.5 is installed from hash-pinned wheels. Replay and fixture loading accept runs and fixtures recorded under an older build only for build pairs proven by a replay sweep ([PyBoy RS 0.1.5 notes](docs/history/pyboy-rs-015.md)). `uv sync` installs PokeSim Core 0.12.0 (the `pokecore` package) from its hash-pinned release wheel in the PokeSim repository. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
+Supply your own Pokemon Red ROM. No ROM, emulator save or game table is distributed. `setup` rebuilds them on your machine from your ROM. The required ROM is Pokemon - Red Version (USA, Europe) (SGB Enhanced), SHA-1 `ea9bcae617fdf159b045185467ae58b2e4a48b9a` (SHA-256 `5ca7ba01642a3b27b0cc0b5349b52792795b62d3ed977e98a09390659af96b7b`). Scenarios record the ROM SHA-256 and refuse any other ROM. PyBoy RS 0.1.5 is installed from hash-pinned wheels. Replay and fixture loading accept runs and fixtures recorded under an older build only for build pairs proven by a replay sweep ([PyBoy RS 0.1.5 notes](docs/history/pyboy-rs-015.md)). `uv sync` installs PokeSim Core 0.12.0 (the `pokecore` package) from its hash-pinned release wheel in the PokeSim repository. The integration history is in [the integration notes](docs/history/core-integration-v049.md). A sibling PokeSim checkout is not a runtime dependency.
 
+## Quick start
+
+```sh
+uv sync --locked --extra dev
+uv run pokebench setup --rom /path/to/red.gb
+uv run pokebench catalog-run --task battle-prepared-gym \
+  --provider claude --model claude-sonnet-5-5 \
+  --rom /path/to/red.gb --fixtures data/fixtures --game-data data/game-data \
+  --output runs/first
+```
+
+`setup` checks the ROM hash and writes two folders under `data/`, which git ignores. It takes a few seconds and makes no model calls.
+
+- `data/fixtures` holds the starting save for every task, including the PokeBench Long start. The repository ships them as one small pack that is compressed against the ROM, so the pack opens only with the required ROM.
+- `data/game-data` holds the game tables. They are generated from the public [pret/pokered](https://github.com/pret/pokered) disassembly at a pinned commit. The download is checked by hash, and the tables must match the hashes of the tables the leaderboard runs used.
+
+`setup` prints how many tasks are ready and lists any task held back because its definition changed after its fixture was last validated. Running it again builds only what is missing. The last command spends model usage through your Claude Code login.
 ## Smoke test
 
 This checks the install with your ROM. It needs no model login, makes no paid calls and takes a few seconds.
@@ -61,8 +78,8 @@ The subscription adapters use the official Codex and Claude Code CLIs. Existing 
 uv run pokebench run \
   --provider claude --model claude-sonnet-5-5 \
   --codex-policy bounded --track gameplay --reasoning-effort medium \
-  --rom /private/red.gb --scenario /private/validated-fixture \
-  --game-data /private/game-data --goal challenge \
+  --rom /private/red.gb --scenario data/fixtures/battle-prepared-gym \
+  --game-data data/game-data --goal challenge \
   --max-total-tokens 500000 --output /private/new-run
 ```
 
