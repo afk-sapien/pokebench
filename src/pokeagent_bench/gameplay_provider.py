@@ -79,7 +79,7 @@ in notes if needed. No shell, walkthrough or human assistance.
         self.config_identity.update(observation_format=observation_format,
                                     text_presentation="observed-gameplay-text-v2" if observation_format == "text" else None,
                                     observation_policy=POLICY,
-                                    controller_timing="core-shortcuts-v060",
+                                    controller_timing="core-shortcuts-v061",
                                     action_contract="gen1-commands-v2",
                                     planning_policy="optional-planning-v1",
                                     correction_policy="three-metered-invalid-decisions-v1")
@@ -89,7 +89,7 @@ in notes if needed. No shell, walkthrough or human assistance.
         self.action_policy = resolve({}, policy)
         if not hasattr(self, "_unrestricted_prompt"):
             self._unrestricted_prompt = self.prompt
-            self._assisted_timing = self.config_identity.get("controller_timing", "core-shortcuts-v060")
+            self._assisted_timing = self.config_identity.get("controller_timing", "core-shortcuts-v061")
         self.prompt = self._unrestricted_prompt
         if policy == MANUAL:
             start = self.prompt.index("Use one explicit command per decision.")

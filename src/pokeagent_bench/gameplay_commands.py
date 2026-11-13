@@ -120,6 +120,8 @@ def execute(session, operation_id, command, on_action=None):
         elif kind == "move":
             completed = 0
             for _ in range(count):
+                # Each tile gets the per-action frame limit, so count 1..8 is not cut short at 5.
+                phase_end = session.frame + session.limits.max_action_frames
                 memory = session.engine.memory
                 if ui_state(memory)["kind"] != "overworld" or memory[0xD057]:
                     result["outcome"] = "Stopped at dialogue, menu or battle."

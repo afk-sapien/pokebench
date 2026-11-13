@@ -20,4 +20,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Bounded feedback repair v064](bounded-feedback-v064.md)
 - [Long decision checkpoints (v068)](long-continuations-v068.md)
 - [PyBoy RS 0.1.5 and verified build pairs](pyboy-rs-015.md)
+- [Fair harness red-v0.61](fair-harness-v061.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

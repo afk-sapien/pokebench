@@ -71,7 +71,7 @@ def test_providers_hide_shortcuts_and_explain_manual_controls(provider_class):
     assert provider.config_identity["controller_timing"] == "manual-tap-8-hold-24-release-v1"
     provider.configure_action_policy(ASSISTED)
     assert "use_item:" in provider.prompt
-    assert provider.config_identity["controller_timing"] == "core-shortcuts-v060"
+    assert provider.config_identity["controller_timing"] == "core-shortcuts-v061"
 
 
 def test_runtime_blocks_before_input_and_records_policy(tmp_path, engine):

@@ -1,4 +1,4 @@
 """A separate, controller-only Pokemon agent benchmark."""
 
 __version__ = "0.35.0"
-BENCHMARK_VERSION = "red-v0.60-pokecore-0.12"
+BENCHMARK_VERSION = "red-v0.61-fair-harness"

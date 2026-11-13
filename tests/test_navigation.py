@@ -78,9 +78,9 @@ def test_eight_tile_request_is_explicit_and_bounded(tmp_path, engine):
     try:
         result = execute(session, 'eight', {'command': 'move', 'argument': 'right', 'count': 8})
         assert result['requested_tiles'] == 8
-        assert result['tiles_moved'] == 5
-        assert session.frame == 120
-        assert len([r for r in engine.inputs if r[0] == 'press']) == 5
+        assert result['tiles_moved'] == 8
+        assert result['outcome'] == 'Moved 8 tiles.'
+        assert len([r for r in engine.inputs if r[0] == 'press']) == 8
     finally:
         session.close()
 
