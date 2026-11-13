@@ -1,20 +1,23 @@
 # Six-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **48 primary tasks and one inventory variant** across six
+Across both benchmarks, the catalog has **47 primary tasks and one inventory variant** across six
 categories: 6 navigation, 12 battle, 10 operations plus one variant, 10 preparation,
-9 quests and one campaign. All 49 task cases have checked starting saves and
+8 quests and one campaign. All 48 task cases have checked starting saves and
 runtime evaluators in the local `data/catalog-v2` fixture set. Difficulty remains
 provisional until model trials. Historical results and the old fixture set remain
 available.
 
-**PokeBench** contains the 47 focused tasks and one inventory variant in five
-categories. **PokeBench Long** contains only the continuous campaign. They use
+**PokeBench** contains the 46 focused tasks and one inventory variant in five
+categories. Its ranked score averages four of them: navigation, battle, operations
+and quests. Preparation is scored and reported next to the ranked score, but it is
+not ranked. **PokeBench Long** contains only the continuous campaign. They use
 separate batches, token ceilings and reports. See [track commands](../history/benchmark-tracks-v053.md).
 
 Navigation tests spatial problems. Quests test NPC instructions and meaningful
 prerequisite sequences. Travel within a quest is incidental, not another score.
 The short Pokemon Center walk and arbitrary department-store floor checklist are
-retired from new batches. The full-bag bicycle exchange is an easy manual inventory
+retired from new batches. So are the two Pikachu capture quests, because a wild
+encounter of about 5% decided the search. The full-bag bicycle exchange is an easy manual inventory
 variant of the checklist, not a separate quest. Variants share the parent task's
 weight in category averages.
 

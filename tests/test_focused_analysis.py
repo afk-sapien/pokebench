@@ -17,6 +17,22 @@ def test_variants_and_categories_have_declared_weights():
     assert score == .25
 
 
+def test_preparation_is_shown_but_not_ranked_and_retired_tasks_are_not_scored():
+    cells = [cell('battle-a', 'battle', 1), cell('nav', 'navigation', 0), cell('prep', 'preparation', .2),
+             cell('objectives-find-capture-species', 'objectives', 1)]
+    categories, score = grouped_scores(cells)
+    assert categories == {'battle': 1, 'navigation': 0, 'preparation': .2}
+    assert score == .5
+    assert grouped_scores([cell('prep', 'preparation', 1)]) == ({'preparation': 1}, None)
+
+
+def test_sensitivity_omits_only_ranked_groups():
+    rows = [cell(t, c, v, model=m) for m in ('one', 'two') for t, c, v in
+            (('a', 'battle', 1), ('b', 'battle', 0), ('p', 'preparation', 1),
+             ('objectives-find-capture-species', 'objectives', 1))]
+    assert task_sensitivity(rows)['omissions'] == 2
+
+
 def test_errors_and_pending_do_not_become_zero_scores():
     cells = [cell('a', 'battle', 1), cell('b', 'battle', None, state='pending'),
              cell('c', 'battle', 0, state='evaluation_error')]

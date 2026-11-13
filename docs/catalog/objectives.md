@@ -113,36 +113,6 @@ Lavender Town, directly outside the Pokemon Tower entrance.
 
 - Complete the native Pokemon Tower rescue, then receive the Poke Flute from Mr. Fuji.
 
-## Find and catch a wild Pikachu from Viridian City
-
-`objectives-find-capture-species`
-
-Controls: assisted-gameplay-v1. Estimated difficulty: hard.
-
-### What this tests
-
-Locate a target species and manage a limited capture budget. Walking through the forest alone does not pass.
-
-### Agent instruction
-
-Catch a wild Pikachu and keep it in your party. You start in Viridian City with 10 Poke Balls. Do not buy more balls or use stored Pokemon. Keep default names.
-
-### Starting situation
-
-Viridian Pokemon Center, first controllable tile after a full party heal.
-
-### Setup
-
-- Party: Squirtle level 10 with Tackle, Tail Whip and Bubble. Full HP, no status and full PP. No other Pokemon.
-- Bag: 5 Potions, 2 Antidotes and 10 Poke Balls. Money: 300. No bicycle or field moves.
-- Pokedex owned and parcel delivered. Northern Viridian exit open. No Pikachu in party or storage.
-- The intended native encounter source is Viridian Forest. Species and ball budget are fixed across timing variants, not randomly changed. Healing at a Center is allowed.
-
-### Success
-
-- Capture a wild Pikachu after the start and retain it in the party outside battle.
-- No purchased balls, gifted Pikachu, trades or storage withdrawals count.
-
 ## Catch level 30 Snorlax with 12 Great Balls
 
 `objectives-constrained-valuable-capture`

@@ -4,6 +4,7 @@ from functools import lru_cache
 import json
 from pathlib import Path
 
+from .benchmark_tracks import UNRANKED_CATEGORIES
 from .focused_analysis import grouped_scores
 
 PRICING = {
@@ -147,6 +148,8 @@ def comparison(cells, models):
     grouped = {m['id']: {} for m in models}
     for cell in cells:
         key = (cell['task_id'], cell.get('variant'))
+        if cell['category'] in UNRANKED_CATEGORIES or cell.get('retired'):
+            continue
         if cell['state'] == 'finished' and cell.get('value') is not None and cell.get('cost', {}).get('low') is not None:
             grouped[cell['model']][key] = cell
     shared = set.intersection(*(set(g) for g in grouped.values())) if grouped else set()
@@ -166,4 +169,4 @@ def comparison(cells, models):
                        'per_full_score': {k: v / score if v is not None and score else None for k, v in costs.items()},
                        'partial': any(r['cost']['partial'] for r in rows), 'starts': len(rows)})
     return {'starts': len(shared), 'models': output,
-            'policy': 'Shared completed task starts, including failed tasks. Same category and group weights for score and mean cost. Full-score equivalent cost is mean cost divided by score, including fractional preparation credit. This is an exploratory comparison across the documented interface revisions.'}
+            'policy': 'Shared completed task starts in the ranked categories, including failed tasks. Preparation and retired tasks are left out. Same category and group weights for score and mean cost. Full-score equivalent cost is mean cost divided by score. This is an exploratory comparison across the documented interface revisions.'}

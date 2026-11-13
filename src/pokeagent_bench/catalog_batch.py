@@ -4,8 +4,8 @@ from pathlib import Path
 
 from .catalog_execution import PROVIDERS, _read, inventory, run_task
 from .core import write_json
-from .benchmark_tracks import SHORT, LONG, NAMES, for_category, validate
-from .evaluation_catalog import task_definition
+from .benchmark_tracks import SHORT, LONG, NAMES, UNRANKED_CATEGORIES, for_category, ranked_average, validate
+from .evaluation_catalog import retired_tasks, task_definition
 
 
 def plan(fixtures, models, tasks=None, repeats=1, *, benchmark=SHORT):
@@ -140,10 +140,11 @@ def report(batch):
         models[(benchmark, cell['provider'], cell['model'])].append(row)
         rows.append(row)
     summaries = []
+    retired = retired_tasks()
     for (benchmark, provider, model), values in models.items():
         by_task = defaultdict(list)
         for row in values:
-            if row['value'] is not None:
+            if row['value'] is not None and row['task_id'] not in retired:
                 by_task[(row['category'], row.get('score_group', row['task_id']))].append(row['value'])
         categories = defaultdict(list)
         for (category, _), scores in by_task.items():
@@ -155,7 +156,8 @@ def report(batch):
                           'tokens': sum(row['tokens'] for row in values),
                           'accounting_complete': all(row.get('accounting_complete', True) for row in values),
                           'category_scores': category_scores if benchmark == SHORT else {},
-                          'available_category_average': sum(category_scores.values()) / len(category_scores) if category_scores and benchmark == SHORT else None})
+                          'unranked_categories': list(UNRANKED_CATEGORIES) if benchmark == SHORT else [],
+                          'available_category_average': ranked_average(category_scores) if benchmark == SHORT else None})
         if benchmark == LONG:
             finished = [row for row in values if row['state'] == 'finished']
             summaries[-1]['campaign_mean_progress'] = sum(row['value'] for row in finished) / len(finished) if finished else None
@@ -163,7 +165,7 @@ def report(batch):
             summaries[-1]['campaign_runs'] = [{key: row.get(key) for key in ('id', 'state', 'campaign', 'tokens', 'accounting_complete')} for row in values]
     return {'protocol': manifest['protocol'], 'benchmark': manifest.get('benchmark'),
             'benchmarks': sorted({row['benchmark'] for row in rows}), 'models': summaries, 'cells': rows,
-            'note': 'Available results only. Equal task-family weights within categories. Inventory variants share their parent task weight. PokeBench reports focused-task performance. PokeBench Long reports campaign progress and Champion completion separately. These scores are never averaged together. Check coverage before comparing averages.'}
+            'note': 'Available results only. Equal task-family weights within categories. Inventory variants share their parent task weight. The PokeBench average covers navigation, battle, operations and objectives. Preparation is scored and reported, but it is not ranked. Retired tasks are not scored. PokeBench reports focused-task performance. PokeBench Long reports campaign progress and Champion completion separately. These scores are never averaged together. Check coverage before comparing averages.'}
 
 
 def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repeats=1,

@@ -6,6 +6,8 @@ from pathlib import Path
 import re
 import shutil
 
+from .benchmark_tracks import UNRANKED_CATEGORIES
+from .evaluation_catalog import retired_tasks, task_definition
 from .focused_analysis import grouped_scores
 from .showcase_costs import PRICING, comparison, run_cost, sum_cost
 
@@ -106,26 +108,39 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
             clean.update(model=name, replay=None, revision='Community', harness=entry['harness']['benchmark'],
                          cost={'low': None, 'high': None, 'partial': False, 'note': 'Community run, not priced'})
             cells.append(clean)
+    retired = retired_tasks()
+    # Retired attempts stay visible for history, but they are not scored or counted as planned.
+    for cell in cells:
+        cell['retired'] = cell['task_id'] in retired
+    scored = [c for c in cells if not c['retired']]
     by_model = defaultdict(list)
     for cell in cells:
         by_model[cell['model']].append(cell)
     models = []
     for name, rows in by_model.items():
         categories, score = grouped_scores(rows)
-        finished = sum(r['state'] == 'finished' for r in rows)
+        counted = [r for r in rows if not r['retired']]
+        finished = sum(r['state'] == 'finished' for r in counted)
         note = submitted.get(name)
         models.append({'id': name, 'label': note['model'] if note else LABELS.get(name, name), 'score': score,
                        **({'community': note} if note else {}),
-                       'categories': categories, 'finished': finished, 'planned': len(rows),
-                       'complete': finished == len(rows), 'tokens': sum(r.get('tokens') or 0 for r in rows),
+                       'categories': categories, 'finished': finished, 'planned': len(counted),
+                       'complete': finished == len(counted), 'tokens': sum(r.get('tokens') or 0 for r in rows),
                        'cost': sum_cost(rows), 'harness': harness_summary(rows),
-                       'errors': sum(r['state'] == 'evaluation_error' for r in rows)})
+                       'errors': sum(r['state'] == 'evaluation_error' for r in counted)})
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
-    tasks = [{k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
-             for t in source['tasks']]
+    tasks = []
+    for t in source['tasks']:
+        task = {k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
+        task['retired'] = t['id'] in retired
+        if task['retired']:
+            task['retirement_reason'] = task_definition(t['id']).get('retirement_reason')
+        tasks.append(task)
     return {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
-            'finished': sum(c['state'] == 'finished' for c in cells), 'planned': len(cells),
-            'efficiency': comparison([c for c in cells if c['model'] not in submitted],
+            'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
+            'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
+            'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
+            'efficiency': comparison([c for c in scored if c['model'] not in submitted],
                                      [m for m in models if m['id'] not in submitted])}
 
 

@@ -1,6 +1,7 @@
 """Prospective Gen 1 eval specifications, separate from runnable suites and results."""
 from collections import Counter
 from copy import deepcopy
+from functools import cache
 from importlib.resources import files
 import json
 from pathlib import Path
@@ -146,6 +147,13 @@ def summary(category=None, fixtures=None, *, benchmark=None):
                       reference_verified_evals=sum(any(v['reference_verified'] for v in by_id[e['id']]['variants']) for e in entries),
                       note='Runnable tasks have checked native starting saves and assigned evaluators. Reference proofs and model calibration are shown separately.')
     return report
+
+
+@cache
+def retired_tasks():
+    """Task ids kept in the catalog for history but no longer run or scored."""
+    return frozenset(task['id'] for group in load_catalog(include_retired=True)
+                     for task in group['evals'] if not task.get('active', True))
 
 
 def task_definition(task_id):

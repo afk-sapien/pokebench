@@ -2,7 +2,7 @@ from copy import deepcopy
 
 import pytest
 
-from pokeagent_bench.evaluation_catalog import CATEGORIES, load_catalog, summary, validate_category
+from pokeagent_bench.evaluation_catalog import CATEGORIES, load_catalog, retired_tasks, summary, validate_category
 
 
 def category():
@@ -52,10 +52,10 @@ def test_packaged_catalog_has_distinct_evals_and_honest_status():
     groups = load_catalog()
     assert tuple(group['category'] for group in groups) == CATEGORIES
     entries = [evaluation for group in groups for evaluation in group['evals']]
-    assert len(entries) == len({e['id'] for e in entries}) == 50
+    assert len(entries) == len({e['id'] for e in entries}) == 48
     report = summary()
     assert report['runnable_new_evals'] == report['model_calls'] == 0
-    assert report['eval_count'] == 50
+    assert report['eval_count'] == 48
     operations = load_catalog('operations')[0]['evals']
     assert all(e['action_policy'] == 'manual-menu-v1' for e in operations)
     preparation = load_catalog('preparation')[0]['evals']
@@ -101,7 +101,7 @@ def test_campaign_is_one_attempt_with_unique_milestones():
 def test_portal_uses_actual_counts_and_campaign_milestones():
     from pokeagent_bench.catalog_portal import render_catalog
     page = render_catalog()
-    assert '49 task drafts' in page
+    assert '47 task drafts' in page
     assert 'Milestones within this one attempt' not in page
     long_page = render_catalog(summary(benchmark='pokebench-long'))
     assert 'Milestones within this one attempt' in long_page
@@ -125,9 +125,10 @@ def test_campaign_score_is_bounded_and_diagnostic_metrics_do_not_award_points():
 def test_cleanup_keeps_quests_distinct_and_inventory_variant_manual():
     groups = {group['category']: group for group in load_catalog()}
     assert len(groups['navigation']['evals']) == 6
-    assert len(groups['objectives']['evals']) == 10
+    assert len(groups['objectives']['evals']) == 8
     quests = {task['id']: task for task in groups['objectives']['evals']}
     assert 'objectives-infeasible-plan-alternate' in quests
+    assert 'objectives-find-capture-species' not in quests
     assert 'objectives-recover-earlier-mistake' not in quests
     assert load_catalog('quests') == load_catalog('objectives')
     operations = {task['id']: task for task in groups['operations']['evals']}
@@ -135,11 +136,12 @@ def test_cleanup_keeps_quests_distinct_and_inventory_variant_manual():
     assert variant['variant_of'] == 'operations-menu-checklist'
     assert variant['action_policy'] == 'manual-menu-v1'
     assert variant['difficulty'] == 'easy'
-    assert summary()['primary_task_count'] == 49
+    assert summary()['primary_task_count'] == 47
     assert summary()['variant_count'] == 1
     retired = {task['id'] for group in load_catalog(include_retired=True)
                for task in group['evals'] if not task.get('active', True)}
-    assert retired == {'navigation-town-landmark', 'navigation-multifloor-required-stops'}
+    assert retired == retired_tasks() == {'navigation-town-landmark', 'navigation-multifloor-required-stops',
+                                          'objectives-find-capture-species', 'objectives-capture-pikachu-fixed'}
 
 
 def test_portal_explains_bicycle_cases_and_does_not_inflate_difficulty():

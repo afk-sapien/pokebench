@@ -102,9 +102,16 @@ def summary(result, output):
             if campaign:
                 lines.append(f'Campaign: {campaign["points"]} of {campaign["maximum_points"]} points, '
                              f'{campaign["milestones"]} milestones, Champion {"yes" if campaign["champion"] else "no"}.')
-    elif row['available_category_average'] is not None:
-        lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100, the average of these categories:')
-        lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in sorted(row['category_scores'].items())]
+    elif row['category_scores']:
+        unranked = row.get('unranked_categories', [])
+        if row['available_category_average'] is not None:
+            lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100, the average of these categories:')
+            lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in sorted(row['category_scores'].items())
+                      if name not in unranked]
+        shown = [(name, value) for name, value in sorted(row['category_scores'].items()) if name in unranked]
+        if shown:
+            lines.append('Shown but not ranked:')
+            lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in shown]
     lines.append(f'Tokens used {millions(result["tokens_used"])} of {millions(result["token_budget"])}.')
     if row['completed'] < row['planned']:
         lines.append('Not every run finished. Run the same command again to continue, or raise --budget.')

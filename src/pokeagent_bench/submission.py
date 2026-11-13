@@ -451,7 +451,7 @@ def conclusion(result, output):
     lines = ['', f'VERIFIED. {replayed} runs replayed from the benchmark start states and matched their logs.',
              f'{row["name"]}, model {row["provider"]}:{row["model"]}, submitted by {result["handle"] or "unnamed"}']
     if row.get('available_category_average') is not None:
-        lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100')
+        lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100. Preparation is shown but not ranked.')
     for run in row.get('campaign_runs', []):
         if run.get('campaign'):
             lines.append(f'Campaign: {run["campaign"]["points"]} of {run["campaign"]["maximum_points"]} points')

@@ -40,3 +40,31 @@ exact text, so `choose POLIWRATH` was refused. That cost 6 cells one decision
 each. Exact text still matches first. If nothing matches exactly, a bare name
 matches an option of the form `N: NAME`, and only when exactly one option
 matches. Two party members with the same name still need the slot prefix.
+
+## Preparation is shown but not ranked
+
+Preparation scores a team and item plan with a fixed battle controller. It
+gives fractional credit, and its result depends on that controller as much as
+on the plan. The ranked Short score now averages four categories equally:
+navigation, battles, menus and quests. Preparation keeps its own score, which
+appears in its own column marked not ranked. The 95% interval, the
+cost-per-score comparison and the task-omission rank check use the same four
+categories. `pokebench run` prints preparation under "Shown but not ranked".
+
+On the published Short runs, ranks stay the same for six of the eight models.
+Haiku and Sonnet swap places 6 and 7. The gap between them is 0.3 points, well
+inside both intervals.
+
+## Two Pikachu quests retired
+
+`objectives-find-capture-species` asked the model to find and catch a wild
+Pikachu. Pikachu appears in about 5% of Viridian Forest encounters, so the
+result depends mostly on encounter luck. Only one of eight published models
+passed it. `objectives-capture-pikachu-fixed` had no fixture and was never on
+the leaderboard. Both are marked `active: false`. New batches do not run them.
+Their old attempts stay on the site, tagged retired, but they are not scored
+or counted as planned. Every published score is recomputed without them. The
+graders and the fixture stay in the package, so old runs can still be
+replayed. The fixture pack needs no rebuild: all 48 active task cases are
+runnable from the current pack, and the retired fixture stays in it, as the
+two retired navigation fixtures already do.

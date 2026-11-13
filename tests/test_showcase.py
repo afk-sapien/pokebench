@@ -31,6 +31,31 @@ def test_partial_scores_keep_failures_and_exclude_pending(tmp_path):
     assert result['planned'] == 4
 
 
+def test_preparation_is_unranked_and_retired_cells_stay_visible_but_unscored(tmp_path):
+    def row(task, category, value):
+        return {'id': task, 'task_id': task, 'category': category, 'score_group': task, 'model': 'old',
+                'state': 'finished', 'value': value, 'tokens': 10, 'cost': {'low': 1.0, 'high': 2.0, 'partial': False}}
+    rows = [row('b', 'battle', 0.5), row('p', 'preparation', 1.0), row('objectives-find-capture-species', 'objectives', 1.0)]
+    tasks = [{'id': r['task_id'], 'title': r['task_id'], 'category': r['category']} for r in rows]
+    source = {'cells': rows, 'tasks': tasks, 'categories': ['battle', 'preparation', 'objectives']}
+    result = short_snapshot(source, tmp_path)
+    model = result['models'][0]
+    assert model['score'] == 0.5
+    assert model['categories'] == {'battle': 0.5, 'preparation': 1.0}
+    assert (model['finished'], model['planned'], model['complete']) == (2, 2, True)
+    assert [c['retired'] for c in result['cells']] == [False, False, True]
+    retired = result['tasks'][2]
+    assert retired['retired'] and 'luck' in retired['retirement_reason']
+    assert (result['finished'], result['planned']) == (2, 2)
+    assert result['ranked_categories'] == ['battle', 'objectives']
+    assert result['unranked_categories'] == ['preparation']
+    from pokeagent_bench.showcase_costs import comparison
+    priced = [dict(r, retired=r['task_id'] == 'objectives-find-capture-species') for r in rows]
+    value = comparison(priced, [{'id': 'old', 'label': 'Old'}])
+    assert value['starts'] == 1
+    assert value['models'][0]['score'] == 0.5 and value['models'][0]['cost'] == {'low': 1.0, 'high': 2.0}
+
+
 def test_snapshot_does_not_export_provider_context(tmp_path):
     source = {'cells': [{'id': 'a', 'task_id': 't', 'score_group': 't', 'category': 'battle',
                         'model': 'model', 'state': 'finished', 'value': 1.0,
@@ -110,15 +135,19 @@ def test_score_interval_resamples_tasks_within_categories():
     rows += [{'task_id': 'n', 'category': 'navigation', 'state': 'finished', 'value': 1},
              {'task_id': 'p', 'category': 'navigation', 'state': 'pending', 'value': None}]
     same = [dict(r, value=1) for r in rows if r['state'] == 'finished']
+    ignored = rows + [{'task_id': 'q', 'category': 'preparation', 'state': 'finished', 'value': 0},
+                      {'task_id': 'r', 'category': 'objectives', 'state': 'finished', 'value': 0, 'retired': True}]
     script = (f'const {{scoreInterval}} = require({json.dumps(str(stats))})\n'
               f'console.log(JSON.stringify([scoreInterval({json.dumps(rows)}), scoreInterval({json.dumps(rows)}), '
-              f'scoreInterval({json.dumps(same)}), scoreInterval([])]))')
-    first, again, perfect, empty = json.loads(subprocess.run(['node', '-e', script], check=True,
-                                                             capture_output=True, text=True).stdout)
-    assert first == again
+              f'scoreInterval({json.dumps(same)}), scoreInterval([]), scoreInterval({json.dumps(ignored)}), '
+              f'scoreInterval({json.dumps(ignored)}, 2000, 20261026, [])]))')
+    first, again, perfect, empty, skipped, counted = json.loads(
+        subprocess.run(['node', '-e', script], check=True, capture_output=True, text=True).stdout)
+    assert first == again == skipped
     assert 0.5 < first['low'] < 0.75 < first['high'] < 1.0
     assert perfect['low'] == perfect['high'] == 1.0
     assert empty is None
+    assert counted['high'] < first['high']
 
 
 def test_public_page_omits_report_link_without_report(tmp_path):
