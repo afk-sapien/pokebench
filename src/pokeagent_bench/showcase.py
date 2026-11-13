@@ -3,6 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timezone
 import json
 from pathlib import Path
+import re
 import shutil
 
 from .focused_analysis import grouped_scores
@@ -30,6 +31,42 @@ def existing_link(web, relative):
     return relative if path.is_file() else None
 
 
+def harness_tag(run):
+    """Return the benchmark version a run recorded, from its gameplay or preparation manifest."""
+    for name in ('manifest.json', 'preparation/manifest.json'):
+        path = Path(run) / name
+        if path.exists():
+            return load(path).get('benchmark')
+    return None
+
+
+TAG = re.compile(r'([a-z]+)-v(\d+(?:\.\d+)*)')
+
+
+def tag_key(tag):
+    match = TAG.match(tag)
+    return (tuple(int(part) for part in match[2].split('.')) if match else (), tag)
+
+
+def short_tag(tag):
+    match = TAG.match(tag)
+    return match[0] if match else tag
+
+
+def harness_summary(rows):
+    """Describe which harness revision and versions a group of attempts ran under."""
+    tags = sorted({r['harness'] for r in rows if r.get('harness')}, key=tag_key)
+    short = list(dict.fromkeys(short_tag(t) for t in tags))
+    if not short:
+        label = None
+    elif len(short) == 1:
+        label = short[0]
+    else:
+        label = short[0] + ' to ' + short[-1].split('-', 1)[-1]
+    return {'revisions': sorted({r['revision'] for r in rows if r.get('revision')}),
+            'versions': tags, 'label': label}
+
+
 def short_snapshot(source, web, extra=None, base=None):
     cells = []
     for row in source['cells']:
@@ -38,6 +75,7 @@ def short_snapshot(source, web, extra=None, base=None):
         clean['revision'] = 'Original pass'
         if base is not None:
             clean['cost'] = run_cost(base / 'focused-pass-v056' / row['id'], row['model'], row.get('tokens'))
+            clean['harness'] = harness_tag(base / 'focused-pass-v056' / row['id'])
         cells.append(clean)
     extras = extra if isinstance(extra, list) else [extra] if extra else []
     for batch in extras:
@@ -48,6 +86,7 @@ def short_snapshot(source, web, extra=None, base=None):
             clean['revision'] = 'Current interface'
             if base is not None:
                 clean['cost'] = run_cost(base / batch['web_prefix'] / row['id'], row['model'], row.get('tokens'))
+                clean['harness'] = harness_tag(base / batch['web_prefix'] / row['id'])
             cells.append(clean)
     by_model = defaultdict(list)
     for cell in cells:
@@ -59,7 +98,7 @@ def short_snapshot(source, web, extra=None, base=None):
         models.append({'id': name, 'label': LABELS.get(name, name), 'score': score,
                        'categories': categories, 'finished': finished, 'planned': len(rows),
                        'complete': finished == len(rows), 'tokens': sum(r.get('tokens') or 0 for r in rows),
-                       'cost': sum_cost(rows),
+                       'cost': sum_cost(rows), 'harness': harness_summary(rows),
                        'errors': sum(r['state'] == 'evaluation_error' for r in rows)})
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = [{k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
@@ -82,6 +121,7 @@ def long_row(root, web, name, decision_limit=2000):
                    if result.get('stop_reason') == 'loop_token_budget' else None)
     return {'id': name, 'label': 'Fable 5.1' if name == 'fable' else name.title(),
             'model': manifest.get('agent', {}).get('model'), 'stop_detail': stop_detail,
+            'harness': manifest.get('benchmark'),
             'run_id': root.name, 'decision_limit': decision_limit,
             'token_limit': pilot.get('token_limit', 30000000), 'cost': cost,
             'report': existing_link(web, f'{root.name}.html'), 'score': result.get('score', 0),

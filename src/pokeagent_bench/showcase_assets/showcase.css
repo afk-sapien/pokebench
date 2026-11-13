@@ -188,6 +188,12 @@ thead {border-top:1px solid #bfc6b5}
 .model-id {color:#798071}
 .model-id {display:block}
 .model-id {margin:5px 0 0 27px}
+.harness-revision {font-size:12px}
+.harness-revision {display:block}
+.harness-version {font:9px monospace}
+.harness-version {color:#798071}
+.harness-version {display:block}
+.harness-version {margin-top:4px}
 .rank {display:inline-block}
 .rank {width:27px}
 .rank {font:11px monospace}
