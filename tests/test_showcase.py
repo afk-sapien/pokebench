@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from pokeagent_bench.showcase import existing_link, export_public, short_snapshot
+from pokeagent_bench.showcase import existing_link, export_public, long_row, short_snapshot
 
 
 def test_partial_scores_keep_failures_and_exclude_pending(tmp_path):
@@ -40,6 +40,36 @@ def test_snapshot_does_not_export_provider_context(tmp_path):
     assert 'notes' not in row
     assert 'provider' not in row
     assert row['replay'] is None
+
+
+def test_harness_labels_come_from_each_run_manifest(tmp_path):
+    base = tmp_path / 'data'
+    for relative, tag in (('focused-pass-v056/a', 'red-v0.10-newer'), ('focused-pass-v056/b/preparation', 'red-v0.9-older'),
+                          ('batch/c', 'red-v0.10-newer')):
+        (base / relative).mkdir(parents=True)
+        (base / relative / 'manifest.json').write_text(json.dumps({'benchmark': tag}))
+    rows = [{'id': 'a', 'task_id': 't', 'score_group': 't', 'category': 'battle', 'model': 'old',
+             'mode': 'gameplay', 'state': 'finished', 'value': 1.0},
+            {'id': 'b', 'task_id': 'p', 'score_group': 'p', 'category': 'battle', 'model': 'old',
+             'mode': 'preparation', 'state': 'finished', 'value': 0.5}]
+    extra = {'web_prefix': 'batch', 'cells': [dict(rows[0], id='c', model='new')]}
+    result = short_snapshot({'cells': rows, 'tasks': [], 'categories': ['battle']}, tmp_path, extra, base)
+    assert [c['harness'] for c in result['cells']] == ['red-v0.10-newer', 'red-v0.9-older', 'red-v0.10-newer']
+    harness = {m['id']: m['harness'] for m in result['models']}
+    assert harness['old'] == {'revisions': ['Original pass'], 'versions': ['red-v0.9-older', 'red-v0.10-newer'],
+                              'label': 'red-v0.9 to v0.10'}
+    assert harness['new'] == {'revisions': ['Current interface'], 'versions': ['red-v0.10-newer'], 'label': 'red-v0.10'}
+    assert short_snapshot({'cells': rows, 'tasks': [], 'categories': ['battle']}, tmp_path)['models'][0]['harness']['label'] is None
+
+
+def test_long_rows_carry_their_harness_version(tmp_path):
+    run = tmp_path / 'long-run' / 'run'
+    run.mkdir(parents=True)
+    (run / 'manifest.json').write_text(json.dumps({'agent': {'model': 'unpriced'}, 'benchmark': 'red-v0.59-lossless-inspection'}))
+    (run / 'result.json').write_text(json.dumps({'state': 'finished', 'score': 5, 'usage': {'calls': 3}}))
+    row = long_row(tmp_path / 'long-run', tmp_path, 'opus')
+    assert row['harness'] == 'red-v0.59-lossless-inspection'
+    assert row['model'] == 'unpriced'
 
 
 def test_only_existing_local_replays_are_linked(tmp_path):
