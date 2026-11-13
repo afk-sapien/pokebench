@@ -53,16 +53,39 @@ CELL_KEYS = ('id', 'task_id', 'variant', 'repeat', 'mode', 'category', 'fixture_
 DECISION = re.compile(r'decision-(\d+)-')
 
 
-def accepted_harness():
-    return json.loads((Path(__file__).parent / 'accepted_harness.json').read_text())['accepted']
+ENTRY_KEYS = ('benchmark', 'package_version', 'source_sha256')
+CLOSED = 'Submissions are not open yet. They open with the frozen v0.61 release'
+
+
+def accepted_harness(path=Path(__file__).parent / 'accepted_harness.json'):
+    """The frozen releases that submissions are accepted from. Empty means submissions are closed."""
+    entries = json.loads(Path(path).read_text())['accepted']
+    for entry in entries:
+        if not isinstance(entry, dict) or set(entry) != set(ENTRY_KEYS) or not all(
+                isinstance(value, str) and value for value in entry.values()):
+            raise ValueError('accepted_harness.json: every entry needs exactly ' + ', '.join(ENTRY_KEYS))
+    return entries
+
+
+def this_harness():
+    """This checkout, described the way a run manifest records it."""
+    sources = {path.name: digest(path.read_bytes()) for path in sorted(Path(__file__).parent.glob('*.py'))}
+    return {'benchmark': BENCHMARK_VERSION, 'package_version': __version__, 'source_sha256': digest(encoded(sources))}
 
 
 def harness_accepted(manifest):
-    return any(all(manifest.get(key) == value for key, value in entry.items()) for entry in accepted_harness())
+    return any(all(manifest.get(key) == entry[key] for key in ENTRY_KEYS) for entry in accepted_harness())
 
 
-def harness_names():
-    return ' or '.join(f'{entry["benchmark"]} (package {entry["package_version"]})' for entry in accepted_harness())
+def harness_refusal(found, subject):
+    """Say why a harness is refused, naming what is accepted."""
+    entries = accepted_harness()
+    if not entries:
+        return CLOSED
+    names = ' or '.join(f'{entry["benchmark"]} (package {entry["package_version"]}, source '
+                        f'{entry["source_sha256"][:12]})' for entry in entries)
+    return (f'{subject} {found.get("benchmark")} (package {found.get("package_version")}, source '
+            f'{str(found.get("source_sha256"))[:12]}). Accepted: {names} only. Check out that release unchanged')
 
 
 def local_names():
@@ -108,6 +131,8 @@ def public_manifest(manifest, endpoint_host):
 def collect(run, *, handle=None, attempts=1, endpoint_host=False):
     """Read a finished suite run and return the bundle files as bytes."""
     run = Path(run)
+    if not accepted_harness():
+        raise ValueError(CLOSED)
     if not (run / 'plan.json').is_file():
         raise ValueError(f'{run} is not a suite run folder. Pass the folder that run --suite wrote')
     plan = json.loads((run / 'plan.json').read_text())
@@ -127,7 +152,7 @@ def collect(run, *, handle=None, attempts=1, endpoint_host=False):
                          + '. Run the same run command again to finish them')
     files = {'plan.json': encoded(plan)}
     hosts = set()
-    harness = {'benchmark': BENCHMARK_VERSION, 'package_version': __version__}
+    harness = this_harness()
     for cell in plan['cells']:
         folder = run / cell['id']
         if cell['mode'] == 'preparation':
@@ -137,9 +162,8 @@ def collect(run, *, handle=None, attempts=1, endpoint_host=False):
             continue
         manifest = json.loads((folder / 'manifest.json').read_text())
         if not harness_accepted(manifest):
-            raise ValueError(f'{cell["task_id"]} ran on {manifest.get("benchmark")} (package '
-                             f'{manifest.get("package_version")}). Submissions are accepted from {harness_names()} only')
-        harness = {key: manifest[key] for key in ('benchmark', 'package_version')}
+            raise ValueError(harness_refusal(manifest, f'{cell["task_id"]} ran on'))
+        harness = {key: manifest[key] for key in ENTRY_KEYS}
         manifest = public_manifest(manifest, endpoint_host)
         hosts.add(manifest['agent'].get('configuration', {}).get('endpoint_host'))
         files[f'{cell["id"]}/manifest.json'] = encoded(manifest)
@@ -296,8 +320,7 @@ def check_cell(cell, files, fixtures, rom, work, replay):
     if actions is None:
         raise ValueError('Bundle is missing the action log')
     if not harness_accepted(manifest):
-        raise ValueError(f'Ran on {manifest.get("benchmark")} (package {manifest.get("package_version")}). '
-                         f'Accepted: {harness_names()}')
+        raise ValueError(harness_refusal(manifest, 'Ran on'))
     source = select_scenario(fixtures, cell['task_id'], cell['variant'])
     scenario = json.loads((source / 'scenario.json').read_text())
     if manifest.get('initial_sha256') != scenario['state_sha256']:
@@ -347,9 +370,8 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
     """Check a bundle and write a verified report. Raises ValueError when the bundle is refused outright."""
     if replay is None:
         from .session import replay
-    if not harness_accepted({'benchmark': BENCHMARK_VERSION, 'package_version': __version__}):
-        raise ValueError(f'This checkout is {BENCHMARK_VERSION} (package {__version__}). '
-                         f'Verification needs {harness_names()}. Check out that release')
+    if not harness_accepted(this_harness()):
+        raise ValueError(harness_refusal(this_harness(), 'Verification runs on an accepted release. This checkout is'))
     bundle = Path(bundle)
     files = open_bundle(bundle)
     summary, plan = check_plan(files, fixtures)
@@ -382,7 +404,7 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
               'handle': summary.get('handle') if isinstance(summary.get('handle'), str)
               and HANDLE.fullmatch(summary['handle']) else None,
               'attempts_declared': summary.get('attempts_declared') if type(summary.get('attempts_declared')) is int else None,
-              'harness': {'benchmark': BENCHMARK_VERSION, 'package_version': __version__},
+              'harness': this_harness(),
               'bundle_sha256': digest(bundle.read_bytes()), 'self_reported': list(SELF_REPORTED),
               'not_replay_verified': sorted(unverified)}
     if plan['suite'] == 'smoke':
@@ -406,8 +428,9 @@ def community_add(report, web):
     if result.get('suite') != 'short':
         raise ValueError('Only Short suite reports can be added. The smoke suite is a setup check, '
                          'and the site has no community rows for Long yet')
-    if not harness_accepted(result.get('harness') or {}):
-        raise ValueError(f'The report was verified on another harness version. Accepted: {harness_names()}')
+    harness = result.get('harness') if isinstance(result.get('harness'), dict) else {}
+    if not harness_accepted(harness):
+        raise ValueError(harness_refusal(harness, 'The report was verified on'))
     name = re.sub(r'[^A-Za-z0-9.]+', '-', f'{result.get("handle") or "unnamed"}-{result["model"]}') + '.json'
     target = Path(web) / 'community' / name
     if target.exists():

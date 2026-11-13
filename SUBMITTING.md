@@ -1,5 +1,7 @@
 # Submitting a run
 
+Submissions are not open yet. They open with the frozen v0.61 release. Until then `submit` and `verify` refuse every run and say so. The rest of this page describes how it works once they open.
+
 Anyone with the required Pokemon Red ROM and a model can send a result. A maintainer checks it by replay and then decides whether to publish it.
 
 ## The three commands
@@ -28,7 +30,11 @@ Before writing, `submit` scans the bundle for absolute paths, key shaped text, t
 
 ## Which versions are accepted
 
-Only the harness version the leaderboard uses is accepted. It is listed in [accepted_harness.json](src/pokeagent_bench/accepted_harness.json). `submit` refuses a run from any other version and names the accepted one. Check out that release, run `uv sync --locked --extra dev` and run again.
+Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json). It is empty today, because the v0.61 harness is still changing, so nothing is accepted yet.
+
+Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Check out that release unchanged, run `uv sync --locked --extra dev` and run again.
+
+Maintainers add an entry at the freeze by following the [release checklist](docs/release-checklist.md).
 
 ## How a bundle is checked
 
@@ -44,6 +50,17 @@ Anyone can run this. It needs the ROM and a finished `setup`, calls no model and
 - A run over its decision or token limit fails.
 
 One failed run fails the whole bundle. The result is written to `MODEL-SUITE.pokebench.verified.json`.
+
+### How long it takes
+
+Replay is nearly all of the time, and it runs on one CPU core. These were measured on a desktop PC at low priority, by replaying existing private runs the same way `verify` does, from only the manifest, the input log, the result and the start state.
+
+| Suite | Size of the run | Replay time |
+| --- | --- | --- |
+| Short | 40 gameplay tasks, 31,717 inputs, 0.85 million frames | 16 min 37 s |
+| Long | 1 run, 22,645 inputs, 0.6 million frames | 6 min 12 s |
+
+Every run replayed without a mismatch. The time grows with the number of frames played, so a model that uses its whole budget on every task takes longer. The two League battles alone took 4 min 39 s of the Short total. These runs were recorded on the earlier v0.59 harness, so they timed the replay step and not a full `verify` of an accepted bundle. The other checks in `verify` read a few megabytes and take seconds.
 
 ## What the check cannot show
 

@@ -52,6 +52,7 @@ def world(tmp_path, monkeypatch):
     monkeypatch.setattr(submission, 'select_scenario', lambda fixtures, task, variant: fixtures / task)
     monkeypatch.setattr(submission, 'scoring', lambda task: {'goal': 'first-gym', 'track': 'structured', 'score_max': 75})
     monkeypatch.setattr(submission, 'local_names', lambda: [])
+    monkeypatch.setattr(submission, 'accepted_harness', lambda: [submission.this_harness()])
     monkeypatch.chdir(tmp_path)
     return {'rom': rom, 'fixtures': fixtures, 'run': run, 'bundle': tmp_path / 'bundle.zip'}
 
@@ -196,17 +197,54 @@ def test_large_or_broken_archives_are_refused(world, bundle, monkeypatch):
 
 
 def test_only_the_accepted_harness_version_passes(world, bundle, monkeypatch):
-    monkeypatch.setattr(submission, 'accepted_harness', lambda: [{'benchmark': 'red-v9', 'package_version': '9.0.0'}])
-    with pytest.raises(ValueError, match=r'accepted from red-v9 \(package 9.0.0\) only'):
+    other = {'benchmark': 'red-v9', 'package_version': '9.0.0', 'source_sha256': 'f' * 64}
+    monkeypatch.setattr(submission, 'accepted_harness', lambda: [other])
+    with pytest.raises(ValueError, match=r'battle-one ran on .* Accepted: red-v9 \(package 9.0.0, source ffffffffffff\) only'):
         submission.submit(world['run'], world['bundle'].with_name('other.zip'))
-    with pytest.raises(ValueError, match='Verification needs red-v9'):
+    with pytest.raises(ValueError, match='This checkout is .* Accepted: red-v9'):
         check(world)
     assert not world['bundle'].with_name('other.zip').exists()
 
 
-def test_accepted_list_names_this_checkout():
-    from pokeagent_bench import BENCHMARK_VERSION, __version__
-    assert submission.harness_accepted({'benchmark': BENCHMARK_VERSION, 'package_version': __version__})
+def test_a_dev_build_with_the_same_version_name_is_refused(world, bundle, monkeypatch):
+    released = {**submission.this_harness(), 'source_sha256': 'e' * 64}
+    monkeypatch.setattr(submission, 'accepted_harness', lambda: [released])
+    with pytest.raises(ValueError, match='source eeeeeeeeeeee'):
+        submission.submit(world['run'], world['bundle'].with_name('other.zip'))
+    with pytest.raises(ValueError, match='Check out that release unchanged'):
+        check(world)
+    repack(bundle, edit('cell-0001/manifest.json', lambda manifest: manifest.update(source_sha256='e' * 64)))
+    monkeypatch.setattr(submission, 'accepted_harness', lambda: [submission.this_harness()])
+    result = check(world)
+    assert not result['verified'] and 'cell-0001' in result['problems'][0] and 'Ran on' in result['problems'][0]
+
+
+def test_an_empty_accepted_list_closes_submissions(world, bundle, monkeypatch, capsys):
+    monkeypatch.setattr(submission, 'accepted_harness', lambda: [])
+    message = 'They open with the frozen v0.61 release'
+    with pytest.raises(ValueError, match=message):
+        submission.submit(world['run'], world['bundle'].with_name('other.zip'))
+    with pytest.raises(ValueError, match=message):
+        check(world)
+    monkeypatch.setattr('pokeagent_bench.quick_run.locate', lambda data, rom: (world['fixtures'], None, world['rom']))
+    for command in (['submit', 'run'], ['verify', 'bundle.zip']):
+        monkeypatch.setattr('sys.argv', ['pokebench', *command])
+        assert main() == 2
+        assert message in capsys.readouterr().err
+    assert not world['bundle'].with_name('other.zip').exists()
+
+
+def test_every_accepted_entry_needs_its_source_hash(tmp_path):
+    assert all(set(entry) == set(submission.ENTRY_KEYS) for entry in submission.accepted_harness())
+    path = tmp_path / 'accepted.json'
+    entry = submission.this_harness()
+    write_json(path, {'accepted': [entry]})
+    assert submission.accepted_harness(path) == [entry]
+    for bad in ({key: entry[key] for key in ('benchmark', 'package_version')}, {**entry, 'source_sha256': ''},
+                {**entry, 'extra': 'x'}):
+        write_json(path, {'accepted': [bad]})
+        with pytest.raises(ValueError, match='source_sha256'):
+            submission.accepted_harness(path)
 
 
 @pytest.mark.parametrize('leak, finding', [
@@ -260,7 +298,7 @@ def test_only_verified_short_reports_join_the_site_data(world, bundle, tmp_path,
         submission.community_add(report, web)
     for change, message in (({'suite': 'smoke'}, 'Only Short'), ({'suite': 'long'}, 'Only Short'),
                             ({'verified': False}, 'not verified'), ({'problems': ['x']}, 'not verified'),
-                            ({'format': 'other'}, 'not a report'), ({'harness': {'benchmark': 'red-v9'}}, 'another harness'),
+                            ({'format': 'other'}, 'not a report'), ({'harness': {'benchmark': 'red-v9'}}, 'verified on red-v9'),
                             ({'handle': 'someone-else'}, None)):
         write_json(report, {**result, **change})
         if message is None:
