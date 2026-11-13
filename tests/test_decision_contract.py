@@ -2,7 +2,7 @@ import json
 import pytest
 
 from pokeagent_bench.core import Limits
-from pokeagent_bench.decision_contract import parse_response
+from pokeagent_bench.decision_contract import SPENT, parse_response, rejection
 from pokeagent_bench.gameplay_provider import GameplayCodexProvider
 
 
@@ -34,9 +34,20 @@ def test_notes_limit_and_concrete_feedback_are_provider_neutral():
 
 def test_empty_actions_require_screenshot_recall():
     decision, _, error = parse_response('{"actions": []}', schema(), Limits())
-    assert error and decision['actions'] == []
+    assert error == decision['interface_error'] == (
+        'No action was executed and this still used one decision. Empty actions do nothing. '
+        'Send at least one controller action or request look_back from 1 to 8.')
+    assert decision['actions'] == []
     decision, look_back, error = parse_response('{"actions": [], "look_back": 1}', schema(), Limits())
     assert error is None and look_back == 1
+
+
+def test_a_rejected_command_says_once_that_nothing_ran_and_a_decision_was_used():
+    value = {'actions': [{'command': 'fly', 'argument': 'a', 'count': 1}]}
+    _, _, error = parse_response(json.dumps(value), schema(), Limits())
+    assert error.startswith(SPENT + ' Unknown command.')
+    assert error.count('No action') == 1 and error.endswith('.') and '..' not in error
+    assert rejection(error) == error  # the runner adds nothing to a finished message
 
 
 def test_codex_wire_schema_has_required_nullable_metadata_without_changing_semantics():

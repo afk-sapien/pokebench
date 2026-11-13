@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import time
 
 from .core import action, digest, encoded, write_json
+from .decision_contract import rejection
 from .providers import PROMPT, ProviderError
 from .visual_feedback import VisualFeedback
 from .recovery import NO_REPLY, atomic, checkpoint, mark_pending
@@ -289,7 +290,7 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                     raise ValueError("Notebook exceeds its UTF-8 byte limit")
             except (ValueError, TypeError) as error:
                 invalid += 1
-                recent.append({"error": str(error)})
+                recent.append({"error": rejection(error)[:512]})
                 if invalid >= 3:
                     session.finish("invalid_model_response")
                 save_boundary()

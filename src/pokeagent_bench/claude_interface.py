@@ -3,9 +3,9 @@ from copy import deepcopy
 import json
 import re
 
-from .decision_contract import OPTIONAL, normalize
+from .decision_contract import OPTIONAL, SPENT, normalize, reason
 
-ADAPTER = 'claude-interface-v7'
+ADAPTER = 'claude-interface-v8'
 
 
 def wire_schema(schema):
@@ -114,7 +114,7 @@ def install(module):
                 normalizer = getattr(self, 'response_normalizer', normalize)
                 value = normalizer(event.get('structured_output'), self.schema, getattr(self, 'decision_limits', None))
             except ValueError as error:
-                feedback = ('Response format error. No action was executed. ' + str(error) +
+                feedback = ('Response format error. ' + SPENT + ' ' + reason(error) +
                     '. Return the decision through StructuredOutput with actions as an array. '
                     'Game commands are values inside actions, not callable tools. '
                     'Omitted notes, goal_plan and look_back mean null. Plans and notes are optional.')

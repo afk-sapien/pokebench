@@ -240,6 +240,18 @@ def test_empty_decisions_stop_as_model_errors_with_complete_accounting(tmp_path,
     assert result['frames'] == result['actions'] == 0
 
 
+def test_a_rejected_decision_tells_the_model_it_used_a_decision(tmp_path, engine):
+    seen = []
+
+    class Empty(StubProvider):
+        def decide(self, observation, notes, recent, *args):
+            seen.append([row['error'] for row in recent if 'error' in row])
+            return {'actions': [], 'notes': None}, {'input_tokens': 100, 'output_tokens': 10}, {}
+    run(Session(engine, tmp_path/'empty', {}, limits=Limits(max_model_calls=5)), Empty())
+    assert seen[1] == ['No action was executed and this still used one decision. Invalid controller batch length.']
+    assert len(seen[2]) == 2
+
+
 def test_on_demand_keeps_move_identity_and_pp_and_inspection_returns_full_details():
     obs = public()
     move = {'slot': 1, 'name': 'Example', 'pp': 7, 'type': 'Water', 'power': 40,

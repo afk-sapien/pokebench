@@ -185,7 +185,11 @@ def test_rejected_decision_is_saved_for_diagnosis_without_executing_it():
     message, usage = complete(value)
     assert value.interface_record['rejected_response'] == rejected
     assert json.loads(message)['actions'] == []
-    assert 'interface_error' in json.loads(message)
+    assert value.interface_feedback.startswith(
+        'Response format error. No action was executed and this still used one decision. Empty actions do nothing. '
+        'Send at least one controller action or request look_back from 1 to 8. Return the decision')
+    assert value.interface_feedback.count('No action') == 1
+    assert json.loads(message)['interface_error'] == value.interface_feedback
     assert usage['input_tokens'] + usage['output_tokens'] == 200
 
 

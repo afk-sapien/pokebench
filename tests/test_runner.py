@@ -222,7 +222,7 @@ def test_interface_rejection_preserves_specific_bounded_feedback(tmp_path, engin
     assert result["usage"]["calls"] == 2
     assert result["usage"]["input_tokens"] + result["usage"]["output_tokens"] == 30
     error = provider.feedback[1][-1]["error"]
-    assert error.startswith("JSON action missing.")
+    assert error.startswith("No action was executed and this still used one decision. JSON action missing.")
     assert len(error) == 512
 
 

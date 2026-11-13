@@ -106,7 +106,8 @@ def test_rejected_action_can_be_retried_without_losing_executed_plan(tmp_path, e
                 assert payload['previous_plan']['decision'] == 1
                 assert payload['previous_plan']['after_frame'] == 2
                 assert payload['previous_plan']['intent'] == 'Plan 1'
-                assert payload['recent_actions'][-1] == {'error': 'Unknown controller button'}
+                assert payload['recent_actions'][-1] == {
+                    'error': 'No action was executed and this still used one decision. Unknown controller button.'}
             response = {
                 'assessment': {'scene': 'uncertain', 'previous_result': 'Uncertain'},
                 'memory': None,

@@ -230,3 +230,16 @@ result, with the time, the decision, the attempt, the message, the kind, the
 status and the provider's own text. `verify` accepts a resumed run and reports the count. An error
 after the model replied, a timeout and a transport error still stop the run
 with uncertain usage, because the model may have spent tokens on them.
+
+## A rejected reply says it used a decision
+
+Every rejected reply is a model call, so it uses one decision from the
+budget. The feedback said only that no action was executed. In a Sonnet test
+run of the warp puzzle, 41 of 200 decisions were empty replies.
+
+Every rejection now opens with `No action was executed and this still used one
+decision.` The reason follows. An empty reply reads `Empty actions do nothing.
+Send at least one controller action or request look_back from 1 to 8.` Before
+this change the Claude feedback said that no action was executed twice. The
+correction policy is `three-metered-invalid-decisions-v2` and the Claude
+response adapter is `claude-interface-v8`.

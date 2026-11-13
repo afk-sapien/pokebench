@@ -82,7 +82,7 @@ in notes if needed. No shell, walkthrough or human assistance.
                                     controller_timing="core-shortcuts-v061",
                                     action_contract="gen1-commands-v2",
                                     planning_policy="optional-planning-v1",
-                                    correction_policy="three-metered-invalid-decisions-v1")
+                                    correction_policy="three-metered-invalid-decisions-v2")
 
     def configure_action_policy(self, policy, *, record=True):
         from .action_policy import MANUAL, description, resolve

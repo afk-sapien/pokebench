@@ -8,6 +8,25 @@ from .core import Limits
 from .gameplay_contract import validate_command
 
 OPTIONAL = ('notes', 'goal_plan', 'look_back')
+# Every rejected response is a metered model call, so its feedback says so first.
+SPENT = 'No action was executed and this still used one decision.'
+NOTHING_RAN = ('No action was executed.', 'No action executed.', 'No action executed')
+
+
+def reason(text):
+    """The rejection reason alone, without a trailing note that nothing ran."""
+    text = ' '.join(str(text).split())
+    for tail in NOTHING_RAN:
+        if text.endswith(tail):
+            text = text[:-len(tail)]
+            break
+    return text.rstrip(' .')
+
+
+def rejection(text):
+    """Feedback for a rejected response, led by the decision it cost."""
+    text = ' '.join(str(text).split())
+    return text if SPENT in text else f'{SPENT} {reason(text)}.'
 
 
 def normalize(value, schema, limits=None):
@@ -27,7 +46,7 @@ def normalize(value, schema, limits=None):
         path = '.'.join(map(str, error.path)) or 'decision'
         raise ValueError(f'Invalid {path}: violates {error.validator}')
     if not value['actions'] and value['look_back'] is None:
-        raise ValueError('Provide one controller action or request look_back from 1 to 8')
+        raise ValueError('Empty actions do nothing. Send at least one controller action or request look_back from 1 to 8')
     return value
 
 
@@ -43,7 +62,7 @@ def parse_response(message, schema, limits):
         return response, look_back, None
     except (ValueError, TypeError) as error:
         text = 'Return valid JSON with an actions array' if isinstance(error, json.JSONDecodeError) else str(error)
-        text = ' '.join(text.split())[:450] + '. No action was executed.'
+        text = rejection(' '.join(text.split())[:450])
         return {'actions': [], 'notes': None, 'goal_plan': None, 'interface_error': text}, None, text
 
 
