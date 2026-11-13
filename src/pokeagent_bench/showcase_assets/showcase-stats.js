@@ -1,9 +1,10 @@
 // 95% percentile interval for a category-balanced Short score.
 // Resamples score groups with replacement within each category, so category weights stay fixed.
-function scoreInterval(cells, draws = 2000, seed = 20261026) {
+// Retired tasks and unranked categories are left out, as in the point score.
+function scoreInterval(cells, draws = 2000, seed = 20261026, unranked = ['preparation']) {
   const groups = {}
   for (const c of cells) {
-    if (c.state !== 'finished' || c.value == null) continue
+    if (c.state !== 'finished' || c.value == null || c.retired || unranked.includes(c.category)) continue
     const key = c.category + '\u0000' + (c.score_group || c.task_id)
     ;(groups[key] ||= {category:c.category, values:[]}).values.push(c.value)
   }

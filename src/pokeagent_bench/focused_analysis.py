@@ -6,8 +6,9 @@ import json
 from pathlib import Path
 import shutil
 
+from .benchmark_tracks import UNRANKED_CATEGORIES, ranked_average
 from .catalog_batch import report
-from .evaluation_catalog import task_definition
+from .evaluation_catalog import retired_tasks, task_definition
 
 CATEGORIES = ('navigation', 'battle', 'operations', 'preparation', 'objectives')
 LABELS = {'gpt-5.6-sol': 'Sol', 'gpt-5.6-terra': 'Terra', 'gpt-5.6-luna': 'Luna',
@@ -15,22 +16,28 @@ LABELS = {'gpt-5.6-sol': 'Sol', 'gpt-5.6-terra': 'Terra', 'gpt-5.6-luna': 'Luna'
 
 
 def grouped_scores(cells):
-    """Average starts within score groups, groups within categories, then categories."""
+    """Average starts within score groups, groups within categories, then the ranked categories.
+
+    Retired tasks are left out. Unranked categories keep their own score but not the overall.
+    """
+    retired = retired_tasks()
     groups = defaultdict(list)
     for row in cells:
-        if row['state'] == 'finished' and row.get('value') is not None:
+        if row['state'] == 'finished' and row.get('value') is not None and row['task_id'] not in retired:
             groups[(row['category'], row.get('score_group', row['task_id']))].append(row['value'])
     categories = defaultdict(list)
     for (category, _), values in groups.items():
         categories[category].append(sum(values) / len(values))
     scores = {key: sum(values) / len(values) for key, values in categories.items()}
-    return scores, sum(scores.values()) / len(scores) if scores else None
+    return scores, ranked_average(scores)
 
 
 def task_sensitivity(cells):
-    """Descriptive rank range after removing each score group once, not an interval."""
+    """Descriptive rank range after removing each ranked score group once, not an interval."""
     models = sorted({c['model'] for c in cells})
-    groups = {c.get('score_group', c['task_id']) for c in cells}
+    retired = retired_tasks()
+    groups = {c.get('score_group', c['task_id']) for c in cells
+              if c['category'] not in UNRANKED_CATEGORIES and c['task_id'] not in retired}
     ranks = defaultdict(list)
     for group in sorted(groups):
         scores = {model: grouped_scores([c for c in cells if c['model'] == model
@@ -167,6 +174,7 @@ def build_analysis(root, web, repeat_root=None):
     return {'schema': 'focused-analysis-v060', 'generated_at': datetime.now(timezone.utc).isoformat(),
             'source_plan_sha256': sha256((root / 'plan.json').read_bytes()).hexdigest(),
             'models': models, 'tasks': tasks, 'cells': cells, 'categories': list(CATEGORIES),
+            'unranked_categories': list(UNRANKED_CATEGORIES), 'retired_tasks': sorted(retired_tasks()),
             'task_sensitivity': task_sensitivity(cells),
             'counts': {'tasks': len(tasks), 'score_groups': len({c['score_group'] for c in cells}),
                        'starts': len(cells) // len(models) if models else 0,'models': len(models), 'attempts': len(cells),

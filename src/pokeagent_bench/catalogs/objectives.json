@@ -230,7 +230,9 @@
         "Measure feasibility and difficulty on shared starts before assigning a pass-rate claim."
       ],
       "measures": "Locate a target species and manage a limited capture budget. Walking through the forest alone does not pass.",
-      "decision_limit": 200
+      "decision_limit": 200,
+      "active": false,
+      "retirement_reason": "Pikachu appears in about 5% of Viridian Forest encounters, so the result is decided mostly by encounter luck. Retained only for historical references."
     },
     {
       "id": "objectives-constrained-valuable-capture",
@@ -465,7 +467,9 @@
         "Measure capture variance across additional shared starts before assigning a calibrated difficulty."
       ],
       "measures": "Choose capture actions independently of the time needed to find a rare encounter.",
-      "decision_limit": 100
+      "decision_limit": 100,
+      "active": false,
+      "retirement_reason": "Retired with the Pikachu search task. It was never on the leaderboard. Retained only for historical references."
     }
   ]
 }

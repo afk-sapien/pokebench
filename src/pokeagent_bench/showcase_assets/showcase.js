@@ -16,7 +16,7 @@ const ciText = ci => ci ? `95% CI ${(ci.low * 100).toFixed(1)} to ${(ci.high * 1
 const intervals = new Map()
 const modelInterval = m => {
   const key = data.updated_at + m.id
-  if (!intervals.has(key)) intervals.set(key, m.ci || scoreInterval(data.short.cells.filter(c => c.model === m.id)))
+  if (!intervals.has(key)) intervals.set(key, m.ci || scoreInterval(data.short.cells.filter(c => c.model === m.id), 2000, 20261026, data.short.unranked_categories || []))
   return intervals.get(key)
 }
 const modelId = r => r.model || data.short.models.find(m => m.label === r.label)?.id || ''
@@ -30,11 +30,14 @@ function stopText(r) {
   }
   return ''
 }
+const unranked = c => (data.short.unranked_categories || []).includes(c)
 function renderWeights() {
   const groups = {}
-  for (const c of data.short.cells) (groups[c.category] ||= new Set()).add(c.score_group || c.task_id)
-  const parts = data.short.categories.map(c => `${categoryNames[c]} ${groups[c]?.size || 0} tasks, ${(100 / data.short.categories.length / (groups[c]?.size || 1)).toFixed(1)} points each`)
-  $('weight-note').textContent = `Each of the ${data.short.categories.length} categories counts for ${(100 / data.short.categories.length).toFixed(0)}% of the score, whatever its task count. Turning one failed task into a full pass moves the score by: ${parts.join(' · ')}.`
+  for (const c of data.short.cells) if (!c.retired) (groups[c.category] ||= new Set()).add(c.score_group || c.task_id)
+  const ranked = data.short.ranked_categories || data.short.categories
+  const parts = ranked.map(c => `${categoryNames[c]} ${groups[c]?.size || 0} tasks, ${(100 / ranked.length / (groups[c]?.size || 1)).toFixed(1)} points each`)
+  const shown = (data.short.unranked_categories || []).map(c => categoryNames[c])
+  $('weight-note').textContent = `Each of the ${ranked.length} ranked categories counts for ${(100 / ranked.length).toFixed(0)}% of the score, whatever its task count. Turning one failed task into a full pass moves the score by: ${parts.join(' · ')}.${shown.length ? ` ${shown.join(', ')} is scored and shown, but not ranked.` : ''}`
 }
 let data
 let category = 'all'
@@ -68,7 +71,7 @@ window.addEventListener('hashchange', () => {
 setView(view, false)
 function renderRank() {
   const s = data.short
-  $('rank-head').innerHTML = '<tr><th>Model</th><th>Score</th>' + s.categories.map(c => `<th>${categoryNames[c]}</th>`).join('') + '<th>Finished</th><th>Harness</th><th>Est. cost</th></tr>'
+  $('rank-head').innerHTML = '<tr><th>Model</th><th>Score</th>' + s.categories.map(c => `<th>${categoryNames[c]}${unranked(c) ? '<small class="partial-label">Not ranked</small>' : ''}</th>`).join('') + '<th>Finished</th><th>Harness</th><th>Est. cost</th></tr>'
   let rank = 0
   $('ranking').innerHTML = s.models.map(m => {
     if (m.complete) rank += 1
@@ -76,7 +79,7 @@ function renderRank() {
   }).join('')
   renderCost('short')
   renderWeights()
-  $('short-stats').innerHTML = [[s.tasks.length,'tasks'],[s.models.length,'models'],[s.finished + '/' + s.planned,'trials finished']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('')
+  $('short-stats').innerHTML = [[s.tasks.filter(t => !t.retired).length,'tasks'],[s.models.length,'models'],[s.finished + '/' + s.planned,'trials finished']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('')
 }
 $('ranking').addEventListener('click', event => {
   const b = event.target.closest('[data-model]')
@@ -107,7 +110,7 @@ function renderTasks() {
     rows.sort((a,b) => s.models.findIndex(m => m.id === a.model) - s.models.findIndex(m => m.id === b.model))
     const finished = rows.filter(c => c.state === 'finished').length
     const policy = t.mode === 'preparation' ? 'Team and resource choices, assessed by a fixed battle controller.' : (t.action_policy || '').includes('manual') ? 'Manual controls. Menu shortcuts disabled.' : 'Game information and mechanical shortcuts enabled.'
-    return `<details class="task" data-task="${esc(t.id)}" ${open.has(t.id) ? 'open' : ''}><summary><span class="tag">${categoryNames[t.category]}</span><span class="task-title">${esc(t.title)}</span><span class="task-coverage">${finished}/${rows.length} finished</span></summary><div class="task-body"><p><strong>Goal:</strong> ${esc(t.goal)}</p><p><strong>Start:</strong> ${esc(t.start)}</p><p class="small">${policy}</p><div class="table-scroll"><table><thead><tr><th>Model / start</th><th>Result</th><th>Decisions</th><th>Tokens</th><th>Est. cost</th><th>End reason</th><th>Replay</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(s.models.find(m => m.id === r.model).label)}${r.variant !== 'default' ? ' / ' + esc(r.variant) : ''}<span class="model-id">${esc(r.revision)}${r.harness ? ' · ' + esc(shortTag(r.harness)) : ''}</span></td><td>${rowStatus(r)}</td><td>${count(r.decisions)} / ${count(r.decision_limit)}</td><td title="Ceiling: ${count(r.token_limit)} tokens">${million(r.tokens)}</td><td>${costCell(r.cost)}</td><td>${r.state === 'finished' ? esc(reason(r.stop_reason) || 'Preparation assessed') : esc(r.state.replaceAll('_',' '))}</td><td>${r.replay ? `<a class="replay-link" target="_blank" rel="noopener" href="${esc(r.replay)}">Watch ↗</a>` : r.mode === 'preparation' ? '<span class="small">Preparation score</span>' : '<span class="small">Not available yet</span>'}</td></tr>`).join('')}</tbody></table></div></div></details>`
+    return `<details class="task" data-task="${esc(t.id)}" ${open.has(t.id) ? 'open' : ''}><summary><span class="tag">${categoryNames[t.category]}${t.retired ? ' · Retired, not scored' : unranked(t.category) ? ' · Not ranked' : ''}</span><span class="task-title">${esc(t.title)}</span><span class="task-coverage">${finished}/${rows.length} finished</span></summary><div class="task-body">${t.retired ? `<p class="small"><strong>Retired:</strong> ${esc(t.retirement_reason || 'No longer run or scored.')}</p>` : ''}<p><strong>Goal:</strong> ${esc(t.goal)}</p><p><strong>Start:</strong> ${esc(t.start)}</p><p class="small">${policy}</p><div class="table-scroll"><table><thead><tr><th>Model / start</th><th>Result</th><th>Decisions</th><th>Tokens</th><th>Est. cost</th><th>End reason</th><th>Replay</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(s.models.find(m => m.id === r.model).label)}${r.variant !== 'default' ? ' / ' + esc(r.variant) : ''}<span class="model-id">${esc(r.revision)}${r.harness ? ' · ' + esc(shortTag(r.harness)) : ''}</span></td><td>${rowStatus(r)}</td><td>${count(r.decisions)} / ${count(r.decision_limit)}</td><td title="Ceiling: ${count(r.token_limit)} tokens">${million(r.tokens)}</td><td>${costCell(r.cost)}</td><td>${r.state === 'finished' ? esc(reason(r.stop_reason) || 'Preparation assessed') : esc(r.state.replaceAll('_',' '))}</td><td>${r.replay ? `<a class="replay-link" target="_blank" rel="noopener" href="${esc(r.replay)}">Watch ↗</a>` : r.mode === 'preparation' ? '<span class="small">Preparation score</span>' : '<span class="small">Not available yet</span>'}</td></tr>`).join('')}</tbody></table></div></div></details>`
   }).join('') || '<p class="empty">No matching tasks. Try another search or category.</p>'
 }
 $('categories').addEventListener('click', event => {
@@ -162,7 +165,7 @@ function renderCost(kind, selected) {
   $(kind + '-cost').innerHTML = `<div class="cost-heading"><div><p class="eyebrow">WHAT DOES PERFORMANCE COST?</p><h3>${title}</h3></div><div class="filters" aria-label="Sort cost comparison"><button data-cost-kind="${kind}" data-cost-sort="score" aria-pressed="${costSort[kind] === 'score'}">Score</button><button data-cost-kind="${kind}" data-cost-sort="value" aria-pressed="${costSort[kind] === 'value'}">Value</button></div></div>
   <p class="small">${isLong ? `At the selected ${count(longLimit)}-decision allowance. Costs and progress stay cumulative.` : `${data.short.efficiency.starts} shared completed starts across all models. Failed tasks count toward cost. Scores here use this shared subset.`} Lower dollar values are better.</p>
   <div class="table-scroll"><table class="cost-table"><thead><tr><th>Model</th><th>${isLong ? 'Progress' : 'Shared score'}</th><th>${quantity}</th><th>${valueLabel}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.label)}${r.provisional ? '<small class="partial-label">PROVISIONAL</small>' : ''}</td><td>${isLong ? count(r.score) + ' / 1,000' : pct(r.quality)}<span class="scorebar"><i style="width:${100*(r.quality || 0)}%"></i></span></td><td>${costCell({...r.cost,partial:r.cost?.partial || r.partial})}<span class="spendbar"><i style="width:${maxCost ? 100*(r.cost?.high || 0)/maxCost : 0}%"></i></span></td><td>${r.quality === 0 ? 'No score earned' : costRange(r.unitCost)}</td></tr>`).join('')}</tbody></table></div>
-  <p class="small">Estimated API-equivalent USD, not your subscription bill. Ranges reflect uncertain cache-write pricing. ${isLong ? 'Live or incomplete usage is provisional.' : 'Value = category-balanced mean cost ÷ shared score. Preparation receives fractional credit.'}</p>
+  <p class="small">Estimated API-equivalent USD, not your subscription bill. Ranges reflect uncertain cache-write pricing. ${isLong ? 'Live or incomplete usage is provisional.' : 'Value = category-balanced mean cost ÷ shared score, over the ranked categories. Preparation is left out.'}</p>
   <details class="cost-method"><summary>Pricing and calculation</summary><p>${esc(data.pricing.basis)} Verified ${esc(data.pricing.as_of)}. ${esc(data.pricing.range)}</p><p>Only the displayed attempts are priced. Earlier replaced trials and development runs are excluded. Calls interrupted by outages never reported usage. The high estimate prices each one at its full token reserve as output tokens; the low estimate excludes it. Missing usage without a reserve is marked partial, never free. Value ordering uses the low end of the estimate, and overlapping ranges may reverse that ordering. Lower cost does not imply better gameplay.</p><p>${sourceLinks}</p></details>`
 }
 for (const kind of ['short','long']) {
