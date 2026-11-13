@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "rom_sha256": "5ca7ba01642a3b27b0cc0b5349b52792795b62d3ed977e98a09390659af96b7b",
+  "tree_sha256": "d6d740789004d65803e3cd1b7f03bf6fc982e1914455544d30c63c3dd17f948f",
+  "tree_bytes": 14970880,
+  "pack_bytes": 288359,
+  "files": 398,
+  "states": 81
+}
