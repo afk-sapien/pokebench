@@ -50,6 +50,16 @@ The last command runs three cheap tasks to check that your setup works. Two lead
 
 Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 
+Local and third party models run through any OpenAI compatible chat endpoint. The model must accept images.
+
+```sh
+export POKEBENCH_BASE_URL=http://localhost:11434/v1
+export POKEBENCH_API_KEY=...   # only if the server needs a key
+uv run pokebench run --provider openai-compatible --model llama3.2-vision --suite smoke
+```
+
+The key is read from the environment and is never written to a run. The run records the endpoint address without credentials. The endpoint must report token usage, because budgets and results count it. These calls are billed by whoever runs the endpoint.
+
 `setup` checks the ROM hash and writes two folders under `data/`, which git ignores. It takes a few seconds and makes no model calls.
 
 - `data/fixtures` holds the starting save for every task, including the PokeBench Long start. The repository ships them as one small pack that is compressed against the ROM, so the pack opens only with the required ROM.

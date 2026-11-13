@@ -120,7 +120,7 @@ def test_long_suite_uses_the_published_decision_limit(data, runs, monkeypatch, c
 
 def test_clear_errors_for_the_common_mistakes(data, runs, monkeypatch, capsys, tmp_path):
     assert command(monkeypatch, '--model', 'llama-3', '--suite', 'smoke') != 0
-    assert 'need --provider codex or --provider claude' in capsys.readouterr().err
+    assert 'need --provider codex, claude or openai-compatible' in capsys.readouterr().err
     assert command(monkeypatch, '--model', 'gpt-6-sol', '--suite', 'smoke', '--data', 'nowhere') != 0
     assert 'pokebench setup --rom' in capsys.readouterr().err
     assert command(monkeypatch, '--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out') == 0

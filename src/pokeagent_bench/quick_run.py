@@ -8,7 +8,7 @@ import re
 
 from .benchmark_tracks import LONG, NAMES, SHORT, for_category
 from .catalog_batch import plan, report, run_batch
-from .catalog_execution import inventory
+from .catalog_execution import PROVIDERS, inventory
 from .core import write_json
 
 # benchmark, default token budget, fixed task list (None means every ready task)
@@ -24,7 +24,6 @@ SCALE = {
     'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or the token budget, whichever comes first.',
 }
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
-PROVIDERS = ('codex', 'claude')
 
 
 def resolve_model(provider, model):
@@ -35,7 +34,7 @@ def resolve_model(provider, model):
     if provider is None:
         provider = next((name for prefix, name in PREFIXES if model.startswith(prefix)), None)
     if provider not in PROVIDERS or not model:
-        raise ValueError('Suite runs need --provider codex or --provider claude')
+        raise ValueError('Suite runs need --provider codex, claude or openai-compatible')
     return provider, model
 
 

@@ -2,7 +2,7 @@
 from collections import defaultdict
 from pathlib import Path
 
-from .catalog_execution import _read, inventory, run_task
+from .catalog_execution import PROVIDERS, _read, inventory, run_task
 from .core import write_json
 from .benchmark_tracks import SHORT, LONG, NAMES, for_category, validate
 from .evaluation_catalog import task_definition
@@ -20,8 +20,8 @@ def plan(fixtures, models, tasks=None, repeats=1, *, benchmark=SHORT):
     parsed = []
     for model in models:
         provider, separator, name = model.partition(':')
-        if separator != ':' or provider not in ('codex', 'claude') or not name:
-            raise ValueError('Models must use codex:MODEL or claude:MODEL')
+        if separator != ':' or provider not in PROVIDERS or not name:
+            raise ValueError('Models must use codex:MODEL, claude:MODEL or openai-compatible:MODEL')
         parsed.append((provider, name))
     if not parsed or len(set(parsed)) != len(parsed):
         raise ValueError('Supply distinct models')

@@ -5,6 +5,8 @@ import json
 from .core import Limits, digest, encoded, write_json
 from .evaluation_catalog import load_catalog, task_definition
 
+PROVIDERS = ('codex', 'claude', 'openai-compatible')
+
 
 def _read(path):
     return json.loads(Path(path).read_text())
@@ -194,8 +196,8 @@ def run_task(fixtures, task_id, rom, game_data, output, *, provider=None, model=
                 'run': str(Path(output).resolve()), 'replay': proof,
             })
         return {'result': result, 'replay': proof}
-    if provider not in ('codex', 'claude') or not model:
-        raise ValueError('Select a Codex or Claude model, or supply native reference actions')
+    if provider not in PROVIDERS or not model:
+        raise ValueError('Select a provider and a model, or supply native reference actions')
     from .cli import execute, parser
     args = ['run', '--rom', str(rom), '--scenario', str(scenario), '--output', str(output),
             '--game-data', str(game_data), '--track', 'gameplay',
@@ -217,4 +219,7 @@ def make_provider(provider, model, reasoning_effort):
     if provider == 'claude':
         from .claude_provider import ClaudeCodeProvider
         return ClaudeCodeProvider(model, reasoning_effort=reasoning_effort, context_detail='on-demand')
-    raise ValueError('Preparation supports Codex or Claude subscription providers')
+    if provider == 'openai-compatible':
+        from .openai_compatible_provider import OpenAICompatibleProvider
+        return OpenAICompatibleProvider(model, reasoning_effort=reasoning_effort, context_detail='on-demand')
+    raise ValueError('Preparation supports ' + ', '.join(PROVIDERS))

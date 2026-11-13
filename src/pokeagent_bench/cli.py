@@ -11,6 +11,9 @@ import sys
 from .core import Limits
 from .session import Session, checkpoint, load_engine, prepare, replay
 
+# These providers only speak the bounded gameplay protocol.
+BOUNDED_ONLY = ("claude", "openai-compatible")
+
 
 def load_labels(path):
     if path is None:
@@ -46,7 +49,7 @@ def parser():
     launch.add_argument('--rom', type=Path, required=True)
     launch.add_argument('--game-data', type=Path, required=True)
     launch.add_argument('--output', type=Path, required=True)
-    launch.add_argument('--provider', choices=('codex', 'claude'))
+    launch.add_argument('--provider', choices=('codex', 'claude', 'openai-compatible'))
     launch.add_argument('--model')
     launch.add_argument('--token-limit', type=int)
     launch.add_argument('--decision-limit', type=int, help='Maximum agent decisions, including inspection and invalid responses')
@@ -60,7 +63,7 @@ def parser():
     batch_catalog.add_argument('--rom', type=Path, required=True)
     batch_catalog.add_argument('--game-data', type=Path, required=True)
     batch_catalog.add_argument('--output', type=Path, required=True)
-    batch_catalog.add_argument('--models', nargs='+', help='Provider-prefixed model names: codex:MODEL or claude:MODEL')
+    batch_catalog.add_argument('--models', nargs='+', help='Provider-prefixed model names: codex:MODEL, claude:MODEL or openai-compatible:MODEL')
     batch_catalog.add_argument('--tasks', nargs='+')
     batch_catalog.add_argument('--repeats', type=int, default=1)
     batch_catalog.add_argument('--total-token-budget', type=int, required=True)
@@ -114,7 +117,8 @@ def parser():
             command.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
             command.add_argument("--budget", type=int, help="Suite token budget. Defaults to the leaderboard budget")
             command.add_argument("--dry-run", action="store_true", help="Print the suite plan and estimate, then stop")
-            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude"))
+            command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude", "openai-compatible"),
+                                 help="openai-compatible reads POKEBENCH_BASE_URL and POKEBENCH_API_KEY")
             command.add_argument("--model")
             command.add_argument("--codex-policy", choices=("standard", "grounded", "grounded-motion", "compact", "continuous", "gameplay", "bounded"), default="compact",
                                  help="Compact is the default. Legacy policies remain selectable for comparisons")
@@ -259,14 +263,17 @@ def execute(args):
         from .gameplay_provider import GameplayCodexProvider
         from .bounded_provider import BoundedGameplayProvider
         from .claude_provider import ClaudeCodeProvider
+        from .openai_compatible_provider import OpenAICompatibleProvider
         manifest = json.loads((args.run / "manifest.json").read_text())
         agent = manifest["agent"]
         classes = {cls.harness: cls for cls in (CodexProvider, CompactCodexProvider, GroundedCodexProvider,
-                                               MotionCodexProvider, JournalCodexProvider, ContinuousCodexProvider, GameplayCodexProvider, BoundedGameplayProvider, ClaudeCodeProvider)}
-        if agent["provider"] not in ("codex", "claude-code") or agent.get("harness") not in classes:
-            raise ValueError("CLI resume supports controlled Codex and Claude Code runs")
+                                               MotionCodexProvider, JournalCodexProvider, ContinuousCodexProvider, GameplayCodexProvider, BoundedGameplayProvider, ClaudeCodeProvider,
+                                               OpenAICompatibleProvider)}
+        if agent["provider"] not in ("codex", "claude-code", "openai-compatible") or agent.get("harness") not in classes:
+            raise ValueError("CLI resume supports controlled Codex, Claude Code and OpenAI compatible runs")
         extra = {}
-        if agent["harness"] in (ContinuousCodexProvider.harness, GameplayCodexProvider.harness, BoundedGameplayProvider.harness, ClaudeCodeProvider.harness):
+        if agent["harness"] in (ContinuousCodexProvider.harness, GameplayCodexProvider.harness, BoundedGameplayProvider.harness, ClaudeCodeProvider.harness,
+                                OpenAICompatibleProvider.harness):
             extra = {k: v for k, v in agent["configuration"].items() if k in ("compact_at", "presentation", "response_contract", "continuity", "observation_format", "context_turns", "context_detail")}
         provider = classes[agent["harness"]](agent["model"], reasoning_effort=agent["reasoning_effort"], **extra)
         session = None
@@ -316,13 +323,13 @@ def execute(args):
             raise ValueError("Gameplay track requires --game-data")
         from .gameplay import load_catalog
         gameplay_catalog = load_catalog(args.game_data)
-        if args.command == "run" and not (args.provider == "claude" or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
+        if args.command == "run" and not (args.provider in BOUNDED_ONLY or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
             raise ValueError("Gameplay runs require --provider codex --codex-policy gameplay")
     provider = None
     agent = None
     if args.command == "run":
         from .providers import APIProvider, RandomProvider
-        if args.observation_format != "json" and not (args.provider == "claude" or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
+        if args.observation_format != "json" and not (args.provider in BOUNDED_ONLY or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
             raise ValueError("Text observations require the gameplay Codex policy")
         if args.journal and (args.provider != "codex" or args.codex_policy != "compact"):
             raise ValueError("Journal requires the compact Codex policy")
@@ -332,9 +339,16 @@ def execute(args):
             raise ValueError("Supply both input and output prices, or neither")
         if any(p is not None and (not math.isfinite(p) or p < 0) for p in (args.input_price, args.output_price)):
             raise ValueError("Prices must be nonnegative and finite")
-        if args.context_detail != "full" and not (args.provider == "claude" or (args.provider == "codex" and args.codex_policy == "bounded")):
+        if args.context_detail != "full" and not (args.provider in BOUNDED_ONLY or (args.provider == "codex" and args.codex_policy == "bounded")):
             raise ValueError("context-detail requires a bounded gameplay provider")
-        if args.provider == "claude":
+        if args.provider == "openai-compatible":
+            from .openai_compatible_provider import OpenAICompatibleProvider
+            if args.track != "gameplay" or args.codex_policy != "bounded" or args.presentation not in ("current", "before-after") or args.response_contract != "simple" or args.fresh_decisions:
+                raise ValueError("openai-compatible requires --track gameplay --codex-policy bounded, current or before-after images and the simple response contract")
+            provider = OpenAICompatibleProvider(args.model or "", reasoning_effort=args.reasoning_effort,
+                context_turns=args.context_turns, context_detail=args.context_detail, presentation=args.presentation,
+                compact_at=12000 if args.compact_at is None else args.compact_at)
+        elif args.provider == "claude":
             from .claude_provider import ClaudeCodeProvider
             if args.track != "gameplay" or args.codex_policy != "bounded" or args.presentation not in ("current", "before-after") or args.response_contract != "simple" or args.fresh_decisions:
                 raise ValueError("Claude requires gameplay track, bounded policy and retained current or before-after images and the simple response contract")
