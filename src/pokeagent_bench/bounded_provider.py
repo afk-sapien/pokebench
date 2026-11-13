@@ -41,6 +41,13 @@ Inspect memory to recall it. Your notebook holds persistent agent-authored notes
             if repeated not in self.prompt:
                 raise ValueError('Bounded prompt trim no longer matches the gameplay prompt')
             self.prompt = self.prompt.replace(repeated, '')
+        # The gameplay prompt names fields of the full JSON observation. The bounded packet names them differently.
+        for old, new in (('Recent_movements records', 'Recent_decisions records'),
+                         ('A separate agent_plan can', 'A separate goal_plan, shown as agent.plan, can'),
+                         ('Read last_command.dialogue.pages.', 'Read last_result.dialogue.pages.')):
+            if old not in self.prompt:
+                raise ValueError('Bounded prompt field names no longer match the gameplay prompt')
+            self.prompt = self.prompt.replace(old, new)
         self.prompt = self.prompt.replace('Your conversation is retained between decisions and periodically summarized.', '''Your conversation is retained for short segments. No model-generated summary is made.
 Each new segment starts with a snapshot, your saved notebook and goal, and bounded
 exact observed history. Preserve important discoveries and uncertainties in notes
@@ -52,7 +59,7 @@ Current location, result and screenshot are current.
 Do not confuse a requested action with its result.''')
         self.config_identity.update(context_turns=context_turns, context_detail=context_detail,
                                     decision_timeout_seconds=self.decision_timeout_seconds, compaction_protocol='deterministic-checkpoint-no-summary-v1',
-                                    text_presentation='bounded-gameplay-text-v4',
+                                    text_presentation='bounded-gameplay-text-v5',
                                     ordinary_packet_bytes=bounded_context.PACKET_BYTES,
                                     inspection_packet_bytes=bounded_context.INSPECTION_BYTES)
 

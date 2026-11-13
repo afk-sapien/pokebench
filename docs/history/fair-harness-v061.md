@@ -146,3 +146,17 @@ tokens. Over 7,470 recorded segments, a threshold of 11,300 ends 94% of them
 at the same decision as before. Keeping 12000 would end 52% at the same
 decision. 11,300 is the default for every bounded provider. Explicit
 `--compact-at` values and the frozen basic and v1 beta protocols are unchanged.
+
+## Prompt field names match the packet
+
+The bounded system prompt is built from the full gameplay prompt, which names
+fields of the JSON observation. Three of those names do not exist in the
+bounded packet. The prompt told the model to read `last_command.dialogue.pages`,
+but the packet shows the result as `last_result`. It named `Recent_movements`,
+which the packet replaces with `recent_decisions`, and `agent_plan`, which the
+packet shows as `agent.plan`. The bounded prompt now uses the packet names. The
+full JSON prompt keeps its own names, which match its observation. A test reads
+a recorded Short observation, builds the bounded packet and checks that every
+field name in the prompt, under both action policies, is a packet field, a
+response field or a command. The text presentation is
+`bounded-gameplay-text-v5`.

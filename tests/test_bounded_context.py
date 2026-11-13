@@ -1,8 +1,11 @@
 from copy import deepcopy
 import json
+from pathlib import Path
+import re
 
 import pytest
 
+from pokeagent_bench.action_policy import ASSISTED, MANUAL
 from pokeagent_bench.bounded_context import build, check_size, render, state
 from pokeagent_bench.bounded_provider import BoundedGameplayProvider
 from pokeagent_bench.codex_provider import CodexProvider
@@ -487,10 +490,52 @@ def test_bounded_prompt_states_each_rule_once_and_enum_arguments_carry_no_descri
     assert 'Preserve useful discoveries' not in prompt
     assert prompt.count('Preserve important discoveries') == 1
     assert 'are unverified agent claims.' in prompt and 'or return null, to retain' in prompt
-    assert bounded.config_identity['text_presentation'] == 'bounded-gameplay-text-v4'
+    assert bounded.config_identity['text_presentation'] == 'bounded-gameplay-text-v5'
     assert bounded.compact_at == BoundedGameplayProvider.default_compact_at == 11300
     variants = {variant['properties']['command']['enum'][0]: variant['properties']['argument']
                 for variant in bounded.decision_schema(Limits())['properties']['actions']['items']['anyOf']}
     assert 'description' not in variants['move'] and variants['move']['enum']
     assert all('description' not in argument for argument in variants.values() if 'enum' in argument)
     assert variants['choose']['description'] and variants['use_item']['description']
+
+
+def key_paths(node, path=()):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield (*path, key)
+            yield from key_paths(value, (*path, key))
+    elif isinstance(node, list):
+        for value in node:
+            yield from key_paths(value, path)
+
+
+def schema_names(node):
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == 'properties':
+                yield from value
+            if key == 'command' and isinstance(value, dict):
+                yield from value.get('enum', [])
+            yield from schema_names(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from schema_names(value)
+
+
+@pytest.mark.parametrize('policy', [ASSISTED, MANUAL])
+def test_every_field_the_bounded_prompt_names_exists_in_a_real_packet(bounded, policy):
+    # A recorded Short observation: main-v067-fable cell-0001, decision 6, Viridian Forest.
+    public = json.loads((Path(__file__).parent / 'fixtures' / 'bounded-public-context.json').read_text())
+    packet, _ = build(public, 'notes', [], None, 1, 1, detail='on-demand')
+    paths = list(key_paths(packet))
+    bounded.configure_action_policy(policy)
+    allowed = set(schema_names(bounded.decision_schema(Limits()))) | {packet['task_status']}
+    names = set(re.findall(r'\b[A-Za-z][a-z]*(?:_[a-z]+)+(?:\.[a-z_]+)*\b|\b[a-z]+(?:\.[a-z_]+)+\b', bounded.prompt))
+    assert {'task_status', 'Known_map', 'Recent_decisions', 'agent.plan'} <= names
+    missing = []
+    for name in sorted(names):
+        parts = name.split('.')
+        parts[0] = parts[0][0].lower() + parts[0][1:]
+        if name not in allowed and not any(path[-len(parts):] == tuple(parts) for path in paths):
+            missing.append(name)
+    assert missing == []
