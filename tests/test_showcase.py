@@ -72,6 +72,30 @@ def test_long_rows_carry_their_harness_version(tmp_path):
     assert row['model'] == 'unpriced'
 
 
+def test_community_rows_are_labeled_and_kept_out_of_the_cost_comparison(tmp_path):
+    from pokeagent_bench.showcase import community_reports
+    row = {'id': 'cell-0001', 'task_id': 't', 'score_group': 't', 'category': 'battle', 'model': 'official',
+           'mode': 'gameplay', 'state': 'finished', 'value': 0.0, 'tokens': 100}
+    report = {'format': 'pokebench-verified-report-v1', 'verified': True, 'suite': 'short', 'model': 'local-model',
+              'label': 'Community, replay verified, model unverified', 'handle': 'octocat', 'attempts_declared': 2,
+              'harness': {'benchmark': 'red-v0.61-fair-harness'}, 'bundle_sha256': 'abc',
+              'cells': [dict(row, model='local-model', value=1.0, tokens=500, notes='private')]}
+    (tmp_path / 'community').mkdir()
+    for name, value in (('a', report), ('b', dict(report, verified=False)), ('c', dict(report, suite='smoke'))):
+        (tmp_path / 'community' / f'{name}.json').write_text(json.dumps(value))
+    assert community_reports(tmp_path) == [report]
+    result = short_snapshot({'cells': [row], 'tasks': [], 'categories': ['battle']}, tmp_path, community=[report])
+    added, official = result['models']
+    assert added['id'] == 'community/octocat/local-model' and added['label'] == 'local-model'
+    assert added['community'] == {'label': 'Community, replay verified, model unverified', 'handle': 'octocat',
+                                  'model': 'local-model', 'attempts': 2, 'bundle_sha256': 'abc'}
+    assert added['score'] == 1.0 and added['tokens'] == 500 and added['cost']['low'] is None
+    assert 'community' not in official
+    cell = result['cells'][1]
+    assert cell['revision'] == 'Community' and cell['replay'] is None and 'notes' not in cell
+    assert [m['id'] for m in result['efficiency']['models']] == ['official']
+
+
 def test_only_existing_local_replays_are_linked(tmp_path):
     (tmp_path / 'replay.html').write_text('replay')
     assert existing_link(tmp_path, 'replay.html') == 'replay.html'

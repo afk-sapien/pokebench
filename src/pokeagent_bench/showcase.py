@@ -67,7 +67,14 @@ def harness_summary(rows):
             'versions': tags, 'label': label}
 
 
-def short_snapshot(source, web, extra=None, base=None):
+def community_reports(web):
+    """Verified Short reports that a maintainer added with community-add."""
+    from .submission import REPORT_FORMAT
+    reports = [load(path) for path in sorted((Path(web) / 'community').glob('*.json'))]
+    return [r for r in reports if r.get('format') == REPORT_FORMAT and r.get('verified') is True and r.get('suite') == 'short']
+
+
+def short_snapshot(source, web, extra=None, base=None, community=()):
     cells = []
     for row in source['cells']:
         clean = {k: row.get(k) for k in CELL_FIELDS}
@@ -88,6 +95,17 @@ def short_snapshot(source, web, extra=None, base=None):
                 clean['cost'] = run_cost(base / batch['web_prefix'] / row['id'], row['model'], row.get('tokens'))
                 clean['harness'] = harness_tag(base / batch['web_prefix'] / row['id'])
             cells.append(clean)
+    submitted = {}
+    for entry in community:
+        name = f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
+        submitted[name] = {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
+                           'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
+        for row in entry['cells']:
+            clean = {k: row.get(k) for k in CELL_FIELDS}
+            # Community token counts are self reported, so no cost is estimated from them.
+            clean.update(model=name, replay=None, revision='Community', harness=entry['harness']['benchmark'],
+                         cost={'low': None, 'high': None, 'partial': False, 'note': 'Community run, not priced'})
+            cells.append(clean)
     by_model = defaultdict(list)
     for cell in cells:
         by_model[cell['model']].append(cell)
@@ -95,7 +113,9 @@ def short_snapshot(source, web, extra=None, base=None):
     for name, rows in by_model.items():
         categories, score = grouped_scores(rows)
         finished = sum(r['state'] == 'finished' for r in rows)
-        models.append({'id': name, 'label': LABELS.get(name, name), 'score': score,
+        note = submitted.get(name)
+        models.append({'id': name, 'label': note['model'] if note else LABELS.get(name, name), 'score': score,
+                       **({'community': note} if note else {}),
                        'categories': categories, 'finished': finished, 'planned': len(rows),
                        'complete': finished == len(rows), 'tokens': sum(r.get('tokens') or 0 for r in rows),
                        'cost': sum_cost(rows), 'harness': harness_summary(rows),
@@ -105,7 +125,8 @@ def short_snapshot(source, web, extra=None, base=None):
              for t in source['tasks']]
     return {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
             'finished': sum(c['state'] == 'finished' for c in cells), 'planned': len(cells),
-            'efficiency': comparison(cells, models)}
+            'efficiency': comparison([c for c in cells if c['model'] not in submitted],
+                                     [m for m in models if m['id'] not in submitted])}
 
 
 def long_row(root, web, name, decision_limit=2000):
@@ -169,7 +190,7 @@ def export(base, web, *, install=False):
             batch['web_prefix'] = folder
             extra.append(batch)
     data = {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base), 'long': long_snapshot(base, web),
+            'short': short_snapshot(source, web, extra, base, community_reports(web)), 'long': long_snapshot(base, web),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}
     text = json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n'

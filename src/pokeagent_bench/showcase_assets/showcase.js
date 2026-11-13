@@ -11,6 +11,7 @@ const categoryNames = {navigation:'Navigation',battle:'Battles',operations:'Menu
 const reason = x => ({completed:'Completed',model_call_budget:'Decision limit',token_budget:'Token limit',challenge_failed:'Task failed',provider_error:'Evaluation error',loop_budget:'No-progress limit',loop_token_budget:'No-progress limit'}[x] || (x || '').replaceAll('_',' '))
 const shortTag = t => (t || '').match(/^[a-z]+-v\d+(?:\.\d+)*/)?.[0] || t || ''
 const harnessCell = h => `<span class="harness-revision">${esc(h?.revisions?.join(' + ') || 'Unknown')}</span><span class="harness-version" title="${esc((h?.versions || []).join(', '))}">${esc(h?.label || '')}</span>`
+const communityNote = c => c ? `<span class="community-note">${esc(c.label)}<br>Submitted by ${esc(c.handle || 'unnamed')}. ${count(c.attempts || 1)} declared attempt${(c.attempts || 1) === 1 ? '' : 's'}</span>` : ''
 const ciText = ci => ci ? `95% CI ${(ci.low * 100).toFixed(1)} to ${(ci.high * 100).toFixed(1)}` : ''
 const intervals = new Map()
 const modelInterval = m => {
@@ -71,7 +72,7 @@ function renderRank() {
   let rank = 0
   $('ranking').innerHTML = s.models.map(m => {
     if (m.complete) rank += 1
-    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td><span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span><button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(m.id)}</span></td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(modelInterval(m))}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}</td>${s.categories.map(c => `<td>${pct(m.categories[c])}</td>`).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}</td><td>${harnessCell(m.harness)}</td><td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td></tr>`
+    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td><span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span><button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(m.community ? m.community.model : m.id)}</span>${communityNote(m.community)}</td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(modelInterval(m))}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}</td>${s.categories.map(c => `<td>${pct(m.categories[c])}</td>`).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}</td><td>${harnessCell(m.harness)}</td>${m.community ? `<td>${million(m.tokens)} tokens<small class="partial-label">SELF REPORTED</small></td>` : `<td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td>`}</tr>`
   }).join('')
   renderCost('short')
   renderWeights()

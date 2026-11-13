@@ -396,6 +396,29 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
     return result
 
 
+def community_add(report, web):
+    """Copy a verified Short report into the local site data. The next site build shows it as a community row."""
+    result = json.loads(Path(report).read_text())
+    if not isinstance(result, dict) or result.get('format') != REPORT_FORMAT:
+        raise ValueError(f'{report} is not a report written by verify')
+    if result.get('verified') is not True or result.get('problems') or not result.get('cells'):
+        raise ValueError('The report is not verified. Only verified reports can be added')
+    if result.get('suite') != 'short':
+        raise ValueError('Only Short suite reports can be added. The smoke suite is a setup check, '
+                         'and the site has no community rows for Long yet')
+    if not harness_accepted(result.get('harness') or {}):
+        raise ValueError(f'The report was verified on another harness version. Accepted: {harness_names()}')
+    name = re.sub(r'[^A-Za-z0-9.]+', '-', f'{result.get("handle") or "unnamed"}-{result["model"]}') + '.json'
+    target = Path(web) / 'community' / name
+    if target.exists():
+        raise ValueError(f'{target} already exists. Remove it first to replace that row')
+    target.parent.mkdir(exist_ok=True)
+    write_json(target, result)
+    print(f'Added {target}. The row appears after the next local site build, labeled "{LABEL}".\n'
+          'Publishing the live site is a separate step and needs the owner\'s yes.', flush=True)
+    return None
+
+
 def conclusion(result, output):
     if not result['verified']:
         return '\n'.join(['', f'NOT VERIFIED. {len(result["problems"])} problem(s):']

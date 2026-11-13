@@ -151,6 +151,9 @@ def parser():
     confirm.add_argument("--rom", type=Path, help="Defaults to the ROM that setup recorded")
     confirm.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
     confirm.add_argument("--output", type=Path, help="Report path. Defaults to BUNDLE.verified.json")
+    add = sub.add_parser("community-add", help="Maintainers: add a verified Short report to the local site data")
+    add.add_argument("report", type=Path, help="Report written by your own verify run")
+    add.add_argument("--web", type=Path, required=True, help="Local site folder that export_showcase.py builds")
     check = sub.add_parser("replay", help="Replay actions and verify frame, score, and image evidence")
     check.add_argument("--rom", type=Path, required=True)
     check.add_argument("--run", type=Path, required=True)
@@ -323,6 +326,9 @@ def execute(args):
         if not verify(args.bundle, rom, fixtures, args.output)['verified']:
             raise SystemExit(1)
         return None
+    if args.command == "community-add":
+        from .submission import community_add
+        return community_add(args.report, args.web)
     if args.command == "replay":
         return replay(args.rom, args.run)
     if args.command == "report":

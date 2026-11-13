@@ -245,3 +245,28 @@ def test_commands_exit_nonzero_on_a_failed_bundle(world, monkeypatch, capsys):
     with pytest.raises(SystemExit) as stop:
         main()
     assert stop.value.code == 1 and 'NOT VERIFIED' in capsys.readouterr().out
+
+
+def test_only_verified_short_reports_join_the_site_data(world, bundle, tmp_path, capsys):
+    from pokeagent_bench.showcase import community_reports
+    web = tmp_path / 'web'
+    web.mkdir()
+    report = world['bundle'].with_name('bundle.verified.json')
+    result = check(world)
+    submission.community_add(report, web)
+    assert community_reports(web) == [result]
+    assert "needs the owner's yes" in capsys.readouterr().out
+    with pytest.raises(ValueError, match='already exists'):
+        submission.community_add(report, web)
+    for change, message in (({'suite': 'smoke'}, 'Only Short'), ({'suite': 'long'}, 'Only Short'),
+                            ({'verified': False}, 'not verified'), ({'problems': ['x']}, 'not verified'),
+                            ({'format': 'other'}, 'not a report'), ({'harness': {'benchmark': 'red-v9'}}, 'another harness'),
+                            ({'handle': 'someone-else'}, None)):
+        write_json(report, {**result, **change})
+        if message is None:
+            submission.community_add(report, web)
+            continue
+        with pytest.raises(ValueError, match=message):
+            submission.community_add(report, web)
+    assert sorted(path.name for path in (web / 'community').iterdir()) == [
+        'octocat-local-model.json', 'someone-else-local-model.json']

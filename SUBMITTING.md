@@ -57,3 +57,11 @@ Published community rows carry the label "Community, replay verified, model unve
 ## Publishing
 
 A maintainer runs `verify`, reads the report and publishes by hand. A verified bundle is not published automatically, and a maintainer may decline a row.
+
+For maintainers, one command adds a report from your own `verify` run to the local site data.
+
+```sh
+uv run pokebench community-add MODEL-short.pokebench.verified.json --web /path/to/local/site
+```
+
+It accepts only verified Short reports from the accepted harness version. The next local site build shows the row with the community label, the submitter's name, the declared attempts and self reported tokens. It has no cost estimate and no replay link. The site has no community rows for Long yet. Putting the row on the live site is a separate step that needs the owner's yes.
