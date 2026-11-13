@@ -160,3 +160,42 @@ a recorded Short observation, builds the bounded packet and checks that every
 field name in the prompt, under both action policies, is a packet field, a
 response field or a command. The text presentation is
 `bounded-gameplay-text-v5`.
+
+## Reporting labels
+
+Nothing in this section changes a score or what a model sees. The showcase
+now labels each published attempt that ran under conditions the current
+version no longer uses. The labels are computed from each attempt's own files
+(`src/pokeagent_bench/reporting_labels.py` holds the few facts the files do
+not record):
+
+- earlier task version: the attempt's spec hash differs from the current
+  task. 18 active Short cells, 6 each in the Mt. Moon, scarce-resource League
+  and infeasible-plan tasks. The other 6 old-spec cells belong to the retired
+  Pikachu quest, which is already labeled retired.
+- earlier start state: 6 scarce-resource League cells started with a level 55
+  team. The current fixture has a level 60 team.
+- earlier battle controller: 47 preparation cells were scored with
+  `fixed-battle-v3` and 10 with `fixed-battle-v2`. The current controller is
+  `fixed-battle-v4`.
+- no run-ends line: all 240 Original pass prompts lack the sentence saying the
+  run ends by itself once the task is complete. Astra and Fable prompts have it.
+- harness fault: 7 zeros the failure study traced to the harness. Two Sol
+  plans hit the `use_item` quantity check, one Pikachu quest run was stopped
+  when the model picked up a free Poke Ball, and four quest-trainer runs met
+  spinner tiles the local map drew as floor.
+
+Each task row shows the spec hash, the harness version and, for preparation,
+the battle controller version. The ranking shows how many of each model's
+counted cells carry each label.
+
+The retry rule is now stated on the page. There are no gameplay retries. An
+infrastructure fault resumes the attempt from its last completed decision
+with its limits unchanged. Every stopped or replaced copy is kept and listed
+in the attempts log under the ranking: 9 replaced, 9 resumed and 1 continued.
+
+Long stays ranked at 2,000 decisions. Extensions past 2,000 are shown but not
+ranked, and new models get none. Each Long run card shows how many of its
+blocked moves hit a tile pair that the old map drew as floor. Sonnet's
+2,000-decision run lost 246 of 434 blocked moves this way and Luna and Haiku
+lost none, so older Long rows were hurt unevenly.

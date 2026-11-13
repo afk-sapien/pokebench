@@ -1,5 +1,5 @@
 """Build the compact local showcase from existing benchmark evidence."""
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 import json
 from pathlib import Path
@@ -7,8 +7,10 @@ import re
 import shutil
 
 from .benchmark_tracks import UNRANKED_CATEGORIES
+from .core import digest, encoded
 from .evaluation_catalog import retired_tasks, task_definition
 from .focused_analysis import grouped_scores
+from .reporting_labels import ARCHIVES, HARNESS_FAULTS, LONG_PAIR_BLOCKS, NOTES, RETRY_RULE
 from .showcase_costs import PRICING, comparison, run_cost, sum_cost
 
 LABELS = {'claude-fable-5-1': 'Fable 5.1', 'gpt-6-astra': 'Astra', 'gpt-5.6-sol': 'Sol', 'gpt-5.6-terra': 'Terra',
@@ -69,6 +71,70 @@ def harness_summary(rows):
             'versions': tags, 'label': label}
 
 
+END_LINE = 'ends automatically when the benchmark confirms success'
+# Same as preparation_runtime.POLICY_VERSION, which imports the emulator core. A test keeps them equal.
+CURRENT_POLICY = 'fixed-battle-v4'
+
+
+def cell_facts(run):
+    """Battle policy and prompt facts that a cell folder records but its batch summary does not."""
+    run, facts = Path(run), {}
+    if (run / 'assessment/assessment.json').exists():
+        facts['policy_version'] = load(run / 'assessment/assessment.json').get('policy_version')
+    if (run / 'prompt.txt').exists():
+        facts['end_line'] = END_LINE in (run / 'prompt.txt').read_text()
+    return facts
+
+
+def current_spec(task_id):
+    try:
+        return digest(encoded(task_definition(task_id)))
+    except ValueError:
+        return None
+
+
+def label_cells(cells):
+    """Note each attempt that ran under conditions the current version no longer uses. Scores are unchanged."""
+    specs = {task: current_spec(task) for task in {c['task_id'] for c in cells}}
+    starts = defaultdict(set)
+    for c in cells:
+        if c.get('fixture_sha256') and c.get('evaluation_spec_sha256') == specs[c['task_id']]:
+            starts[c['task_id'], c.get('variant')].add(c['fixture_sha256'])
+    for c in cells:
+        spec, start = specs[c['task_id']], starts.get((c['task_id'], c.get('variant')), set())
+        c['labels'] = [code for code, applies in (
+            ('earlier_spec', not c['retired'] and spec is not None and c.get('evaluation_spec_sha256') not in (None, spec)),
+            ('earlier_start', len(start) == 1 and c.get('fixture_sha256') not in (None, *start)),
+            ('earlier_policy', c.get('policy_version') not in (None, CURRENT_POLICY)),
+            ('no_end_line', c.get('end_line') is False),
+            ('harness_fault', bool(c.get('harness_fault')))) if applies]
+
+
+RESUMED = re.compile(r'(cell-\d+)-([a-z-]+?)-\d+')
+
+
+def attempts_log(base, batches):
+    """List every replaced, resumed or continued copy of a published attempt that its batch keeps."""
+    log = []
+    for batch in batches:
+        root = Path(base) / batch
+        found = [(folder, folder.name, kind, why) for name, (kind, why) in ARCHIVES.items()
+                 for folder in sorted((root / name).glob('cell-*')) if folder.is_dir()]
+        for folder in sorted(root.glob('cell-*-*')):
+            match = RESUMED.fullmatch(folder.name)
+            if match and folder.is_dir():
+                why = match[2].replace('-', ' ').capitalize() + ' stopped the attempt. It resumed from its last completed decision.'
+                found.append((folder, match[1], 'resumed', why))
+        for folder, cell, kind, why in found:
+            manifest = load(folder / 'manifest.json') if (folder / 'manifest.json').exists() else {}
+            result = load(folder / 'result.json') if (folder / 'result.json').exists() else {}
+            log.append({'batch': batch, 'cell': cell, 'kind': kind, 'reason': why,
+                        'model': manifest.get('agent', {}).get('model'),
+                        'task_id': manifest.get('scenario', {}).get('task_id'),
+                        'stop_reason': result.get('stop_reason'), 'decisions': result.get('usage', {}).get('calls')})
+    return log
+
+
 def community_reports(web):
     """Verified Short reports that a maintainer added with community-add."""
     from .submission import REPORT_FORMAT
@@ -82,9 +148,11 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
         clean = {k: row.get(k) for k in CELL_FIELDS}
         clean['replay'] = existing_link(web, row.get('replay'))
         clean['revision'] = 'Original pass'
+        clean['harness_fault'] = HARNESS_FAULTS.get(f"focused-pass-v056/{row['id']}")
         if base is not None:
             clean['cost'] = run_cost(base / 'focused-pass-v056' / row['id'], row['model'], row.get('tokens'))
             clean['harness'] = harness_tag(base / 'focused-pass-v056' / row['id'])
+            clean.update(cell_facts(base / 'focused-pass-v056' / row['id']))
         cells.append(clean)
     extras = extra if isinstance(extra, list) else [extra] if extra else []
     for batch in extras:
@@ -93,9 +161,11 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
             revision = row.get('attempt_revision', 'v066-astra')
             clean['replay'] = existing_link(web, f"{batch.get('web_prefix', 'main-v066-astra')}/replays/focused-{revision}-{row['id']}.html")
             clean['revision'] = 'Current interface'
+            clean['harness_fault'] = HARNESS_FAULTS.get(f"{batch.get('web_prefix')}/{row['id']}")
             if base is not None:
                 clean['cost'] = run_cost(base / batch['web_prefix'] / row['id'], row['model'], row.get('tokens'))
                 clean['harness'] = harness_tag(base / batch['web_prefix'] / row['id'])
+                clean.update(cell_facts(base / batch['web_prefix'] / row['id']))
             cells.append(clean)
     submitted = {}
     for entry in community:
@@ -112,6 +182,7 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
     # Retired attempts stay visible for history, but they are not scored or counted as planned.
     for cell in cells:
         cell['retired'] = cell['task_id'] in retired
+    label_cells(cells)
     scored = [c for c in cells if not c['retired']]
     by_model = defaultdict(list)
     for cell in cells:
@@ -127,7 +198,8 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
                        'categories': categories, 'finished': finished, 'planned': len(counted),
                        'complete': finished == len(counted), 'tokens': sum(r.get('tokens') or 0 for r in rows),
                        'cost': sum_cost(rows), 'harness': harness_summary(rows),
-                       'errors': sum(r['state'] == 'evaluation_error' for r in counted)})
+                       'errors': sum(r['state'] == 'evaluation_error' for r in counted),
+                       'labels': dict(Counter(code for r in counted for code in r['labels']))})
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = []
     for t in source['tasks']:
@@ -140,6 +212,9 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
             'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
             'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
             'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
+            'label_text': {code: {'label': label, 'detail': detail} for code, (label, detail) in NOTES.items()},
+            'attempts': {'rule': RETRY_RULE, 'log': attempts_log(base, ['focused-pass-v056'] + [b['web_prefix'] for b in extras])
+                         if base is not None else []},
             'efficiency': comparison([c for c in scored if c['model'] not in submitted],
                                      [m for m in models if m['id'] not in submitted])}
 
@@ -170,7 +245,8 @@ def long_row(root, web, name, decision_limit=2000):
                          'core': manifest.get('core', {}).get('version'),
                          'emulator': ' '.join(str(manifest.get('emulator', {}).get(k) or '') for k in ('backend', 'version')).strip()},
             'image': existing_link(web, f'{root.name}.png'), 'replay': replay,
-            'replay_mb': round((web / replay).stat().st_size / 1e6) if replay else None}
+            'replay_mb': round((web / replay).stat().st_size / 1e6) if replay else None,
+            'pair_blocks': dict(zip(('pair', 'blocked'), LONG_PAIR_BLOCKS[root.name])) if root.name in LONG_PAIR_BLOCKS else None}
 
 
 def long_snapshot(base, web):

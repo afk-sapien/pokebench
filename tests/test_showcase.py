@@ -95,6 +95,63 @@ def test_long_rows_carry_their_harness_version(tmp_path):
     row = long_row(tmp_path / 'long-run', tmp_path, 'opus')
     assert row['harness'] == 'red-v0.59-lossless-inspection'
     assert row['model'] == 'unpriced'
+    assert row['pair_blocks'] is None
+    shutil.copytree(tmp_path / 'long-run', tmp_path / 'long-v065-sonnet')
+    assert long_row(tmp_path / 'long-v065-sonnet', tmp_path, 'sonnet')['pair_blocks'] == {'pair': 246, 'blocked': 434}
+
+
+def test_cells_are_labeled_from_their_own_records(tmp_path):
+    from pokeagent_bench.showcase import END_LINE, current_spec
+    task = 'navigation-branching-cave'
+    spec = current_spec(task)
+    base = tmp_path / 'data'
+    facts = {'cell-0001': ('fixed-battle-v4', END_LINE), 'cell-0002': (None, None),
+             'cell-0003': ('fixed-battle-v3', 'An older prompt.'), 'cell-0223': (None, None)}
+    for cell, (policy, prompt) in facts.items():
+        (base / 'focused-pass-v056' / cell / 'assessment').mkdir(parents=True)
+        if policy:
+            (base / 'focused-pass-v056' / cell / 'assessment/assessment.json').write_text(json.dumps({'policy_version': policy}))
+        if prompt:
+            (base / 'focused-pass-v056' / cell / 'prompt.txt').write_text(prompt)
+    def row(cell, spec_hash, fixture):
+        return {'id': cell, 'task_id': task, 'category': 'navigation', 'score_group': task, 'model': 'old', 'variant': 'default',
+                'state': 'finished', 'value': 0.0, 'evaluation_spec_sha256': spec_hash, 'fixture_sha256': fixture}
+    rows = [row('cell-0001', spec, 'new'), row('cell-0002', 'old-spec', 'old'), row('cell-0003', spec, 'new'),
+            row('cell-0223', spec, 'new')]
+    result = short_snapshot({'cells': rows, 'tasks': [], 'categories': ['navigation']}, tmp_path, None, base)
+    labels = {c['id']: c['labels'] for c in result['cells']}
+    assert labels == {'cell-0001': [], 'cell-0002': ['earlier_spec', 'earlier_start'],
+                      'cell-0003': ['earlier_policy', 'no_end_line'], 'cell-0223': ['harness_fault']}
+    assert 'use_item' in result['cells'][3]['harness_fault']
+    assert result['models'][0]['labels'] == {'earlier_spec': 1, 'earlier_start': 1, 'earlier_policy': 1,
+                                             'no_end_line': 1, 'harness_fault': 1}
+    assert set(result['label_text']) == {'earlier_spec', 'earlier_start', 'earlier_policy', 'no_end_line', 'harness_fault'}
+
+
+def test_attempts_log_lists_replaced_and_resumed_copies(tmp_path):
+    base = tmp_path / 'data'
+    replaced = base / 'focused-pass-v056/original-errors-v058/cell-0018'
+    resumed = base / 'main-v067-fable/cell-0002-quota-error-01'
+    for folder, stop in ((replaced, 'invalid_model_response'), (resumed, 'usage_unavailable')):
+        folder.mkdir(parents=True)
+        (folder / 'manifest.json').write_text(json.dumps({'agent': {'model': 'm'}, 'scenario': {'task_id': 't'}}))
+        (folder / 'result.json').write_text(json.dumps({'stop_reason': stop, 'usage': {'calls': 7}}))
+    (base / 'main-v067-fable/cell-0002').mkdir()
+    extra = {'web_prefix': 'main-v067-fable', 'cells': []}
+    attempts = short_snapshot({'cells': [], 'tasks': [], 'categories': []}, tmp_path, extra, base)['attempts']
+    assert 'No gameplay retries' in attempts['rule']
+    assert [(e['batch'], e['cell'], e['kind'], e['stop_reason'], e['decisions']) for e in attempts['log']] == [
+        ('focused-pass-v056', 'cell-0018', 'replaced', 'invalid_model_response', 7),
+        ('main-v067-fable', 'cell-0002', 'resumed', 'usage_unavailable', 7)]
+    assert attempts['log'][1]['reason'].startswith('Quota error stopped the attempt')
+    assert short_snapshot({'cells': [], 'tasks': [], 'categories': []}, tmp_path)['attempts']['log'] == []
+
+
+def test_showcase_policy_matches_the_preparation_runtime():
+    pytest.importorskip('pokecore')
+    from pokeagent_bench.preparation_runtime import POLICY_VERSION
+    from pokeagent_bench.showcase import CURRENT_POLICY
+    assert CURRENT_POLICY == POLICY_VERSION
 
 
 def test_community_rows_are_labeled_and_kept_out_of_the_cost_comparison(tmp_path):

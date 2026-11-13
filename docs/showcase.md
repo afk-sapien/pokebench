@@ -19,6 +19,10 @@ The build reads the existing focused analysis, the additional Astra and Fable Sh
 
 This is a local showcase, not a public deployment command. For the public site, use the existing public replay export to produce screenshot and controller-action replays. The current local Long replay files are approximately 81 to 87 MB each. Package those separately from the small landing page. Keep the report's earlier-snapshot label until its results are refreshed. Do not publish the private artifact directory wholesale.
 
+## Reporting labels
+
+Labels never change a score. Each Short cell carries `labels`, a list of codes computed from its own files. `earlier_spec` means its spec hash differs from the current task, `earlier_start` means its fixture differs from the one fixture used by current-spec cells of the same task and variant, `earlier_policy` means preparation was scored with an older battle controller, `no_end_line` means its prompt lacks the run-ends sentence, and `harness_fault` marks the zeros the v0.61 failure study traced to the harness. Each model row counts the labels on its counted cells. `short.label_text` holds the text shown for each code. `short.attempts` holds the retry rule and a log of every replaced, resumed or continued copy that a batch keeps. Long runs carry `pair_blocks`, the moves the game refused at a tile pair collision out of all blocked moves. Facts the run files do not record live in `src/pokeagent_bench/reporting_labels.py`. See docs/history/fair-harness-v061.md.
+
 Source assets are in `src/pokeagent_bench/showcase_assets`. No JavaScript framework or frontend build step is required.
 
 The project name remains PokeBench. The two Gen 1 tracks have separate rankings. Future Gen 2 tracks can share this landing page without mixing generations.

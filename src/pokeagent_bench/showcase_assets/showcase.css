@@ -217,6 +217,15 @@ thead {border-top:1px solid #bfc6b5}
 .partial-label {color:#9b6525}
 .partial-label {display:block}
 .partial-label {margin-top:4px}
+.note-label {font:9px monospace}
+.note-label {color:#6d6a8f}
+.note-label {display:block}
+.note-label {margin-top:3px}
+.note-label {cursor:help}
+.attempts-log {margin:0 0 18px}
+.attempts-log summary {cursor:pointer}
+.attempts-log p {line-height:1.6}
+.attempts-log p {max-width:720px}
 .score-ci {font:9px monospace}
 .score-ci {color:#798071}
 .score-ci {display:block}
