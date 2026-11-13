@@ -48,6 +48,15 @@ def test_illegal_preparation_never_sends_controller_input(tmp_path, task, action
     assert before == session.engine.save()
 
 
+def test_use_item_accepts_quantity_one_only(tmp_path):
+    runtime = PreparationSession(fake_session(tmp_path), 'preparation-damaged-team-rescue')
+    # Quantity 1 passes the field check and reaches the item rule.
+    with pytest.raises(ValueError, match='Item is not allowed'):
+        runtime.act({'operation': 'use_item', 'item': 54, 'slot': 0, 'quantity': 1})
+    with pytest.raises(ValueError, match='Unexpected non-null'):
+        runtime.act({'operation': 'use_item', 'item': 53, 'slot': 0, 'quantity': 2})
+
+
 def test_submission_is_terminal_and_tampering_is_detected(tmp_path):
     runtime = PreparationSession(fake_session(tmp_path), 'preparation-lead-selection')
     destination = tmp_path / 'submission'
@@ -96,17 +105,23 @@ def test_preparation_provider_records_one_call_without_images():
         def _complete(self, method, params, deadline):
             self.calls += 1
             assert all(item['type'] == 'text' for item in params['input'])
+            self.payload = json.loads(params['input'][0]['text'])
             return json.dumps({'actions': []}), {'input_tokens': 200, 'output_tokens': 10}
 
         def close(self):
             self.closed = True
 
     provider = Provider()
-    task = load_catalog('preparation')[0]['evals'][0]
-    result = request_submission(provider, task, {'party': [], 'bag': []}, 8000)
+    task = next(task for task in load_catalog('preparation')[0]['evals']
+                if task['id'] == 'preparation-shop-for-challenge')
+    labels = {'20': 'Potion', '11': 'Antidote', '15': 'Parlyz Heal', '12': 'Burn Heal', '4': 'Poke Ball'}
+    result = request_submission(provider, task, {'party': [], 'bag': []}, 8000, item_labels=labels)
     assert result['usage']['input_tokens'] == 200
     assert result['budget_exceeded'] is False
     assert provider.closed and provider.calls == 1
+    # Items are named from the same labels as the bag, never sent as null.
+    assert [entry['name'] for entry in provider.payload['shop']] == [
+        'Potion', 'Antidote', 'Parlyz Heal', 'Burn Heal', 'Poke Ball']
 
 
 def test_claude_transport_accepts_preparation_schema_without_gameplay_coercion():

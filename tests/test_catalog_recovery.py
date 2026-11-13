@@ -121,7 +121,8 @@ class FakeProvider:
 @pytest.mark.parametrize('failure', ['response', 'transport', 'action'])
 def test_preparation_persists_usage_and_error_classification(tmp_path, monkeypatch, failure):
     transport_error = failure == 'transport'
-    session = SimpleNamespace(usage={}, output=tmp_path / 'preparation', finish=Mock(), close=Mock())
+    session = SimpleNamespace(usage={}, output=tmp_path / 'preparation', finish=Mock(), close=Mock(),
+                              gameplay_catalog={'labels': {'items': {}}})
     monkeypatch.setattr(prep, 'load_engine', lambda *args: (object(), {}))
     monkeypatch.setattr(prep, 'load_catalog', lambda *args: {})
     monkeypatch.setattr(prep, 'Session', lambda *args, **kwargs: session)

@@ -91,8 +91,14 @@ def execute(session, operation_id, command, on_action=None):
                     destination = {"FIGHT": [9, 14], "PKMN": [15, 14], "ITEM": [9, 16], "RUN": [15, 16]}.get(target.upper())
                 else:
                     screen = read_screen(session.engine.memory)
-                    matches = [option["cursor"] for option in menu_options(session.engine.memory, screen, current["kind"])
+                    options = menu_options(session.engine.memory, screen, current["kind"])
+                    matches = [option["cursor"] for option in options
                                if option["text"].upper() == target.upper()]
+                    if not matches:
+                        # Party options read "1: POLIWRATH". A bare name picks that slot only when unique.
+                        matches = [option["cursor"] for option in options
+                                   if option["text"].partition(": ")[2].upper() == target.upper()
+                                   and option["text"].partition(": ")[0].isdigit()]
                     destination = matches[0] if len(matches) == 1 else None
                 if destination is None:
                     result["outcome"] = "Requested option is not uniquely visible. No confirmation sent."
