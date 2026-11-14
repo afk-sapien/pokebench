@@ -1,4 +1,7 @@
 """Offline fixture construction must preserve native ownership and legal stats."""
+import importlib.util
+from pathlib import Path
+
 import pytest
 
 from pokecore.gen1 import (
@@ -58,6 +61,28 @@ def test_species_gender_uses_native_character_not_underscore():
 def test_bag_rejects_duplicate_item_slots():
     with pytest.raises(ValueError, match='distinct'):
         set_bag(Engine(), [(20, 1), (20, 2)])
+
+
+def recipes():
+    path = Path(__file__).resolve().parents[1] / 'scripts' / 'prepare_catalog_fixtures.py'
+    spec = importlib.util.spec_from_file_location('prepare_catalog_fixtures_test', path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.RECIPES
+
+
+def test_no_start_holds_an_elevator_floor_label():
+    # Ids 0x54 to 0x60 are floor names (B2F to 11F), not items. Using one runs past the end of the game's
+    # item use table: it consumed one and printed a Poke Ball message in a Short boulder puzzle attempt.
+    floors = range(0x54, 0x61)
+    assert not {task: bag for task, recipe in recipes().items()
+                for bag in [recipe.get('bag') or []] if any(item in floors for item, _ in bag)}
+
+
+@pytest.mark.parametrize('task', ['navigation-warp-puzzle', 'navigation-spinning-floors',
+                                  'navigation-boulder-puzzle', 'navigation-multifloor-required-stops'])
+def test_navigation_starts_hold_the_documented_max_repels(task):
+    assert recipes()[task]['bag'] == [[0x39, 20]]
 
 
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),

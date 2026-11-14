@@ -25,6 +25,8 @@ PIKA = mon('PIKACHU', 13, [84, 45, 39, 86], max_hp=35)
 PIDGEY = mon('PIDGEY', 7, [16, 28], max_hp=23)
 PARTY = [BULBA, PIKA, PIDGEY]
 BASIC_BAG = [[20, 5], [11, 2], [4, 10]]
+MAX_REPEL = 57
+MAX_REPELS = [[MAX_REPEL, 20]]
 
 
 def archive(event, map_id, **kw):
@@ -34,10 +36,10 @@ def archive(event, map_id, **kw):
 RECIPES = {
     'navigation-forest-crossing': archive(44, 51, position=[17,47], party=SQUIRTLE, bag=BASIC_BAG, money=300),
     'navigation-branching-cave': archive(109, 59, position=[14,35], party=WARTORTLE, bag=[[20,10],[11,3],[29,1]], money=1000),
-    'navigation-warp-puzzle': archive(591, 178, position=[8,17], party=NIDOKING, bag=[[84,20]], events={**{f'EVENT_BEAT_SAFFRON_GYM_TRAINER_{i}':True for i in range(7)}}),
-    'navigation-spinning-floors': archive(381, 200, position=[27,8], party=NIDOKING, bag=[[84,20]], events={'EVENT_BEAT_ROCKET_HIDEOUT_2_TRAINER_0':True}),
-    'navigation-boulder-puzzle': archive(740, 108, position=[8,17], party=NIDOKING, bag=[[84,20]], events={'EVENT_BEAT_VICTORY_ROAD_1_TRAINER_0':True,'EVENT_BEAT_VICTORY_ROAD_1_TRAINER_1':True,'EVENT_VICTORY_ROAD_1_BOULDER_ON_SWITCH':False}),
-    'navigation-multifloor-required-stops': archive(364, 122, position=[16,7], party=NIDOKING, bag=[[84,20]], money=0),
+    'navigation-warp-puzzle': archive(591, 178, position=[8,17], party=NIDOKING, bag=MAX_REPELS, events={**{f'EVENT_BEAT_SAFFRON_GYM_TRAINER_{i}':True for i in range(7)}}),
+    'navigation-spinning-floors': archive(381, 200, position=[27,8], party=NIDOKING, bag=MAX_REPELS, events={'EVENT_BEAT_ROCKET_HIDEOUT_2_TRAINER_0':True}),
+    'navigation-boulder-puzzle': archive(740, 108, position=[8,17], party=NIDOKING, bag=MAX_REPELS, events={'EVENT_BEAT_VICTORY_ROAD_1_TRAINER_0':True,'EVENT_BEAT_VICTORY_ROAD_1_TRAINER_1':True,'EVENT_VICTORY_ROAD_1_BOULDER_ON_SWITCH':False}),
+    'navigation-multifloor-required-stops': archive(364, 122, position=[16,7], party=NIDOKING, bag=MAX_REPELS, money=0),
     'objectives-npc-instruction': archive(199,88,position=[2,7],party=WARTORTLE,bag=[[20,5]]),
     'operations-restore-move-pp': archive(150,35,position=[10,35],party=[mon('SQUIRTLE',15,[33,39,145,55],pp=[35,30,8,5]),PIDGEY],bag=[[80,1],[20,1],[4,5]]),
     'operations-teach-tm-replace-move': archive(344,6,position=[49,11],party=PARTY,bag=[[234,1],[20,1],[4,3]]),
