@@ -62,6 +62,16 @@ def input_locked(engine):
     return bool(addresses and (engine.memory[addresses[0]] & 128 or engine.memory[addresses[1]] & 240 == 240))
 
 
+def warp_pending(memory):
+    """Read Red's pending fly or dungeon warp flags (wd732 bits 3 and 4).
+
+    A warp pad, hole, Fly, Dig, Teleport or Escape Rope sets one of these before the
+    game moves the player, and the game clears it once the warp lands. Until then
+    the controller is still free, so input sent now is lost to the warp.
+    """
+    return bool(memory[0xD732] & 0x18)
+
+
 class Transcript:
     """Retain visible text pages, collapsing incremental typing only."""
 
@@ -125,6 +135,7 @@ def settle_dialogue(session, send, transcript, deadline):
             return transcript.result("choice", session.frame - start)
         if kind == "overworld":
             locked = (input_locked(session.engine) or session.engine.memory[0xC200]
+                      or warp_pending(session.engine.memory)
                       or session.frame < session.gameplay_memory.get("map_ready_after", 0))
             if locked:
                 collecting = True

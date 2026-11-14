@@ -3,7 +3,7 @@ from pokecore.gen1_ui import read_screen
 
 from .gameplay_contract import validate_command
 from .gameplay import local_map, menu_options, ui_state
-from .dialogue import Transcript, settle_dialogue
+from .dialogue import Transcript, settle_dialogue, warp_pending
 
 
 def validate(command, limits, policy=None):
@@ -155,6 +155,10 @@ def execute(session, operation_id, command, on_action=None):
                     result["blocked_at"] = position()
                     break
                 completed += abs(current[1] - location[1]) + abs(current[2] - location[2])
+                if warp_pending(memory):
+                    # A pad or hole moves the player without input. Further steps would be lost to it.
+                    result["outcome"] = f"Moved {completed} tiles, then a warp started."
+                    break
             result["tiles_moved"] = completed
             result["requested_tiles"] = count
             if result["outcome"] == "executed":

@@ -1,3 +1,5 @@
+import pytest
+
 from pokeagent_bench.core import Limits
 from pokeagent_bench.gameplay import known_map, observe_gameplay
 from pokeagent_bench.gameplay_commands import execute
@@ -20,6 +22,34 @@ def test_partial_move_reports_progress_and_block(tmp_path, engine):
         assert result['position_after']['x'] == result['blocked_at']['x'] == 6
         assert result['outcome'] == 'Moved 2 tiles, then blocked or no further movement.'
         assert session.gameplay_memory['movements'][-1]['tiles_moved'] == 2
+    finally:
+        session.close()
+
+
+@pytest.mark.parametrize('flag', [8, 16])
+def test_move_onto_pending_warp_stops_input_and_waits_for_landing(tmp_path, engine, flag):
+    # Red sets wd732 bit 3 (pad) or bit 4 (hole) when the step lands, then warps tens of frames later.
+    session = setup(tmp_path, engine)
+    session.limits = Limits(max_action_frames=600)
+    def pad(fake):
+        if fake.frame == 1:
+            fake.memory[0xD362] += 1
+            fake.memory[0xC109] = 12
+        if fake.frame == 10:
+            fake.memory[0xD732] |= flag
+        if fake.frame == 60:
+            fake.memory[0xD362], fake.memory[0xD361] = 9, 9
+            fake.memory[0xD732] &= ~flag
+    engine.on_tick = pad
+    try:
+        result = execute(session, 'pad', {'command': 'move', 'argument': 'right', 'count': 3})
+        assert [r[1] for r in engine.inputs if r[0] == 'press'] == ['right']
+        assert result['tiles_moved'] == 1 and result['position_after_input']['x'] == 5
+        assert (result['position_after']['x'], result['position_after']['y']) == (9, 9)
+        assert result['outcome'] == ('Moved 1 tiles during input. Position changed while the game settled. '
+                                     f"Now at map {result['position_after']['map_id']}, (9, 9).")
+        assert result['dialogue']['stop_reason'] == 'control returned'
+        assert session.frame >= 180
     finally:
         session.close()
 
