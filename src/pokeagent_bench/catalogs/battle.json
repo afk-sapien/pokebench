@@ -593,6 +593,65 @@
         {"id": "lance", "description": "Defeat Lance.", "check": {"elite": "Lance"}},
         {"id": "hall-of-fame", "description": "Defeat the Champion and complete the Hall of Fame registration.", "check": {"map": 118, "champion": true, "hall_of_fame": true}}
       ]
+    },
+    {
+      "id": "battle-mt-moon-underleveled",
+      "title": "Cross Mt. Moon to Cerulean City with an underleveled party",
+      "difficulty": "hard",
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "battle-mt-moon-underleveled",
+        "description": "Go through Mt. Moon and reach Cerulean City. Wild Pokemon appear in the cave and in the grass. Do not nickname Pokemon."
+      },
+      "start": "The Pokemon Center outside Mt. Moon on Route 4, just inside the door. Every trainer in Mt. Moon and on Route 4 is beaten, both fossils are still on B2F and wild Pokemon appear as normal.",
+      "success": [
+        "Cerulean City is reached through Mt. Moon."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Cerulean City.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 8250000,
+      "decision_limit": 550,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start in the Mt. Moon Pokemon Center with both fossils on B2F and wild encounters on.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Cross a long cave with a weak party and wild encounters on, spending HP, Potions and escapes",
+      "agent_goal": "Go through Mt. Moon and reach Cerulean City. Wild Pokemon appear in the cave and in the grass. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Party, both level 5, full HP, no status and full PP: Charmander with Scratch and Growl. Pidgey with Gust and Sand-Attack.",
+        "Bag: 2 Potions. No money and no Repels.",
+        "Every trainer on the way is beaten. Wild Pokemon still appear in Mt. Moon and in the grass on Route 4. No battle hints are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/MtMoon1F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/MtMoonB2F.asm",
+        "https://github.com/pret/pokered/blob/master/data/wild/maps/MtMoon1F.asm",
+        "https://github.com/pret/pokered/blob/master/data/wild/maps/MtMoonB1F.asm",
+        "https://github.com/pret/pokered/blob/master/data/wild/maps/MtMoonB2F.asm",
+        "https://github.com/pret/pokered/blob/master/engine/battle/core.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Check in the pilot whether models run from fast wild Pokemon, heal at the Pokemon Center, or push on and black out."
+      ],
+      "measures": "Cross a cave with a weak party and wild encounters on, choosing when to run, fight, use a Potion or turn back to heal, and finding the fossil gate on B2F.",
+      "milestones": [
+        {"id": "first-basement", "description": "Reach Mt. Moon B1F.", "check": {"map": 60}},
+        {"id": "second-basement", "description": "Reach Mt. Moon B2F.", "check": {"map": 61}},
+        {"id": "route-4-east", "description": "Leave Mt. Moon onto Route 4 east of the cave.", "check": {"map": 15, "area": [24, 0, 89, 17]}},
+        {"id": "cerulean-city", "description": "Reach Cerulean City.", "check": {"map": 3}}
+      ]
     }
   ]
 }

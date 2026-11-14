@@ -381,3 +381,28 @@ Scored by milestones, see [milestone tasks](README.md#milestone-tasks).
 
 The level is set so the scripted reference just wins. It picks the strongest typed move each turn, heals below a third of its HP and switches to the healthiest strong Pokemon. At level 56 it ends with one Pokemon standing, and at level 54 it blacks out against the Champion. A League win is read from the game's own defeat flags, and the last point also needs a new Hall of Fame record.
 
+## Cross Mt. Moon to Cerulean City with an underleveled party
+
+`battle-mt-moon-underleveled`
+
+Scored by milestones, see [milestone tasks](README.md#milestone-tasks).
+
+**Agent goal:** Go through Mt. Moon and reach Cerulean City. Wild Pokemon appear in the cave and in the grass. Do not nickname Pokemon.
+
+**Start:** The Pokemon Center outside Mt. Moon on Route 4, just inside the door. Every trainer in Mt. Moon and on Route 4 is beaten, both fossils are still on B2F and wild Pokemon appear as normal.
+
+**Concrete setup**
+
+- Party, both level 5, full HP, no status and full PP: Charmander with Scratch and Growl. Pidgey with Gust and Sand-Attack.
+- Bag: 2 Potions. No money and no Repels, so the Magikarp seller is out of reach.
+- Every trainer on the way is beaten. Wild Pokemon still appear in Mt. Moon and in the grass on Route 4.
+
+**Scored milestones**
+
+1. Reach Mt. Moon B1F.
+2. Reach Mt. Moon B2F.
+3. Leave Mt. Moon onto Route 4 east of the cave.
+4. Reach Cerulean City.
+
+The wild battles are the task, so no encounter override applies. The Pokemon Center at the start heals the party for free. The scripted reference runs when its Pokemon is at least as fast as the wild one, since Gen 1 then always lets it escape, uses a Potion below a third of its HP and otherwise fights. At level 5 it reaches Cerulean City, and at level 4 it blacks out on B2F.
+

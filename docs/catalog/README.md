@@ -1,13 +1,13 @@
 # Six-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **52 primary tasks and one inventory variant** across six
-categories: 10 navigation, 13 battle, 10 operations plus one variant, 10 preparation,
+Across both benchmarks, the catalog has **53 primary tasks and one inventory variant** across six
+categories: 10 navigation, 14 battle, 10 operations plus one variant, 10 preparation,
 8 quests and one campaign. Every task case has a checked starting save and a runtime
-evaluator. The five [milestone tasks](#milestone-tasks) join the local fixture pack
+evaluator. The six [milestone tasks](#milestone-tasks) join the local fixture pack
 with the next harness version. Difficulty remains provisional until model trials.
 Historical results and the old fixture set remain available.
 
-**PokeBench** contains the 51 focused tasks and one inventory variant in five
+**PokeBench** contains the 52 focused tasks and one inventory variant in five
 categories. Its ranked score averages four of them: navigation, battle, operations
 and quests. Preparation is scored and reported next to the ranked score, but it is
 not ranked. **PokeBench Long** contains only the continuous campaign. They use
@@ -38,7 +38,7 @@ links and records. The portal calls this category Quests, and the CLI also accep
 
 ## Milestone tasks
 
-Five Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
+Six Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
 its usual category and weighs the same as any other task in that category's average.
 
 Each one lists ordered milestones in its catalog entry, for example the floors of a
@@ -63,6 +63,7 @@ is 15,000 tokens per allowed decision. No model has run these tasks yet.
 | [Reach Giovanni in Silph Co.](navigation.md#reach-giovanni-in-silph-co) | Navigation | 1F front door, every Card Key door locked, no Card Key | 5 | 76 | 380 |
 | [Travel from Pewter City to Lavender Town](navigation.md#travel-from-pewter-city-to-lavender-town) | Navigation | Pewter Pokemon Center, early story, Cut and Flash party | 6 | 221 | 1,100 |
 | [Defeat the Elite Four and the Champion with no items](battle.md#defeat-the-elite-four-and-the-champion-with-no-items) | Battle | Lorelei's room, empty bag, six level 56 Pokemon | 5 | 100 | 500 |
+| [Cross Mt. Moon to Cerulean City with an underleveled party](battle.md#cross-mt-moon-to-cerulean-city-with-an-underleveled-party) | Battle | Mt. Moon Pokemon Center, two level 5 Pokemon, 2 Potions, wild encounters on | 4 | 109 | 550 |
 
 Published rows keep the harness version and task set they were run on. Each row averages
 only the tasks its version ran, so these tasks count only on rows run on a version that

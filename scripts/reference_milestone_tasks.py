@@ -12,6 +12,7 @@ import json
 from pathlib import Path
 import shutil
 
+from pokeagent_bench import navigation_conditions
 from pokeagent_bench.catalog_execution import run_task, select_scenario
 from pokeagent_bench.catalog_fixtures import command as native
 from pokeagent_bench.core import Limits, write_json
@@ -19,7 +20,7 @@ from pokeagent_bench.evaluation_catalog import task_definition
 from pokeagent_bench.gameplay import load_catalog, menu_options, read_screen, ui_state
 from pokeagent_bench.gameplay_commands import execute
 from pokeagent_bench.session import Session, load_engine
-from pokecore.gen1 import read_party
+from pokecore.gen1 import read_bag, read_party
 from pokecore.gen1_ui import read_sprites
 
 STEPS = {'up': (0, -1), 'down': (0, 1), 'left': (-1, 0), 'right': (1, 0)}
@@ -62,6 +63,17 @@ class Driver:
         self.log = []
         # Tiles the planner never steps onto, such as holes that drop the player a floor.
         self.avoid = set()
+        # Called when a move command ends in a battle, so walking resumes after it.
+        self.on_battle = None
+
+    def calm_planner(self):
+        """Turn off wild encounters on the planner only, so paths never depend on dodging them.
+
+        The live game keeps its encounters. Without this the search would drop tiles where the
+        copied random state starts a battle, and the reference would walk around encounters.
+        """
+        for index, value in enumerate(navigation_conditions.NO_ENCOUNTER):
+            self.planner.memory[navigation_conditions.BANK, navigation_conditions.ADDRESS + index] = value
 
     @property
     def done(self):
@@ -126,7 +138,8 @@ class Driver:
 
         Stops at the first map change. The caller checks that it was the intended one.
         """
-        for _ in range(attempts):
+        moves = 0
+        while moves < attempts:
             before = locate(self.engine)
             if goal(before):
                 return
@@ -136,6 +149,13 @@ class Driver:
             while count < min(8, len(path)) and path[count] == direction:
                 count += 1
             result = self.do('move', direction, count)
+            if self.on_battle and not self.done and self.engine.memory[0xD057]:
+                self.on_battle(self)
+                if self.done:
+                    return
+                # A wild battle stops the walk. Its moves are not counted against the walk.
+                continue
+            moves += 1
             after = locate(self.engine)
             if self.done or after[0] != before[0] or goal(after):
                 return
@@ -311,13 +331,12 @@ PEWTER_CITY, CERULEAN_CITY, LAVENDER_TOWN, ROUTE_3, ROUTE_4, ROUTE_9, ROUTE_10 =
 MT_MOON_1F, MT_MOON_B1F, MT_MOON_B2F, ROCK_TUNNEL_1F, ROCK_TUNNEL_B1F = 59, 60, 61, 82, 232
 
 
-def pewter_to_lavender(driver):
-    d = driver
-    d.enter(PEWTER_CITY)
-    d.enter(ROUTE_3)
-    d.enter(ROUTE_4)
-    # Mt. Moon: the 1F ladder at (5, 5) and the B1F ladder at (21, 17) reach the B2F fossil floor,
-    # whose west ladder at (5, 7) climbs to the B1F room with the exit to Route 4.
+def cross_mt_moon(d):
+    """From Route 4 west of Mt. Moon to Route 4 east of it.
+
+    The 1F ladder at (5, 5) and the B1F ladder at (21, 17) reach the B2F fossil floor,
+    whose west ladder at (5, 7) climbs to the B1F room with the exit to Route 4.
+    """
     d.enter(MT_MOON_1F, via=(18, 5))
     d.enter(MT_MOON_B1F, via=(5, 5))
     d.enter(MT_MOON_B2F, via=(21, 17))
@@ -339,6 +358,14 @@ def pewter_to_lavender(driver):
                 d.do('wait', '', 60)
     d.enter(MT_MOON_B1F, via=(5, 7))
     d.enter(ROUTE_4, via=(27, 3))
+
+
+def pewter_to_lavender(driver):
+    d = driver
+    d.enter(PEWTER_CITY)
+    d.enter(ROUTE_3)
+    d.enter(ROUTE_4)
+    cross_mt_moon(d)
     d.enter(CERULEAN_CITY)
     # A guard blocks the robbed house until the S.S. Ticket, so the way east is the small tree at
     # (19, 28) and the southeast path around to the Route 9 exit.
@@ -377,7 +404,8 @@ def battler(memory, base):
     word = lambda offset: memory[base + offset] << 8 | memory[base + offset + 1]
     return {'species': memory[base], 'hp': word(1), 'types': (memory[base + 5], memory[base + 6]),
             'moves': tuple(memory[base + 8:base + 12]), 'max_hp': word(15), 'attack': word(17),
-            'defense': word(19), 'special': word(23), 'pp': tuple(v & 63 for v in memory[base + 25:base + 29])}
+            'defense': word(19), 'speed': word(21), 'special': word(23),
+            'pp': tuple(v & 63 for v in memory[base + 25:base + 29])}
 
 
 class Tactics:
@@ -498,9 +526,59 @@ def elite_four(driver):
     raise RuntimeError(f'The Hall of Fame did not record the party. At {locate(d.engine)}')
 
 
+POTION = 20
+
+
+def potions(memory):
+    return sum(count for item, count in read_bag(memory) if item == POTION)
+
+
+def wild_battle(driver, tactics, limit=200):
+    """Get through one wild battle: a Potion when low, run when as fast, otherwise fight.
+
+    Gen 1 always lets the player escape when its Pokemon is at least as fast as the wild one.
+    """
+    d, memory = driver, driver.engine.memory
+    for _ in range(limit):
+        if d.done:
+            return
+        ui = ui_state(memory)
+        if not memory[0xD057] and ui['kind'] == 'overworld':
+            return
+        options = ui['visible_choices'] if ui['kind'] == 'menu' else []
+        if ui['kind'] in ('battle_menu', 'move_menu'):
+            mine, theirs = battler(memory, BATTLE_MON), battler(memory, ENEMY_MON)
+            if mine['hp'] * 3 < mine['max_hp'] and potions(memory):
+                d.do('use_item', f'Potion:{memory[0xCC2F] + 1}')
+            elif mine['speed'] >= theirs['speed'] and ui['kind'] == 'battle_menu':
+                d.do('choose', 'RUN')
+            else:
+                d.do('use_move', str(tactics.choose_move(memory) + 1))
+        elif memory[0xD057] and any(text.partition(': ')[0].isdigit() for text in options):
+            party = read_party(memory)
+            d.do('switch_pokemon', str(tactics.choose_switch(memory, party, memory[0xCC2F]) + 1))
+        elif {'YES', 'NO'} <= {text.upper() for text in options}:
+            # Send out the next Pokemon after a faint, and keep the old moves on a new one.
+            text = ' '.join(ui['text']).upper()
+            d.do('choose', 'NO' if 'DELETE' in text or 'FORGET' in text else 'YES')
+        else:
+            d.do('advance_dialogue')
+    raise RuntimeError('The wild battle did not end')
+
+
+def mt_moon(driver):
+    d = driver
+    tactics = Tactics(d.game_data)
+    d.calm_planner()
+    d.on_battle = lambda drv: wild_battle(drv, tactics)
+    d.enter(ROUTE_4)
+    cross_mt_moon(d)
+    d.enter(CERULEAN_CITY)
+
+
 SOLUTIONS = {'navigation-victory-road': victory_road, 'navigation-seafoam-islands': seafoam,
              'navigation-silph-co': silph_co, 'navigation-pewter-to-lavender': pewter_to_lavender,
-             'battle-elite-four-no-items': elite_four}
+             'battle-elite-four-no-items': elite_four, 'battle-mt-moon-underleveled': mt_moon}
 
 
 def build(task_id, rom, game_data, fixtures, output):

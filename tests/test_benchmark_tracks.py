@@ -58,14 +58,14 @@ def test_cli_default_catalog_is_short_and_long_is_explicit():
     short = execute(parser().parse_args(['catalog']))
     long = execute(parser().parse_args(['catalog','--benchmark','pokebench-long']))
     assert short['benchmark'] == 'pokebench'
-    assert short['primary_task_count'] == 51 and short['eval_count'] == 52
+    assert short['primary_task_count'] == 52 and short['eval_count'] == 53
     assert short['category_count'] == 5
     assert long['eval_count'] == 1 and long['categories'][0]['category'] == 'campaign'
     assert execute(parser().parse_args(['catalog','--category','campaign']))['benchmark'] == 'pokebench-long'
 
 
 def test_export_has_two_distinct_pages_and_keeps_old_campaign_links(tmp_path):
-    assert export_catalog(tmp_path) == 53
+    assert export_catalog(tmp_path) == 54
     short = (tmp_path / 'catalog.html').read_text()
     long = (tmp_path / 'pokebench-long.html').read_text()
     assert 'id="campaign-full-game"' not in short

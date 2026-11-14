@@ -125,6 +125,24 @@ def test_elite_four_start_has_no_items_and_no_shortcut_moves():
     assert {105, 156} <= moves
 
 
+def test_mt_moon_start_is_underleveled_with_two_potions_and_both_fossils():
+    recipe = recipes()['battle-mt-moon-underleveled']
+    # Archive 134 at the Mt. Moon Pokemon Center (map 68), just inside the door.
+    assert (recipe['archive'], recipe['map_id'], recipe['position']) == (134, 68, [3, 7])
+    party = recipe['party']
+    assert [member['species'] for member in party] == ['CHARMANDER', 'PIDGEY']
+    assert {member['level'] for member in party} == {5}
+    # Scratch and Growl, and Gust and Sand-Attack. Ember waits until level 9.
+    assert [member['moves'][:2] for member in party] == [[10, 45], [16, 28]]
+    # Two Potions (item 20), no Repel, no money to buy any.
+    assert recipe['bag'] == [[20, 2]] and recipe['money'] == 0
+    events = recipe['events']
+    # Every trainer in Mt. Moon and on Route 4 is beaten. Both fossils wait on B2F.
+    beaten = [name for name in events if name.startswith('EVENT_BEAT_')]
+    assert len(beaten) == 13 and all(events[name] for name in beaten)
+    assert events['EVENT_GOT_DOME_FOSSIL'] is False and events['EVENT_GOT_HELIX_FOSSIL'] is False
+
+
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),
                                          ('FAST', 800), ('SLOW', 1250)])
 def test_growth_curve_start_experience(growth, wanted):

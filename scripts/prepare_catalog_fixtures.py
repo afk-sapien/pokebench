@@ -92,6 +92,14 @@ ELITE_FOUR_LEVEL = 56
 ELITE_FOUR_PARTY = [mon(species, ELITE_FOUR_LEVEL, moves) for species, moves in (
     ('JOLTEON', [85, 87, 24, 98]), ('ALAKAZAM', [94, 60, 105, 115]), ('LAPRAS', [58, 57, 34, 85]),
     ('RHYDON', [89, 157, 34, 30]), ('VENUSAUR', [75, 72, 34, 79]), ('SNORLAX', [34, 58, 89, 156]))]
+# Moves as at this level in Red: Charmander has Scratch and Growl, and Ember from 9.
+# Pidgey has Gust, and Sand-Attack from 5. At level 4 the scripted reference blacks out on B2F.
+MT_MOON_LEVEL = 5
+MT_MOON_PARTY = [mon('CHARMANDER', MT_MOON_LEVEL, [10, 45] + [52] * (MT_MOON_LEVEL >= 9)),
+                 mon('PIDGEY', MT_MOON_LEVEL, [16] + [28] * (MT_MOON_LEVEL >= 5))]
+MT_MOON_TRAINERS = (*(f'EVENT_BEAT_MT_MOON_1_TRAINER_{i}' for i in range(7)),
+                    *(f'EVENT_BEAT_MT_MOON_3_TRAINER_{i}' for i in range(4)),
+                    'EVENT_BEAT_MT_MOON_EXIT_SUPER_NERD', 'EVENT_BEAT_ROUTE_4_TRAINER_0')
 RECIPES.update({
     'navigation-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                        events={name: False for name in VICTORY_ROAD_SWITCHES}),
@@ -113,6 +121,12 @@ RECIPES.update({
     # The League start in Lorelei's room, with its own party swapped out and the bag emptied.
     'battle-elite-four-no-items': {'source': 'data/red-ability-v4/fixtures/league', 'map_id': 245,
                                    'party': ELITE_FOUR_PARTY, 'bag': [], 'money': 0},
+    # The Mt. Moon Pokemon Center with both fossils still on B2F. Every trainer on the way is beaten,
+    # and wild encounters stay on. No money, so the Magikarp seller is out of reach.
+    'battle-mt-moon-underleveled': archive(134,68,position=[3,7],party=MT_MOON_PARTY,bag=[[20,2]],money=0,
+                                           events={**{name: True for name in MT_MOON_TRAINERS},
+                                                   'EVENT_GOT_DOME_FOSSIL': False,
+                                                   'EVENT_GOT_HELIX_FOSSIL': False}),
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'

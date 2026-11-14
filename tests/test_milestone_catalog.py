@@ -6,7 +6,7 @@ from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
 SHIPPED = {'navigation-victory-road', 'navigation-seafoam-islands', 'navigation-silph-co',
-           'navigation-pewter-to-lavender', 'battle-elite-four-no-items'}
+           'navigation-pewter-to-lavender', 'battle-elite-four-no-items', 'battle-mt-moon-underleveled'}
 
 
 def shipped():
@@ -97,4 +97,16 @@ def test_elite_four_milestones_score_each_league_win_in_order():
     # The last point needs the Champion beaten and a new Hall of Fame record in its room (map 118).
     assert task['milestones'][-1]['check'] == {'map': 118, 'champion': True, 'hall_of_fame': True}
     # League battles are the task, so no battle-free condition applies.
+    assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED
+
+
+def test_mt_moon_milestones_follow_the_floors_with_wild_encounters_on():
+    task = shipped()['battle-mt-moon-underleveled']
+    assert [row['id'] for row in task['milestones']] == [
+        'first-basement', 'second-basement', 'route-4-east', 'cerulean-city']
+    # Mt. Moon B1F, B2F, Route 4 and Cerulean City.
+    assert [row['check']['map'] for row in task['milestones']] == [60, 61, 15, 3]
+    # Route 4 east of the Mt. Moon exit at (24, 5), as in Pewter to Lavender.
+    assert task['milestones'][2]['check']['area'] == [24, 0, 89, 17]
+    # Wild battles are the task, so no battle-free condition applies.
     assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED

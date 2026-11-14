@@ -6,7 +6,7 @@ PokeBench evaluates how AI agents play Pokemon Red. Models choose routes, battle
 
 The current catalog is split into two benchmarks with separate rankings.
 
-- **PokeBench Gen 1 Short** has **52 tasks**: 51 focused tasks plus one inventory variant, across navigation, battle tactics, manual menu operations, preparation and quests. One battle task has three fixed starting variants, so each model plays **54 starts**. Five longer tasks score the share of their ordered milestones reached, from 0 to 1. Scores are category-balanced.
+- **PokeBench Gen 1 Short** has **53 tasks**: 52 focused tasks plus one inventory variant, across navigation, battle tactics, manual menu operations, preparation and quests. One battle task has three fixed starting variants, so each model plays **55 starts**. Six longer tasks score the share of their ordered milestones reached, from 0 to 1. Scores are category-balanced.
 - **PokeBench Gen 1 Long** is one continuous full-game campaign with 50 scored milestones worth 1,000 points. The comparison budget is 2,000 decisions and 30M tokens per model.
 
 Short and Long scores are never averaged together. Results and replays are on the [public site](https://afk-sapien.github.io/pokebench/). See the [catalog](docs/catalog/README.md) and [long runs](docs/long-runs.md).
