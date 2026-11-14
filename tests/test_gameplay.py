@@ -339,6 +339,32 @@ def test_local_map_marks_pair_floors_the_same_from_any_position():
     assert ': ,' not in plain['legend'] and plain['legend']['@'] == 'you'
 
 
+# Victory Road 1F, 2F and 3F draw each boulder switch square with bottom-left tile 0x2D.
+CAVERN_SWITCH = 0x2D
+
+
+def test_local_map_marks_the_visible_cave_floor_switch_like_a_floor_arrow():
+    cat = catalog()
+    world = cat['world']['0']
+    world['tileset'], world['passable'] = 'CAVERN', [1, 0x05, 0x20, CAVERN_SWITCH]
+    world['pair_floors'] = pair_floors(CAVERN_ROWS, world['passable'])
+    view = pair_view(memory(), cat, {(6, 4): CAVERN_SWITCH, (2, 1): CAVERN_SWITCH})
+    assert view['rows'][4][6] == '*' and view['rows'][1][2] == '*'
+    assert view['legend']['*'] == 'visible floor switch'
+    # Only the cave tileset draws 0x2D as a switch.
+    world['tileset'] = 'FOREST'
+    other = pair_view(memory(), cat, {(6, 4): CAVERN_SWITCH})
+    assert other['rows'][4][6] == '.' and '*' not in other['legend']
+    assert '*' not in pair_view(memory(), catalog(), {})['legend']
+
+
+def test_known_map_explains_the_floor_switch_only_when_it_shows_it():
+    history = {'tiles': {'0': {'4,4': '.', '5,4': '*'}}}
+    assert known_map(history, 0, 4, 4)['legend'].endswith(' * observed floor switch.')
+    history = {'tiles': {'0': {'4,4': '.', '5,4': '.'}}}
+    assert 'floor switch' not in known_map(history, 0, 4, 4)['legend']
+
+
 def test_known_map_explains_pair_floors_only_when_it_shows_them():
     history = {'tiles': {'0': {'4,4': '.', '5,4': ':', '6,4': ','}}}
     assert known_map(history, 0, 4, 4)['legend'].endswith(' : and , walkable floor, no direct step between them.')

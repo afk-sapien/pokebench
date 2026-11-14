@@ -210,8 +210,10 @@ def local_map(memory, catalog, ui):
     left, top = x - 4, y - 4
     tiles = read_screen(memory)["tiles"]
     # Live bottom-left subtiles include changes such as cut trees and opened doors.
+    # Cave tile 0x2D is the round floor switch, drawn only at the four Victory Road switches.
     arrows = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
-              "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"}}.get(world.get("tileset"), {})
+              "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"},
+              "CAVERN": {0x2D: "*"}}.get(world.get("tileset"), {})
     floors = world.get("pair_floors", {})
     # Read only on-screen graphics. Never include scripted paths or destinations.
     grid = [[arrows.get(tiles[(2 * row + 1) * 20 + 2 * col],
@@ -246,6 +248,8 @@ def local_map(memory, catalog, ui):
     legend = {".": "walkable terrain", "#": "blocked terrain", "@": "you", "O": "visible object",
               "S": "fixed interactable", "E": "exit or stairs, destination unknown",
               "^ v < >": "visible floor arrows pointing up, down, left, right"}
+    if any("*" in row for row in grid):
+        legend["*"] = "visible floor switch"
     if floors:
         legend[": ,"] = PAIR_LEGEND
         # "@" hides the floor under the player, and that floor decides which steps are refused.
@@ -268,6 +272,8 @@ def known_map(history, map_id, x, y):
     legend = "? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable, ^ v < > observed floor arrows, @ current position. Historical terrain may change."
     if any(":" in row or "," in row for row in rows):
         legend += " : and , walkable floor, no direct step between them."
+    if any("*" in row for row in rows):
+        legend += " * observed floor switch."
     return {"map_id": int(map_id), "origin": {"x": left, "y": top}, "rows": rows, "legend": legend}
 
 
