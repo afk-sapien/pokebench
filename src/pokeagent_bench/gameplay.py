@@ -57,6 +57,14 @@ WATER_LEGEND = "water. Blocked on foot, crossable with Surf"
 # appear on those floors only at the doors. An opened door is redrawn as floor.
 SILPH_CO_11F = 235
 CARD_KEY_DOOR_MAPS = frozenset({207, 208, 209, 210, 211, 212, 213, 233, 234, SILPH_CO_11F})
+# Cut trees (UsedCut): the game cuts a square whose bottom-left tile is 0x3D in the overworld tileset
+# or 0x50 in the gym tileset. In the pret blocksets every block with such a square is a Cut tree
+# block, so the tile marks the trees only. A cut tree is redrawn as grass or floor.
+CUT_TREE_TILES = {"OVERWORLD": 0x3D, "GYM": 0x50}
+CUT_TREE_LEGEND = "small tree. Blocked, Cut clears it"
+# wMapPalOffset is nonzero in a dark cave until Flash. The game then draws the background nearly
+# black, so the terrain is hidden from the player and the text map is hidden too.
+W_MAP_PAL_OFFSET = 0xD35D
 TYPES = {0: "Normal", 1: "Fighting", 2: "Flying", 3: "Poison", 4: "Ground", 5: "Rock",
          7: "Bug", 8: "Ghost", 20: "Fire", 21: "Water", 22: "Grass", 23: "Electric",
          24: "Psychic", 25: "Ice", 26: "Dragon"}
@@ -212,6 +220,8 @@ def owned_mon(mon, catalog, slot):
 def local_map(memory, catalog, ui):
     if ui["kind"] != "overworld" or memory[W_IS_IN_BATTLE]:
         return {"available": False, "reason": "Map is covered by the current interface."}
+    if memory[W_MAP_PAL_OFFSET]:
+        return {"available": False, "reason": "Too dark to see the terrain."}
     sprites = read_sprites(memory)
     if sprites[0]["walk_counter"]:
         return {"available": False, "reason": "Player is between tiles. Wait for the step to finish."}
@@ -227,6 +237,8 @@ def local_map(memory, catalog, ui):
     marks = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
              "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"},
              "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
+    if world.get("tileset") in CUT_TREE_TILES:
+        marks = {**marks, CUT_TREE_TILES[world["tileset"]]: "T"}
     if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS:
         marks = {**marks, 0x18: "D", 0x24: "D", **({0x5E: "D"} if memory[W_CUR_MAP] == SILPH_CO_11F else {})}
     floors = world.get("pair_floors", {})
@@ -276,6 +288,8 @@ def local_map(memory, catalog, ui):
         legend["~"] = WATER_LEGEND
     if any("D" in row for row in grid):
         legend["D"] = "visible closed door"
+    if any("T" in row for row in grid):
+        legend["T"] = CUT_TREE_LEGEND
     if floors:
         legend[": ,"] = PAIR_LEGEND
         # "@" hides the floor under the player, and that floor decides which steps are refused.
@@ -306,6 +320,8 @@ def known_map(history, map_id, x, y):
         legend += " ~ observed water, crossable with Surf."
     if any("D" in row for row in rows):
         legend += " D observed closed door."
+    if any("T" in row for row in rows):
+        legend += " T observed small tree, Cut clears it."
     return {"map_id": int(map_id), "origin": {"x": left, "y": top}, "rows": rows, "legend": legend}
 
 

@@ -437,6 +437,39 @@ def test_known_map_explains_the_closed_door_only_when_it_shows_it():
     assert 'door' not in known_map({'tiles': {'0': {'4,4': '.', '5,4': '#'}}}, 0, 4, 4)['legend']
 
 
+@pytest.mark.parametrize('tileset, tile', [('OVERWORLD', 0x3D), ('GYM', 0x50)])
+def test_local_map_marks_the_visible_cut_trees(tileset, tile):
+    cat = catalog()
+    cat['world']['0']['tileset'] = tileset
+    view = pair_view(memory(), cat, {(6, 4): tile, (2, 4): 0x60})
+    assert view['rows'][4][6] == 'T' and view['rows'][4][2] == '#'
+    assert view['legend']['T'] == 'small tree. Blocked, Cut clears it'
+    assert 'T' not in pair_view(memory(), cat, {})['legend']
+
+
+@pytest.mark.parametrize('tileset, tile', [('GYM', 0x3D), ('FOREST', 0x3D), ('OVERWORLD', 0x50), ('CAVERN', 0x50)])
+def test_local_map_keeps_tiles_that_are_not_cut_trees_as_before(tileset, tile):
+    # Gym tile 0x3D is a floor arrow. The other tilesets have no Cut tree tile.
+    cat = catalog()
+    cat['world']['0']['tileset'] = tileset
+    view = pair_view(memory(), cat, {(6, 4): tile})
+    assert view['rows'][4][6] != 'T' and 'T' not in view['legend']
+
+
+def test_local_map_is_hidden_in_a_dark_cave_until_flash():
+    # Rock Tunnel sets wMapPalOffset to 6 on entry from outside, and Flash clears it.
+    mem = memory()
+    mem[0xD35D] = 6
+    assert local_map(mem, catalog(), {'kind': 'overworld'}) == {'available': False, 'reason': 'Too dark to see the terrain.'}
+    mem[0xD35D] = 0
+    assert local_map(mem, catalog(), {'kind': 'overworld'})['available']
+
+
+def test_known_map_explains_the_cut_tree_only_when_it_shows_it():
+    assert known_map({'tiles': {'0': {'4,4': '.', '5,4': 'T'}}}, 0, 4, 4)['legend'].endswith(' T observed small tree, Cut clears it.')
+    assert 'tree' not in known_map({'tiles': {'0': {'4,4': '.', '5,4': '#'}}}, 0, 4, 4)['legend']
+
+
 def test_known_map_explains_the_floor_switch_only_when_it_shows_it():
     history = {'tiles': {'0': {'4,4': '.', '5,4': '*'}}}
     assert known_map(history, 0, 4, 4)['legend'].endswith(' * observed floor switch.')
