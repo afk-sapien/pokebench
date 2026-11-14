@@ -6,6 +6,18 @@ under its MIT License. The original decoder was adapted from
 [PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 AFK Sapien,
 under the MIT License reproduced in [LICENSE](LICENSE).
 
+The game table generators in `src/pokeagent_bench/game_data_tables.py` and
+`src/pokeagent_bench/game_data_strategy.py` are copied from
+[PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 AFK Sapien,
+under the MIT License. They read the public
+[pret/pokered](https://github.com/pret/pokered) disassembly on the user's machine.
+No pret/pokered file is stored in this repository.
+
+The replay page embeds the PokeSim Panel typeface from
+[PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 the PokeSim
+authors, under the MIT License. It is stored as base64 text in
+`src/pokeagent_bench/replay_assets/pokesim-panel.woff2.b64`.
+
 WRAM addresses and event indices correspond to the
 [pret/pokered disassembly](https://github.com/pret/pokered/tree/a1a22aaf84d1675bcdbaeb194592379d586d838e).
 No cartridge code, ROM, generated game tables, or disassembly source is
@@ -13,7 +25,7 @@ included in the application source distribution. The results website includes
 selected gameplay screenshots as research evidence. Those images retain their
 original rights and are not covered by this project's MIT license.
 
-PyBoy and other Python dependencies retain their own licenses and are installed
+PyBoy RS and other Python dependencies retain their own licenses and are installed
 separately by the package manager. This repository distributes application source
 and a dependency lockfile, not a bundled emulator binary or container image.
 Review dependency notices before creating a bundled distribution.
