@@ -11,6 +11,8 @@ from .action_policy import ASSISTED, MANUAL, SKILLS
 from .challenges import validate_objective
 
 CATEGORIES = ('navigation', 'battle', 'operations', 'preparation', 'objectives', 'campaign')
+# Hard tasks live in catalogs/hard, so the Short and Long catalogs above stay unchanged.
+HARD_CATEGORIES = ('navigation', 'battle', 'operations', 'objectives')
 CATEGORY_REASSIGNMENTS = {'objectives-recover-earlier-mistake': 'operations'}
 REQUIRED = {'id', 'title', 'difficulty', 'tested_skill', 'mode', 'action_policy', 'objective',
             'start', 'success', 'failure', 'variants', 'token_limit', 'existing_task', 'requirements',
@@ -80,25 +82,76 @@ def validate_category(category):
     return deepcopy(category)
 
 
-def load_catalog(category=None, *, include_retired=False):
+def _hard_root():
+    return files('pokeagent_bench').joinpath('catalogs').joinpath('hard')
+
+
+def catalog_files():
+    """Every catalog file, Short and Long first, then Hard."""
+    root = files('pokeagent_bench').joinpath('catalogs')
+    hard = _hard_root()
+    return ([path for path in root.iterdir() if path.name.endswith('.json')]
+            + ([path for path in hard.iterdir() if path.name.endswith('.json')] if hard.is_dir() else []))
+
+
+def validate_hard_category(category):
+    """Hard tasks are gameplay tasks with a decision cap and ordered private milestones."""
+    from .milestone_runtime import validate_milestones
+    group = validate_category(category)
+    if group['category'] not in HARD_CATEGORIES:
+        raise ValueError('Hard tasks use the four ranked categories')
+    for task in group['evals']:
+        identifier = task['id']
+        if task['difficulty'] not in ('hard', 'stretch'):
+            raise ValueError(f'{identifier}: Hard tasks are hard or stretch')
+        if 'decision_limit' not in task:
+            raise ValueError(f'{identifier}: Hard tasks need a decision cap')
+        objective = task['objective'] or {}
+        if objective.get('kind') != 'catalog-task' or objective.get('task_id') != identifier:
+            raise ValueError(f'{identifier}: Hard tasks use their own catalog evaluator')
+        validate_milestones(task.get('milestones'))
+    return group
+
+
+def load_catalog(category=None, *, include_retired=False, hard=False):
     if category == 'quests':
         category = 'objectives'
-    if category is not None and category not in CATEGORIES:
+    if category is not None and category not in (HARD_CATEGORIES if hard else CATEGORIES):
         raise ValueError('Unknown category')
-    selected = (category,) if category else CATEGORIES
-    root = files('pokeagent_bench').joinpath('catalogs')
-    groups = [validate_category(json.loads(root.joinpath(key + '.json').read_text())) for key in selected]
+    if hard:
+        root = _hard_root()
+        selected = [key for key in ((category,) if category else HARD_CATEGORIES)
+                    if root.joinpath(key + '.json').is_file()]
+        groups = [validate_hard_category(json.loads(root.joinpath(key + '.json').read_text())) for key in selected]
+    else:
+        selected = (category,) if category else CATEGORIES
+        root = files('pokeagent_bench').joinpath('catalogs')
+        groups = [validate_category(json.loads(root.joinpath(key + '.json').read_text())) for key in selected]
     if not include_retired:
         for group in groups:
             group['evals'] = [task for task in group['evals'] if task.get('active', True)]
     return groups
 
 
+@cache
+def _hard_definitions():
+    tasks = {task['id']: task for group in load_catalog(include_retired=True, hard=True) for task in group['evals']}
+    short = {task['id'] for group in load_catalog(include_retired=True) for task in group['evals']}
+    if short & tasks.keys():
+        raise ValueError('Hard task IDs must differ from Short and Long task IDs')
+    return tasks
+
+
+def hard_tasks():
+    """Task ids of PokeBench Hard, which never enter Short planning or ranking."""
+    return frozenset(_hard_definitions())
+
+
 def summary(category=None, fixtures=None, *, benchmark=None):
-    from .benchmark_tracks import for_category, validate
-    categories = load_catalog(category)
-    if benchmark is not None:
-        validate(benchmark)
+    from .benchmark_tracks import HARD, for_category, validate
+    hard = benchmark is not None and validate(benchmark) == HARD
+    categories = load_catalog(category, hard=hard)
+    if benchmark is not None and not hard:
         categories = [group for group in categories if for_category(group['category']) == benchmark]
         if not categories:
             raise ValueError('Category belongs to the other benchmark')
@@ -123,7 +176,7 @@ def summary(category=None, fixtures=None, *, benchmark=None):
             'categories': categories}
     if fixtures is not None:
         from .catalog_execution import inventory
-        implementation = inventory(fixtures, category=category)
+        implementation = inventory(fixtures, category=category, hard=True) if hard else inventory(fixtures, category=category)
         by_id = {row['id']: row for row in implementation['tasks']}
         preparation_path = Path(fixtures) / 'preparation-reference-summary.json'
         preparation = (json.loads(preparation_path.read_text()) if preparation_path.is_file() else {})
@@ -152,8 +205,9 @@ def summary(category=None, fixtures=None, *, benchmark=None):
 @cache
 def retired_tasks():
     """Task ids kept in the catalog for history but no longer run or scored."""
-    return frozenset(task['id'] for group in load_catalog(include_retired=True)
-                     for task in group['evals'] if not task.get('active', True))
+    return frozenset([task['id'] for group in load_catalog(include_retired=True)
+                      for task in group['evals'] if not task.get('active', True)]
+                     + [task_id for task_id, task in _hard_definitions().items() if not task.get('active', True)])
 
 
 def task_definition(task_id):
@@ -162,6 +216,8 @@ def task_definition(task_id):
         for task in category['evals']:
             if task['id'] == task_id:
                 return task
+    if task_id in _hard_definitions():
+        return deepcopy(_hard_definitions()[task_id])
     raise ValueError(f'Unknown catalog task: {task_id}')
 
 

@@ -153,7 +153,9 @@ class Session:
             if campaign_start['party'] or campaign_start['badges'] or campaign_start['hall_of_fame'] or campaign_start['map_id'] != 38:
                 raise ValueError('Full-game campaigns must start in the bedroom without a starter or badges')
             self.evaluator = CampaignTracker(json.loads(encoded(campaign_start)))
-        self.score_max = 1 if self.objective else 75 if goal == "first-gym" else 1000
+        from .milestone_runtime import MilestoneEvaluator
+        self.score_max = (self.evaluator.score_max if isinstance(self.evaluator, MilestoneEvaluator)
+                          else 1 if self.objective else 75 if goal == "first-gym" else 1000)
         if not self.objective and not self.campaign_tracking and (self.evaluator.initial_keys or self.evaluator.baseline["hall_of_fame"]):
             raise ValueError("Scored runs require an opening scenario without earned milestones")
         output.mkdir(parents=True, exist_ok=False)
@@ -180,6 +182,9 @@ class Session:
             self.manifest['evaluation_spec_sha256'] = digest(encoded(task))
             self.manifest['benchmark_track'] = 'pokebench-long' if self.campaign_tracking else 'pokebench'
             self.manifest['scoring_protocol'] = 'campaign-progress-v1' if self.campaign_tracking else 'catalog-tasks-v1'
+            if isinstance(self.evaluator, MilestoneEvaluator):
+                from .milestone_runtime import PROTOCOL
+                self.manifest['benchmark_track'], self.manifest['scoring_protocol'] = 'pokebench-hard', PROTOCOL
         if track == "gameplay":
             from .gameplay import POLICY, catalog_hash
             self.manifest["observation_policy"] = POLICY

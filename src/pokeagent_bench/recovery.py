@@ -15,6 +15,10 @@ from .scoring import Evaluator
 from .challenges import ChallengeEvaluator, PreparationEvaluator
 from .campaign_runtime import CampaignTracker
 from .catalog_runtime import CatalogEvaluator
+from .milestone_runtime import MilestoneEvaluator
+
+EVALUATORS = {kind.__name__: kind for kind in (Evaluator, ChallengeEvaluator, PreparationEvaluator, CatalogEvaluator,
+                                                MilestoneEvaluator, CampaignTracker)}
 
 
 LOGS = ('actions.jsonl', 'decisions.jsonl', 'memory.jsonl')
@@ -28,7 +32,7 @@ FIELDS = ('campaign_tracking', 'frame', 'actions', 'notes', 'reason', 'operation
 def pack(value):
     if isinstance(value, bytes):
         return {'t': 'bytes', 'v': base64.b64encode(value).decode()}
-    if isinstance(value, (Evaluator, ChallengeEvaluator, PreparationEvaluator, CatalogEvaluator, CampaignTracker)):
+    if type(value) in EVALUATORS.values():
         return {'t': type(value).__name__, 'v': pack(vars(value))}
     if isinstance(value, dict):
         kind = 'Counter' if isinstance(value, Counter) else 'OrderedDict' if isinstance(value, OrderedDict) else 'dict'
@@ -44,10 +48,8 @@ def unpack(value):
     kind, content = value['t'], value['v']
     if kind == 'bytes':
         return base64.b64decode(content, validate=True)
-    if kind in ('Evaluator', 'ChallengeEvaluator', 'PreparationEvaluator', 'CatalogEvaluator', 'CampaignTracker'):
-        result = object.__new__({'Evaluator': Evaluator, 'ChallengeEvaluator': ChallengeEvaluator,
-                               'PreparationEvaluator': PreparationEvaluator, 'CatalogEvaluator': CatalogEvaluator,
-                               'CampaignTracker': CampaignTracker}[kind])
+    if kind in EVALUATORS:
+        result = object.__new__(EVALUATORS[kind])
         result.__dict__.update(unpack(content))
         return result
     if kind in ('dict', 'Counter', 'OrderedDict'):
@@ -175,7 +177,8 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
         session.tested_skill = manifest.get("tested_skill", tested_skill(manifest.get("scenario", {})))
         session.limits, session.evaluator = Limits(**saved['limits']), saved['evaluator']
         session.objective = getattr(session.evaluator, 'objective', None)
-        session.score_max = 1 if session.objective else 75 if session.goal == 'first-gym' else 1000
+        session.score_max = (session.evaluator.score_max if isinstance(session.evaluator, MilestoneEvaluator)
+                             else 1 if session.objective else 75 if session.goal == 'first-gym' else 1000)
         session.clock, session.started = clock, clock() - saved['elapsed']
         session.ended, session.reason, session.closed = None, None, False
         session.lock, session.run_lease = threading.RLock(), lease

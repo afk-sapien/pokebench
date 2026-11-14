@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 import re
 
-from .benchmark_tracks import LONG, NAMES, SHORT, for_category
+from .benchmark_tracks import HARD, LONG, NAMES, SHORT, for_task
 from .catalog_batch import plan, report, run_batch
 from .catalog_execution import PROVIDERS, inventory
 from .core import write_json
@@ -17,14 +17,16 @@ SUITES = {
     'smoke': (SHORT, 500_000, ('preparation-lead-selection', 'battle-heal-switch-attack-tradeoff', 'battle-wild-basics')),
     'short': (SHORT, 60_000_000, None),
     'long': (LONG, 30_000_000, None),
+    'hard': (HARD, 30_000_000, None),
 }
 LONG_DECISIONS = 2000
-# The published Short runs used low effort and the published Long runs medium.
-EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
+# The published Short runs used low effort and the published Long runs medium. Hard follows Short.
+EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium', 'hard': 'low'}
 SCALE = {
     'smoke': 'Two leaderboard models used about 40K tokens on these three tasks.',
     'short': 'Two leaderboard models used 27M and 49M tokens on this suite.',
     'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first.',
+    'hard': 'No model has run this suite yet. Each task stops at its decision or token cap.',
 }
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
 
@@ -56,8 +58,11 @@ def locate(data, rom):
 
 def new_plan(suite, fixtures, provider, model):
     benchmark, _, fixed = SUITES[suite]
-    rows = [row for row in inventory(fixtures)['tasks'] if for_category(row['category']) == benchmark]
+    listed = inventory(fixtures, hard=True) if benchmark == HARD else inventory(fixtures)
+    rows = [row for row in listed['tasks'] if for_task(row['id'], row['category']) == benchmark]
     tasks = list(fixed) if fixed else [row['id'] for row in rows if row['runnable']]
+    if not tasks:
+        raise ValueError(f'No {NAMES[benchmark]} tasks are ready yet')
     manifest = plan(fixtures, [f'{provider}:{model}'], tasks, benchmark=benchmark)
     manifest['suite'] = suite
     manifest['held_tasks'] = [] if fixed else sorted(row['id'] for row in rows if not row['runnable'])

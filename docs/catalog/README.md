@@ -12,6 +12,8 @@ categories. Its ranked score averages four of them: navigation, battle, operatio
 and quests. Preparation is scored and reported next to the ranked score, but it is
 not ranked. **PokeBench Long** contains only the continuous campaign. They use
 separate batches, token ceilings and reports. See [track commands](../history/benchmark-tracks-v053.md).
+**PokeBench Hard** is a separate table of longer tasks scored by ordered milestones.
+See [PokeBench Hard](hard.md).
 
 Navigation tests spatial problems. Quests test NPC instructions and meaningful
 prerequisite sequences. Travel within a quest is incidental, not another score.

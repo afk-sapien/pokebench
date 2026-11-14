@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .catalog_execution import PROVIDERS, _read, inventory, run_task
 from .core import write_json
-from .benchmark_tracks import SHORT, LONG, NAMES, UNRANKED_CATEGORIES, for_category, ranked_average, validate
+from .benchmark_tracks import SHORT, LONG, HARD, NAMES, UNRANKED_CATEGORIES, for_task, ranked_average, validate
 from .evaluation_catalog import retired_tasks, task_definition
 
 
@@ -12,7 +12,8 @@ def plan(fixtures, models, tasks=None, repeats=1, *, benchmark=SHORT):
     validate(benchmark)
     if type(repeats) is not int or repeats < 1:
         raise ValueError('Repeats must be a positive integer')
-    available = [row for row in inventory(fixtures)['tasks'] if for_category(row['category']) == benchmark]
+    listed = inventory(fixtures, hard=True) if benchmark == HARD else inventory(fixtures)
+    available = [row for row in listed['tasks'] if for_task(row['id'], row['category']) == benchmark]
     selected = set(tasks or [row['id'] for row in available])
     unknown = selected - {row['id'] for row in available}
     if unknown:
@@ -104,7 +105,7 @@ def report(batch):
     rows = []
     for cell in manifest['cells']:
         raw = cell_result(batch / cell['id'])
-        benchmark = for_category(cell['category'])
+        benchmark = for_task(cell.get('task_id'), cell['category'])
         row = {**cell, 'benchmark': benchmark, 'state': 'pending', 'value': None, 'tokens': 0}
         if raw is not None:
             row['tokens'] = token_usage(raw)
@@ -151,14 +152,15 @@ def report(batch):
         for (category, _), scores in by_task.items():
             categories[category].append(sum(scores) / len(scores))
         category_scores = {key: sum(scores) / len(scores) for key, scores in categories.items()}
+        ranked = benchmark in (SHORT, HARD)
         summaries.append({'benchmark': benchmark, 'name': NAMES[benchmark], 'provider': provider, 'model': model,
                           'completed': sum(row['state'] == 'finished' for row in values),
                           'planned': len(values), 'evaluation_errors': sum(row['state'] == 'evaluation_error' for row in values),
                           'tokens': sum(row['tokens'] for row in values),
                           'accounting_complete': all(row.get('accounting_complete', True) for row in values),
-                          'category_scores': category_scores if benchmark == SHORT else {},
+                          'category_scores': category_scores if ranked else {},
                           'unranked_categories': list(UNRANKED_CATEGORIES) if benchmark == SHORT else [],
-                          'available_category_average': ranked_average(category_scores) if benchmark == SHORT else None})
+                          'available_category_average': ranked_average(category_scores) if ranked else None})
         if benchmark == LONG:
             finished = [row for row in values if row['state'] == 'finished']
             summaries[-1]['campaign_mean_progress'] = sum(row['value'] for row in finished) / len(finished) if finished else None
@@ -166,7 +168,7 @@ def report(batch):
             summaries[-1]['campaign_runs'] = [{key: row.get(key) for key in ('id', 'state', 'campaign', 'tokens', 'accounting_complete')} for row in values]
     return {'protocol': manifest['protocol'], 'benchmark': manifest.get('benchmark'),
             'benchmarks': sorted({row['benchmark'] for row in rows}), 'models': summaries, 'cells': rows,
-            'note': 'Available results only. Equal task-family weights within categories. Inventory variants share their parent task weight. The PokeBench average covers navigation, battle, operations and objectives. Preparation is scored and reported, but it is not ranked. Retired tasks are not scored. PokeBench reports focused-task performance. PokeBench Long reports campaign progress and Champion completion separately. These scores are never averaged together. Check coverage before comparing averages.'}
+            'note': 'Available results only. Equal task-family weights within categories. Inventory variants share their parent task weight. The PokeBench average covers navigation, battle, operations and objectives. Preparation is scored and reported, but it is not ranked. Retired tasks are not scored. PokeBench reports focused-task performance. PokeBench Long reports campaign progress and Champion completion separately. PokeBench Hard scores each task by the share of its ordered milestones reached and averages the ranked categories it has. These scores are never averaged together. Check coverage before comparing averages.'}
 
 
 def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repeats=1,
@@ -183,7 +185,7 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         manifest = _read(output / 'plan.json')
         if benchmark is not None:
             validate(benchmark)
-            if any(for_category(cell['category']) != benchmark for cell in manifest['cells']):
+            if any(for_task(cell.get('task_id'), cell['category']) != benchmark for cell in manifest['cells']):
                 raise ValueError('Saved batch belongs to a different benchmark')
     else:
         manifest = plan(fixtures, models or [], tasks, repeats, benchmark=benchmark or SHORT)

@@ -30,10 +30,9 @@ def validate_objective(value):
     if not isinstance(objective["description"], str) or not 1 <= len(objective["description"]) <= 1000:
         raise ValueError("An objective needs a short player-facing description")
     if kind in ('catalog-task', 'preparation-submission'):
-        from importlib.resources import files
         import json
-        tasks = {task['id']: task for path in files('pokeagent_bench').joinpath('catalogs').iterdir()
-                 if path.name.endswith('.json') for task in json.loads(path.read_text())['evals']}
+        from .evaluation_catalog import catalog_files
+        tasks = {task['id']: task for path in catalog_files() for task in json.loads(path.read_text())['evals']}
         task = tasks.get(objective['task_id'])
         if task is None or (task['mode'] == 'preparation') != (kind == 'preparation-submission') or task['id'] == 'campaign-full-game':
             raise ValueError('Unknown task or incorrect catalog execution mode')
@@ -73,6 +72,11 @@ def validate_objective(value):
 def evidence(engine, objective=None):
     state = engine.evidence()
     if objective and objective["kind"] == "catalog-task":
+        from .evaluation_catalog import hard_tasks
+        if objective["task_id"] in hard_tasks():
+            from .milestone_runtime import milestone_evidence
+            state["catalog"] = milestone_evidence(engine, objective["task_id"])
+            return state
         from .catalog_runtime import catalog_evidence
         state["catalog"] = catalog_evidence(engine, objective["task_id"])
         return state
@@ -331,6 +335,10 @@ class PreparationEvaluator:
 def create_challenge_evaluator(initial, objective):
     objective = validate_objective(objective)
     if objective['kind'] == 'catalog-task':
+        from .evaluation_catalog import hard_tasks
+        if objective['task_id'] in hard_tasks():
+            from .milestone_runtime import MilestoneEvaluator
+            return MilestoneEvaluator(initial['catalog'], objective)
         from .catalog_runtime import CatalogEvaluator
         return CatalogEvaluator(initial['catalog'], objective)
     if objective['kind'] == 'preparation-submission':

@@ -113,7 +113,7 @@ def parser():
         if name == "run":
             command.add_argument("--journal", action="store_true", help="Enable the bounded agent-authored journal for compact Codex")
             command.add_argument("--pause-after-decisions", type=int)
-            command.add_argument("--suite", choices=("smoke", "short", "long"),
+            command.add_argument("--suite", choices=("smoke", "short", "long", "hard"),
                                  help="Benchmark a model on a whole suite. Smoke is a three task setup check")
             command.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
             command.add_argument("--budget", type=int, help="Suite reference token budget. Passing it warns, it never "

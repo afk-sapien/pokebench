@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 
 from .core import Limits, digest, encoded, write_json
-from .evaluation_catalog import load_catalog, task_definition
+from .evaluation_catalog import hard_tasks, load_catalog, task_definition
 
 PROVIDERS = ('codex', 'claude', 'openai-compatible')
 
@@ -30,11 +30,14 @@ def preparation_binding(fixtures, task_id):
     return value
 
 
-def inventory(fixtures, *, category=None):
-    """Report actual frozen fixtures without mistaking old reuse candidates for them."""
+def inventory(fixtures, *, category=None, hard=False):
+    """Report actual frozen fixtures without mistaking old reuse candidates for them.
+
+    Short and Long tasks by default. hard=True lists the PokeBench Hard tasks instead.
+    """
     root = Path(fixtures)
     result = []
-    for group in load_catalog(category):
+    for group in load_catalog(category, hard=hard):
         for task in group['evals']:
             rows = []
             for path in scenarios(root, task['id']):
@@ -84,19 +87,20 @@ def select_scenario(fixtures, task_id, variant='default'):
     matches = [path for path in candidates if (path.name == task_id and variant == 'default') or path.name == variant]
     if not matches:
         raise ValueError(f'No fixture for {task_id}, variant {variant}')
-    row = next(row for row in inventory(fixtures)['tasks'] if row['id'] == task_id)
+    listed = inventory(fixtures, hard=True) if task_id in hard_tasks() else inventory(fixtures)
+    row = next(row for row in listed['tasks'] if row['id'] == task_id)
     selected = next(v for v in row['variants'] if v['path'] == str(matches[0]))
     if selected['issues']:
         raise ValueError('. '.join(selected['issues']))
     return matches[0]
 
 
-def validate_fixtures(fixtures, rom):
+def validate_fixtures(fixtures, rom, *, hard=False):
     """Load every frozen native start and construct its actual evaluator."""
     from .challenges import create_challenge_evaluator, evidence
     from .campaign_runtime import CampaignTracker, read_campaign_evidence
     from .session import load_engine
-    result = inventory(fixtures)
+    result = inventory(fixtures, hard=True) if hard else inventory(fixtures)
     for row in result['tasks']:
         for variant in row['variants']:
             if variant['issues']:

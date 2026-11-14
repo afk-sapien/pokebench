@@ -309,6 +309,11 @@ def scoring(task_id):
     """What a suite run of this task must record about how it is played and scored."""
     if task_id == 'campaign-full-game':
         return {'goal': 'campaign', 'track': 'gameplay', 'scoring_protocol': 'campaign-progress-v1', 'score_max': 1000}
+    from .evaluation_catalog import hard_tasks, task_definition
+    if task_id in hard_tasks():
+        from .milestone_runtime import PROTOCOL
+        return {'goal': 'challenge', 'track': 'gameplay', 'scoring_protocol': PROTOCOL,
+                'score_max': len(task_definition(task_id)['milestones'])}
     return {'goal': 'challenge', 'track': 'gameplay', 'scoring_protocol': 'catalog-tasks-v1', 'score_max': 1}
 
 
