@@ -86,6 +86,12 @@ SILPH_DOORS = tuple(f'EVENT_SILPH_CO_{floor}_UNLOCKED_DOOR{suffix}'
 SILPH_CO_7F_RIVAL = 0xA7
 # Charmeleon knows Cut (15) and Pikachu knows Flash (148). Neither knows Fly, Dig or Teleport.
 PEWTER_TO_LAVENDER_PARTY = [mon('CHARMELEON', 28, [10, 52, 15, 43]), mon('PIKACHU', 25, [84, 148, 98, 86])]
+# Six types of cover and two healers (Recover 105, Rest 156). No one-hit knockout, fixed-damage,
+# Hyper Beam or Explosion moves.
+ELITE_FOUR_LEVEL = 56
+ELITE_FOUR_PARTY = [mon(species, ELITE_FOUR_LEVEL, moves) for species, moves in (
+    ('JOLTEON', [85, 87, 24, 98]), ('ALAKAZAM', [94, 60, 105, 115]), ('LAPRAS', [58, 57, 34, 85]),
+    ('RHYDON', [89, 157, 34, 30]), ('VENUSAUR', [75, 72, 34, 79]), ('SNORLAX', [34, 58, 89, 156]))]
 RECIPES.update({
     'navigation-hard-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                             events={name: False for name in VICTORY_ROAD_SWITCHES}),
@@ -104,6 +110,9 @@ RECIPES.update({
     # are shut and Snorlax still blocks Route 12, so Rock Tunnel is the only way to Lavender.
     'navigation-hard-pewter-to-lavender': archive(66,58,position=[3,7],party=PEWTER_TO_LAVENDER_PARTY,bag=[],
                                                   badges=3,events={'EVENT_BEAT_BROCK': True}),
+    # The Short League start in Lorelei's room, with its own party swapped out and the bag emptied.
+    'battle-hard-elite-four': {'source': 'data/red-ability-v4/fixtures/league', 'map_id': 245,
+                               'party': ELITE_FOUR_PARTY, 'bag': [], 'money': 0},
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'

@@ -5,7 +5,7 @@ from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
 SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam', 'navigation-hard-silph-co',
-           'navigation-hard-pewter-to-lavender'}
+           'navigation-hard-pewter-to-lavender', 'battle-hard-elite-four'}
 
 
 def shipped():
@@ -77,3 +77,13 @@ def test_pewter_to_lavender_milestones_follow_mt_moon_the_trees_and_rock_tunnel(
     # Only the route is battle-free. Cerulean City and Nugget Bridge keep their trainers.
     areas = navigation_conditions.AFFECTED[task['id']]
     assert 'ROCK_TUNNEL' in areas and not {'CERULEAN', 'ROUTE_24', 'ROUTE_25'} & set(areas)
+
+
+def test_elite_four_milestones_score_each_league_win_in_order():
+    task = shipped()['battle-hard-elite-four']
+    assert [row['id'] for row in task['milestones']] == ['lorelei', 'bruno', 'agatha', 'lance', 'hall-of-fame']
+    assert [row['check'].get('elite') for row in task['milestones'][:4]] == list(runtime.ELITE)
+    # The last point needs the Champion beaten and a new Hall of Fame record in its room (map 118).
+    assert task['milestones'][-1]['check'] == {'map': 118, 'champion': True, 'hall_of_fame': True}
+    # League battles are the task, so no battle-free condition applies.
+    assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED

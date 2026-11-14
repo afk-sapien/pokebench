@@ -19,6 +19,7 @@ from pokeagent_bench.evaluation_catalog import task_definition
 from pokeagent_bench.gameplay import load_catalog, menu_options, read_screen, ui_state
 from pokeagent_bench.gameplay_commands import execute
 from pokeagent_bench.session import Session, load_engine
+from pokecore.gen1 import read_party
 from pokecore.gen1_ui import read_sprites
 
 STEPS = {'up': (0, -1), 'down': (0, 1), 'left': (-1, 0), 'right': (1, 0)}
@@ -49,7 +50,7 @@ def step(engine, direction):
 
 class Driver:
     def __init__(self, rom, game_data, scenario, output):
-        self.rom, self.scenario = Path(rom), Path(scenario)
+        self.rom, self.scenario, self.game_data = Path(rom), Path(scenario), Path(game_data)
         self.engine, manifest = load_engine(self.rom, self.scenario)
         self.planner, _ = load_engine(self.rom, self.scenario)
         task = task_definition(manifest['task_id'])
@@ -365,8 +366,141 @@ def pewter_to_lavender(driver):
     d.enter(LAVENDER_TOWN)
 
 
+BRUNOS_ROOM, AGATHAS_ROOM, LANCES_ROOM, CHAMPIONS_ROOM, HALL_OF_FAME = 246, 247, 113, 120, 118
+# Gen 1 battle structs: wEnemyMon at 0xCFE5 and wBattleMon at 0xD014 share one layout.
+ENEMY_MON, BATTLE_MON = 0xCFE5, 0xD014
+# Gen 1 moves of these types use Special on both sides. The rest use Attack and Defense.
+SPECIAL_TYPES = frozenset(range(20, 27))
+
+
+def battler(memory, base):
+    word = lambda offset: memory[base + offset] << 8 | memory[base + offset + 1]
+    return {'species': memory[base], 'hp': word(1), 'types': (memory[base + 5], memory[base + 6]),
+            'moves': tuple(memory[base + 8:base + 12]), 'max_hp': word(15), 'attack': word(17),
+            'defense': word(19), 'special': word(23), 'pp': tuple(v & 63 for v in memory[base + 25:base + 29])}
+
+
+class Tactics:
+    """A plain greedy battler: the move with the most expected damage, a heal when low, the best matchup on a switch."""
+
+    HEAL = 'HEAL_EFFECT'
+
+    def __init__(self, game_data):
+        bundle = json.loads((game_data / 'current.json').read_text())['bundle']
+        strategy = json.loads((game_data / 'bundles' / bundle / 'strategy.json').read_text())
+        self.moves = {int(key): value for key, value in strategy['moves'].items()}
+        self.chart = {(attack, defend): factor for attack, defend, factor in strategy['matchups']}
+
+    def damage(self, move_id, attacker, defender):
+        move = self.moves[move_id]
+        power = move['power'] * (2 if move['effect'] == 'ATTACK_TWICE_EFFECT' else 1)
+        stat = ('special', 'special') if move['type'] in SPECIAL_TYPES else ('attack', 'defense')
+        factor = 1.5 if move['type'] in attacker['types'] else 1
+        for kind in dict.fromkeys(defender['types']):
+            factor *= self.chart.get((move['type'], kind), 1)
+        return power * factor * move['accuracy'] / 100 * attacker[stat[0]] / max(1, defender[stat[1]])
+
+    def best(self, attacker, defender):
+        options = [(self.damage(move, attacker, defender), slot)
+                   for slot, move in enumerate(attacker['moves']) if move and attacker['pp'][slot]]
+        return max(options, default=(0, None))
+
+    def choose_move(self, memory):
+        mine, theirs = battler(memory, BATTLE_MON), battler(memory, ENEMY_MON)
+        heals = [slot for slot, move in enumerate(mine['moves'])
+                 if move and mine['pp'][slot] and self.moves[move]['effect'] == self.HEAL]
+        if heals and mine['hp'] * 3 < mine['max_hp']:
+            return heals[0]
+        score, slot = self.best(mine, theirs)
+        # Out of PP on every move: FIGHT uses Struggle whatever the slot.
+        return 0 if slot is None else slot
+
+    def choose_switch(self, memory, party, active):
+        theirs = battler(memory, ENEMY_MON)
+        ready = [(self.best(mon, theirs)[0] * (1 + mon['hp'] / mon['max_hp']), slot)
+                 for slot, mon in enumerate(party) if mon['hp'] and slot != active]
+        if not ready:
+            raise RuntimeError('No Pokemon left to send out')
+        return max(ready)[1]
+
+
+def wait(driver, frames):
+    """Advance text when a text box is open, otherwise let a scripted scene play."""
+    if ui_state(driver.engine.memory)['kind'] == 'overworld':
+        driver.do('wait', '', frames)
+    else:
+        driver.do('advance_dialogue')
+
+
+def arrive(driver, limit=8):
+    """Wait out a walk the game scripts on entry, such as the League rooms' walk inside."""
+    for _ in range(limit):
+        before = locate(driver.engine)
+        driver.settle()
+        if locate(driver.engine) == before or driver.done:
+            return
+
+
+def battle(driver, tactics, limit=400):
+    """Play one League battle to its end with assisted commands, then clear the text after it."""
+    d, memory = driver, driver.engine.memory
+    for _ in range(40):
+        if memory[0xD057] or d.done:
+            break
+        wait(d, 60)
+    else:
+        raise RuntimeError('The battle did not start')
+    for _ in range(limit):
+        if d.done:
+            return
+        ui = ui_state(memory)
+        if not memory[0xD057] and ui['kind'] == 'overworld':
+            return
+        options = ui['visible_choices'] if ui['kind'] == 'menu' else []
+        party = read_party(memory)
+        if ui['kind'] in ('battle_menu', 'move_menu'):
+            d.do('use_move', str(tactics.choose_move(memory) + 1))
+        elif memory[0xD057] and any(text.partition(': ')[0].isdigit() for text in options):
+            # The party menu opens by itself after a faint.
+            d.do('switch_pokemon', str(tactics.choose_switch(memory, party, memory[0xCC2F]) + 1))
+        elif {'YES', 'NO'} <= {text.upper() for text in options}:
+            # Keep the battler on "Will you change POKeMON?" and keep the old moves on a new one.
+            text = ' '.join(ui['text']).upper()
+            d.do('choose', 'YES' if 'ABANDON' in text else 'NO')
+        else:
+            d.do('advance_dialogue')
+    raise RuntimeError('The battle did not end')
+
+
+def elite_four(driver):
+    d = driver
+    tactics = Tactics(d.game_data)
+    # Lorelei, Bruno and Agatha stand at (5, 2) and battle when spoken to. A win opens the exit north.
+    for following in (BRUNOS_ROOM, AGATHAS_ROOM, LANCES_ROOM):
+        d.walk(5, 3)
+        face(d, 'up')
+        d.do('interact')
+        battle(d, tactics)
+        d.enter(following)
+        arrive(d)
+    # The game walks the player down Lance's hall. Lance speaks when the player steps onto (6, 2).
+    d.walk(6, 3)
+    d.do('move', 'up', 1)
+    battle(d, tactics)
+    d.enter(CHAMPIONS_ROOM)
+    # The rival speaks and battles as soon as the player has walked in.
+    battle(d, tactics)
+    # Oak leads the player to the Hall of Fame, which records the party.
+    for _ in range(80):
+        if d.done:
+            return
+        wait(d, 120)
+    raise RuntimeError(f'The Hall of Fame did not record the party. At {locate(d.engine)}')
+
+
 SOLUTIONS = {'navigation-hard-victory-road': victory_road, 'navigation-hard-seafoam': seafoam,
-             'navigation-hard-silph-co': silph_co, 'navigation-hard-pewter-to-lavender': pewter_to_lavender}
+             'navigation-hard-silph-co': silph_co, 'navigation-hard-pewter-to-lavender': pewter_to_lavender,
+             'battle-hard-elite-four': elite_four}
 
 
 def build(task_id, rom, game_data, fixtures, output):

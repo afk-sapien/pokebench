@@ -42,6 +42,7 @@ published.
 | Reach Articuno in Seafoam Islands | 1F west entrance, no boulder in any hole | 6 | 83 | 420 |
 | Reach Giovanni in Silph Co. | 1F front door, every Card Key door locked, no Card Key | 5 | 76 | 380 |
 | Travel from Pewter City to Lavender Town | Pewter Pokemon Center, early story, Cut and Flash party | 6 | 221 | 1,100 |
+| Defeat the Elite Four and the Champion with no items | Lorelei's room, empty bag, six level 56 Pokemon | 5 | 100 | 500 |
 
 In Seafoam Islands only the two B3F holes gate Articuno. The boulder puzzles on the upper
 floors are optional, so they earn no milestone. The B3F milestones count in order, so a run
@@ -59,6 +60,14 @@ blocks Route 12, so Rock Tunnel is the only way in. On Mt. Moon B2F the two foss
 only gap north, and taking one makes the Super Nerd take the other. Cut clears the small trees
 in Cerulean City at (19, 28) and on Route 9 at (5, 8). The text map shows them as `T`. Rock
 Tunnel shows no terrain until Flash, as the screen shows none.
+
+The Elite Four task starts from the Short League start with the bag and money emptied, so HP
+and PP carry through all five battles. Recover and Rest are the only healing. No party move is
+a one-hit knockout, a fixed-damage move, Hyper Beam or Explosion. The level is set so the
+scripted reference just wins: it picks the strongest typed move each turn, heals below a third
+of its HP and switches to the healthiest strong Pokemon. At level 56 it ends with one Pokemon
+standing, and at level 54 it blacks out against the Champion. A League win is read from the
+game's own defeat flags, and the last point also needs a new Hall of Fame record.
 
 ## Scripted references
 

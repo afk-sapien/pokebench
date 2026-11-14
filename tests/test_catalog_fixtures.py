@@ -109,6 +109,22 @@ def test_pewter_to_lavender_start_has_cut_and_flash_but_no_way_to_skip_rock_tunn
     assert recipe['events'] == {'EVENT_BEAT_BROCK': True}
 
 
+def test_elite_four_start_has_no_items_and_no_shortcut_moves():
+    recipe = recipes()['battle-hard-elite-four']
+    # The Short League start in Lorelei's room (map 245), with the bag and money emptied.
+    assert (recipe['source'], recipe['map_id']) == ('data/red-ability-v4/fixtures/league', 245)
+    assert recipe['bag'] == [] and recipe['money'] == 0
+    party = recipe['party']
+    assert len(party) == 6 and len({member['species'] for member in party}) == 6
+    assert {member['level'] for member in party} == {56}
+    moves = set().union(*(member['moves'] for member in party))
+    # No Fissure 90, Horn Drill 32, Guillotine 12, Seismic Toss 69, Night Shade 101, Dragon Rage 82,
+    # Sonic Boom 49, Super Fang 162, Psywave 149, Hyper Beam 63, Explosion 153 or Self-Destruct 120.
+    assert not {90, 32, 12, 69, 101, 82, 49, 162, 149, 63, 153, 120} & moves
+    # Recover 105 and Rest 156 are the only healing.
+    assert {105, 156} <= moves
+
+
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),
                                          ('FAST', 800), ('SLOW', 1250)])
 def test_growth_curve_start_experience(growth, wanted):
