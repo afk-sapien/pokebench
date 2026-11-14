@@ -45,6 +45,13 @@ SPRITE_LOOKS = {
     "SPRITE_PAPER": "paper", "SPRITE_CLIPBOARD": "clipboard",
 }
 PAIR_LEGEND ="walkable floor. A step directly between a : cell and a , cell is refused, in both directions"
+# Tiles Surf can cross (IsNextTileShoreOrWater) that are drawn as water, by tileset. Tile 0x32
+# is a shore in the overworld and plateau tilesets and 0x48 a shore in the forest tileset.
+# In the other tilesets 0x32 is a wall, a statue or a dock platform, so it is left out.
+WATER_TILES = {"OVERWORLD": {0x14, 0x32}, "PLATEAU": {0x14, 0x32}, "FOREST": {0x14, 0x48},
+               "DOJO": {0x14}, "GYM": {0x14}, "SHIP": {0x14}, "SHIP_PORT": {0x14},
+               "CAVERN": {0x14}, "FACILITY": {0x14}}
+WATER_LEGEND = "water. Blocked on foot, crossable with Surf"
 TYPES = {0: "Normal", 1: "Fighting", 2: "Flying", 3: "Poison", 4: "Ground", 5: "Rock",
          7: "Bug", 8: "Ghost", 20: "Fire", 21: "Water", 22: "Grass", 23: "Electric",
          24: "Psychic", 25: "Ice", 26: "Dragon"}
@@ -211,15 +218,21 @@ def local_map(memory, catalog, ui):
     tiles = read_screen(memory)["tiles"]
     # Live bottom-left subtiles include changes such as cut trees and opened doors.
     # Cave tile 0x2D is the round floor switch, drawn only at the four Victory Road switches.
-    arrows = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
-              "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"},
-              "CAVERN": {0x2D: "*"}}.get(world.get("tileset"), {})
+    # Cave tile 0x22 is a hole, drawn only at the eight Seafoam Islands holes and the Victory Road 3F hole.
+    marks = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
+             "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"},
+             "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
     floors = world.get("pair_floors", {})
+    water = WATER_TILES.get(world.get("tileset"), set())
+
+    def glyph(tile):
+        if tile in marks:
+            return marks[tile]
+        if tile in world["passable"]:
+            return floors.get(tile, ".")
+        return "~" if tile in water else "#"
     # Read only on-screen graphics. Never include scripted paths or destinations.
-    grid = [[arrows.get(tiles[(2 * row + 1) * 20 + 2 * col],
-                        floors.get(tiles[(2 * row + 1) * 20 + 2 * col], ".")
-                        if tiles[(2 * row + 1) * 20 + 2 * col] in world["passable"] else "#")
-             for col in range(10)] for row in range(9)]
+    grid = [[glyph(tiles[(2 * row + 1) * 20 + 2 * col]) for col in range(10)] for row in range(9)]
     objects = []
     def inside(px, py):
         return left <= px < left + 10 and top <= py < top + 9
@@ -250,6 +263,10 @@ def local_map(memory, catalog, ui):
               "^ v < >": "visible floor arrows pointing up, down, left, right"}
     if any("*" in row for row in grid):
         legend["*"] = "visible floor switch"
+    if any("o" in row for row in grid):
+        legend["o"] = "visible hole in the floor"
+    if any("~" in row for row in grid):
+        legend["~"] = WATER_LEGEND
     if floors:
         legend[": ,"] = PAIR_LEGEND
         # "@" hides the floor under the player, and that floor decides which steps are refused.
@@ -274,6 +291,10 @@ def known_map(history, map_id, x, y):
         legend += " : and , walkable floor, no direct step between them."
     if any("*" in row for row in rows):
         legend += " * observed floor switch."
+    if any("o" in row for row in rows):
+        legend += " o observed hole in the floor."
+    if any("~" in row for row in rows):
+        legend += " ~ observed water, crossable with Surf."
     return {"map_id": int(map_id), "origin": {"x": left, "y": top}, "rows": rows, "legend": legend}
 
 

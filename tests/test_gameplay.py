@@ -358,6 +358,57 @@ def test_local_map_marks_the_visible_cave_floor_switch_like_a_floor_arrow():
     assert '*' not in pair_view(memory(), catalog(), {})['legend']
 
 
+# Seafoam Islands 1F to B3F and Victory Road 3F draw each hole square with bottom-left tile 0x22.
+CAVERN_HOLE = 0x22
+
+
+def test_local_map_marks_the_visible_cave_hole():
+    cat = catalog()
+    world = cat['world']['0']
+    world['tileset'], world['passable'] = 'CAVERN', [1, 0x05, 0x20, CAVERN_HOLE]
+    world['pair_floors'] = pair_floors(CAVERN_ROWS, world['passable'])
+    view = pair_view(memory(), cat, {(6, 4): CAVERN_HOLE, (5, 4): 0x05})
+    assert view['rows'][4][5:7] == ':o'
+    assert view['legend']['o'] == 'visible hole in the floor'
+    # Only the cave tileset draws 0x22 as a hole.
+    world['tileset'] = 'FOREST'
+    assert pair_view(memory(), cat, {(6, 4): CAVERN_HOLE})['rows'][4][6] == '.'
+    assert 'o' not in pair_view(memory(), catalog(), {})['legend']
+
+
+@pytest.mark.parametrize('tileset, tile', [('CAVERN', 0x14), ('OVERWORLD', 0x14), ('OVERWORLD', 0x32),
+                                           ('FOREST', 0x48), ('GYM', 0x14), ('FACILITY', 0x14)])
+def test_local_map_shows_surfable_water_apart_from_blocked_terrain(tileset, tile):
+    cat = catalog()
+    cat['world']['0']['tileset'] = tileset
+    view = pair_view(memory(), cat, {(6, 4): tile, (2, 4): 0x60})
+    assert view['rows'][4][6] == '~' and view['rows'][4][2] == '#'
+    assert view['legend']['~'] == 'water. Blocked on foot, crossable with Surf'
+
+
+@pytest.mark.parametrize('tileset, tile', [('GYM', 0x32), ('SHIP', 0x32), ('SHIP_PORT', 0x32),
+                                           ('INTERIOR', 0x14), ('CAVERN', 0x48)])
+def test_local_map_keeps_tiles_that_do_not_look_like_water_blocked(tileset, tile):
+    # Gym statues, ship walls, the dock platform and non water tilesets keep their old glyph.
+    cat = catalog()
+    cat['world']['0']['tileset'] = tileset
+    view = pair_view(memory(), cat, {(6, 4): tile})
+    assert view['rows'][4][6] == '#' and '~' not in view['legend']
+
+
+def test_local_map_draws_walkable_tiles_as_floor_even_when_they_share_a_water_id():
+    cat = catalog()
+    cat['world']['0'].update(tileset='SHIP_PORT', passable=[1, 0x32])
+    assert pair_view(memory(), cat, {(6, 4): 0x32})['rows'][4][6] == '.'
+
+
+def test_known_map_explains_holes_and_water_only_when_it_shows_them():
+    legend = known_map({'tiles': {'0': {'4,4': '.', '5,4': 'o', '6,4': '~'}}}, 0, 4, 4)['legend']
+    assert ' o observed hole in the floor.' in legend and legend.endswith(' ~ observed water, crossable with Surf.')
+    legend = known_map({'tiles': {'0': {'4,4': '.', '5,4': '#'}}}, 0, 4, 4)['legend']
+    assert 'hole' not in legend and 'water' not in legend
+
+
 def test_known_map_explains_the_floor_switch_only_when_it_shows_it():
     history = {'tiles': {'0': {'4,4': '.', '5,4': '*'}}}
     assert known_map(history, 0, 4, 4)['legend'].endswith(' * observed floor switch.')
