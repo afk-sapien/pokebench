@@ -217,3 +217,15 @@ def test_public_page_omits_report_link_without_report(tmp_path):
     assert 'technical-report.pdf' not in page
     assert 'technical report' not in page.lower()
     assert 'analysis-v060.html' not in page
+
+
+def test_public_page_states_the_scoring_change(tmp_path):
+    web = tmp_path / 'web'
+    web.mkdir()
+    (web / 'showcase-data.json').write_text(json.dumps({'short': {'cells': []}, 'long': [], 'report': None}))
+    export_public(web, tmp_path / 'public')
+    page = (tmp_path / 'public' / 'index.html').read_text()
+    note = page.split('<p id="scoring-change" class="small">')[1].split('</p>')[0]
+    assert note.count('.') == 1 and note.endswith('.')
+    assert '14 November 2026' in note
+    assert all(name in note for name in ('navigation', 'battles', 'menus', 'quests', 'preparation', 'Pikachu'))
