@@ -100,6 +100,15 @@ MT_MOON_PARTY = [mon('CHARMANDER', MT_MOON_LEVEL, [10, 45] + [52] * (MT_MOON_LEV
 MT_MOON_TRAINERS = (*(f'EVENT_BEAT_MT_MOON_1_TRAINER_{i}' for i in range(7)),
                     *(f'EVENT_BEAT_MT_MOON_3_TRAINER_{i}' for i in range(4)),
                     'EVENT_BEAT_MT_MOON_EXIT_SUPER_NERD', 'EVENT_BEAT_ROUTE_4_TRAINER_0')
+# Surf, Ice Beam, Bite and Body Slam, and Earthquake, Double Kick, Horn Attack and Poison Sting.
+# Neither knows Fly, Dig or Teleport.
+CINNABAR_PARTY = [mon('BLASTOISE', 48, [57, 58, 44, 34]), mon('NIDOKING', 46, [89, 24, 30, 40])]
+CINNABAR_FLAGS = ('EVENT_MANSION_SWITCH_ON', 'EVENT_BEAT_MANSION_1_TRAINER_0', 'EVENT_BEAT_MANSION_2_TRAINER_0',
+                  'EVENT_BEAT_MANSION_3_TRAINER_0', 'EVENT_BEAT_MANSION_3_TRAINER_1',
+                  'EVENT_BEAT_MANSION_4_TRAINER_0', 'EVENT_BEAT_MANSION_4_TRAINER_1', 'EVENT_BEAT_BLAINE',
+                  'EVENT_GOT_TM38',
+                  *(f'EVENT_BEAT_CINNABAR_GYM_TRAINER_{i}' for i in range(7)),
+                  *(f'EVENT_CINNABAR_GYM_GATE{i}_UNLOCKED' for i in range(7)))
 RECIPES.update({
     'navigation-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                        events={name: False for name in VICTORY_ROAD_SWITCHES}),
@@ -127,6 +136,10 @@ RECIPES.update({
                                            events={**{name: True for name in MT_MOON_TRAINERS},
                                                    'EVENT_GOT_DOME_FOSSIL': False,
                                                    'EVENT_GOT_HELIX_FOSSIL': False}),
+    # The Cinnabar Pokemon Center before any Mansion progress, with six badges and the Secret Key
+    # still on B1F. The switch, every Mansion and gym trainer, every gym gate and Blaine are reset.
+    'objectives-cinnabar-gym': archive(651,171,position=[3,7],party=CINNABAR_PARTY,bag=[[20,5]],money=0,
+                                       badges=63,events={name: False for name in CINNABAR_FLAGS}),
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'

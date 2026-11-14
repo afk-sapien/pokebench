@@ -6,7 +6,8 @@ from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
 SHIPPED = {'navigation-victory-road', 'navigation-seafoam-islands', 'navigation-silph-co',
-           'navigation-pewter-to-lavender', 'battle-elite-four-no-items', 'battle-mt-moon-underleveled'}
+           'navigation-pewter-to-lavender', 'battle-elite-four-no-items', 'battle-mt-moon-underleveled',
+           'objectives-cinnabar-gym'}
 
 
 def shipped():
@@ -109,4 +110,16 @@ def test_mt_moon_milestones_follow_the_floors_with_wild_encounters_on():
     # Route 4 east of the Mt. Moon exit at (24, 5), as in Pewter to Lavender.
     assert task['milestones'][2]['check']['area'] == [24, 0, 89, 17]
     # Wild battles are the task, so no battle-free condition applies.
+    assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED
+
+
+def test_cinnabar_gym_milestones_follow_the_mansion_key_and_the_gym():
+    task = shipped()['objectives-cinnabar-gym']
+    assert [row['id'] for row in task['milestones']] == [
+        'mansion-third-floor', 'mansion-basement', 'secret-key', 'cinnabar-gym', 'volcano-badge']
+    # Mansion 3F and B1F, then the gym (map 166). SECRET_KEY is item 0x2B and the Volcano Badge is bit 6.
+    assert [row['check'].get('map') for row in task['milestones']] == [215, 216, None, 166, None]
+    assert task['milestones'][2]['check'] == {'item': 43}
+    assert task['milestones'][-1]['check'] == {'badge': 6}
+    # Wild Pokemon stay on in the Mansion, so no battle-free condition applies.
     assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED

@@ -576,9 +576,77 @@ def mt_moon(driver):
     d.enter(CERULEAN_CITY)
 
 
+CINNABAR_ISLAND, CINNABAR_GYM = 8, 166
+MANSION_1F, MANSION_2F, MANSION_3F, MANSION_B1F = 165, 214, 215, 216
+# The quiz machines in gate order, with the tile below each and the answer that opens its gate.
+CINNABAR_QUIZ = (((15, 8), 'YES'), ((10, 2), 'NO'), ((9, 8), 'NO'), ((9, 14), 'NO'), ((1, 14), 'YES'), ((1, 8), 'NO'))
+
+
+def read_up(driver, choice='YES', limit=8):
+    """Face up, interact and clear the text, choosing choice at a YES or NO prompt."""
+    face(driver, 'up')
+    driver.do('interact')
+    for _ in range(limit):
+        ui = ui_state(driver.engine.memory)
+        if driver.done or ui['kind'] == 'overworld':
+            return
+        options = {text.upper() for text in ui['visible_choices']} if ui['kind'] == 'menu' else set()
+        driver.do('choose', choice) if {'YES', 'NO'} <= options else driver.do('advance_dialogue')
+    raise RuntimeError('The text did not close')
+
+
+def cinnabar_gym(driver):
+    d = driver
+    tactics = Tactics(d.game_data)
+    d.calm_planner()
+    d.on_battle = lambda drv: (wild_battle if drv.engine.memory[0xD057] == 1 else battle)(drv, tactics)
+    # One switch flag moves every Mansion gate. The island resets it to off. With it off, the
+    # stairs climb 1F (5, 10) and 2F (6, 1) to the north side of 3F and its switch at (10, 5).
+    d.enter(CINNABAR_ISLAND)
+    d.enter(MANSION_1F)
+    d.enter(MANSION_2F, via=(5, 10))
+    d.enter(MANSION_3F, via=(6, 1))
+    d.walk(10, 6)
+    read_up(d)
+    # Switch on: the 3F holes at (16, 14) and (17, 14) drop into the 1F room with the B1F stairs.
+    d.enter(MANSION_1F)
+    d.enter(MANSION_B1F, via=(21, 23))
+    # B1F: the south switch at (18, 25) turns it off, which opens the way to the north switch at
+    # (20, 3). Turning that one on opens the Secret Key room.
+    d.walk(18, 26)
+    read_up(d)
+    d.walk(20, 4)
+    read_up(d)
+    d.walk(5, 14)
+    read_up(d)
+    # Off again to leave the key room, then on at the south switch so the 1F east door is open.
+    d.walk(20, 4)
+    read_up(d)
+    d.walk(18, 26)
+    read_up(d)
+    d.enter(MANSION_1F, via=(23, 22))
+    d.enter(CINNABAR_ISLAND)
+    # The Secret Key unlocks the gym door. Each right answer opens the next gate and skips its trainer.
+    d.enter(CINNABAR_GYM)
+    for (x, y), choice in CINNABAR_QUIZ:
+        d.walk(x, y)
+        read_up(d, choice)
+    d.walk(3, 4)
+    face(d, 'up')
+    d.do('interact')
+    battle(d, tactics)
+    # The Volcano Badge is set after the badge and TM38 text.
+    for _ in range(20):
+        if d.done:
+            return
+        wait(d, 60)
+    raise RuntimeError(f'The Volcano Badge was not recorded. At {locate(d.engine)}')
+
+
 SOLUTIONS = {'navigation-victory-road': victory_road, 'navigation-seafoam-islands': seafoam,
              'navigation-silph-co': silph_co, 'navigation-pewter-to-lavender': pewter_to_lavender,
-             'battle-elite-four-no-items': elite_four, 'battle-mt-moon-underleveled': mt_moon}
+             'battle-elite-four-no-items': elite_four, 'battle-mt-moon-underleveled': mt_moon,
+             'objectives-cinnabar-gym': cinnabar_gym}
 
 
 def build(task_id, rom, game_data, fixtures, output):

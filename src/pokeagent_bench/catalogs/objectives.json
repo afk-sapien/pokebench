@@ -470,6 +470,96 @@
       "decision_limit": 100,
       "active": false,
       "retirement_reason": "Retired with the Pikachu search task. It was never on the leaderboard. Retained only for historical references."
+    },
+    {
+      "id": "objectives-cinnabar-gym",
+      "title": "Find the Secret Key in the Pokemon Mansion and win the Volcano Badge",
+      "difficulty": "hard",
+      "tested_skill": "campaign",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "objectives-cinnabar-gym",
+        "description": "The Cinnabar Gym is locked. Find its key in the Pokemon Mansion, then defeat Blaine and win the Volcano Badge. Do not nickname Pokemon."
+      },
+      "start": "The Cinnabar Island Pokemon Center, just inside the door, before any progress in the Pokemon Mansion. Six badges, the Secret Key still in the Mansion, the gym locked and every Mansion and gym trainer unbeaten.",
+      "success": [
+        "Blaine is defeated and the Volcano Badge is won."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the Volcano Badge.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 15000000,
+      "decision_limit": 1000,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start in the Cinnabar Pokemon Center with the Mansion switch off, the Secret Key on B1F and every gym gate shut.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Solve a switch-and-gate building to fetch a key, then clear a quiz gym and its leader",
+      "agent_goal": "The Cinnabar Gym is locked. Find its key in the Pokemon Mansion, then defeat Blaine and win the Volcano Badge. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Party at full HP, no status and full PP: Blastoise level 48 with Surf, Ice Beam, Bite and Body Slam. Nidoking level 46 with Earthquake, Double Kick, Horn Attack and Poison Sting.",
+        "Bag: 5 Potions. No money.",
+        "Boulder, Cascade, Thunder, Rainbow, Soul and Marsh badges. Wild Pokemon appear in the Mansion as normal. No route hints are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/CinnabarIsland.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/PokemonMansion1F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/PokemonMansion3F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/PokemonMansionB1F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/CinnabarGym.asm",
+        "https://github.com/pret/pokered/blob/master/data/events/hidden_events.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Check in the pilot whether models work out that one switch moves every Mansion gate, and whether they answer the gym quizzes or battle through."
+      ],
+      "measures": "Work out a building where one switch opens some gates and shuts others, find a key item, then use it to reach and beat a gym leader.",
+      "milestones": [
+        {
+          "id": "mansion-third-floor",
+          "description": "Reach Pokemon Mansion 3F.",
+          "check": {
+            "map": 215
+          }
+        },
+        {
+          "id": "mansion-basement",
+          "description": "Reach Pokemon Mansion B1F.",
+          "check": {
+            "map": 216
+          }
+        },
+        {
+          "id": "secret-key",
+          "description": "Obtain the Secret Key.",
+          "check": {
+            "item": 43
+          }
+        },
+        {
+          "id": "cinnabar-gym",
+          "description": "Enter the Cinnabar Gym.",
+          "check": {
+            "map": 166
+          }
+        },
+        {
+          "id": "volcano-badge",
+          "description": "Defeat Blaine and win the Volcano Badge.",
+          "check": {
+            "badge": 6
+          }
+        }
+      ]
     }
   ]
 }

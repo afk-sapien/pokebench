@@ -143,6 +143,25 @@ def test_mt_moon_start_is_underleveled_with_two_potions_and_both_fossils():
     assert events['EVENT_GOT_DOME_FOSSIL'] is False and events['EVENT_GOT_HELIX_FOSSIL'] is False
 
 
+def test_cinnabar_gym_start_resets_the_mansion_and_every_gym_gate():
+    recipe = recipes()['objectives-cinnabar-gym']
+    # Archive 651 at the Cinnabar Pokemon Center (map 171), before any Mansion progress.
+    assert (recipe['archive'], recipe['map_id'], recipe['position']) == (651, 171, [3, 7])
+    # The first six badges. The Volcano Badge (bit 6) is the goal.
+    assert recipe['badges'] == 0b111111
+    party = recipe['party']
+    assert [member['species'] for member in party] == ['BLASTOISE', 'NIDOKING']
+    # Fly 19, Dig 91 and Teleport 100 would leave the island or the Mansion without the route.
+    assert not {19, 91, 100} & set().union(*(member['moves'] for member in party))
+    # Five Potions (item 20), no money and no Secret Key (item 43).
+    assert recipe['bag'] == [[20, 5]] and recipe['money'] == 0
+    events = recipe['events']
+    assert not any(events.values())
+    # The switch, six Mansion trainers, Blaine and TM38, seven gym trainers and seven gym gates.
+    assert len(events) == 1 + 6 + 2 + 7 + 7
+    assert 'EVENT_MANSION_SWITCH_ON' in events and 'EVENT_CINNABAR_GYM_GATE6_UNLOCKED' in events
+
+
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),
                                          ('FAST', 800), ('SLOW', 1250)])
 def test_growth_curve_start_experience(growth, wanted):

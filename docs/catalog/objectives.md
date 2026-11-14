@@ -234,3 +234,37 @@ Cerulean City overworld at the Route 24 entrance. Red has the Boulder Badge but 
 - A wild Abra is captured after the start.
 - That Abra gains at least one level and remains owned.
 - Misty is defeated after the capture and level-gain events, the Cascade Badge is awarded, and the final state is outside battle.
+
+## Find the Secret Key in the Pokemon Mansion and win the Volcano Badge
+
+`objectives-cinnabar-gym`
+
+Controls: assisted-gameplay-v1. Estimated difficulty: hard. Scored by milestones, see [milestone tasks](README.md#milestone-tasks).
+
+### What this tests
+
+Work out a building where one switch opens some gates and shuts others, find a key item, then use it to reach and beat a gym leader.
+
+### Agent instruction
+
+The Cinnabar Gym is locked. Find its key in the Pokemon Mansion, then defeat Blaine and win the Volcano Badge. Do not nickname Pokemon.
+
+### Starting situation
+
+The Cinnabar Island Pokemon Center, just inside the door, before any progress in the Pokemon Mansion. Six badges, the Secret Key still in the Mansion, the gym locked and every Mansion and gym trainer unbeaten.
+
+### Setup
+
+- Party at full HP, no status and full PP: Blastoise level 48 with Surf, Ice Beam, Bite and Body Slam. Nidoking level 46 with Earthquake, Double Kick, Horn Attack and Poison Sting. No Fly, Dig or Teleport.
+- Bag: 5 Potions. No money.
+- Boulder, Cascade, Thunder, Rainbow, Soul and Marsh badges. Wild Pokemon appear in the Mansion as normal. No route hints are supplied.
+
+### Scored milestones
+
+1. Reach Mansion 3F.
+2. Reach Mansion B1F.
+3. Obtain the Secret Key.
+4. Enter the Cinnabar Gym.
+5. Defeat Blaine and win the Volcano Badge.
+
+Every Mansion switch flips the same flag, so each press opens one set of gates and shuts the other. With the switch on, the holes on 3F drop to the part of 1F that holds the stairs to B1F. On B1F the key room opens with the switch on, and the way back out needs it off and then on again. The gym quiz machines open their gates on a right answer. A wrong answer starts a battle with that room's trainer, and the gate opens once the trainer is beaten.
