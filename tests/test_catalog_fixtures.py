@@ -85,6 +85,17 @@ def test_navigation_starts_hold_the_documented_max_repels(task):
     assert recipes()[task]['bag'] == [[0x39, 20]]
 
 
+def test_silph_co_start_locks_every_card_key_door_and_hides_only_the_beaten_rival():
+    recipe = recipes()['navigation-hard-silph-co']
+    doors = [name for name in recipe['events'] if 'UNLOCKED_DOOR' in name]
+    # 2F to 11F hold 20 Card Key doors in the native scripts. Every one starts locked.
+    assert len(set(doors)) == 20 and not any(recipe['events'][name] for name in doors)
+    assert recipe['events']['EVENT_BEAT_SILPH_CO_RIVAL'] is True
+    assert recipe['events']['EVENT_BEAT_SILPH_CO_GIOVANNI'] is False
+    # Toggle 0xA7 is the 7F rival, who leaves after the beaten battle. Nothing else is hidden.
+    assert recipe['hidden'] == [0xA7]
+
+
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),
                                          ('FAST', 800), ('SLOW', 1250)])
 def test_growth_curve_start_experience(growth, wanted):

@@ -40,10 +40,17 @@ published.
 | --- | --- | --- | --- | --- |
 | Cross all of Victory Road | 1F entrance, every boulder switch unsolved | 6 | 236 | 1,200 |
 | Reach Articuno in Seafoam Islands | 1F west entrance, no boulder in any hole | 6 | 83 | 420 |
+| Reach Giovanni in Silph Co. | 1F front door, every Card Key door locked, no Card Key | 5 | 76 | 380 |
 
 In Seafoam Islands only the two B3F holes gate Articuno. The boulder puzzles on the upper
 floors are optional, so they earn no milestone. The B3F milestones count in order, so a run
 that fills the east hole first earns that point only after it also fills the west hole.
+
+In Silph Co. beaten trainers stand at both ends of the 5F corridor that holds the Card Key.
+The only way in is the 5F pad at (9, 15): ride it to 9F and back, then step off it downward.
+The text map shows warp pads as exits with no destination, as the screen does, and Card Key
+doors as `D`. Giovanni's room on 11F opens only from the west hall, which only the second
+pad in the 7F room behind a locked 3F door reaches.
 
 ## Scripted references
 

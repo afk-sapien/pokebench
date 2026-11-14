@@ -4,7 +4,7 @@ from pokeagent_bench import milestone_runtime as runtime
 from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
-SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam'}
+SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam', 'navigation-hard-silph-co'}
 
 
 def shipped():
@@ -49,3 +49,15 @@ def test_seafoam_milestones_score_only_the_holes_that_gate_articuno():
     assert [row['check'].get('event') for row in task['milestones'][3:5]] == [2512, 2513]
     assert task['milestones'][-1]['check'] == {'map': 162, 'near': [6, 1]}
     assert navigation_conditions.AFFECTED[task['id']] == ('SEAFOAM_ISLANDS', 'ROUTE_20')
+
+
+def test_silph_co_milestones_follow_the_card_key_and_pad_route():
+    task = shipped()['navigation-hard-silph-co']
+    assert [row['id'] for row in task['milestones']] == [
+        'fifth-floor-corridor', 'card-key', 'third-floor-pad-room', 'eleventh-floor-west-hall', 'giovanni-room']
+    # 5F, 3F and 11F. CARD_KEY is item 0x30.
+    assert [row['check'].get('map') for row in task['milestones']] == [210, None, 208, 235, 235]
+    assert task['milestones'][1]['check'] == {'item': 48}
+    assert task['milestones'][-1]['check'] == {'map': 235, 'area': [5, 5, 12, 13]}
+    # One prefix per floor, so the rival and Giovanni flags stay as the start sets them.
+    assert navigation_conditions.AFFECTED[task['id']] == tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12))

@@ -8,7 +8,7 @@ from pokeagent_bench.catalog_fixtures import (
     read, load_source, set_party, set_bag, set_event, command, save, snapshot, walk_to, set_active_box,
 )
 from pokeagent_bench.core import digest, write_json
-from pokecore.gen1 import W_BADGES
+from pokecore.gen1 import W_BADGES, W_TOGGLE_OBJECT_FLAGS
 
 
 
@@ -79,12 +79,24 @@ VICTORY_ROAD_SWITCHES = ('EVENT_VICTORY_ROAD_1_BOULDER_ON_SWITCH', 'EVENT_VICTOR
                          'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH2', 'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH1',
                          'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH2')
 SEAFOAM_HOLES = tuple(f'EVENT_SEAFOAM{floor}_BOULDER{n}_DOWN_HOLE' for floor in range(1, 5) for n in (1, 2))
+SILPH_DOORS = tuple(f'EVENT_SILPH_CO_{floor}_UNLOCKED_DOOR{suffix}'
+                    for floor, suffixes in ((2, '12'), (3, '12'), (4, '12'), (5, '123'), (6, ('',)),
+                                            (7, '123'), (8, ('',)), (9, '1234'), (10, ('',)), (11, ('',)))
+                    for suffix in suffixes)
+SILPH_CO_7F_RIVAL = 0xA7
 RECIPES.update({
     'navigation-hard-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                             events={name: False for name in VICTORY_ROAD_SWITCHES}),
     # First entry from Route 20. The boulder toggles are still native, so clearing the flags changes nothing.
     'navigation-hard-seafoam': archive(821,192,position=[4,17],party=NIDOKING,bag=[],badges=255,
                                        events={name: False for name in SEAFOAM_HOLES}),
+    # Every Card Key door starts locked. The 7F rival is beaten and hidden, as the game leaves him
+    # after that battle (toggle 0xA7). Giovanni is not beaten.
+    'navigation-hard-silph-co': archive(562,181,position=[10,17],party=NIDOKING,bag=[],badges=255,
+                                        events={**{name: False for name in SILPH_DOORS},
+                                                'EVENT_BEAT_SILPH_CO_RIVAL': True,
+                                                'EVENT_BEAT_SILPH_CO_GIOVANNI': False},
+                                        hidden=[SILPH_CO_7F_RIVAL]),
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'
@@ -161,6 +173,10 @@ def build(args, key, entry, strategy):
                 set_event(engine, strategy, name, value)
             if 'badges' in recipe:
                 engine.memory[W_BADGES] = recipe['badges']
+            for index in recipe.get('hidden', []):
+                # Native Red wToggleableObjectFlags: a set bit hides that object when its map loads.
+                address = W_TOGGLE_OBJECT_FLAGS + index // 8
+                engine.memory[address] = engine.memory[address] | (1 << (index % 8))
             if key == 'navigation-branching-cave':
                 engine.memory[W_BADGES] = 1
             if key == 'navigation-boulder-puzzle':
@@ -193,6 +209,9 @@ def build(args, key, entry, strategy):
                     raise ValueError('Could not reach initial battle menu')
             provenance['offline_setup'] = recipe
             provenance['setup_writes'] = 'Own party, bag, PC items and explicitly listed initial event flags only. No writes during evaluation.'
+            if recipe.get('hidden'):
+                provenance['setup_writes'] = ('Own party, bag, PC items, explicitly listed initial event flags and '
+                                              'explicitly listed hidden objects only. No writes during evaluation.')
         expected = {'map_id': recipe['map_id'], 'ui': 'battle_menu' if (key in REUSE and 'league' not in key and key != 'campaign-full-game') or recipe.get('battle') else 'overworld'}
         if recipe.get('position') and not recipe.get('battle'):
             expected['position'] = recipe['position']

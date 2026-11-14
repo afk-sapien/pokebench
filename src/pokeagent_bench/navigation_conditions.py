@@ -11,6 +11,8 @@ AFFECTED = {
     'navigation-blocked-route-alternative': ('ROUTE_5', 'ROUTE_6'),
     'navigation-hard-victory-road': ('VICTORY_ROAD', 'ROUTE_23'),
     'navigation-hard-seafoam': ('SEAFOAM_ISLANDS', 'ROUTE_20'),
+    # Per floor, so the rival and Giovanni flags never match.
+    'navigation-hard-silph-co': tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12)),
 }
 # Red TryDoWildEncounter: ld a,1 / and a / ret returns NZ (no encounter).
 # The guard covers both initial native checks before any change is installed.

@@ -116,6 +116,67 @@
         {"id": "east-hole", "description": "Push a boulder into the east B3F hole, which slows the B4F current.", "check": {"event": 2513}},
         {"id": "articuno", "description": "Stand next to Articuno on B4F.", "check": {"map": 162, "near": [6, 1]}}
       ]
+    },
+    {
+      "id": "navigation-hard-silph-co",
+      "title": "Reach Giovanni in Silph Co.",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-hard-silph-co",
+        "description": "Find Giovanni in Silph Co. and step into the room on 11F, the top floor, where he waits. You do not need to battle him. Normal backtracking is allowed. Wild encounters are disabled."
+      },
+      "start": "Silph Co. 1F, just inside the front door. Every Card Key door is locked, the Card Key has not been picked up and Giovanni has not been beaten.",
+      "success": [
+        "Stand inside Giovanni's room on 11F or in its doorway, outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Giovanni's room.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 5700000,
+      "decision_limit": 380,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start with every Card Key door locked, the Card Key still on 5F and Giovanni unbeaten.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Find a key item, then chain locked doors and warp pads across floors to a sealed room",
+      "agent_goal": "Find Giovanni in Silph Co. and step into the room on 11F, the top floor, where he waits. You do not need to battle him. Normal backtracking is allowed. Wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Empty bag. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. Every Card Key door in the building is locked and the Card Key has not been picked up. The rival on 7F has already been beaten and has left. Giovanni has not been beaten.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. Every Silph Co. trainer is already defeated. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/engine/events/card_key.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo5F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo9F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo3F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo7F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/SilphCo11F.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "The warp pads show on the text map as exits with no destination, as on screen. Check in the pilot whether models learn the pad links or loop between pads."
+      ],
+      "measures": "Find the Card Key on a 5F corridor whose ends are blocked by beaten trainers, which means riding the 5F pad to 9F and back and stepping off it the other way, then open a locked 3F door to reach the pad to 7F, take the second pad in that 7F room to the sealed west hall of 11F, then open the door into Giovanni's room.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "fifth-floor-corridor", "description": "Reach the 5F bottom corridor where the Card Key lies.", "check": {"map": 210, "area": [9, 16, 28, 16]}},
+        {"id": "card-key", "description": "Pick up the Card Key on 5F.", "check": {"item": 48}},
+        {"id": "third-floor-pad-room", "description": "Open a locked 3F door into the room with the pad to 7F.", "check": {"map": 208, "area": [10, 5, 16, 12]}},
+        {"id": "eleventh-floor-west-hall", "description": "Reach the sealed west hall of 11F through the 7F pad.", "check": {"map": 235, "area": [1, 1, 4, 16]}},
+        {"id": "giovanni-room", "description": "Open the 11F door and step into Giovanni's room.", "check": {"map": 235, "area": [5, 5, 12, 13]}}
+      ]
     }
   ]
 }

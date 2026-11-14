@@ -16,7 +16,7 @@ from pokeagent_bench.catalog_execution import run_task, select_scenario
 from pokeagent_bench.catalog_fixtures import command as native
 from pokeagent_bench.core import Limits, write_json
 from pokeagent_bench.evaluation_catalog import task_definition
-from pokeagent_bench.gameplay import load_catalog, ui_state
+from pokeagent_bench.gameplay import load_catalog, menu_options, read_screen, ui_state
 from pokeagent_bench.gameplay_commands import execute
 from pokeagent_bench.session import Session, load_engine
 from pokecore.gen1_ui import read_sprites
@@ -232,7 +232,72 @@ def seafoam(driver):
     d.follow(lambda here: here[0] == 162 and abs(here[1] - 6) + abs(here[2] - 1) == 1)
 
 
-SOLUTIONS = {'navigation-hard-victory-road': victory_road, 'navigation-hard-seafoam': seafoam}
+FACING = {'down': 0x0, 'up': 0x4, 'left': 0x8, 'right': 0xC}
+SILPH_CO_ELEVATOR = 236
+
+
+def face(driver, direction):
+    """Turn toward a wall, door or ball. A move into a blocked tile only turns the player."""
+    if driver.engine.memory[0xC109] != FACING[direction]:
+        driver.do('move', direction, 1)
+
+
+def ride_elevator(driver, floor, map_id):
+    # The floor panel is on the back wall at (3, 0).
+    driver.enter(SILPH_CO_ELEVATOR)
+    driver.walk(3, 1)
+    face(driver, 'up')
+    driver.do('interact')
+    # The list shows three floors the cursor can reach. Scroll down until the floor is one of them.
+    for _ in range(12):
+        memory = driver.engine.memory
+        if floor in [option['text'] for option in menu_options(memory, read_screen(memory), ui_state(memory)['kind'])]:
+            break
+        driver.do('press', 'down')
+    driver.do('choose', floor)
+    # The car shakes for a few seconds after the choice and ignores the joypad until it stops.
+    for _ in range(10):
+        engine = driver.sync()
+        here = locate(engine)
+        step(engine, 'down')
+        if locate(engine) != here:
+            break
+        driver.do('wait', '', 60)
+    driver.enter(map_id)
+
+
+def silph_co(driver):
+    d = driver
+    # The Card Key lies on the bottom corridor of 5F at (21, 16). Trainers block both ends of it,
+    # so the way in is the 5F pad at (9, 15): ride it to 9F and back, then step off it downward.
+    ride_elevator(d, '5F', 210)
+    d.enter(233, via=(9, 15))
+    d.enter(210)
+    d.walk(20, 16)
+    face(d, 'right')
+    d.do('interact')
+    d.settle()
+    # The corridor is a dead end, so leave by the same pad and take the 9F elevator.
+    d.enter(233, via=(9, 15))
+    # The 3F door at (17, 8) opens into the room with the pad at (11, 11), which leads to 7F.
+    ride_elevator(d, '3F', 208)
+    d.walk(18, 8)
+    face(d, 'left')
+    d.do('interact')
+    d.settle()
+    d.enter(212, via=(11, 11))
+    # The second pad in that 7F room, at (5, 7), is the only way into the west hall of 11F.
+    d.enter(235, via=(5, 7))
+    # The 11F door at (6, 13) is the only way into Giovanni's room.
+    d.walk(6, 14)
+    face(d, 'up')
+    d.do('interact')
+    d.settle()
+    d.follow(lambda here: here[0] == 235 and 5 <= here[1] <= 12 and 5 <= here[2] <= 13)
+
+
+SOLUTIONS = {'navigation-hard-victory-road': victory_road, 'navigation-hard-seafoam': seafoam,
+             'navigation-hard-silph-co': silph_co}
 
 
 def build(task_id, rom, game_data, fixtures, output):
