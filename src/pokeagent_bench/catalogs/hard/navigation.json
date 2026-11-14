@@ -177,6 +177,74 @@
         {"id": "eleventh-floor-west-hall", "description": "Reach the sealed west hall of 11F through the 7F pad.", "check": {"map": 235, "area": [1, 1, 4, 16]}},
         {"id": "giovanni-room", "description": "Open the 11F door and step into Giovanni's room.", "check": {"map": 235, "area": [5, 5, 12, 13]}}
       ]
+    },
+    {
+      "id": "navigation-hard-pewter-to-lavender",
+      "title": "Travel from Pewter City to Lavender Town",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-hard-pewter-to-lavender",
+        "description": "Travel from Pewter City to Lavender Town. Normal backtracking is allowed. Wild encounters are disabled."
+      },
+      "start": "Pewter City Pokemon Center, just inside the door, early in the story. Lavender Town has not been visited and Snorlax still blocks Route 12.",
+      "success": [
+        "Stand in Lavender Town, outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Lavender Town.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 16500000,
+      "decision_limit": 1100,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start before Lavender Town is visited, with Snorlax on Route 12 and the Saffron City gates shut.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Cross several routes and two caves, using Cut and Flash outside battle",
+      "agent_goal": "Travel from Pewter City to Lavender Town. Normal backtracking is allowed. Wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Charmeleon level 28 with Cut, Scratch, Ember and Leer, and Pikachu level 25 with Flash, Thundershock, Quick Attack and Thunder Wave. Full HP, no status and full PP. Empty bag. No Escape Rope, Fly, Dig or Teleport.",
+        "Boulder and Cascade badges owned, so Flash and Cut work outside battle. Brock is beaten. Lavender Town has not been visited, the Saffron City gates are shut and Snorlax blocks Route 12, so the only way in is through Rock Tunnel. No S.S. Ticket, so a guard still blocks the robbed house in Cerulean City. No fossil has been taken in Mt. Moon.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. Every trainer on Route 3, Mt. Moon, Route 4, Route 9, Route 10 and Rock Tunnel is already defeated. Trainers off that route still battle. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/PewterCity.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/MtMoonB2F.asm",
+        "https://github.com/pret/pokered/blob/master/engine/overworld/cut.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/Route9.asm",
+        "https://github.com/pret/pokered/blob/master/engine/menus/start_sub_menus.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/RockTunnel1F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/RockTunnelB1F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/MtMoonB2F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeruleanCity.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/BillsHouse.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Rock Tunnel is dark until Flash is used, and the text map shows no terrain there until then, as the screen shows none. Check in the pilot whether models use Flash or walk the tunnel blind.",
+        "The trees in Cerulean City and on Route 9 show on the text map as T, a small tree that Cut clears. Check in the pilot whether models use Cut on them.",
+        "On Mt. Moon B2F the two fossils fill the only gap north, and taking one makes the Super Nerd take the other. Check in the pilot whether models read the fossils as the way through."
+      ],
+      "measures": "Cross Mt. Moon through its basement to Route 4, taking a fossil to open the way north on B2F, use Cut on the small trees in Cerulean City and on Route 9, then use Flash in the dark Rock Tunnel and follow the ladders through both floors to Route 10 and Lavender Town.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "mt-moon-second-basement", "description": "Reach Mt. Moon B2F.", "check": {"map": 61}},
+        {"id": "route-4-east", "description": "Leave Mt. Moon onto Route 4 east of the mountain.", "check": {"map": 15, "area": [24, 0, 89, 17]}},
+        {"id": "route-9-past-tree", "description": "Cut the small tree at the west end of Route 9 and walk past it.", "check": {"map": 20, "area": [6, 0, 59, 17]}},
+        {"id": "rock-tunnel-basement", "description": "Reach Rock Tunnel B1F.", "check": {"map": 232}},
+        {"id": "route-10-south", "description": "Leave Rock Tunnel onto Route 10 south of the tunnel.", "check": {"map": 21, "area": [0, 52, 19, 71]}},
+        {"id": "lavender-town", "description": "Reach Lavender Town.", "check": {"map": 4}}
+      ]
     }
   ]
 }

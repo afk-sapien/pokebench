@@ -41,6 +41,7 @@ published.
 | Cross all of Victory Road | 1F entrance, every boulder switch unsolved | 6 | 236 | 1,200 |
 | Reach Articuno in Seafoam Islands | 1F west entrance, no boulder in any hole | 6 | 83 | 420 |
 | Reach Giovanni in Silph Co. | 1F front door, every Card Key door locked, no Card Key | 5 | 76 | 380 |
+| Travel from Pewter City to Lavender Town | Pewter Pokemon Center, early story, Cut and Flash party | 6 | 221 | 1,100 |
 
 In Seafoam Islands only the two B3F holes gate Articuno. The boulder puzzles on the upper
 floors are optional, so they earn no milestone. The B3F milestones count in order, so a run
@@ -51,6 +52,13 @@ The only way in is the 5F pad at (9, 15): ride it to 9F and back, then step off 
 The text map shows warp pads as exits with no destination, as the screen does, and Card Key
 doors as `D`. Giovanni's room on 11F opens only from the west hall, which only the second
 pad in the 7F room behind a locked 3F door reaches.
+
+From Pewter City to Lavender Town the start is before the S.S. Ticket, so a guard still blocks
+the robbed house in Cerulean City. Nobody knows Fly, the Saffron City gates are shut and Snorlax
+blocks Route 12, so Rock Tunnel is the only way in. On Mt. Moon B2F the two fossils fill the
+only gap north, and taking one makes the Super Nerd take the other. Cut clears the small trees
+in Cerulean City at (19, 28) and on Route 9 at (5, 8). The text map shows them as `T`. Rock
+Tunnel shows no terrain until Flash, as the screen shows none.
 
 ## Scripted references
 

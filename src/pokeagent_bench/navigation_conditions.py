@@ -13,6 +13,8 @@ AFFECTED = {
     'navigation-hard-seafoam': ('SEAFOAM_ISLANDS', 'ROUTE_20'),
     # Per floor, so the rival and Giovanni flags never match.
     'navigation-hard-silph-co': tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12)),
+    # The route only. Trainers off it, such as on Nugget Bridge, still battle.
+    'navigation-hard-pewter-to-lavender': ('ROUTE_3', 'MT_MOON', 'ROUTE_4', 'ROUTE_9', 'ROUTE_10', 'ROCK_TUNNEL'),
 }
 # Red TryDoWildEncounter: ld a,1 / and a / ret returns NZ (no encounter).
 # The guard covers both initial native checks before any change is installed.

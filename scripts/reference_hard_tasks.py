@@ -155,8 +155,18 @@ class Driver:
 
     def settle(self):
         # A warp finishes loading while the next command waits. Record nothing until the map is ready.
-        if not self.done and ui_state(self.engine.memory)['kind'] != 'overworld':
+        if self.done:
+            return
+        if ui_state(self.engine.memory)['kind'] != 'overworld':
             self.do('advance_dialogue')
+            return
+        # Leaving through a door changes the map id about 50 frames before the position, while the
+        # screen still reads as overworld. The observation tells the model to wait, so the reference does.
+        planner = self.sync()
+        before = locate(planner)
+        native(planner, None, 60, 0)
+        if locate(planner) != before:
+            self.do('wait', '', 60)
 
     def push(self, slot, direction, tries=3):
         before = sprite(self.engine, slot)
@@ -296,8 +306,67 @@ def silph_co(driver):
     d.follow(lambda here: here[0] == 235 and 5 <= here[1] <= 12 and 5 <= here[2] <= 13)
 
 
+PEWTER_CITY, CERULEAN_CITY, LAVENDER_TOWN, ROUTE_3, ROUTE_4, ROUTE_9, ROUTE_10 = 2, 3, 4, 14, 15, 20, 21
+MT_MOON_1F, MT_MOON_B1F, MT_MOON_B2F, ROCK_TUNNEL_1F, ROCK_TUNNEL_B1F = 59, 60, 61, 82, 232
+
+
+def pewter_to_lavender(driver):
+    d = driver
+    d.enter(PEWTER_CITY)
+    d.enter(ROUTE_3)
+    d.enter(ROUTE_4)
+    # Mt. Moon: the 1F ladder at (5, 5) and the B1F ladder at (21, 17) reach the B2F fossil floor,
+    # whose west ladder at (5, 7) climbs to the B1F room with the exit to Route 4.
+    d.enter(MT_MOON_1F, via=(18, 5))
+    d.enter(MT_MOON_B1F, via=(5, 5))
+    d.enter(MT_MOON_B2F, via=(21, 17))
+    # The two fossils at (12, 6) and (13, 6) fill the only gap north. Taking one makes the
+    # Super Nerd walk over and take the other, which opens it.
+    d.walk(13, 7)
+    face(d, 'up')
+    d.do('interact')
+    d.do('choose', 'YES')
+    for _ in range(10):
+        try:
+            d.sync()
+            d.search(lambda here: here == (MT_MOON_B2F, 13, 5), limit=200)
+            break
+        except RuntimeError:
+            if ui_state(d.engine.memory)['kind'] != 'overworld':
+                d.do('advance_dialogue')
+            else:
+                d.do('wait', '', 60)
+    d.enter(MT_MOON_B1F, via=(5, 7))
+    d.enter(ROUTE_4, via=(27, 3))
+    d.enter(CERULEAN_CITY)
+    # A guard blocks the robbed house until the S.S. Ticket, so the way east is the small tree at
+    # (19, 28) and the southeast path around to the Route 9 exit.
+    d.walk(19, 27)
+    face(d, 'down')
+    d.field_move('CHARMELEON', 'CUT')
+    d.settle()
+    d.enter(ROUTE_9)
+    # The small tree at (5, 8) is the only way east from Cerulean City.
+    d.walk(4, 8)
+    face(d, 'right')
+    d.field_move('CHARMELEON', 'CUT')
+    d.settle()
+    d.enter(ROUTE_10)
+    d.enter(ROCK_TUNNEL_1F, via=(8, 17))
+    # Rock Tunnel is dark until Flash. The ladders alternate floors: 1F (37, 3), B1F (27, 3),
+    # 1F (17, 11) and B1F (3, 3) end in the 1F room with the south exit at (15, 33).
+    d.field_move('PIKACHU', 'FLASH')
+    d.settle()
+    d.enter(ROCK_TUNNEL_B1F, via=(37, 3))
+    d.enter(ROCK_TUNNEL_1F, via=(27, 3))
+    d.enter(ROCK_TUNNEL_B1F, via=(17, 11))
+    d.enter(ROCK_TUNNEL_1F, via=(3, 3))
+    d.enter(ROUTE_10, via=(15, 33))
+    d.enter(LAVENDER_TOWN)
+
+
 SOLUTIONS = {'navigation-hard-victory-road': victory_road, 'navigation-hard-seafoam': seafoam,
-             'navigation-hard-silph-co': silph_co}
+             'navigation-hard-silph-co': silph_co, 'navigation-hard-pewter-to-lavender': pewter_to_lavender}
 
 
 def build(task_id, rom, game_data, fixtures, output):

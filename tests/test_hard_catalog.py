@@ -4,7 +4,8 @@ from pokeagent_bench import milestone_runtime as runtime
 from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
-SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam', 'navigation-hard-silph-co'}
+SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam', 'navigation-hard-silph-co',
+           'navigation-hard-pewter-to-lavender'}
 
 
 def shipped():
@@ -61,3 +62,18 @@ def test_silph_co_milestones_follow_the_card_key_and_pad_route():
     assert task['milestones'][-1]['check'] == {'map': 235, 'area': [5, 5, 12, 13]}
     # One prefix per floor, so the rival and Giovanni flags stay as the start sets them.
     assert navigation_conditions.AFFECTED[task['id']] == tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12))
+
+
+def test_pewter_to_lavender_milestones_follow_mt_moon_the_trees_and_rock_tunnel():
+    task = shipped()['navigation-hard-pewter-to-lavender']
+    assert [row['id'] for row in task['milestones']] == [
+        'mt-moon-second-basement', 'route-4-east', 'route-9-past-tree', 'rock-tunnel-basement',
+        'route-10-south', 'lavender-town']
+    # Mt. Moon B2F, Route 4, Route 9, Rock Tunnel B1F, Route 10 and Lavender Town.
+    assert [row['check']['map'] for row in task['milestones']] == [61, 15, 20, 232, 21, 4]
+    # Route 4 east of the Mt. Moon exit at (24, 5), and Route 9 east of the tree at (5, 8).
+    assert task['milestones'][1]['check']['area'] == [24, 0, 89, 17]
+    assert task['milestones'][2]['check']['area'] == [6, 0, 59, 17]
+    # Only the route is battle-free. Cerulean City and Nugget Bridge keep their trainers.
+    areas = navigation_conditions.AFFECTED[task['id']]
+    assert 'ROCK_TUNNEL' in areas and not {'CERULEAN', 'ROUTE_24', 'ROUTE_25'} & set(areas)

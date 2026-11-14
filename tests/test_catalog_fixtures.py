@@ -96,6 +96,19 @@ def test_silph_co_start_locks_every_card_key_door_and_hides_only_the_beaten_riva
     assert recipe['hidden'] == [0xA7]
 
 
+def test_pewter_to_lavender_start_has_cut_and_flash_but_no_way_to_skip_rock_tunnel():
+    recipe = recipes()['navigation-hard-pewter-to-lavender']
+    # Archive 66 is before Lavender Town and the S.S. Ticket. Map 58 is the Pewter Pokemon Center.
+    assert (recipe['archive'], recipe['map_id'], recipe['position']) == (66, 58, [3, 7])
+    moves = [set(member['moves']) for member in recipe['party']]
+    # Cut is move 15 and Flash is 148. Fly 19, Dig 91 and Teleport 100 would skip the route.
+    assert 15 in moves[0] and 148 in moves[1]
+    assert not {19, 91, 100} & set().union(*moves)
+    # Boulder and Cascade badges (bits 0 and 1) allow Flash and Cut outside battle. No Escape Rope.
+    assert recipe['badges'] == 3 and recipe['bag'] == []
+    assert recipe['events'] == {'EVENT_BEAT_BROCK': True}
+
+
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),
                                          ('FAST', 800), ('SLOW', 1250)])
 def test_growth_curve_start_experience(growth, wanted):

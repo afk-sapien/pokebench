@@ -84,6 +84,8 @@ SILPH_DOORS = tuple(f'EVENT_SILPH_CO_{floor}_UNLOCKED_DOOR{suffix}'
                                             (7, '123'), (8, ('',)), (9, '1234'), (10, ('',)), (11, ('',)))
                     for suffix in suffixes)
 SILPH_CO_7F_RIVAL = 0xA7
+# Charmeleon knows Cut (15) and Pikachu knows Flash (148). Neither knows Fly, Dig or Teleport.
+PEWTER_TO_LAVENDER_PARTY = [mon('CHARMELEON', 28, [10, 52, 15, 43]), mon('PIKACHU', 25, [84, 148, 98, 86])]
 RECIPES.update({
     'navigation-hard-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                             events={name: False for name in VICTORY_ROAD_SWITCHES}),
@@ -97,6 +99,11 @@ RECIPES.update({
                                                 'EVENT_BEAT_SILPH_CO_RIVAL': True,
                                                 'EVENT_BEAT_SILPH_CO_GIOVANNI': False},
                                         hidden=[SILPH_CO_7F_RIVAL]),
+    # Early save, before Brock. Brock is marked beaten so the Pewter east exit opens, and the Boulder
+    # and Cascade badges allow Flash and Cut. Lavender is unvisited, nobody knows Fly, the Saffron gates
+    # are shut and Snorlax still blocks Route 12, so Rock Tunnel is the only way to Lavender.
+    'navigation-hard-pewter-to-lavender': archive(66,58,position=[3,7],party=PEWTER_TO_LAVENDER_PARTY,bag=[],
+                                                  badges=3,events={'EVENT_BEAT_BROCK': True}),
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'
