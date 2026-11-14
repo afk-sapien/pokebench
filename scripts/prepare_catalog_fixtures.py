@@ -74,7 +74,7 @@ RECIPES.update({
     'objectives-capture-prepare-battle': archive(150,3,party=[mon('IVYSAUR',20,[33,45,73,22]),mon('PIDGEOTTO',18,[16,28,98]),mon('PIKACHU',18,[84,45,39,98])],bag=[[4,8],[20,2],[11,1]],money=2400,badges=1,path=[('down',2)],events={'EVENT_BEAT_CERULEAN_RIVAL':True}),
 })
 
-# PokeBench Hard starts. Every puzzle flag on the route is reset explicitly.
+# Milestone task starts. Every puzzle flag on the route is reset explicitly.
 VICTORY_ROAD_SWITCHES = ('EVENT_VICTORY_ROAD_1_BOULDER_ON_SWITCH', 'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH1',
                          'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH2', 'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH1',
                          'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH2')
@@ -93,26 +93,26 @@ ELITE_FOUR_PARTY = [mon(species, ELITE_FOUR_LEVEL, moves) for species, moves in 
     ('JOLTEON', [85, 87, 24, 98]), ('ALAKAZAM', [94, 60, 105, 115]), ('LAPRAS', [58, 57, 34, 85]),
     ('RHYDON', [89, 157, 34, 30]), ('VENUSAUR', [75, 72, 34, 79]), ('SNORLAX', [34, 58, 89, 156]))]
 RECIPES.update({
-    'navigation-hard-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
-                                            events={name: False for name in VICTORY_ROAD_SWITCHES}),
+    'navigation-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
+                                       events={name: False for name in VICTORY_ROAD_SWITCHES}),
     # First entry from Route 20. The boulder toggles are still native, so clearing the flags changes nothing.
-    'navigation-hard-seafoam': archive(821,192,position=[4,17],party=NIDOKING,bag=[],badges=255,
-                                       events={name: False for name in SEAFOAM_HOLES}),
+    'navigation-seafoam-islands': archive(821,192,position=[4,17],party=NIDOKING,bag=[],badges=255,
+                                          events={name: False for name in SEAFOAM_HOLES}),
     # Every Card Key door starts locked. The 7F rival is beaten and hidden, as the game leaves him
     # after that battle (toggle 0xA7). Giovanni is not beaten.
-    'navigation-hard-silph-co': archive(562,181,position=[10,17],party=NIDOKING,bag=[],badges=255,
-                                        events={**{name: False for name in SILPH_DOORS},
-                                                'EVENT_BEAT_SILPH_CO_RIVAL': True,
-                                                'EVENT_BEAT_SILPH_CO_GIOVANNI': False},
-                                        hidden=[SILPH_CO_7F_RIVAL]),
+    'navigation-silph-co': archive(562,181,position=[10,17],party=NIDOKING,bag=[],badges=255,
+                                   events={**{name: False for name in SILPH_DOORS},
+                                           'EVENT_BEAT_SILPH_CO_RIVAL': True,
+                                           'EVENT_BEAT_SILPH_CO_GIOVANNI': False},
+                                   hidden=[SILPH_CO_7F_RIVAL]),
     # Early save, before Brock. Brock is marked beaten so the Pewter east exit opens, and the Boulder
     # and Cascade badges allow Flash and Cut. Lavender is unvisited, nobody knows Fly, the Saffron gates
     # are shut and Snorlax still blocks Route 12, so Rock Tunnel is the only way to Lavender.
-    'navigation-hard-pewter-to-lavender': archive(66,58,position=[3,7],party=PEWTER_TO_LAVENDER_PARTY,bag=[],
-                                                  badges=3,events={'EVENT_BEAT_BROCK': True}),
-    # The Short League start in Lorelei's room, with its own party swapped out and the bag emptied.
-    'battle-hard-elite-four': {'source': 'data/red-ability-v4/fixtures/league', 'map_id': 245,
-                               'party': ELITE_FOUR_PARTY, 'bag': [], 'money': 0},
+    'navigation-pewter-to-lavender': archive(66,58,position=[3,7],party=PEWTER_TO_LAVENDER_PARTY,bag=[],
+                                             badges=3,events={'EVENT_BEAT_BROCK': True}),
+    # The League start in Lorelei's room, with its own party swapped out and the bag emptied.
+    'battle-elite-four-no-items': {'source': 'data/red-ability-v4/fixtures/league', 'map_id': 245,
+                                   'party': ELITE_FOUR_PARTY, 'bag': [], 'money': 0},
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'
@@ -257,8 +257,7 @@ def main():
     current = read(args.game_data / 'current.json')['bundle']
     strategy = read(args.game_data / 'bundles' / current / 'strategy.json')
     catalog = Path(__file__).resolve().parents[1] / 'src/pokeagent_bench/catalogs'
-    paths = [*catalog.glob('*.json'), *catalog.glob('hard/*.json')]
-    entries = {e['id']: e for p in paths for e in read(p)['evals'] if e.get('active', True)}
+    entries = {e['id']: e for p in catalog.glob('*.json') for e in read(p)['evals'] if e.get('active', True)}
     args.output.mkdir(parents=True, exist_ok=True)
     report_path = args.output / 'fixture-build.json'
     report = read(report_path) if report_path.exists() else {'fixtures': {}, 'pending': {}}

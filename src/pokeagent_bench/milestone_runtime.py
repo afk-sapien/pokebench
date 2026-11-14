@@ -1,6 +1,6 @@
-"""Private ordered-milestone graders for PokeBench Hard.
+"""Private ordered-milestone graders for the longer Short tasks.
 
-Each Hard task lists ordered milestones in its catalog entry. A milestone is a fixed
+Each milestone task lists ordered milestones in its catalog entry. A milestone is a fixed
 predicate over RAM facts: map, position, event flags, bag items, badges, story flags and
 League wins. The model sees only the task goal, never the milestones or their checks.
 A run earns one point per milestone, in order, and keeps them if it later blacks out
@@ -62,7 +62,7 @@ def validate_check(check):
 
 def validate_milestones(milestones):
     if not isinstance(milestones, list) or not milestones:
-        raise ValueError('Hard tasks need ordered milestones')
+        raise ValueError('Milestone tasks need ordered milestones')
     seen = set()
     for milestone in milestones:
         if not isinstance(milestone, dict) or set(milestone) != {'id', 'description', 'check'}:
@@ -102,14 +102,14 @@ class MilestoneEvaluator:
 
     def __init__(self, initialfacts, objective, task=None):
         if set(objective) != {'kind', 'task_id', 'description'} or objective['kind'] != 'catalog-task':
-            raise ValueError('Invalid Hard objective')
+            raise ValueError('Invalid milestone objective')
         if task is None:
             from .evaluation_catalog import task_definition
             task = task_definition(objective['task_id'])
         if task['id'] != objective['task_id']:
-            raise ValueError('Hard objective names a different task')
+            raise ValueError('Milestone objective names a different task')
         if not initialfacts['valid']:
-            raise ValueError('Hard checkpoint must be a valid started game')
+            raise ValueError('Milestone checkpoint must be a valid started game')
         self.objective = deepcopy(objective)
         self.task_id = task['id']
         self.milestones = deepcopy(validate_milestones(task['milestones']))
@@ -123,7 +123,7 @@ class MilestoneEvaluator:
         self.disqualified = False
         self.disqualification_reason = None
         if blackout(self.baseline):
-            raise ValueError('Hard task cannot start blacked out')
+            raise ValueError('Task cannot start blacked out')
         for milestone in self.milestones:
             if self.holds(milestone['check'], self.baseline):
                 raise ValueError(f'Milestone {milestone["id"]} is already met at the start')
@@ -168,7 +168,7 @@ class MilestoneEvaluator:
             self.pending = None
             return []
         if blackout(facts):
-            self.reject('Blackout during the Hard task')
+            self.reject('Blackout during the task')
             return []
         milestone = self.milestones[len(self.awarded)]
         if not self.holds(milestone['check'], facts):

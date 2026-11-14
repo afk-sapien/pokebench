@@ -1,4 +1,4 @@
-"""Scripted references for PokeBench Hard. No model calls.
+"""Scripted references for the milestone tasks. No model calls.
 
 A reference issues only the assisted commands a model gets, through the same
 command executor, and counts one decision per command. A second emulator, synced
@@ -498,9 +498,9 @@ def elite_four(driver):
     raise RuntimeError(f'The Hall of Fame did not record the party. At {locate(d.engine)}')
 
 
-SOLUTIONS = {'navigation-hard-victory-road': victory_road, 'navigation-hard-seafoam': seafoam,
-             'navigation-hard-silph-co': silph_co, 'navigation-hard-pewter-to-lavender': pewter_to_lavender,
-             'battle-hard-elite-four': elite_four}
+SOLUTIONS = {'navigation-victory-road': victory_road, 'navigation-seafoam-islands': seafoam,
+             'navigation-silph-co': silph_co, 'navigation-pewter-to-lavender': pewter_to_lavender,
+             'battle-elite-four-no-items': elite_four}
 
 
 def build(task_id, rom, game_data, fixtures, output):

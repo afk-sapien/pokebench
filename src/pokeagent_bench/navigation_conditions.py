@@ -9,12 +9,12 @@ AFFECTED = {
     'navigation-branching-cave': ('MT_MOON', 'ROUTE_3', 'ROUTE_4'),
     'navigation-boulder-puzzle': ('VICTORY_ROAD', 'ROUTE_23'),
     'navigation-blocked-route-alternative': ('ROUTE_5', 'ROUTE_6'),
-    'navigation-hard-victory-road': ('VICTORY_ROAD', 'ROUTE_23'),
-    'navigation-hard-seafoam': ('SEAFOAM_ISLANDS', 'ROUTE_20'),
+    'navigation-victory-road': ('VICTORY_ROAD', 'ROUTE_23'),
+    'navigation-seafoam-islands': ('SEAFOAM_ISLANDS', 'ROUTE_20'),
     # Per floor, so the rival and Giovanni flags never match.
-    'navigation-hard-silph-co': tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12)),
+    'navigation-silph-co': tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12)),
     # The route only. Trainers off it, such as on Nugget Bridge, still battle.
-    'navigation-hard-pewter-to-lavender': ('ROUTE_3', 'MT_MOON', 'ROUTE_4', 'ROUTE_9', 'ROUTE_10', 'ROCK_TUNNEL'),
+    'navigation-pewter-to-lavender': ('ROUTE_3', 'MT_MOON', 'ROUTE_4', 'ROUTE_9', 'ROUTE_10', 'ROCK_TUNNEL'),
 }
 # Red TryDoWildEncounter: ld a,1 / and a / ret returns NZ (no encounter).
 # The guard covers both initial native checks before any change is installed.

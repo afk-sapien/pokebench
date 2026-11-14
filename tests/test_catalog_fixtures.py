@@ -86,7 +86,7 @@ def test_navigation_starts_hold_the_documented_max_repels(task):
 
 
 def test_silph_co_start_locks_every_card_key_door_and_hides_only_the_beaten_rival():
-    recipe = recipes()['navigation-hard-silph-co']
+    recipe = recipes()['navigation-silph-co']
     doors = [name for name in recipe['events'] if 'UNLOCKED_DOOR' in name]
     # 2F to 11F hold 20 Card Key doors in the native scripts. Every one starts locked.
     assert len(set(doors)) == 20 and not any(recipe['events'][name] for name in doors)
@@ -97,7 +97,7 @@ def test_silph_co_start_locks_every_card_key_door_and_hides_only_the_beaten_riva
 
 
 def test_pewter_to_lavender_start_has_cut_and_flash_but_no_way_to_skip_rock_tunnel():
-    recipe = recipes()['navigation-hard-pewter-to-lavender']
+    recipe = recipes()['navigation-pewter-to-lavender']
     # Archive 66 is before Lavender Town and the S.S. Ticket. Map 58 is the Pewter Pokemon Center.
     assert (recipe['archive'], recipe['map_id'], recipe['position']) == (66, 58, [3, 7])
     moves = [set(member['moves']) for member in recipe['party']]
@@ -110,8 +110,8 @@ def test_pewter_to_lavender_start_has_cut_and_flash_but_no_way_to_skip_rock_tunn
 
 
 def test_elite_four_start_has_no_items_and_no_shortcut_moves():
-    recipe = recipes()['battle-hard-elite-four']
-    # The Short League start in Lorelei's room (map 245), with the bag and money emptied.
+    recipe = recipes()['battle-elite-four-no-items']
+    # The League start in Lorelei's room (map 245), with the bag and money emptied.
     assert (recipe['source'], recipe['map_id']) == ('data/red-ability-v4/fixtures/league', 245)
     assert recipe['bag'] == [] and recipe['money'] == 0
     party = recipe['party']

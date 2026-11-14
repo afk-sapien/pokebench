@@ -59,9 +59,9 @@ def render_catalog(data=None):
             solution = ('<h4>Expected solution (reviewer explanation)</h4><p>' + escape(task['expected_solution']) + '</p><p>This explanation is not added to the agent instruction.</p>') if task.get('expected_solution') else ''
             scenario = purpose + solution + '<h4>Concrete setup</h4>' + _list(task.get('scenario_details', []))
             if task.get('milestones'):
-                scenario += '<h4>Milestones within this one attempt</h4>'
                 plan = task.get('scoring_plan')
                 if plan:
+                    scenario += '<h4>Milestones within this one attempt</h4>'
                     score_state = 'Campaign score' if implementation else 'Proposed campaign score'
                     score_status = 'Runtime tracking is implemented.' if implementation else 'Scoring integration is pending.'
                     scenario += '<p><strong>' + score_state + ': ' + str(plan['maximum_points']) + ' points across ' + str(len(task['milestones'])) + ' milestones.</strong> ' + score_status + '</p>'
@@ -72,7 +72,9 @@ def render_catalog(data=None):
                     scenario += '<h4>Run profile: measured separately from points</h4>'
                     scenario += _list([m['label'] + ': ' + m['measure'] + ' Availability: ' + m['availability'] for m in task.get('run_metrics', [])])
                 else:
-                    scenario += _list([m['label'] for m in task['milestones']])
+                    scenario += ('<h4>Scored milestones, in order</h4><p>Each milestone reached in order adds '
+                                 'an equal share of the task score, from 0 to 1.</p>')
+                    scenario += _list([m['description'] for m in task['milestones']])
             questions = '<h4>Still to verify</h4>' + _list(task.get('open_questions', []))
             if implementation:
                 questions = '<h4>Validation</h4><p>Model difficulty calibration is pending.</p>'

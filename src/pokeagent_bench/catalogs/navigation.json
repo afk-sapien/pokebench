@@ -379,6 +379,250 @@
       ],
       "active": false,
       "retirement_reason": "An arbitrary floor checklist overlaps movement and menu operations without a distinct spatial problem."
+    },
+    {
+      "id": "navigation-victory-road",
+      "title": "Cross all of Victory Road",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-victory-road",
+        "description": "Cross Victory Road and leave by its far exit onto Route 23, toward Indigo Plateau. Normal backtracking and room resets are allowed. Trainers on this route are already defeated and wild encounters are disabled."
+      },
+      "start": "Victory Road 1F, first controllable tile after entering from Route 23. Every boulder switch on all three floors is unsolved.",
+      "success": [
+        "Leave Victory Road by the 2F exit onto the part of Route 23 that leads to Indigo Plateau."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the exit.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 18000000,
+      "decision_limit": 1200,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native unsolved start with a legal Strength user and all eight badges.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Solve a multi-floor boulder puzzle with resets",
+      "agent_goal": "Cross Victory Road and leave by its far exit onto Route 23, toward Indigo Plateau. Normal backtracking and room resets are allowed. Trainers on this route are already defeated and wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Empty bag. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. Every boulder switch on 1F, 2F and 3F is unsolved. All Victory Road trainers already defeated.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/VictoryRoad2F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/VictoryRoad3F.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models."
+      ],
+      "measures": "Push boulders onto switches on three floors, including a boulder dropped through a 3F hole, and keep the route when floors reset.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "second-floor", "description": "Reach Victory Road 2F.", "check": {"map": 194}},
+        {"id": "third-floor", "description": "Reach Victory Road 3F.", "check": {"map": 198}},
+        {"id": "third-floor-switch", "description": "Put a boulder on the 3F switch, which opens the way to the south room.", "check": {"event": 1632}},
+        {"id": "boulder-dropped", "description": "Push a boulder into the 3F hole so it lands on 2F.", "check": {"event": 1638}},
+        {"id": "second-floor-switch", "description": "Put the dropped boulder on the second 2F switch, which opens the ladder to the east side.", "check": {"event": 1343}},
+        {"id": "exit", "description": "Leave by the 2F exit onto Route 23 toward Indigo Plateau.", "check": {"map": 34, "near": [14, 31]}}
+      ]
+    },
+    {
+      "id": "navigation-seafoam-islands",
+      "title": "Reach Articuno in Seafoam Islands",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-seafoam-islands",
+        "description": "Find Articuno on Seafoam Islands B4F, the lowest floor, and stand on a tile next to it. You do not need to battle or catch it. Normal backtracking and room resets are allowed. Wild encounters are disabled."
+      },
+      "start": "Seafoam Islands 1F, first controllable tile after entering from the west side of Route 20. No boulder has been pushed into any hole on any floor.",
+      "success": [
+        "Stand on a tile next to Articuno on B4F, outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Articuno.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 6300000,
+      "decision_limit": 420,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native unsolved start with a legal Strength and Surf user and all eight badges.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Fill holes with boulders to slow a current, then surf past it",
+      "agent_goal": "Find Articuno on Seafoam Islands B4F, the lowest floor, and stand on a tile next to it. You do not need to battle or catch it. Normal backtracking and room resets are allowed. Wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Empty bag. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. No boulder has been pushed into a hole on any floor, so both currents run. Articuno has not been met.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. Route 20 trainers are already defeated. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/SeafoamIslandsB3F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/SeafoamIslandsB4F.asm",
+        "https://github.com/pret/pokered/blob/master/engine/overworld/field_move_messages.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models."
+      ],
+      "measures": "Find a four-floor ladder route, push two B3F boulders into its holes to slow the B4F current, then surf from the one tile the current blocked.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "first-basement", "description": "Reach B1F.", "check": {"map": 159}},
+        {"id": "second-basement", "description": "Reach B2F.", "check": {"map": 160}},
+        {"id": "third-basement", "description": "Reach B3F.", "check": {"map": 161}},
+        {"id": "west-hole", "description": "Push a boulder into the west B3F hole.", "check": {"event": 2512}},
+        {"id": "east-hole", "description": "Push a boulder into the east B3F hole, which slows the B4F current.", "check": {"event": 2513}},
+        {"id": "articuno", "description": "Stand next to Articuno on B4F.", "check": {"map": 162, "near": [6, 1]}}
+      ]
+    },
+    {
+      "id": "navigation-silph-co",
+      "title": "Reach Giovanni in Silph Co.",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-silph-co",
+        "description": "Find Giovanni in Silph Co. and step into the room on 11F, the top floor, where he waits. You do not need to battle him. Normal backtracking is allowed. Wild encounters are disabled."
+      },
+      "start": "Silph Co. 1F, just inside the front door. Every Card Key door is locked, the Card Key has not been picked up and Giovanni has not been beaten.",
+      "success": [
+        "Stand inside Giovanni's room on 11F or in its doorway, outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Giovanni's room.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 5700000,
+      "decision_limit": 380,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start with every Card Key door locked, the Card Key still on 5F and Giovanni unbeaten.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Find a key item, then chain locked doors and warp pads across floors to a sealed room",
+      "agent_goal": "Find Giovanni in Silph Co. and step into the room on 11F, the top floor, where he waits. You do not need to battle him. Normal backtracking is allowed. Wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Empty bag. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. Every Card Key door in the building is locked and the Card Key has not been picked up. The rival on 7F has already been beaten and has left. Giovanni has not been beaten.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. Every Silph Co. trainer is already defeated. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/engine/events/card_key.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo5F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo9F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo3F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/SilphCo7F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/SilphCo11F.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "The warp pads show on the text map as exits with no destination, as on screen. Check in the pilot whether models learn the pad links or loop between pads."
+      ],
+      "measures": "Find the Card Key on a 5F corridor whose ends are blocked by beaten trainers, which means riding the 5F pad to 9F and back and stepping off it the other way, then open a locked 3F door to reach the pad to 7F, take the second pad in that 7F room to the sealed west hall of 11F, then open the door into Giovanni's room.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "fifth-floor-corridor", "description": "Reach the 5F bottom corridor where the Card Key lies.", "check": {"map": 210, "area": [9, 16, 28, 16]}},
+        {"id": "card-key", "description": "Pick up the Card Key on 5F.", "check": {"item": 48}},
+        {"id": "third-floor-pad-room", "description": "Open a locked 3F door into the room with the pad to 7F.", "check": {"map": 208, "area": [10, 5, 16, 12]}},
+        {"id": "eleventh-floor-west-hall", "description": "Reach the sealed west hall of 11F through the 7F pad.", "check": {"map": 235, "area": [1, 1, 4, 16]}},
+        {"id": "giovanni-room", "description": "Open the 11F door and step into Giovanni's room.", "check": {"map": 235, "area": [5, 5, 12, 13]}}
+      ]
+    },
+    {
+      "id": "navigation-pewter-to-lavender",
+      "title": "Travel from Pewter City to Lavender Town",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-pewter-to-lavender",
+        "description": "Travel from Pewter City to Lavender Town. Normal backtracking is allowed. Wild encounters are disabled."
+      },
+      "start": "Pewter City Pokemon Center, just inside the door, early in the story. Lavender Town has not been visited and Snorlax still blocks Route 12.",
+      "success": [
+        "Stand in Lavender Town, outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Lavender Town.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 16500000,
+      "decision_limit": 1100,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start before Lavender Town is visited, with Snorlax on Route 12 and the Saffron City gates shut.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Cross several routes and two caves, using Cut and Flash outside battle",
+      "agent_goal": "Travel from Pewter City to Lavender Town. Normal backtracking is allowed. Wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Charmeleon level 28 with Cut, Scratch, Ember and Leer, and Pikachu level 25 with Flash, Thundershock, Quick Attack and Thunder Wave. Full HP, no status and full PP. Empty bag. No Escape Rope, Fly, Dig or Teleport.",
+        "Boulder and Cascade badges owned, so Flash and Cut work outside battle. Brock is beaten. Lavender Town has not been visited, the Saffron City gates are shut and Snorlax blocks Route 12, so the only way in is through Rock Tunnel. No S.S. Ticket, so a guard still blocks the robbed house in Cerulean City. No fossil has been taken in Mt. Moon.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. Every trainer on Route 3, Mt. Moon, Route 4, Route 9, Route 10 and Rock Tunnel is already defeated. Trainers off that route still battle. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/PewterCity.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/MtMoonB2F.asm",
+        "https://github.com/pret/pokered/blob/master/engine/overworld/cut.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/Route9.asm",
+        "https://github.com/pret/pokered/blob/master/engine/menus/start_sub_menus.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/RockTunnel1F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/RockTunnelB1F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/MtMoonB2F.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeruleanCity.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/BillsHouse.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Rock Tunnel is dark until Flash is used, and the text map shows no terrain there until then, as the screen shows none. Check in the pilot whether models use Flash or walk the tunnel blind.",
+        "The trees in Cerulean City and on Route 9 show on the text map as T, a small tree that Cut clears. Check in the pilot whether models use Cut on them.",
+        "On Mt. Moon B2F the two fossils fill the only gap north, and taking one makes the Super Nerd take the other. Check in the pilot whether models read the fossils as the way through."
+      ],
+      "measures": "Cross Mt. Moon through its basement to Route 4, taking a fossil to open the way north on B2F, use Cut on the small trees in Cerulean City and on Route 9, then use Flash in the dark Rock Tunnel and follow the ladders through both floors to Route 10 and Lavender Town.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "mt-moon-second-basement", "description": "Reach Mt. Moon B2F.", "check": {"map": 61}},
+        {"id": "route-4-east", "description": "Leave Mt. Moon onto Route 4 east of the mountain.", "check": {"map": 15, "area": [24, 0, 89, 17]}},
+        {"id": "route-9-past-tree", "description": "Cut the small tree at the west end of Route 9 and walk past it.", "check": {"map": 20, "area": [6, 0, 59, 17]}},
+        {"id": "rock-tunnel-basement", "description": "Reach Rock Tunnel B1F.", "check": {"map": 232}},
+        {"id": "route-10-south", "description": "Leave Rock Tunnel onto Route 10 south of the tunnel.", "check": {"map": 21, "area": [0, 52, 19, 71]}},
+        {"id": "lavender-town", "description": "Reach Lavender Town.", "check": {"map": 4}}
+      ]
     }
   ]
 }

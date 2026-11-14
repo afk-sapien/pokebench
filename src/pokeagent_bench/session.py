@@ -184,7 +184,7 @@ class Session:
             self.manifest['scoring_protocol'] = 'campaign-progress-v1' if self.campaign_tracking else 'catalog-tasks-v1'
             if isinstance(self.evaluator, MilestoneEvaluator):
                 from .milestone_runtime import PROTOCOL
-                self.manifest['benchmark_track'], self.manifest['scoring_protocol'] = 'pokebench-hard', PROTOCOL
+                self.manifest['scoring_protocol'] = PROTOCOL
         if track == "gameplay":
             from .gameplay import POLICY, catalog_hash
             self.manifest["observation_policy"] = POLICY

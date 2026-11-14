@@ -1,27 +1,31 @@
-"""The shipped PokeBench Hard tasks load, stay out of Short, and keep their caps and checks consistent."""
+"""The shipped milestone tasks load as Short tasks and keep their caps and checks consistent."""
+from pokeagent_bench import benchmark_tracks as tracks
 from pokeagent_bench import evaluation_catalog as catalog
 from pokeagent_bench import milestone_runtime as runtime
 from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
-SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam', 'navigation-hard-silph-co',
-           'navigation-hard-pewter-to-lavender', 'battle-hard-elite-four'}
+SHIPPED = {'navigation-victory-road', 'navigation-seafoam-islands', 'navigation-silph-co',
+           'navigation-pewter-to-lavender', 'battle-elite-four-no-items'}
 
 
 def shipped():
-    catalog._hard_definitions.cache_clear()
-    return {task['id']: task for group in catalog.load_catalog(hard=True) for task in group['evals']}
+    catalog.milestone_tasks.cache_clear()
+    return {task['id']: task for group in catalog.load_catalog() for task in group['evals']
+            if task['id'] in catalog.milestone_tasks()}
 
 
-def test_shipped_hard_tasks_load_only_in_the_hard_table():
+def test_shipped_milestone_tasks_are_short_tasks():
     tasks = shipped()
-    assert SHIPPED <= set(tasks)
-    assert SHIPPED <= catalog.hard_tasks()
-    short = {task['id'] for group in catalog.load_catalog(include_retired=True) for task in group['evals']}
-    assert not short & set(tasks)
+    assert set(tasks) == SHIPPED
+    for group in catalog.load_catalog():
+        for task in group['evals']:
+            if task['id'] in SHIPPED:
+                assert tracks.for_category(group['category']) == tracks.SHORT
+                assert group['category'] == task['id'].split('-')[0]
 
 
-def test_shipped_hard_tasks_have_valid_milestones_and_matching_budgets():
+def test_shipped_milestone_tasks_have_valid_milestones_and_matching_budgets():
     for task_id, task in shipped().items():
         runtime.validate_milestones(task['milestones'])
         assert task['difficulty'] == 'hard'
@@ -29,8 +33,15 @@ def test_shipped_hard_tasks_have_valid_milestones_and_matching_budgets():
         assert task['objective']['task_id'] == task_id
 
 
+def test_catalog_page_lists_the_scored_milestones_in_order():
+    from pokeagent_bench.catalog_portal import render_catalog
+    page = render_catalog()
+    assert 'Scored milestones, in order' in page
+    assert page.index('Defeat Lorelei.') < page.index('Defeat Bruno.') < page.index('Defeat Lance.')
+
+
 def test_victory_road_milestones_follow_the_forced_route():
-    task = shipped()['navigation-hard-victory-road']
+    task = shipped()['navigation-victory-road']
     assert [row['id'] for row in task['milestones']] == [
         'second-floor', 'third-floor', 'third-floor-switch', 'boulder-dropped', 'second-floor-switch', 'exit']
     # EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH1, EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH2, EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH2
@@ -41,7 +52,7 @@ def test_victory_road_milestones_follow_the_forced_route():
 
 
 def test_seafoam_milestones_score_only_the_holes_that_gate_articuno():
-    task = shipped()['navigation-hard-seafoam']
+    task = shipped()['navigation-seafoam-islands']
     assert [row['id'] for row in task['milestones']] == [
         'first-basement', 'second-basement', 'third-basement', 'west-hole', 'east-hole', 'articuno']
     assert [row['check'].get('map') for row in task['milestones'][:3]] == [159, 160, 161]
@@ -53,7 +64,7 @@ def test_seafoam_milestones_score_only_the_holes_that_gate_articuno():
 
 
 def test_silph_co_milestones_follow_the_card_key_and_pad_route():
-    task = shipped()['navigation-hard-silph-co']
+    task = shipped()['navigation-silph-co']
     assert [row['id'] for row in task['milestones']] == [
         'fifth-floor-corridor', 'card-key', 'third-floor-pad-room', 'eleventh-floor-west-hall', 'giovanni-room']
     # 5F, 3F and 11F. CARD_KEY is item 0x30.
@@ -65,7 +76,7 @@ def test_silph_co_milestones_follow_the_card_key_and_pad_route():
 
 
 def test_pewter_to_lavender_milestones_follow_mt_moon_the_trees_and_rock_tunnel():
-    task = shipped()['navigation-hard-pewter-to-lavender']
+    task = shipped()['navigation-pewter-to-lavender']
     assert [row['id'] for row in task['milestones']] == [
         'mt-moon-second-basement', 'route-4-east', 'route-9-past-tree', 'rock-tunnel-basement',
         'route-10-south', 'lavender-town']
@@ -80,7 +91,7 @@ def test_pewter_to_lavender_milestones_follow_mt_moon_the_trees_and_rock_tunnel(
 
 
 def test_elite_four_milestones_score_each_league_win_in_order():
-    task = shipped()['battle-hard-elite-four']
+    task = shipped()['battle-elite-four-no-items']
     assert [row['id'] for row in task['milestones']] == ['lorelei', 'bruno', 'agatha', 'lance', 'hall-of-fame']
     assert [row['check'].get('elite') for row in task['milestones'][:4]] == list(runtime.ELITE)
     # The last point needs the Champion beaten and a new Hall of Fame record in its room (map 118).

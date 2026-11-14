@@ -72,8 +72,8 @@ def validate_objective(value):
 def evidence(engine, objective=None):
     state = engine.evidence()
     if objective and objective["kind"] == "catalog-task":
-        from .evaluation_catalog import hard_tasks
-        if objective["task_id"] in hard_tasks():
+        from .evaluation_catalog import milestone_tasks
+        if objective["task_id"] in milestone_tasks():
             from .milestone_runtime import milestone_evidence
             state["catalog"] = milestone_evidence(engine, objective["task_id"])
             return state
@@ -335,8 +335,8 @@ class PreparationEvaluator:
 def create_challenge_evaluator(initial, objective):
     objective = validate_objective(objective)
     if objective['kind'] == 'catalog-task':
-        from .evaluation_catalog import hard_tasks
-        if objective['task_id'] in hard_tasks():
+        from .evaluation_catalog import milestone_tasks
+        if objective['task_id'] in milestone_tasks():
             from .milestone_runtime import MilestoneEvaluator
             return MilestoneEvaluator(initial['catalog'], objective)
         from .catalog_runtime import CatalogEvaluator

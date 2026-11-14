@@ -1,19 +1,17 @@
 # Six-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **47 primary tasks and one inventory variant** across six
-categories: 6 navigation, 12 battle, 10 operations plus one variant, 10 preparation,
-8 quests and one campaign. All 48 task cases have checked starting saves and
-runtime evaluators in the local `data/catalog-v2` fixture set. Difficulty remains
-provisional until model trials. Historical results and the old fixture set remain
-available.
+Across both benchmarks, the catalog has **52 primary tasks and one inventory variant** across six
+categories: 10 navigation, 13 battle, 10 operations plus one variant, 10 preparation,
+8 quests and one campaign. Every task case has a checked starting save and a runtime
+evaluator. The five [milestone tasks](#milestone-tasks) join the local fixture pack
+with the next harness version. Difficulty remains provisional until model trials.
+Historical results and the old fixture set remain available.
 
-**PokeBench** contains the 46 focused tasks and one inventory variant in five
+**PokeBench** contains the 51 focused tasks and one inventory variant in five
 categories. Its ranked score averages four of them: navigation, battle, operations
 and quests. Preparation is scored and reported next to the ranked score, but it is
 not ranked. **PokeBench Long** contains only the continuous campaign. They use
 separate batches, token ceilings and reports. See [track commands](../history/benchmark-tracks-v053.md).
-**PokeBench Hard** is a separate table of longer tasks scored by ordered milestones.
-See [PokeBench Hard](hard.md).
 
 Navigation tests spatial problems. Quests test NPC instructions and meaningful
 prerequisite sequences. Travel within a quest is incidental, not another score.
@@ -37,6 +35,47 @@ links and records. The portal calls this category Quests, and the CLI also accep
 | [Preparation](preparation.md) | Choose a useful team and allocate resources | Preparation choices, then freeze the submission | Automated evaluator battle outcomes |
 | [Quests](objectives.md) | Follow NPC instructions and quest dependencies | Assisted mechanics | Verified objective completion |
 | [Campaign](campaign.md) | Combine skills over a sustained objective | Assisted mechanics and shared memory rules | Completion plus declared progress milestones |
+
+## Milestone tasks
+
+Five Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
+its usual category and weighs the same as any other task in that category's average.
+
+Each one lists ordered milestones in its catalog entry, for example the floors of a
+dungeon and its exit. A milestone is a fixed check on game memory: map, position, event
+flags, bag items, badges, story flags and League wins. A run earns one point for each
+milestone, in order, and each one must hold on two different frames. The task score is the
+share of milestones reached, from 0 to 1. A run that blacks out or reaches its decision cap
+keeps the points it already earned.
+
+The model sees only the task goal, the same screen and the same text it sees in every other
+task. It never sees the milestones, their checks or a running score. A start state that
+already meets a milestone is refused.
+
+Each milestone task has a checked start state and a scripted reference run that reaches
+every milestone. Its decision cap is about five times the reference, and its token budget
+is 15,000 tokens per allowed decision. No model has run these tasks yet.
+
+| Task | Category | Start | Milestones | Reference decisions | Cap |
+| --- | --- | --- | --- | --- | --- |
+| [Cross all of Victory Road](navigation.md#cross-all-of-victory-road) | Navigation | 1F entrance, every boulder switch unsolved | 6 | 236 | 1,200 |
+| [Reach Articuno in Seafoam Islands](navigation.md#reach-articuno-in-seafoam-islands) | Navigation | 1F west entrance, no boulder in any hole | 6 | 83 | 420 |
+| [Reach Giovanni in Silph Co.](navigation.md#reach-giovanni-in-silph-co) | Navigation | 1F front door, every Card Key door locked, no Card Key | 5 | 76 | 380 |
+| [Travel from Pewter City to Lavender Town](navigation.md#travel-from-pewter-city-to-lavender-town) | Navigation | Pewter Pokemon Center, early story, Cut and Flash party | 6 | 221 | 1,100 |
+| [Defeat the Elite Four and the Champion with no items](battle.md#defeat-the-elite-four-and-the-champion-with-no-items) | Battle | Lorelei's room, empty bag, six level 56 Pokemon | 5 | 100 | 500 |
+
+Published rows keep the harness version and task set they were run on. Each row averages
+only the tasks its version ran, so these tasks count only on rows run on a version that
+includes them.
+
+`scripts/reference_milestone_tasks.py` plays each task with the same assisted commands a
+model gets, one decision per command. It makes no model calls. It replays the native
+inputs through the catalog runner and writes the reference proof next to the private start.
+
+```sh
+uv run python scripts/reference_milestone_tasks.py --rom ROM --game-data GAME_DATA \
+  --fixtures FIXTURES --output OUTPUT --tasks navigation-victory-road navigation-seafoam-islands
+```
 
 ## Inspect the catalog
 

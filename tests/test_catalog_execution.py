@@ -192,7 +192,7 @@ def test_preparation_cannot_purchase_extra_submissions(tmp_path, monkeypatch):
 
 
 def test_active_focused_tasks_have_explicit_decision_budgets():
-    from pokeagent_bench.evaluation_catalog import load_catalog
+    from pokeagent_bench.evaluation_catalog import load_catalog, milestone_tasks
     for group in load_catalog():
         if group['category'] == 'campaign':
             continue
@@ -200,6 +200,9 @@ def test_active_focused_tasks_have_explicit_decision_budgets():
             assert type(task['decision_limit']) is int and task['decision_limit'] > 0
             if group['category'] == 'preparation':
                 assert task['decision_limit'] == 1
+            elif task['id'] in milestone_tasks():
+                # About five times the scripted reference, at 15,000 tokens per decision.
+                assert task['token_limit'] == task['decision_limit'] * 15000
             else:
                 if calibration := task.get('budget_calibration'):
                     assert calibration['reference_verified']

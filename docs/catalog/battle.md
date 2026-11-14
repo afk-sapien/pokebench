@@ -354,3 +354,30 @@ Revision 3 assigns each task a primary skill. Counts reflect useful scenarios ra
 
 - Confirm the archived difficult-team source preserves the documented team, full PP, and exactly five Revives plus one Elixer.
 
+## Defeat the Elite Four and the Champion with no items
+
+`battle-elite-four-no-items`
+
+Scored by milestones, see [milestone tasks](README.md#milestone-tasks).
+
+**Agent goal:** Defeat Lorelei, Bruno, Agatha, Lance and the Champion, then complete the Hall of Fame registration. The bag is empty, so nothing heals the party between battles. Do not nickname Pokemon.
+
+**Start:** Lorelei's room at the Pokemon League, just inside the door. All eight badges are owned, no Elite Four member or Champion has been defeated and the Hall of Fame is empty.
+
+**Concrete setup**
+
+- Party, all level 56, full HP, no status and full PP: Jolteon with Thunderbolt, Thunder, Double Kick and Quick Attack. Alakazam with Psychic, Psybeam, Recover and Reflect. Lapras with Ice Beam, Surf, Body Slam and Thunderbolt.
+- Rhydon with Earthquake, Rock Slide, Body Slam and Horn Attack. Venusaur with Razor Leaf, Mega Drain, Body Slam and Sleep Powder. Snorlax with Body Slam, Ice Beam, Earthquake and Rest.
+- Empty bag and no money to spend, and the League doors lock behind the player, so HP and PP carry from one battle to the next. Recover and Rest are the only healing.
+- No one-hit knockout, fixed-damage, Hyper Beam or Explosion moves.
+
+**Scored milestones**
+
+1. Defeat Lorelei.
+2. Defeat Bruno.
+3. Defeat Agatha.
+4. Defeat Lance.
+5. Defeat the Champion and complete the Hall of Fame registration.
+
+The level is set so the scripted reference just wins. It picks the strongest typed move each turn, heals below a third of its HP and switches to the healthiest strong Pokemon. At level 56 it ends with one Pokemon standing, and at level 54 it blacks out against the Champion. A League win is read from the game's own defeat flags, and the last point also needs a new Hall of Fame record.
+

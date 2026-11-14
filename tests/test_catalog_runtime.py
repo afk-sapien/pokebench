@@ -8,6 +8,7 @@ import pytest
 
 from pokeagent_bench.catalog_runtime import CatalogEvaluator, TASK_IDS, catalog_evidence
 from pokeagent_bench.campaign_runtime import STORY_FLAGS
+from pokeagent_bench.evaluation_catalog import milestone_tasks
 
 
 def mon(species, hp=29, maximum=None, dvs=1):
@@ -50,6 +51,9 @@ def test_registry_matches_every_focused_catalog_entry():
     root = Path(__file__).parents[1] / 'src/pokeagent_bench/catalogs'
     ids = {row['id'] for category in ('navigation', 'battle', 'objectives', 'operations')
            for row in json.loads((root / (category + '.json')).read_text())['evals']}
+    # Milestone tasks have their own evaluator in milestone_runtime.
+    assert TASK_IDS.isdisjoint(milestone_tasks())
+    ids -= milestone_tasks()
     assert TASK_IDS == ids
     assert len(ids) == 41
 
