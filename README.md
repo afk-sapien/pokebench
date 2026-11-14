@@ -11,7 +11,7 @@ The current catalog is split into two benchmarks with separate rankings.
 
 Short and Long scores are never averaged together. Results and replays are on the [public site](https://afk-sapien.github.io/pokebench/). See the [catalog](docs/catalog/README.md) and [long runs](docs/long-runs.md).
 
-`pokebench catalog` and new `catalog-batch` runs default to Short. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each batch has its own token ceiling. No models are launched by inspecting the catalog. See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring and [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls, preparation assessment and result aggregation.
+`pokebench catalog` and new `catalog-batch` runs default to Short. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each task runs at its own decision and token caps. A batch total is reported, never used to cut a task. No models are launched by inspecting the catalog. See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring and [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls, preparation assessment and result aggregation.
 
 The earlier 28-task development suite and the v1 beta release protocol are kept in [docs/history](docs/history/release-v1-beta.md). They are not the current catalog.
 
@@ -40,13 +40,13 @@ uv run pokebench run --model claude-sonnet-5-5 --suite smoke
 
 The last command runs three cheap tasks to check that your setup works. Two leaderboard models used about 40K tokens on them. When it passes, run a real suite with the same command.
 
-| Suite | What it runs | Default token budget |
-| --- | --- | --- |
-| `smoke` | Three cheap tasks that check your setup. Never a leaderboard result | 500K |
-| `short` | Every ready PokeBench task | 60M |
-| `long` | The PokeBench Long campaign, up to 2,000 decisions | 30M |
+| Suite | What it runs | Reference budget | Worst case |
+| --- | --- | --- | --- |
+| `smoke` | Three cheap tasks that check your setup. Never a leaderboard result | 500K | 3.2M |
+| `short` | Every ready PokeBench task | 60M | 203M |
+| `long` | The PokeBench Long campaign, up to 2,000 decisions | 30M | 30M |
 
-Short and smoke run at low reasoning effort and Long at medium, as the leaderboard runs did. `run --suite` prints the plan and the token budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see a rough dollar ceiling for the whole budget. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the token budget.
+Short and smoke run at low reasoning effort and Long at medium, as the leaderboard runs did. Each task runs at its own decision and token caps, so a task never loses its allowance to the tasks that ran before it. The worst case is the sum of those caps. The reference budget is the leaderboard figure. A run that passes it prints a warning and goes on. `run --suite` prints the plan, the worst case and the reference budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see rough dollar figures for both. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the reference budget.
 
 If the Claude provider fails before the model replies, the call counts no tokens. The harness tries the decision again after 15 s, 1 min, 4 min and 10 min. A usage limit is not retried. If the provider is still failing, the task pauses at its last checkpoint and the suite stops there. Run the same command later and the task resumes from that checkpoint.
 

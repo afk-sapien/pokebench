@@ -350,6 +350,10 @@ def check_cell(cell, files, fixtures, rom, work, replay):
     if limits['max_total_tokens'] > cell['token_limit'] or (
             tokens > cell['token_limit'] and result.get('stop_reason') != 'token_budget'):
         raise ValueError(f'Over budget: more than {cell["token_limit"]} tokens')
+    # A lower cap means something outside the task, such as a shared suite budget, cut this run.
+    if (limits['max_model_calls'], limits['max_total_tokens']) != (cell['decision_limit'], cell['token_limit']):
+        raise ValueError(f'Run was capped below the task, which allows {cell["decision_limit"]} decisions '
+                         f'and {cell["token_limit"]} tokens')
     if result.get('state') != 'finished' or result.get('outcome_category') in ('infrastructure_failure', 'interface_failure'):
         raise ValueError('Run did not finish')
     if result.get('score_max') != maximum:

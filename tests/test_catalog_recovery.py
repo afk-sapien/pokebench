@@ -12,7 +12,7 @@ from pokeagent_bench.core import write_json
 
 def make_batch(tmp_path, mode='preparation', state=None, error=None, usage_record=None):
     cell = {'id': 'cell-0001', 'category': 'preparation' if mode == 'preparation' else 'navigation',
-            'task_id': 'test-task', 'mode': mode, 'provider': 'codex', 'model': 'test'}
+            'task_id': 'test-task', 'mode': mode, 'provider': 'codex', 'model': 'test', 'token_limit': 100000}
     write_json(tmp_path / 'plan.json', {'protocol': 'catalog-batch-v1', 'cells': [cell]})
     run = tmp_path / cell['id']
     run.mkdir()

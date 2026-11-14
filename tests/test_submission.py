@@ -220,6 +220,12 @@ def test_over_budget_run_fails(world, bundle):
     assert 'more than 5 decisions' in check(world)['problems'][0]
 
 
+def test_run_capped_below_the_task_fails(world, bundle):
+    # A shared suite budget once shrank later tasks. Such a run is not comparable with the others.
+    repack(bundle, edit('cell-0001/manifest.json', lambda manifest: manifest['limits'].update(max_total_tokens=500)))
+    assert 'capped below the task, which allows 5 decisions and 1000 tokens' in check(world)['problems'][0]
+
+
 @pytest.mark.parametrize('name', ['../evil.json', '/etc/passwd', 'cell-0001/../../x', 'cell-0001/initial.state', 'notes.txt'])
 def test_archive_entries_outside_the_known_names_are_refused(world, bundle, name, tmp_path):
     repack(bundle, lambda files: files.update({name: b'{}'}))

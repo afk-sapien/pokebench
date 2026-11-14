@@ -11,7 +11,8 @@ from .catalog_batch import plan, report, run_batch
 from .catalog_execution import PROVIDERS, inventory
 from .core import write_json
 
-# benchmark, default token budget, fixed task list (None means every ready task)
+# benchmark, reference token budget, fixed task list (None means every ready task).
+# The reference budget only warns. Each task runs at its own caps, so run order never changes a task.
 SUITES = {
     'smoke': (SHORT, 500_000, ('preparation-lead-selection', 'battle-heal-switch-attack-tradeoff', 'battle-wild-basics')),
     'short': (SHORT, 60_000_000, None),
@@ -23,7 +24,7 @@ EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
 SCALE = {
     'smoke': 'Two leaderboard models used about 40K tokens on these three tasks.',
     'short': 'Two leaderboard models used 27M and 49M tokens on this suite.',
-    'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or the token budget, whichever comes first.',
+    'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first.',
 }
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
 
@@ -85,10 +86,14 @@ def estimate(manifest, budget, output, used=0, done=0, price=None):
         lines.append(f'Resuming: {done} of {len(cells)} runs already finished, {millions(used)} tokens used.')
     if manifest.get('held_tasks'):
         lines.append('Left out, fixture needs revalidation: ' + ', '.join(manifest['held_tasks']))
-    lines.append(f'Token budget {millions(budget)}, counting input plus output. No new run starts once it is spent.')
+    worst = sum(cell['token_limit'] for cell in cells)
+    lines.append(f'Each task runs at its own decision and token caps. Worst case {millions(worst)} tokens, '
+                 'counting input plus output.')
+    lines.append(f'Reference budget {millions(budget)}. Passing it prints a warning. It never stops or shortens a task.')
     lines.append(SCALE[suite])
     if price is not None:
-        lines.append(f'At ${price:g} per million tokens the full budget costs about ${budget * price / 1e6:,.2f}. '
+        lines.append(f'At ${price:g} per million tokens the reference budget costs about ${budget * price / 1e6:,.2f} '
+                     f'and the worst case about ${worst * price / 1e6:,.2f}. '
                      'Cached input and output prices differ, so this is rough.')
     if suite == 'smoke':
         lines.append('This only checks your setup. It is not a benchmark result.')
@@ -116,13 +121,15 @@ def summary(result, output):
         if shown:
             lines.append('Shown but not ranked:')
             lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in shown]
-    lines.append(f'Tokens used {millions(result["tokens_used"])} of {millions(result["token_budget"])}.')
+    lines.append(f'Tokens used {millions(result["tokens_used"])}. Reference budget {millions(result["token_budget"])}.')
+    if result['tokens_used'] > result['token_budget']:
+        lines.append('Warning: this run passed the reference budget. Every task still ran at its own caps.')
     for cell in result['cells']:
         if cell['state'] == 'paused' and cell.get('provider_errors'):
             lines.append(f'{cell["task_id"]} paused after a provider error with no model reply. '
                          'Its checkpoint is kept and the same command resumes it.')
     if row['completed'] < row['planned']:
-        lines.append('Not every run finished. Run the same command again to continue, or raise --budget.')
+        lines.append('Not every run finished. Run the same command again to continue.')
     elif result.get('suite') == 'smoke':
         lines.append('Setup works. This was a check, not a benchmark result.')
     lines.append(f'Details: {Path(output) / "report.json"}')

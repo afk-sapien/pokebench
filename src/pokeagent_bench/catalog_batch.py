@@ -170,8 +170,13 @@ def report(batch):
 
 
 def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repeats=1,
-              budget, resume=False, benchmark=None, on_cell=None):
-    if type(budget) is not int or budget <= 0:
+              budget=None, resume=False, benchmark=None, on_cell=None):
+    """Run each planned cell in order, each bounded only by its own decision and token caps.
+
+    Run order must never change what a task is allowed, so the budget is a reported reference.
+    It never stops or shortens a task. The worst case is the sum of the planned token caps.
+    """
+    if budget is not None and (type(budget) is not int or budget <= 0):
         raise ValueError('Batch token budget must be a positive integer')
     output = Path(output)
     if resume:
@@ -201,18 +206,13 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         destination = output / cell['id']
         if cell_result(destination) is not None:
             continue
-        if used >= budget:
-            break
         from .catalog_execution import select_scenario
         current = _read(select_scenario(fixtures, cell['task_id'], cell['variant']) / 'scenario.json')
         if current['state_sha256'] != cell['fixture_sha256'] or current['catalog_sha256'] != cell['evaluation_spec_sha256']:
             raise ValueError('A planned starting state or task specification changed')
-        allowance = min(cell['token_limit'], budget - used)
-        if allowance < min(cell['token_limit'], 10000):
-            break
         try:
             run_task(fixtures, cell['task_id'], rom, game_data, destination,
-                     provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=allowance,
+                     provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=cell['token_limit'],
                      decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'))
         except (ValueError, OSError, RuntimeError) as error:
             destination.mkdir(parents=True, exist_ok=True)
@@ -234,6 +234,7 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         if not accounting_complete(value) or value.get('state') == 'paused':
             break
     result = report(output)
-    result.update(token_budget=budget, tokens_used=used)
+    result.update(token_budget=budget, tokens_used=used,
+                  worst_case_tokens=sum(cell['token_limit'] for cell in manifest['cells']))
     write_json(output / 'report.json', result)
     return result

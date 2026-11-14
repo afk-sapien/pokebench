@@ -66,7 +66,8 @@ def parser():
     batch_catalog.add_argument('--models', nargs='+', help='Provider-prefixed model names: codex:MODEL, claude:MODEL or openai-compatible:MODEL')
     batch_catalog.add_argument('--tasks', nargs='+')
     batch_catalog.add_argument('--repeats', type=int, default=1)
-    batch_catalog.add_argument('--total-token-budget', type=int, required=True)
+    batch_catalog.add_argument('--total-token-budget', type=int,
+                               help='Reported reference only. Each task runs at its own caps and is never cut by it')
     batch_catalog.add_argument('--dry-run', action='store_true')
     batch_catalog.add_argument('--resume', action='store_true')
     campaign_report = sub.add_parser('campaign-report', help='Export a scored campaign milestone and party report')
@@ -115,7 +116,8 @@ def parser():
             command.add_argument("--suite", choices=("smoke", "short", "long"),
                                  help="Benchmark a model on a whole suite. Smoke is a three task setup check")
             command.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
-            command.add_argument("--budget", type=int, help="Suite token budget. Defaults to the leaderboard budget")
+            command.add_argument("--budget", type=int, help="Suite reference token budget. Passing it warns, it never "
+                                 "stops or shortens a task. Defaults to the leaderboard figure")
             command.add_argument("--dry-run", action="store_true", help="Print the suite plan and estimate, then stop")
             command.add_argument("--provider", choices=("random", "openai", "anthropic", "codex", "claude", "openai-compatible"),
                                  help="openai-compatible reads POKEBENCH_BASE_URL and POKEBENCH_API_KEY")
