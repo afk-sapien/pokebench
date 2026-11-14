@@ -432,6 +432,42 @@ def test_local_map_keeps_door_tiles_blocked_where_the_card_key_cannot_open_them(
     assert view['rows'][4][6] == '#' and 'D' not in view['legend']
 
 
+@pytest.mark.parametrize('map_id, tile', [(165, 0x18), (166, 0x18), (166, 0x24), (216, 0x24)])
+def test_local_map_marks_the_closed_mansion_and_cinnabar_gym_gates(map_id, tile):
+    view = door_view(map_id, 'FACILITY', {(6, 4): tile, (7, 4): tile, (2, 4): 0x60})
+    assert view['rows'][4][6:8] == 'DD' and view['rows'][4][2] == '#'
+    assert view['legend']['D'] == 'visible closed door'
+
+
+@pytest.mark.parametrize('map_id, cells', [(165, [(2, 5)]), (214, [(2, 11)]), (215, [(10, 5)]),
+                                           (216, [(20, 3), (18, 25)]),
+                                           (166, [(15, 7), (10, 1), (9, 7), (9, 13), (1, 13), (1, 7)])])
+def test_local_map_marks_the_mansion_switches_and_the_gym_quiz_machines(map_id, cells):
+    mem = memory()
+    mem[0xD35E] = map_id
+    cat = catalog()
+    cat['world'][str(map_id)] = dict(cat['world']['0'], tileset='FACILITY')
+    for x, y in cells:
+        mem[0xD362], mem[0xD361] = x, y + 1
+        view = local_map(mem, cat, {'kind': 'overworld'})
+        # The player stands just below the statue or machine, which sits one row up at the centre.
+        assert view['rows'][3][4] == 'S'
+        assert {'id': f'background-{x}-{y}', 'x': x, 'y': y,
+                'appearance': 'sign or fixed interactable'} in view['objects']
+
+
+def test_local_map_leaves_hidden_items_and_other_maps_unmarked():
+    mem = memory()
+    cat = catalog()
+    # Mansion 3F hides a Max Revive at (1, 9), and map 0 has no visible hidden events.
+    for map_id, (x, y) in [(215, (1, 9)), (0, (2, 5))]:
+        mem[0xD35E] = map_id
+        cat['world'][str(map_id)] = dict(cat['world']['0'], tileset='FACILITY')
+        mem[0xD362], mem[0xD361] = x, y + 1
+        view = local_map(mem, cat, {'kind': 'overworld'})
+        assert 'S' not in ''.join(view['rows']) and not view['objects']
+
+
 def test_known_map_explains_the_closed_door_only_when_it_shows_it():
     assert known_map({'tiles': {'0': {'4,4': '.', '5,4': 'D'}}}, 0, 4, 4)['legend'].endswith(' D observed closed door.')
     assert 'door' not in known_map({'tiles': {'0': {'4,4': '.', '5,4': '#'}}}, 0, 4, 4)['legend']

@@ -57,6 +57,16 @@ WATER_LEGEND = "water. Blocked on foot, crossable with Surf"
 # appear on those floors only at the doors. An opened door is redrawn as floor.
 SILPH_CO_11F = 235
 CARD_KEY_DOOR_MAPS = frozenset({207, 208, 209, 210, 211, 212, 213, 233, 234, SILPH_CO_11F})
+# Gates: the Pokemon Mansion switch scripts and the Cinnabar Gym quiz gates place the same closed
+# blocks, so a square whose bottom-left tile is 0x18 or 0x24 is a closed gate. In the pret maps of
+# Mansion 1F (165), the Cinnabar Gym (166), Mansion 2F, 3F and B1F (214 to 216) those tiles appear
+# only where a script places a gate. An opened gate is redrawn as floor.
+GATE_MAPS = frozenset({165, 166, 214, 215, 216})
+# Hidden events (hidden_events.asm) are not signs, so the game data has no fixed interactable for them.
+# The Mansion switch statues and the Cinnabar Gym quiz machines are drawn on screen, so they show as S.
+# Hidden items and the plain gym statue stay unmarked.
+VISIBLE_HIDDEN_EVENTS = {165: ((2, 5),), 214: ((2, 11),), 215: ((10, 5),), 216: ((20, 3), (18, 25)),
+                         166: ((15, 7), (10, 1), (9, 7), (9, 13), (1, 13), (1, 7))}
 # Cut trees (UsedCut): the game cuts a square whose bottom-left tile is 0x3D in the overworld tileset
 # or 0x50 in the gym tileset. In the pret blocksets every block with such a square is a Cut tree
 # block, so the tile marks the trees only. A cut tree is redrawn as grass or floor.
@@ -239,7 +249,7 @@ def local_map(memory, catalog, ui):
              "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
     if world.get("tileset") in CUT_TREE_TILES:
         marks = {**marks, CUT_TREE_TILES[world["tileset"]]: "T"}
-    if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS:
+    if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS | GATE_MAPS:
         marks = {**marks, 0x18: "D", 0x24: "D", **({0x5E: "D"} if memory[W_CUR_MAP] == SILPH_CO_11F else {})}
     floors = world.get("pair_floors", {})
     water = WATER_TILES.get(world.get("tileset"), set())
@@ -267,7 +277,7 @@ def local_map(memory, catalog, ui):
         appearance = SPRITE_LOOKS.get(raw, "person or object")
         objects.append({"id": f"object-{sprite['slot']}", "x": px, "y": py, "appearance": appearance})
         grid[py - top][px - left] = "O"
-    for px, py, *_ in world["backgrounds"]:
+    for px, py, *_ in [*world["backgrounds"], *VISIBLE_HIDDEN_EVENTS.get(memory[W_CUR_MAP], ())]:
         if inside(px, py):
             objects.append({"id": f"background-{px}-{py}", "x": px, "y": py, "appearance": "sign or fixed interactable"})
             grid[py - top][px - left] = "S"
