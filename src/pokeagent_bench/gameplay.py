@@ -52,6 +52,11 @@ WATER_TILES = {"OVERWORLD": {0x14, 0x32}, "PLATEAU": {0x14, 0x32}, "FOREST": {0x
                "DOJO": {0x14}, "GYM": {0x14}, "SHIP": {0x14}, "SHIP_PORT": {0x14},
                "CAVERN": {0x14}, "FACILITY": {0x14}}
 WATER_LEGEND = "water. Blocked on foot, crossable with Surf"
+# Card Key doors (PrintCardKeyText): on Silph Co 2F to 11F a square whose bottom-left tile is 0x18 or
+# 0x24, or 0x5E on 11F, is a closed door. With every gate script's closed block placed, these tiles
+# appear on those floors only at the doors. An opened door is redrawn as floor.
+SILPH_CO_11F = 235
+CARD_KEY_DOOR_MAPS = frozenset({207, 208, 209, 210, 211, 212, 213, 233, 234, SILPH_CO_11F})
 TYPES = {0: "Normal", 1: "Fighting", 2: "Flying", 3: "Poison", 4: "Ground", 5: "Rock",
          7: "Bug", 8: "Ghost", 20: "Fire", 21: "Water", 22: "Grass", 23: "Electric",
          24: "Psychic", 25: "Ice", 26: "Dragon"}
@@ -222,6 +227,8 @@ def local_map(memory, catalog, ui):
     marks = {"FACILITY": {0x20: "v", 0x21: "^", 0x30: ">", 0x31: "<"},
              "GYM": {0x3C: "^", 0x3D: "<", 0x4C: "v", 0x4D: ">"},
              "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
+    if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS:
+        marks = {**marks, 0x18: "D", 0x24: "D", **({0x5E: "D"} if memory[W_CUR_MAP] == SILPH_CO_11F else {})}
     floors = world.get("pair_floors", {})
     water = WATER_TILES.get(world.get("tileset"), set())
 
@@ -267,6 +274,8 @@ def local_map(memory, catalog, ui):
         legend["o"] = "visible hole in the floor"
     if any("~" in row for row in grid):
         legend["~"] = WATER_LEGEND
+    if any("D" in row for row in grid):
+        legend["D"] = "visible closed door"
     if floors:
         legend[": ,"] = PAIR_LEGEND
         # "@" hides the floor under the player, and that floor decides which steps are refused.
@@ -295,6 +304,8 @@ def known_map(history, map_id, x, y):
         legend += " o observed hole in the floor."
     if any("~" in row for row in rows):
         legend += " ~ observed water, crossable with Surf."
+    if any("D" in row for row in rows):
+        legend += " D observed closed door."
     return {"map_id": int(map_id), "origin": {"x": left, "y": top}, "rows": rows, "legend": legend}
 
 

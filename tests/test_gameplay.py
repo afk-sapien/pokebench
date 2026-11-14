@@ -409,6 +409,34 @@ def test_known_map_explains_holes_and_water_only_when_it_shows_them():
     assert 'hole' not in legend and 'water' not in legend
 
 
+def door_view(map_id, tileset, cells):
+    mem, cat = memory(), catalog()
+    mem[0xD35E] = map_id
+    cat['world'][str(map_id)] = dict(cat['world']['0'], tileset=tileset)
+    return pair_view(mem, cat, cells)
+
+
+@pytest.mark.parametrize('map_id, tileset, tile', [(207, 'FACILITY', 0x18), (208, 'FACILITY', 0x24),
+                                                   (234, 'FACILITY', 0x18), (235, 'INTERIOR', 0x5E)])
+def test_local_map_marks_the_visible_card_key_doors_on_silph_co_floors(map_id, tileset, tile):
+    view = door_view(map_id, tileset, {(6, 4): tile, (7, 4): tile, (2, 4): 0x60})
+    assert view['rows'][4][6:8] == 'DD' and view['rows'][4][2] == '#'
+    assert view['legend']['D'] == 'visible closed door'
+
+
+@pytest.mark.parametrize('map_id, tileset, tile', [(181, 'FACILITY', 0x18), (199, 'FACILITY', 0x24),
+                                                   (212, 'FACILITY', 0x5E), (0, 'INTERIOR', 0x5E)])
+def test_local_map_keeps_door_tiles_blocked_where_the_card_key_cannot_open_them(map_id, tileset, tile):
+    # Silph Co 1F, the Rocket Hideout and 0x5E away from 11F are not Card Key doors.
+    view = door_view(map_id, tileset, {(6, 4): tile})
+    assert view['rows'][4][6] == '#' and 'D' not in view['legend']
+
+
+def test_known_map_explains_the_closed_door_only_when_it_shows_it():
+    assert known_map({'tiles': {'0': {'4,4': '.', '5,4': 'D'}}}, 0, 4, 4)['legend'].endswith(' D observed closed door.')
+    assert 'door' not in known_map({'tiles': {'0': {'4,4': '.', '5,4': '#'}}}, 0, 4, 4)['legend']
+
+
 def test_known_map_explains_the_floor_switch_only_when_it_shows_it():
     history = {'tiles': {'0': {'4,4': '.', '5,4': '*'}}}
     assert known_map(history, 0, 4, 4)['legend'].endswith(' * observed floor switch.')
