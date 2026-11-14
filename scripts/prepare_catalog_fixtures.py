@@ -72,6 +72,15 @@ RECIPES.update({
     'objectives-capture-prepare-battle': archive(150,3,party=[mon('IVYSAUR',20,[33,45,73,22]),mon('PIDGEOTTO',18,[16,28,98]),mon('PIKACHU',18,[84,45,39,98])],bag=[[4,8],[20,2],[11,1]],money=2400,badges=1,path=[('down',2)],events={'EVENT_BEAT_CERULEAN_RIVAL':True}),
 })
 
+# PokeBench Hard starts. Every puzzle flag on the route is reset explicitly.
+VICTORY_ROAD_SWITCHES = ('EVENT_VICTORY_ROAD_1_BOULDER_ON_SWITCH', 'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH1',
+                         'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH2', 'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH1',
+                         'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH2')
+RECIPES.update({
+    'navigation-hard-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
+                                            events={name: False for name in VICTORY_ROAD_SWITCHES}),
+})
+
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'
 RECIPES['navigation-town-landmark'].update(source=POST_PARCEL_SOURCE, path=[])
 RECIPES['operations-buy-pokeballs'].update(source=POST_PARCEL_SOURCE, path=[])
@@ -207,7 +216,8 @@ def main():
     current = read(args.game_data / 'current.json')['bundle']
     strategy = read(args.game_data / 'bundles' / current / 'strategy.json')
     catalog = Path(__file__).resolve().parents[1] / 'src/pokeagent_bench/catalogs'
-    entries = {e['id']: e for p in catalog.glob('*.json') for e in read(p)['evals'] if e.get('active', True)}
+    paths = [*catalog.glob('*.json'), *catalog.glob('hard/*.json')]
+    entries = {e['id']: e for p in paths for e in read(p)['evals'] if e.get('active', True)}
     args.output.mkdir(parents=True, exist_ok=True)
     report_path = args.output / 'fixture-build.json'
     report = read(report_path) if report_path.exists() else {'fixtures': {}, 'pending': {}}

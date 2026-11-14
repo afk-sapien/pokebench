@@ -30,5 +30,23 @@ uv run pokebench run --model MODEL --suite hard --dry-run
 ```
 
 Each Hard task needs a checked start state and a scripted reference run that reaches every
-milestone. Its decision cap is about five times the reference. No model has run the suite
-yet, and no Hard result is published.
+milestone. Its decision cap is about five times the reference, and its token budget is
+15,000 tokens per allowed decision. No model has run the suite yet, and no Hard result is
+published.
+
+## Tasks
+
+| Task | Start | Milestones | Reference decisions | Cap |
+| --- | --- | --- | --- | --- |
+| Cross all of Victory Road | 1F entrance, every boulder switch unsolved | 6 | 236 | 1,200 |
+
+## Scripted references
+
+`scripts/reference_hard_tasks.py` plays each task with the same assisted commands a model
+gets, one decision per command. It makes no model calls. It replays the native inputs
+through the catalog runner and writes the reference proof next to the private start.
+
+```sh
+uv run python scripts/reference_hard_tasks.py --rom ROM --game-data GAME_DATA \
+  --fixtures FIXTURES --output OUTPUT --tasks navigation-hard-victory-road
+```

@@ -1,0 +1,63 @@
+{
+  "category": "navigation",
+  "title": "Navigation",
+  "evals": [
+    {
+      "id": "navigation-hard-victory-road",
+      "title": "Cross all of Victory Road",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-hard-victory-road",
+        "description": "Cross Victory Road and leave by its far exit onto Route 23, toward Indigo Plateau. Normal backtracking and room resets are allowed. Trainers on this route are already defeated and wild encounters are disabled."
+      },
+      "start": "Victory Road 1F, first controllable tile after entering from Route 23. Every boulder switch on all three floors is unsolved.",
+      "success": [
+        "Leave Victory Road by the 2F exit onto the part of Route 23 that leads to Indigo Plateau."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the exit.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 18000000,
+      "decision_limit": 1200,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native unsolved start with a legal Strength user and all eight badges.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Solve a multi-floor boulder puzzle with resets",
+      "agent_goal": "Cross Victory Road and leave by its far exit onto Route 23, toward Indigo Plateau. Normal backtracking and room resets are allowed. Trainers on this route are already defeated and wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Empty bag. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. Every boulder switch on 1F, 2F and 3F is unsolved. All Victory Road trainers already defeated.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/VictoryRoad2F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/VictoryRoad3F.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models."
+      ],
+      "measures": "Push boulders onto switches on three floors, including a boulder dropped through a 3F hole, and keep the route when floors reset.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "second-floor", "description": "Reach Victory Road 2F.", "check": {"map": 194}},
+        {"id": "third-floor", "description": "Reach Victory Road 3F.", "check": {"map": 198}},
+        {"id": "third-floor-switch", "description": "Put a boulder on the 3F switch, which opens the way to the south room.", "check": {"event": 1632}},
+        {"id": "boulder-dropped", "description": "Push a boulder into the 3F hole so it lands on 2F.", "check": {"event": 1638}},
+        {"id": "second-floor-switch", "description": "Put the dropped boulder on the second 2F switch, which opens the ladder to the east side.", "check": {"event": 1343}},
+        {"id": "exit", "description": "Leave by the 2F exit onto Route 23 toward Indigo Plateau.", "check": {"map": 34, "near": [14, 31]}}
+      ]
+    }
+  ]
+}
