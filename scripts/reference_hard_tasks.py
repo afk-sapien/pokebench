@@ -59,6 +59,8 @@ class Driver:
                                agent={'provider': 'reference', 'model': 'scripted-assisted-commands'})
         self.raw = []
         self.log = []
+        # Tiles the planner never steps onto, such as holes that drop the player a floor.
+        self.avoid = set()
 
     @property
     def done(self):
@@ -100,11 +102,13 @@ class Driver:
                 break
             state, origin, path = queue.popleft()
             for direction in STEPS:
+                dx, dy = STEPS[direction]
+                if (origin[0], origin[1] + dx, origin[2] + dy) in self.avoid:
+                    continue
                 engine.load(state)
                 step(engine, direction)
                 here = locate(engine)
                 if here[0] != start[0]:
-                    dx, dy = STEPS[direction]
                     if goal((here[0], origin[1] + dx, origin[2] + dy)):
                         return path + [direction]
                     continue
@@ -206,7 +210,29 @@ def victory_road(driver):
     d.enter(34)
 
 
-SOLUTIONS = {'navigation-hard-victory-road': victory_road}
+def seafoam(driver):
+    d = driver
+    # Ladders down to B3F: 1F (7, 5), B1F (13, 7) and B2F (5, 13). The upper boulder puzzles are optional.
+    d.enter(159, via=(7, 5))
+    d.enter(160, via=(13, 7))
+    d.enter(161, via=(5, 13))
+    # The two B3F holes drop the player to B4F, so the planner never steps on them.
+    d.avoid = {(161, 3, 16), (161, 6, 16)}
+    d.field_move('NIDOKING', 'STRENGTH')
+    # Move the west boulder aside, then push the boulder below it into the west hole at (3, 16).
+    d.boulder((5, 14), [('left', 3)])
+    d.boulder((3, 15), [('down', 1)])
+    # Lift the right boulder of the pair, then take the left one down, left and into the east hole at (6, 16).
+    d.boulder((9, 14), [('up', 2)])
+    d.boulder((8, 14), [('down', 1), ('left', 2), ('down', 1)])
+    # Both holes are filled, so the B4F current is slow enough to surf from (7, 11) to Articuno.
+    d.enter(162, via=(8, 6))
+    d.walk(7, 11)
+    d.field_move('NIDOKING', 'SURF')
+    d.follow(lambda here: here[0] == 162 and abs(here[1] - 6) + abs(here[2] - 1) == 1)
+
+
+SOLUTIONS = {'navigation-hard-victory-road': victory_road, 'navigation-hard-seafoam': seafoam}
 
 
 def build(task_id, rom, game_data, fixtures, output):

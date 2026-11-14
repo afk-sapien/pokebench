@@ -76,9 +76,13 @@ RECIPES.update({
 VICTORY_ROAD_SWITCHES = ('EVENT_VICTORY_ROAD_1_BOULDER_ON_SWITCH', 'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH1',
                          'EVENT_VICTORY_ROAD_2_BOULDER_ON_SWITCH2', 'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH1',
                          'EVENT_VICTORY_ROAD_3_BOULDER_ON_SWITCH2')
+SEAFOAM_HOLES = tuple(f'EVENT_SEAFOAM{floor}_BOULDER{n}_DOWN_HOLE' for floor in range(1, 5) for n in (1, 2))
 RECIPES.update({
     'navigation-hard-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                             events={name: False for name in VICTORY_ROAD_SWITCHES}),
+    # First entry from Route 20. The boulder toggles are still native, so clearing the flags changes nothing.
+    'navigation-hard-seafoam': archive(821,192,position=[4,17],party=NIDOKING,bag=[],badges=255,
+                                       events={name: False for name in SEAFOAM_HOLES}),
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'

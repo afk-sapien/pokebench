@@ -58,6 +58,64 @@
         {"id": "second-floor-switch", "description": "Put the dropped boulder on the second 2F switch, which opens the ladder to the east side.", "check": {"event": 1343}},
         {"id": "exit", "description": "Leave by the 2F exit onto Route 23 toward Indigo Plateau.", "check": {"map": 34, "near": [14, 31]}}
       ]
+    },
+    {
+      "id": "navigation-hard-seafoam",
+      "title": "Reach Articuno in Seafoam Islands",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "navigation-hard-seafoam",
+        "description": "Find Articuno on Seafoam Islands B4F, the lowest floor, and stand on a tile next to it. You do not need to battle or catch it. Normal backtracking and room resets are allowed. Wild encounters are disabled."
+      },
+      "start": "Seafoam Islands 1F, first controllable tile after entering from the west side of Route 20. No boulder has been pushed into any hole on any floor.",
+      "success": [
+        "Stand on a tile next to Articuno on B4F, outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Articuno.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 6300000,
+      "decision_limit": 420,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native unsolved start with a legal Strength and Surf user and all eight badges.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Fill holes with boulders to slow a current, then surf past it",
+      "agent_goal": "Find Articuno on Seafoam Islands B4F, the lowest floor, and stand on a tile next to it. You do not need to battle or catch it. Normal backtracking and room resets are allowed. Wild encounters are disabled.",
+      "scenario_details": [
+        "Party: Nidoking level 50 with Strength, Surf, Double Kick and Horn Attack. Full HP, no status and full PP. Empty bag. No Escape Rope, Dig or Fly.",
+        "All eight badges owned. No boulder has been pushed into a hole on any floor, so both currents run. Articuno has not been met.",
+        "Navigation-only condition: a documented emulator ROM override disables random wild encounters for the entire trial. Route 20 trainers are already defeated. No route hints or puzzle solutions are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/SeafoamIslandsB3F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/SeafoamIslandsB4F.asm",
+        "https://github.com/pret/pokered/blob/master/engine/overworld/field_move_messages.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models."
+      ],
+      "measures": "Find a four-floor ladder route, push two B3F boulders into its holes to slow the B4F current, then surf from the one tile the current blocked.",
+      "navigation_condition": "navigation-no-battles-v1",
+      "milestones": [
+        {"id": "first-basement", "description": "Reach B1F.", "check": {"map": 159}},
+        {"id": "second-basement", "description": "Reach B2F.", "check": {"map": 160}},
+        {"id": "third-basement", "description": "Reach B3F.", "check": {"map": 161}},
+        {"id": "west-hole", "description": "Push a boulder into the west B3F hole.", "check": {"event": 2512}},
+        {"id": "east-hole", "description": "Push a boulder into the east B3F hole, which slows the B4F current.", "check": {"event": 2513}},
+        {"id": "articuno", "description": "Stand next to Articuno on B4F.", "check": {"map": 162, "near": [6, 1]}}
+      ]
     }
   ]
 }

@@ -10,6 +10,7 @@ AFFECTED = {
     'navigation-boulder-puzzle': ('VICTORY_ROAD', 'ROUTE_23'),
     'navigation-blocked-route-alternative': ('ROUTE_5', 'ROUTE_6'),
     'navigation-hard-victory-road': ('VICTORY_ROAD', 'ROUTE_23'),
+    'navigation-hard-seafoam': ('SEAFOAM_ISLANDS', 'ROUTE_20'),
 }
 # Red TryDoWildEncounter: ld a,1 / and a / ret returns NZ (no encounter).
 # The guard covers both initial native checks before any change is installed.

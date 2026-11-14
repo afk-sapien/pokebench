@@ -4,7 +4,7 @@ from pokeagent_bench import milestone_runtime as runtime
 from pokeagent_bench import navigation_conditions
 
 TOKENS_PER_DECISION = 15_000
-SHIPPED = {'navigation-hard-victory-road'}
+SHIPPED = {'navigation-hard-victory-road', 'navigation-hard-seafoam'}
 
 
 def shipped():
@@ -37,3 +37,15 @@ def test_victory_road_milestones_follow_the_forced_route():
     assert task['milestones'][-1]['check'] == {'map': 34, 'near': [14, 31]}
     assert task['navigation_condition'] == navigation_conditions.PROTOCOL
     assert navigation_conditions.AFFECTED[task['id']] == ('VICTORY_ROAD', 'ROUTE_23')
+
+
+def test_seafoam_milestones_score_only_the_holes_that_gate_articuno():
+    task = shipped()['navigation-hard-seafoam']
+    assert [row['id'] for row in task['milestones']] == [
+        'first-basement', 'second-basement', 'third-basement', 'west-hole', 'east-hole', 'articuno']
+    assert [row['check'].get('map') for row in task['milestones'][:3]] == [159, 160, 161]
+    # EVENT_SEAFOAM4_BOULDER1_DOWN_HOLE and EVENT_SEAFOAM4_BOULDER2_DOWN_HOLE, set by the B3F holes.
+    # The upper floor hole flags are optional and stay out of the score.
+    assert [row['check'].get('event') for row in task['milestones'][3:5]] == [2512, 2513]
+    assert task['milestones'][-1]['check'] == {'map': 162, 'near': [6, 1]}
+    assert navigation_conditions.AFFECTED[task['id']] == ('SEAFOAM_ISLANDS', 'ROUTE_20')

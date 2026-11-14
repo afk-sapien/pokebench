@@ -39,6 +39,11 @@ published.
 | Task | Start | Milestones | Reference decisions | Cap |
 | --- | --- | --- | --- | --- |
 | Cross all of Victory Road | 1F entrance, every boulder switch unsolved | 6 | 236 | 1,200 |
+| Reach Articuno in Seafoam Islands | 1F west entrance, no boulder in any hole | 6 | 83 | 420 |
+
+In Seafoam Islands only the two B3F holes gate Articuno. The boulder puzzles on the upper
+floors are optional, so they earn no milestone. The B3F milestones count in order, so a run
+that fills the east hole first earns that point only after it also fills the west hole.
 
 ## Scripted references
 
@@ -48,5 +53,5 @@ through the catalog runner and writes the reference proof next to the private st
 
 ```sh
 uv run python scripts/reference_hard_tasks.py --rom ROM --game-data GAME_DATA \
-  --fixtures FIXTURES --output OUTPUT --tasks navigation-hard-victory-road
+  --fixtures FIXTURES --output OUTPUT --tasks navigation-hard-victory-road navigation-hard-seafoam
 ```
