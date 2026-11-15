@@ -178,6 +178,13 @@ def parser():
     add = sub.add_parser("community-add", help="Maintainers: add a verified Short or Long report to the local site data")
     add.add_argument("report", type=Path, help="Report written by your own verify run")
     add.add_argument("--web", type=Path, required=True, help="Local site folder that export_showcase.py builds")
+    take = sub.add_parser("intake", help="Maintainers: download a submission issue's bundle, verify it and draft a "
+                          "reply file. Posts nothing and adds no row")
+    take.add_argument("issue", type=int, help="Submission issue number")
+    take.add_argument("--repo", default="afk-sapien/pokebench", help="GitHub repository of the issue")
+    take.add_argument("--folder", type=Path, help="New empty folder for the bundle and drafts. Defaults to intake-ISSUE")
+    take.add_argument("--rom", type=Path, help="Defaults to the ROM that setup recorded")
+    take.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
     check = sub.add_parser("replay", help="Replay actions and verify frame, score, and image evidence")
     check.add_argument("--rom", type=Path, required=True)
     check.add_argument("--run", type=Path, required=True)
@@ -356,6 +363,11 @@ def execute(args):
     if args.command == "community-add":
         from .submission import community_add
         return community_add(args.report, args.web)
+    if args.command == "intake":
+        from .intake import intake
+        from .quick_run import locate
+        fixtures, _, rom = locate(args.data, args.rom)
+        return intake(args.issue, rom, fixtures, args.folder, repo=args.repo)
     if args.command == "replay":
         return replay(args.rom, args.run)
     if args.command == "report":

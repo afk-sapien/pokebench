@@ -78,7 +78,13 @@ Published community rows carry the label "Community, replay verified, model unve
 
 A maintainer runs `verify`, reads the report and publishes by hand. A verified bundle is not published automatically, and a maintainer may decline a row.
 
-For maintainers, one command adds a report from your own `verify` run to the local site data.
+For maintainers, `intake` takes a submission issue number and does the reading and checking. It reads the issue with `gh`, downloads the one attached `.pokebench.zip` into a new empty folder, refuses a file over 25 MB or one that is not a zip, runs `verify` and writes a draft reply to `reply.md`. It posts nothing, adds no row and publishes nothing. It prints the two commands to run by hand once you agree with the draft.
+
+```sh
+uv run pokebench intake 12
+```
+
+One command adds a report from your own `verify` run to the local site data.
 
 ```sh
 uv run pokebench community-add MODEL-short.pokebench.verified.json --web /path/to/local/site
