@@ -99,6 +99,7 @@ def test_bundle_holds_only_logs_and_results_and_verifies(world, capsys):
     assert 'corp.example' not in text and 'platform' not in text
     printed = capsys.readouterr().out
     assert '2 x actions.jsonl' in printed and 'Endpoint host: not included' in printed
+    assert 'Attach it to a submission issue' in printed
     result = check(world)
     assert result['verified'] and result['problems'] == []
     assert result['label'] == 'Community, replay verified, model unverified'
@@ -365,6 +366,16 @@ def test_a_lost_action_log_is_refused(world):
     (world['run'] / 'cell-0002' / 'actions.jsonl').unlink()
     with pytest.raises(ValueError, match='battle-two recorded 2 actions but its action log is missing'):
         submission.submit(world['run'], world['bundle'], handle='octocat')
+
+
+def test_a_smoke_bundle_is_not_offered_for_an_issue(world, monkeypatch, capsys):
+    smoke = {**plan(), 'suite': 'smoke'}
+    write_json(world['run'] / 'plan.json', smoke)
+    monkeypatch.setattr(submission, 'new_plan', lambda suite, fixtures, provider, model: smoke)
+    submission.submit(world['run'], world['bundle'])
+    printed = capsys.readouterr().out
+    assert 'never a leaderboard result, so do not open an issue' in printed
+    assert 'Attach it' not in printed
 
 
 def test_a_random_player_bundle_outside_smoke_is_refused(world, bundle):

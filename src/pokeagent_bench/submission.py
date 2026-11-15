@@ -220,9 +220,11 @@ def submit(run, output=None, *, handle=None, attempts=1, endpoint_host=False, ch
         raise ValueError(f'The bundle is {size / 1e6:.1f} MB. GitHub issues take at most '
                          f'{ATTACHMENT_LIMIT / 1e6:.0f} MB. Nothing was written')
     temporary.replace(output)
-    print(f'Wrote {output}, {size / 1e6:.2f} MB. Attach it to a submission issue.', flush=True)
     if summary['suite'] == 'smoke':
-        print('This is the smoke suite. It checks the submission path and is never a leaderboard result.', flush=True)
+        print(f'Wrote {output}, {size / 1e6:.2f} MB. This is the smoke suite. It checks the submission path and is '
+              'never a leaderboard result, so do not open an issue for it.', flush=True)
+    else:
+        print(f'Wrote {output}, {size / 1e6:.2f} MB. Attach it to a submission issue.', flush=True)
     return None
 
 
