@@ -69,10 +69,12 @@ campaign has been used to claim gameplay capability or calibrated budgets.
 Core releases are adopted explicitly by changing the wheel URL and SHA-256, then
 regenerating `uv.lock`. Run the test suite and replay existing private ROM traces
 before upgrading. Any change to observations, scoring, prompts, or budgets also
-requires a benchmark version change. The current tag is `red-v0.61-fair-harness`,
-for PokeSim Core 0.12.0 and PyBoy RS 0.1.5. It collects the harness fixes listed in
-[the v0.61 notes](history/fair-harness-v061.md) and is frozen before any leaderboard
-run. `red-v0.60-pokecore-0.12` was the core upgrade alone. Earlier published rows used
+requires a benchmark version change. The current tag is `red-v0.62-milestone-short`,
+released as package 0.37.0. It adds the seven milestone tasks to Short, scores Long by
+the v2 milestone list and ships the rebuilt fixture pack, as listed in
+[the v0.37.0 notes](history/release-v037.md). `red-v0.61-fair-harness`, package 0.36.0,
+was for PokeSim Core 0.12.0 and PyBoy RS 0.1.5 and collects the harness fixes listed in
+[the v0.61 notes](history/fair-harness-v061.md). `red-v0.60-pokecore-0.12` was the core upgrade alone. Earlier published rows used
 `red-v0.59-lossless-inspection`, the v065 runtime. Original-pass Short attempts
 recorded `red-v0.56` to `red-v0.59`. Rows on different tags are not strictly
 comparable. Run manifests record core version, direct installation metadata, and

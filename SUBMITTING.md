@@ -38,7 +38,7 @@ Before writing, `submit` scans the bundle for absolute paths, key shaped text, t
 
 ## Which versions are accepted
 
-Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.37.0`.
+Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.37.0`. The `v0.36.0` entry stays listed so its runs keep their label. Its Short suite and starts differ from `v0.37.0`, so a `v0.36.0` bundle is checked on the `v0.36.0` checkout.
 
 Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Install that release unchanged with the `uvx` lines above and run again.
 
