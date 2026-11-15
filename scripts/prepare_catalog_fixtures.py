@@ -109,6 +109,19 @@ CINNABAR_FLAGS = ('EVENT_MANSION_SWITCH_ON', 'EVENT_BEAT_MANSION_1_TRAINER_0', '
                   'EVENT_GOT_TM38',
                   *(f'EVENT_BEAT_CINNABAR_GYM_TRAINER_{i}' for i in range(7)),
                   *(f'EVENT_CINNABAR_GYM_GATE{i}_UNLOCKED' for i in range(7)))
+# The Kadabra and Wartortle of the Tower rescue task, without the Silph Scope.
+POKE_FLUTE_PARTY = [mon('KADABRA', 35, [60, 93, 105, 50]), mon('WARTORTLE', 35, [55, 44, 145, 110])]
+POKE_FLUTE_FLAGS = ('EVENT_FOUND_ROCKET_HIDEOUT', 'EVENT_ENTERED_ROCKET_HIDEOUT', 'EVENT_ROCKET_DROPPED_LIFT_KEY',
+                    'EVENT_ROCKET_HIDEOUT_4_DOOR_UNLOCKED', 'EVENT_BEAT_ROCKET_HIDEOUT_GIOVANNI',
+                    *(f'EVENT_BEAT_ROCKET_HIDEOUT_1_TRAINER_{i}' for i in range(5)),
+                    'EVENT_BEAT_ROCKET_HIDEOUT_2_TRAINER_0',
+                    *(f'EVENT_BEAT_ROCKET_HIDEOUT_3_TRAINER_{i}' for i in range(2)),
+                    *(f'EVENT_BEAT_ROCKET_HIDEOUT_4_TRAINER_{i}' for i in range(3)),
+                    *(f'EVENT_BEAT_POKEMONTOWER_{floor}_TRAINER_{i}'
+                      for floor, count in ((3, 3), (4, 3), (5, 4), (6, 3), (7, 3)) for i in range(count)),
+                    'EVENT_BEAT_GHOST_MAROWAK', 'EVENT_RESCUED_MR_FUJI', 'EVENT_RESCUED_MR_FUJI_2',
+                    'EVENT_GOT_POKE_FLUTE')
+POKEMON_TOWER_2F_RIVAL = 0x38
 RECIPES.update({
     'navigation-victory-road': archive(740,108,position=[8,17],party=NIDOKING,bag=[],badges=255,
                                        events={name: False for name in VICTORY_ROAD_SWITCHES}),
@@ -140,6 +153,14 @@ RECIPES.update({
     # still on B1F. The switch, every Mansion and gym trainer, every gym gate and Blaine are reset.
     'objectives-cinnabar-gym': archive(651,171,position=[3,7],party=CINNABAR_PARTY,bag=[[20,5]],money=0,
                                        badges=63,events={name: False for name in CINNABAR_FLAGS}),
+    # The Lavender Pokemon Center with three badges, before the Rocket Hideout is found. The Tower
+    # rival is beaten and hidden, as the game leaves him after that battle. Every Hideout and Tower
+    # trainer, Giovanni, the ghost Marowak and Mr. Fuji are reset, and the Silph Scope is not in the bag.
+    'objectives-poke-flute': archive(336,141,position=[3,7],party=POKE_FLUTE_PARTY,bag=[[19,10],[53,3],[11,5]],
+                                     money=0,route=[{'walk':[3,6]},{'button':'up','hold_frames':8,'release_frames':90}],
+                                     events={**{name: False for name in POKE_FLUTE_FLAGS},
+                                             'EVENT_BEAT_POKEMON_TOWER_RIVAL': True},
+                                     hidden=[POKEMON_TOWER_2F_RIVAL]),
 })
 
 POST_PARCEL_SOURCE = 'data/red-ability-v4/fixtures/buy-pokeballs'

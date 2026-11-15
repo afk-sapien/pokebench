@@ -1,13 +1,13 @@
 # Six-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **54 primary tasks and one inventory variant** across six
+Across both benchmarks, the catalog has **55 primary tasks and one inventory variant** across six
 categories: 10 navigation, 14 battle, 10 operations plus one variant, 10 preparation,
-9 quests and one campaign. Every task case has a checked starting save and a runtime
-evaluator. The seven [milestone tasks](#milestone-tasks) join the local fixture pack
+10 quests and one campaign. Every task case has a checked starting save and a runtime
+evaluator. The eight [milestone tasks](#milestone-tasks) join the local fixture pack
 with the next harness version. Difficulty remains provisional until model trials.
 Historical results and the old fixture set remain available.
 
-**PokeBench** contains the 53 focused tasks and one inventory variant in five
+**PokeBench** contains the 54 focused tasks and one inventory variant in five
 categories. Its ranked score averages four of them: navigation, battle, operations
 and quests. Preparation is scored and reported next to the ranked score, but it is
 not ranked. **PokeBench Long** contains only the continuous campaign. They use
@@ -38,7 +38,7 @@ links and records. The portal calls this category Quests, and the CLI also accep
 
 ## Milestone tasks
 
-Seven Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
+Eight Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
 its usual category and weighs the same as any other task in that category's average.
 
 Each one lists ordered milestones in its catalog entry, for example the floors of a
@@ -65,6 +65,7 @@ is 15,000 tokens per allowed decision. No model has run these tasks yet.
 | [Defeat the Elite Four and the Champion with no items](battle.md#defeat-the-elite-four-and-the-champion-with-no-items) | Battle | Lorelei's room, empty bag, six level 56 Pokemon | 5 | 100 | 500 |
 | [Cross Mt. Moon to Cerulean City with an underleveled party](battle.md#cross-mt-moon-to-cerulean-city-with-an-underleveled-party) | Battle | Mt. Moon Pokemon Center, two level 5 Pokemon, 2 Potions, wild encounters on | 4 | 109 | 550 |
 | [Find the Secret Key in the Pokemon Mansion and win the Volcano Badge](objectives.md#find-the-secret-key-in-the-pokemon-mansion-and-win-the-volcano-badge) | Quests | Cinnabar Pokemon Center, Mansion switch off, gym locked, two Pokemon near level 47 | 5 | 202 | 1,000 |
+| [Take the Silph Scope from the Rocket Hideout and rescue Mr. Fuji for the Poke Flute](objectives.md#take-the-silph-scope-from-the-rocket-hideout-and-rescue-mr-fuji-for-the-poke-flute) | Quests | Lavender Pokemon Center, Hideout unfound, Mr. Fuji held, Kadabra and Wartortle level 35 | 7 | 405 | 2,000 |
 
 Published rows keep the harness version and task set they were run on. Each row averages
 only the tasks its version ran, so these tasks count only on rows run on a version that

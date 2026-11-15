@@ -162,6 +162,26 @@ def test_cinnabar_gym_start_resets_the_mansion_and_every_gym_gate():
     assert 'EVENT_MANSION_SWITCH_ON' in events and 'EVENT_CINNABAR_GYM_GATE6_UNLOCKED' in events
 
 
+def test_poke_flute_start_resets_the_hideout_and_the_tower():
+    recipe = recipes()['objectives-poke-flute']
+    # Archive 336 at the Lavender Pokemon Center (map 141).
+    assert (recipe['archive'], recipe['map_id'], recipe['position']) == (336, 141, [3, 7])
+    party = recipe['party']
+    assert [member['species'] for member in party] == ['KADABRA', 'WARTORTLE']
+    # Cut 15, Fly 19, Dig 91 and Teleport 100 would skip the walk or leave a dungeon without the route.
+    assert not {15, 19, 91, 100} & set().union(*(member['moves'] for member in party))
+    # 10 Super Potions (19), 3 Revives (53) and 5 Antidotes (11). No Escape Rope, Poke Doll or money.
+    assert recipe['bag'] == [[19, 10], [53, 3], [11, 5]] and recipe['money'] == 0
+    events = recipe['events']
+    # Only the Tower rival stays beaten, so he is hidden on 2F.
+    assert [name for name, value in events.items() if value] == ['EVENT_BEAT_POKEMON_TOWER_RIVAL']
+    assert recipe['hidden'] == [0x38]
+    # Five hideout story flags with Giovanni, its 11 trainers, 16 Tower trainers, Marowak, two Mr. Fuji
+    # flags, the Flute and the rival.
+    assert len(events) == 5 + 11 + 16 + 1 + 2 + 1 + 1
+    assert {'EVENT_ROCKET_DROPPED_LIFT_KEY', 'EVENT_BEAT_GHOST_MAROWAK', 'EVENT_GOT_POKE_FLUTE'} <= set(events)
+
+
 @pytest.mark.parametrize('growth,wanted', [('MEDIUM_FAST', 1000), ('MEDIUM_SLOW', 560),
                                          ('FAST', 800), ('SLOW', 1250)])
 def test_growth_curve_start_experience(growth, wanted):

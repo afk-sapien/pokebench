@@ -268,3 +268,39 @@ The Cinnabar Island Pokemon Center, just inside the door, before any progress in
 5. Defeat Blaine and win the Volcano Badge.
 
 Every Mansion switch flips the same flag, so each press opens one set of gates and shuts the other. With the switch on, the holes on 3F drop to the part of 1F that holds the stairs to B1F. On B1F the key room opens with the switch on, and the way back out needs it off and then on again. The gym quiz machines open their gates on a right answer. A wrong answer starts a battle with that room's trainer, and the gate opens once the trainer is beaten.
+
+## Take the Silph Scope from the Rocket Hideout and rescue Mr. Fuji for the Poke Flute
+
+`objectives-poke-flute`
+
+Controls: assisted-gameplay-v1. Estimated difficulty: hard. Scored by milestones, see [milestone tasks](README.md#milestone-tasks).
+
+### What this tests
+
+Find a hidden dungeon, fetch the key that runs its elevator, beat its boss for a key item, then use that item to finish a rescue in a second dungeon.
+
+### Agent instruction
+
+Mr. Fuji is held at the top of the Pokemon Tower, and its ghosts can only be seen through a Silph Scope. Team Rocket keeps one in its hideout under the Celadon Game Corner. Get the Silph Scope, rescue Mr. Fuji and obtain the Poke Flute. Do not nickname Pokemon.
+
+### Starting situation
+
+The Lavender Town Pokemon Center, just inside the door. Three badges, the Rocket Hideout not yet found, no Silph Scope and Mr. Fuji still held in the Pokemon Tower.
+
+### Setup
+
+- Party at full HP, no status and full PP: Kadabra level 35 with Psybeam, Confusion, Recover and Disable. Wartortle level 35 with Water Gun, Bite, Bubble and Withdraw. No Cut, Fly, Dig or Teleport.
+- Bag: 10 Super Potions, 3 Revives and 5 Antidotes. No money, no Escape Rope, no Silph Scope and no Poke Doll.
+- Boulder, Cascade and Thunder badges. The Tower rival is beaten. Every Rocket Hideout and Pokemon Tower trainer is unbeaten. Wild Pokemon appear as normal. No route hints are supplied.
+
+### Scored milestones
+
+1. Enter the Rocket Hideout under the Game Corner.
+2. Obtain the Lift Key.
+3. Defeat Giovanni in the Rocket Hideout.
+4. Obtain the Silph Scope.
+5. Defeat the ghost Marowak on Pokemon Tower 6F.
+6. Rescue Mr. Fuji on Pokemon Tower 7F.
+7. Obtain the Poke Flute.
+
+Celadon is reached on foot through the Underground Path west of Lavender. A Rocket guards the Game Corner poster that hides the stairs. The Lift Key drops when the beaten Rocket on B4F is spoken to again, and the elevator is the only way to the guards outside Giovanni's room. The Hideout's spinning floors on B2F and B3F carry the player until a stop tile. On 6F a Rare Candy ball fills the only corridor south and must be picked up. The ghost Marowak blocks the 6F stairs, and running from it only pushes the player back.

@@ -52,10 +52,10 @@ def test_packaged_catalog_has_distinct_evals_and_honest_status():
     groups = load_catalog()
     assert tuple(group['category'] for group in groups) == CATEGORIES
     entries = [evaluation for group in groups for evaluation in group['evals']]
-    assert len(entries) == len({e['id'] for e in entries}) == 55
+    assert len(entries) == len({e['id'] for e in entries}) == 56
     report = summary()
     assert report['runnable_new_evals'] == report['model_calls'] == 0
-    assert report['eval_count'] == 55
+    assert report['eval_count'] == 56
     operations = load_catalog('operations')[0]['evals']
     assert all(e['action_policy'] == 'manual-menu-v1' for e in operations)
     preparation = load_catalog('preparation')[0]['evals']
@@ -101,7 +101,7 @@ def test_campaign_is_one_attempt_with_unique_milestones():
 def test_portal_uses_actual_counts_and_campaign_milestones():
     from pokeagent_bench.catalog_portal import render_catalog
     page = render_catalog()
-    assert '54 task drafts' in page
+    assert '55 task drafts' in page
     assert 'Milestones within this one attempt' not in page
     long_page = render_catalog(summary(benchmark='pokebench-long'))
     assert 'Milestones within this one attempt' in long_page
@@ -126,7 +126,7 @@ def test_cleanup_keeps_quests_distinct_and_inventory_variant_manual():
     groups = {group['category']: group for group in load_catalog()}
     assert len(groups['navigation']['evals']) == 10
     assert len(groups['battle']['evals']) == 14
-    assert len(groups['objectives']['evals']) == 9
+    assert len(groups['objectives']['evals']) == 10
     quests = {task['id']: task for task in groups['objectives']['evals']}
     assert 'objectives-infeasible-plan-alternate' in quests
     assert 'objectives-find-capture-species' not in quests
@@ -137,7 +137,7 @@ def test_cleanup_keeps_quests_distinct_and_inventory_variant_manual():
     assert variant['variant_of'] == 'operations-menu-checklist'
     assert variant['action_policy'] == 'manual-menu-v1'
     assert variant['difficulty'] == 'easy'
-    assert summary()['primary_task_count'] == 54
+    assert summary()['primary_task_count'] == 55
     assert summary()['variant_count'] == 1
     retired = {task['id'] for group in load_catalog(include_retired=True)
                for task in group['evals'] if not task.get('active', True)}

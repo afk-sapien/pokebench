@@ -24,6 +24,10 @@ from pokecore.gen1 import read_bag, read_party
 from pokecore.gen1_ui import read_sprites
 
 STEPS = {'up': (0, -1), 'down': (0, 1), 'left': (-1, 0), 'right': (1, 0)}
+# wStatusFlags7 bit BIT_TRAINER_BATTLE: set when a trainer spots the player, cleared after the battle.
+TRAINER_FLAGS, TRAINER_ENGAGED = 0xD733, 0x08
+# wStatusFlags5 bit 7: the game is feeding the player simulated joypad input, as on a spinner.
+SIMULATED_JOYPAD = 0xD730
 
 
 def locate(engine):
@@ -65,6 +69,10 @@ class Driver:
         self.avoid = set()
         # Called when a move command ends in a battle, so walking resumes after it.
         self.on_battle = None
+        # Walk into the nearest trainer's line of sight when no path avoids every trainer.
+        self.fight = False
+        # Let spinners finish on the planner, as the command executor waits for them after a move.
+        self.spinners = False
 
     def calm_planner(self):
         """Turn off wild encounters on the planner only, so paths never depend on dodging them.
@@ -110,6 +118,7 @@ class Driver:
         start = locate(engine)
         queue = deque([(engine.save(), start, [])])
         seen = {start}
+        engaged = None
         for _ in range(limit):
             if not queue:
                 break
@@ -120,6 +129,10 @@ class Driver:
                     continue
                 engine.load(state)
                 step(engine, direction)
+                for _ in range(40 if self.spinners else 0):
+                    if not engine.memory[SIMULATED_JOYPAD] & 0x80:
+                        break
+                    native(engine, None, 30, 0)
                 here = locate(engine)
                 if here[0] != start[0]:
                     if goal((here[0], origin[1] + dx, origin[2] + dy)):
@@ -127,10 +140,15 @@ class Driver:
                     continue
                 if goal(here):
                     return path + [direction]
+                if self.fight and engine.memory[TRAINER_FLAGS] & TRAINER_ENGAGED:
+                    engaged = engaged or path + [direction]
+                    continue
                 if here in seen or ui_state(engine.memory)['kind'] != 'overworld' or engine.memory[0xD057]:
                     continue
                 seen.add(here)
                 queue.append((engine.save(), here, path + [direction]))
+        if engaged:
+            return engaged
         raise RuntimeError(f'No path from {start}. Searched {len(seen)} tiles')
 
     def follow(self, goal, attempts=40):
@@ -149,7 +167,8 @@ class Driver:
             while count < min(8, len(path)) and path[count] == direction:
                 count += 1
             result = self.do('move', direction, count)
-            if self.on_battle and not self.done and self.engine.memory[0xD057]:
+            engaged = self.fight and self.engine.memory[TRAINER_FLAGS] & TRAINER_ENGAGED
+            if self.on_battle and not self.done and (self.engine.memory[0xD057] or engaged):
                 self.on_battle(self)
                 if self.done:
                     return
@@ -264,7 +283,10 @@ def seafoam(driver):
 
 
 FACING = {'down': 0x0, 'up': 0x4, 'left': 0x8, 'right': 0xC}
-SILPH_CO_ELEVATOR = 236
+SILPH_CO_ELEVATOR, ROCKET_HIDEOUT_ELEVATOR = 236, 203
+# Where to stand and which way to face to use each car's floor panel. The Hideout car's doors
+# are on its top row, so its panel at (1, 1) is used from the tile below.
+ELEVATOR_PANELS = {SILPH_CO_ELEVATOR: ((3, 1), 'up'), ROCKET_HIDEOUT_ELEVATOR: ((1, 2), 'up')}
 
 
 def face(driver, direction):
@@ -273,11 +295,11 @@ def face(driver, direction):
         driver.do('move', direction, 1)
 
 
-def ride_elevator(driver, floor, map_id):
-    # The floor panel is on the back wall at (3, 0).
-    driver.enter(SILPH_CO_ELEVATOR)
-    driver.walk(3, 1)
-    face(driver, 'up')
+def ride_elevator(driver, floor, map_id, car=SILPH_CO_ELEVATOR):
+    (x, y), direction = ELEVATOR_PANELS[car]
+    driver.enter(car)
+    driver.walk(x, y)
+    face(driver, direction)
     driver.do('interact')
     # The list shows three floors the cursor can reach. Scroll down until the floor is one of them.
     for _ in range(12):
@@ -643,10 +665,118 @@ def cinnabar_gym(driver):
     raise RuntimeError(f'The Volcano Badge was not recorded. At {locate(d.engine)}')
 
 
+CELADON_CITY, ROUTE_7, ROUTE_8, GAME_CORNER = 6, 18, 19, 135
+UNDERGROUND_ROUTE_7, UNDERGROUND_WEST_EAST, UNDERGROUND_ROUTE_8 = 77, 121, 80
+HIDEOUT_B1F, HIDEOUT_B2F, HIDEOUT_B3F, HIDEOUT_B4F = 199, 200, 201, 202
+POKEMON_TOWER_1F, POKEMON_TOWER_6F, POKEMON_TOWER_7F, MR_FUJIS_HOUSE = 142, 147, 148, 149
+
+
+def talk(driver, direction='up'):
+    face(driver, direction)
+    driver.do('interact')
+    driver.settle()
+
+
+def poke_flute(driver):
+    d = driver
+    tactics = Tactics(d.game_data)
+    d.calm_planner()
+    # Running from the ghost Marowak only pushes the player back, so it is fought like a trainer.
+    d.on_battle = lambda drv: (wild_battle if drv.engine.memory[0xD057] == 1
+                               and locate(drv.engine)[0] != POKEMON_TOWER_6F else battle)(drv, tactics)
+    # Trainers face most Hideout and Tower corridors, and spinners cover B2F and B3F.
+    d.fight = True
+    d.spinners = True
+    # West to Celadon through the Underground Path, then into the Game Corner at (28, 19).
+    d.enter(LAVENDER_TOWN)
+    d.enter(ROUTE_8)
+    d.enter(UNDERGROUND_ROUTE_8, via=(13, 3))
+    d.enter(UNDERGROUND_WEST_EAST, via=(4, 4))
+    d.enter(UNDERGROUND_ROUTE_7, via=(2, 5))
+    d.enter(ROUTE_7)
+    d.enter(CELADON_CITY)
+    d.enter(GAME_CORNER, via=(28, 19))
+    # The Rocket at (9, 5) guards the poster at (9, 4). He walks off after the battle, and the
+    # poster switch opens the stairs at (17, 4).
+    d.walk(9, 6)
+    face(d, 'up')
+    d.do('interact')
+    battle(d, tactics)
+    for _ in range(10):
+        try:
+            d.walk(9, 5)
+            break
+        except RuntimeError:
+            wait(d, 60)
+    read_up(d)
+    d.enter(HIDEOUT_B1F, via=(17, 4))
+    d.enter(HIDEOUT_B2F, via=(23, 2))
+    d.enter(HIDEOUT_B3F, via=(21, 8))
+    d.enter(HIDEOUT_B4F, via=(19, 18))
+    # The Rocket at (11, 2) is fought on the way in. Talking to him again drops the Lift Key at (10, 2).
+    d.walk(11, 3)
+    talk(d)
+    d.walk(10, 3)
+    talk(d)
+    # The lift reaches the east side of B4F, where both guards must be beaten to open Giovanni's door.
+    d.enter(HIDEOUT_B3F, via=(19, 10))
+    d.enter(HIDEOUT_B2F, via=(25, 6))
+    ride_elevator(d, 'B4F', HIDEOUT_B4F, ROCKET_HIDEOUT_ELEVATOR)
+    # Giovanni at (25, 3) has a wall below him, so he is spoken to from the side.
+    for (x, y), direction in (((23, 13), 'up'), ((26, 13), 'up'), ((24, 3), 'right')):
+        d.walk(x, y)
+        face(d, direction)
+        d.do('interact')
+        battle(d, tactics)
+    # Giovanni leaves after the battle and the Silph Scope appears at (25, 2).
+    for _ in range(10):
+        try:
+            d.walk(24, 2)
+            break
+        except RuntimeError:
+            wait(d, 60)
+    talk(d, 'right')
+    # Back the same way: the lift to B1F, the stairs to the Game Corner and east to Lavender.
+    ride_elevator(d, 'B1F', HIDEOUT_B1F, ROCKET_HIDEOUT_ELEVATOR)
+    d.enter(GAME_CORNER)
+    d.enter(CELADON_CITY)
+    d.enter(ROUTE_7)
+    d.enter(UNDERGROUND_ROUTE_7)
+    d.enter(UNDERGROUND_WEST_EAST)
+    d.enter(UNDERGROUND_ROUTE_8)
+    d.enter(ROUTE_8)
+    d.enter(LAVENDER_TOWN)
+    d.enter(POKEMON_TOWER_1F)
+    for floor in range(POKEMON_TOWER_1F + 1, POKEMON_TOWER_6F + 1):
+        d.enter(floor)
+    # On 6F the Rare Candy at (6, 8) fills the only corridor south, so it is picked up. The ghost
+    # Marowak at (10, 16) stands beside the stairs at (9, 16) and is fought from (10, 15).
+    d.walk(6, 7)
+    talk(d, 'down')
+    d.walk(10, 15)
+    d.do('move', 'down')
+    battle(d, tactics)
+    d.enter(POKEMON_TOWER_7F)
+    # Mr. Fuji at (10, 3) sends the player to his house, where he gives the Flute from (3, 1).
+    d.walk(10, 4)
+    talk(d)
+    for _ in range(20):
+        if locate(d.engine)[0] == MR_FUJIS_HOUSE or d.done:
+            break
+        wait(d, 60)
+    d.walk(3, 2)
+    talk(d)
+    for _ in range(10):
+        if d.done:
+            return
+        wait(d, 60)
+    raise RuntimeError(f'The Poke Flute was not recorded. At {locate(d.engine)}')
+
+
 SOLUTIONS = {'navigation-victory-road': victory_road, 'navigation-seafoam-islands': seafoam,
              'navigation-silph-co': silph_co, 'navigation-pewter-to-lavender': pewter_to_lavender,
              'battle-elite-four-no-items': elite_four, 'battle-mt-moon-underleveled': mt_moon,
-             'objectives-cinnabar-gym': cinnabar_gym}
+             'objectives-cinnabar-gym': cinnabar_gym, 'objectives-poke-flute': poke_flute}
 
 
 def build(task_id, rom, game_data, fixtures, output):

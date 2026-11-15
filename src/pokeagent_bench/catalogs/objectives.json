@@ -560,6 +560,111 @@
           }
         }
       ]
+    },
+    {
+      "id": "objectives-poke-flute",
+      "title": "Take the Silph Scope from the Rocket Hideout and rescue Mr. Fuji for the Poke Flute",
+      "difficulty": "hard",
+      "tested_skill": "campaign",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "objectives-poke-flute",
+        "description": "Mr. Fuji is held at the top of the Pokemon Tower, and its ghosts can only be seen through a Silph Scope. Team Rocket keeps one in its hideout under the Celadon Game Corner. Get the Silph Scope, rescue Mr. Fuji and obtain the Poke Flute. Do not nickname Pokemon."
+      },
+      "start": "The Lavender Town Pokemon Center, just inside the door. Three badges, the Rocket Hideout not yet found, no Silph Scope and Mr. Fuji still held in the Pokemon Tower.",
+      "success": [
+        "Mr. Fuji is rescued and the Poke Flute is obtained."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the Poke Flute.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 30000000,
+      "decision_limit": 2000,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start in the Lavender Pokemon Center with the Rocket Hideout unfound, Giovanni unbeaten, the Silph Scope absent and Mr. Fuji held on Tower 7F.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Fetch a key item from one dungeon to unlock another, then finish a rescue for its reward",
+      "agent_goal": "Mr. Fuji is held at the top of the Pokemon Tower, and its ghosts can only be seen through a Silph Scope. Team Rocket keeps one in its hideout under the Celadon Game Corner. Get the Silph Scope, rescue Mr. Fuji and obtain the Poke Flute. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Party at full HP, no status and full PP: Kadabra level 35 with Psybeam, Confusion, Recover and Disable. Wartortle level 35 with Water Gun, Bite, Bubble and Withdraw. No Cut, Fly, Dig or Teleport.",
+        "Bag: 10 Super Potions, 3 Revives and 5 Antidotes. No money, no Escape Rope, no Silph Scope and no Poke Doll.",
+        "Boulder, Cascade and Thunder badges. The Tower rival is beaten. Every Rocket Hideout and Pokemon Tower trainer is unbeaten. Wild Pokemon appear as normal. No route hints are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/GameCorner.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/RocketHideoutB1F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/RocketHideoutB4F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/RocketHideoutElevator.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/PokemonTower6F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/PokemonTower7F.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/MrFujisHouse.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Check in the pilot whether models find the poster switch and the Lift Key, and whether they take the Underground Path west."
+      ],
+      "measures": "Find a hidden dungeon, fetch the key that runs its elevator, beat its boss for a key item, then use that item to finish a rescue in a second dungeon.",
+      "milestones": [
+        {
+          "id": "rocket-hideout",
+          "description": "Enter the Rocket Hideout under the Game Corner.",
+          "check": {
+            "map": 199
+          }
+        },
+        {
+          "id": "lift-key",
+          "description": "Obtain the Lift Key.",
+          "check": {
+            "item": 74
+          }
+        },
+        {
+          "id": "hideout-giovanni",
+          "description": "Defeat Giovanni in the Rocket Hideout.",
+          "check": {
+            "event": 1703
+          }
+        },
+        {
+          "id": "silph-scope",
+          "description": "Obtain the Silph Scope.",
+          "check": {
+            "item": 72
+          }
+        },
+        {
+          "id": "ghost-marowak",
+          "description": "Defeat the ghost Marowak on Pokemon Tower 6F.",
+          "check": {
+            "event": 271
+          }
+        },
+        {
+          "id": "mr-fuji",
+          "description": "Rescue Mr. Fuji on Pokemon Tower 7F.",
+          "check": {
+            "event": 1231
+          }
+        },
+        {
+          "id": "poke-flute",
+          "description": "Obtain the Poke Flute.",
+          "check": {
+            "item": 73
+          }
+        }
+      ]
     }
   ]
 }
