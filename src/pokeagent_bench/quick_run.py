@@ -36,6 +36,12 @@ LONG_STOPS = (f'The campaign stops at {LONG_DECISIONS:,} decisions or its token 
               'It also stops at 150K controller actions, 10M frames, 24 h, '
               'or 2M tokens spent without reaching a new tile or milestone, '
               'or 10M tokens spent without a new milestone.')
+# Short stops a task after two thirds of its own token cap without a new milestone. A pass or fail task has no
+# milestone before it passes, so there it stops at two thirds of the cap. No stored Short success used more than
+# 0.60 of its cap, and no Long stretch through the same caves and buildings came closer than 0.65.
+SHORT_GUARD = (2, 3)
+SHORT_STOPS = ('Each task also stops after two thirds of its token cap without a new milestone. '
+               'A pass or fail task has no milestone before it passes, so it stops at two thirds of its cap.')
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
 # The expected cost comes only from runs the public site publishes for the release being run.
 SITE = 'https://afk-sapien.github.io/pokebench/'
@@ -91,6 +97,10 @@ def new_plan(suite, fixtures, provider, model):
         for cell in manifest['cells']:
             cell['decision_limit'] = LONG_DECISIONS
             cell['run_limits'] = dict(LONG_LIMITS)
+    if suite == 'short':
+        share, whole = SHORT_GUARD
+        for cell in manifest['cells']:
+            cell['run_limits'] = {'max_milestone_tokens': cell['token_limit'] * share // whole}
     return manifest
 
 
@@ -176,6 +186,8 @@ def estimate(manifest, budget, output, used=0, done=0, price=None, expected_line
     lines.append(f'Reference budget {millions(budget)}. Passing it prints a warning. It never stops or shortens a task.')
     if suite == 'long':
         lines.append(LONG_STOPS)
+    if suite == 'short':
+        lines.append(SHORT_STOPS)
     lines += expected_lines
     if price is not None:
         lines.append(f'At ${price:g} per million tokens the reference budget costs about ${budget * price / 1e6:,.2f} '

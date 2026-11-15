@@ -91,6 +91,7 @@ def test_dry_run_prints_the_estimate_and_starts_nothing(data, runs, monkeypatch,
     assert 'Runs: 3 over 3 tasks' in text
     assert 'Left out, fixture needs revalidation: battle-prepared-gym' in text
     assert 'Reference budget 60.0M' in text
+    assert 'stops after two thirds of its token cap without a new milestone' in text
     assert 'costs about $120.00 and the worst case about $8.70' in text
     assert runs == [] and not (data.parent / 'runs').exists()
 

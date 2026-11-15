@@ -8,7 +8,7 @@ from pokeagent_bench import benchmark_tracks as tracks
 from pokeagent_bench import catalog_batch as batch
 from pokeagent_bench import evaluation_catalog as catalog
 from pokeagent_bench import milestone_runtime as runtime
-from pokeagent_bench import quick_run, recovery, submission
+from pokeagent_bench import loop_budget, quick_run, recovery, submission
 from pokeagent_bench.core import encoded, write_json
 from pokeagent_bench.session import Session
 
@@ -228,6 +228,30 @@ def test_short_suite_includes_ready_milestone_tasks(catalog_root, rows, monkeypa
     manifest = quick_run.new_plan('short', rows, 'codex', 'test')
     assert TASK in [cell['task_id'] for cell in manifest['cells']]
     assert {cell['reasoning_effort'] for cell in manifest['cells']} == {'low'}
+    # Every Short task stops after two thirds of its own token cap without a new milestone.
+    guard = {cell['task_id']: cell['run_limits'] for cell in manifest['cells']}
+    assert guard[TASK] == {'max_milestone_tokens': 1_000_000}
+    assert all(limits['max_milestone_tokens'] == cell['token_limit'] * 2 // 3
+               for cell, limits in zip(manifest['cells'], guard.values()))
+
+
+def test_live_milestones_carry_the_stamps_the_guard_counts_from(catalog_root, tmp_path, monkeypatch, engine):
+    state = facts()
+    monkeypatch.setattr(runtime, 'milestone_evidence', lambda engine, task_id: deepcopy(state))
+    scenario = {'task_id': TASK, 'objective': deepcopy(OBJECTIVE), 'action_policy': 'assisted-gameplay-v1',
+                'tested_skill': 'navigation'}
+    session = Session(engine, tmp_path / 'run', scenario, goal='challenge')
+    try:
+        session.current_decision = 4
+        session.usage.update(input_tokens=900, output_tokens=100)
+        state['map_id'] = 194
+        session.wait('wait-1', 3)
+        award = session.evaluator.awarded['milestone:second-floor']
+        assert (award['decision'], award['tokens']) == (4, 1000)
+        gap = loop_budget.milestone_gap(session.evaluator.awarded, 1600, 6)
+        assert (gap['tokens_without_milestone'], gap['last_milestone_decision']) == (600, 4)
+    finally:
+        session.close()
     monkeypatch.setattr(quick_run, 'inventory', lambda root: {'tasks': []})
     with pytest.raises(ValueError, match='No PokeBench tasks are ready yet'):
         quick_run.new_plan('short', rows, 'codex', 'test')

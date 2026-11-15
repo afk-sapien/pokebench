@@ -158,7 +158,9 @@ class MilestoneEvaluator:
             self.disqualified = True
             self.disqualification_reason = reason
 
-    def observe(self, facts, frame, wall_seconds):
+    def observe(self, facts, frame, wall_seconds, *, decision=None, tokens=None):
+        """A live run passes the decision and tokens so far. The milestone guard measures from these stamps.
+        Replay passes neither, and replay compares only id, points and frame."""
         if self.last_frame is not None and frame < self.last_frame:
             raise ValueError('Milestone evaluation frame moved backwards')
         if frame == self.last_frame:
@@ -178,7 +180,8 @@ class MilestoneEvaluator:
             self.pending = frame
             return []
         award = {'id': 'milestone:' + milestone['id'], 'points': 1, 'frame': frame,
-                 'wall_seconds': round(wall_seconds, 6), 'task_id': self.task_id}
+                 'wall_seconds': round(wall_seconds, 6), 'task_id': self.task_id,
+                 **{name: value for name, value in (('decision', decision), ('tokens', tokens)) if value is not None}}
         self.awarded[award['id']] = award
         self.events.append({'kind': milestone['id'], 'frame': frame})
         self.pending = None

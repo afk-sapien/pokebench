@@ -22,4 +22,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [PyBoy RS 0.1.5 and verified build pairs](pyboy-rs-015.md)
 - [Fair harness red-v0.61](fair-harness-v061.md)
 - [Milestone Short red-v0.62](release-v037.md)
+- [Short milestone guard v0.37.1](short-milestone-guard-v0371.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

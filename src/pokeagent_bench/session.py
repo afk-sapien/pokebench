@@ -384,9 +384,13 @@ class Session:
 
     def _evaluate_frame(self):
         facts = self._evaluation_evidence()
+        tokens = self.usage['input_tokens'] + self.usage['output_tokens']
         if self.campaign_tracking:
             return self.evaluator.observe(facts, self.frame, self.elapsed(), decision=self.current_decision,
-                tokens=self.usage['input_tokens'] + self.usage['output_tokens'], actions=self.actions + 1)
+                tokens=tokens, actions=self.actions + 1)
+        from .milestone_runtime import MilestoneEvaluator
+        if isinstance(self.evaluator, MilestoneEvaluator):
+            return self.evaluator.observe(facts, self.frame, self.elapsed(), decision=self.current_decision, tokens=tokens)
         return self.evaluator.observe(facts, self.frame, self.elapsed())
 
     def wait(self, operation_id, frames):
