@@ -291,7 +291,7 @@ def _run_pass(fixtures, rom, game_data, output, web, models, *, budget, workers=
 
 
 def stop_workers(running, grace=60):
-    """Interrupt live workers so each records an interrupted result, then close their logs."""
+    """Interrupt live workers so each pauses at its next decision boundary, then close their logs."""
     for process, _ in running.values():
         if process.poll() is None:
             process.send_signal(signal.SIGINT)

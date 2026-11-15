@@ -12,7 +12,7 @@ class AppServer:
     def __init__(self, command, *, cwd, env):
         self.process = subprocess.Popen(command, cwd=cwd, env=env, stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                                        text=True, bufsize=1)
+                                        text=True, bufsize=1, start_new_session=True)
         self.queue = Queue()
         self.pending = []
         self.sequence = 0

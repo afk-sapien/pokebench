@@ -120,7 +120,8 @@ No external tools, walkthroughs, code execution, or human help are available.
                        "--model", self.model, "--image", str(image), "--output-schema", str(schema), "-"]
             try:
                 process = subprocess.run(command, input=context, capture_output=True, text=True,
-                                         cwd=directory, env=self.env, timeout=max(0.001, min(timeout, 180)))
+                                         cwd=directory, env=self.env, timeout=max(0.001, min(timeout, 180)),
+                                         start_new_session=True)
             except (OSError, subprocess.SubprocessError) as error:
                 raise ProviderError(f"Codex process failed: {type(error).__name__}. Usage may be unreported") from None
         if process.returncode:

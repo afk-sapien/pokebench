@@ -6,6 +6,7 @@ from .catalog_execution import PROVIDERS, _read, inventory, run_task
 from .core import write_json
 from .benchmark_tracks import SHORT, LONG, NAMES, for_category, kept, ranked_average, validate
 from .evaluation_catalog import retired_tasks, task_definition
+from .interrupts import pause_on_interrupt
 
 
 def plan(fixtures, models, tasks=None, repeats=1, *, benchmark=SHORT):
@@ -164,47 +165,51 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
             raise ValueError(f'Uncertain token usage needs reconciliation before resume: {row["id"]}')
     used = sum(row['tokens'] for row in current_report['cells'])
     failed_in_row = 0
-    for cell in kept(manifest['cells']):
-        destination = output / cell['id']
-        if cell_result(destination) is not None:
-            continue
-        from .catalog_execution import select_scenario
-        current = _read(select_scenario(fixtures, cell['task_id'], cell['variant']) / 'scenario.json')
-        if current['state_sha256'] != cell['fixture_sha256'] or current['catalog_sha256'] != cell['evaluation_spec_sha256']:
-            raise ValueError('A planned starting state or task specification changed')
-        try:
-            run_task(fixtures, cell['task_id'], rom, game_data, destination,
-                     provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=cell['token_limit'],
-                     decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'),
-                     run_limits=cell.get('run_limits'))
-        except (ValueError, OSError, RuntimeError) as error:
-            destination.mkdir(parents=True, exist_ok=True)
-            existing = cell_result(destination)
-            write_json(destination / 'error.json', {'evaluation_error': str(error),
-                'usage': existing.get('usage', {}) if existing else {'accounting_complete': False}})
-            used += token_usage(cell_result(destination))
+    with pause_on_interrupt() as guard:
+        for cell in kept(manifest['cells']):
+            destination = output / cell['id']
+            if cell_result(destination) is not None:
+                continue
+            # Ctrl-C between tasks stops here, before the next task starts.
+            if guard and guard.requested:
+                break
+            from .catalog_execution import select_scenario
+            current = _read(select_scenario(fixtures, cell['task_id'], cell['variant']) / 'scenario.json')
+            if current['state_sha256'] != cell['fixture_sha256'] or current['catalog_sha256'] != cell['evaluation_spec_sha256']:
+                raise ValueError('A planned starting state or task specification changed')
+            try:
+                run_task(fixtures, cell['task_id'], rom, game_data, destination,
+                         provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=cell['token_limit'],
+                         decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'),
+                         run_limits=cell.get('run_limits'))
+            except (ValueError, OSError, RuntimeError) as error:
+                destination.mkdir(parents=True, exist_ok=True)
+                existing = cell_result(destination)
+                write_json(destination / 'error.json', {'evaluation_error': str(error),
+                    'usage': existing.get('usage', {}) if existing else {'accounting_complete': False}})
+                used += token_usage(cell_result(destination))
+                latest = report(output)
+                write_json(output / 'report.json', latest)
+                if on_cell:
+                    on_cell(next(row for row in latest['cells'] if row['id'] == cell['id']))
+                # The failed cell is never retried automatically, so unknown usage cannot loop.
+                # Two failures in a row point at the setup rather than one task, so the batch stops.
+                failed_in_row += 1
+                if failed_in_row >= 2:
+                    raise
+                continue
+            failed_in_row = 0
+            value = cell_result(destination)
+            if value is None:
+                raise ValueError('Task did not persist a final result')
+            used += token_usage(value)
             latest = report(output)
             write_json(output / 'report.json', latest)
             if on_cell:
                 on_cell(next(row for row in latest['cells'] if row['id'] == cell['id']))
-            # The failed cell is never retried automatically, so unknown usage cannot loop.
-            # Two failures in a row point at the setup rather than one task, so the batch stops.
-            failed_in_row += 1
-            if failed_in_row >= 2:
-                raise
-            continue
-        failed_in_row = 0
-        value = cell_result(destination)
-        if value is None:
-            raise ValueError('Task did not persist a final result')
-        used += token_usage(value)
-        latest = report(output)
-        write_json(output / 'report.json', latest)
-        if on_cell:
-            on_cell(next(row for row in latest['cells'] if row['id'] == cell['id']))
-        # A cell paused by a provider error waits for a rerun before any later cell starts.
-        if not accounting_complete(value) or value.get('state') == 'paused':
-            break
+            # A cell paused by a provider error or Ctrl-C waits for a rerun before any later cell starts.
+            if not accounting_complete(value) or value.get('state') == 'paused':
+                break
     result = report(output)
     result.update(token_budget=budget, tokens_used=used,
                   worst_case_tokens=sum(cell['token_limit'] for cell in kept(manifest['cells'])))

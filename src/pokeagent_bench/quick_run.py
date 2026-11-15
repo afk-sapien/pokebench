@@ -13,6 +13,8 @@ from .benchmark_tracks import LONG, NAMES, SHORT, for_category
 from .catalog_batch import plan, report, run_batch
 from .catalog_execution import PROVIDERS, inventory
 from .core import write_json
+from .interrupts import pause_on_interrupt
+from .recovery import NO_REPLY, STOPPED
 
 # benchmark, reference token budget, fixed task list (None means every ready task).
 # The reference budget only warns. Each task runs at its own caps, so run order never changes a task.
@@ -202,9 +204,18 @@ def summary(result, output, next_step=True):
     if result['tokens_used'] > result['token_budget']:
         lines.append('Warning: this run passed the reference budget. Every task still ran at its own caps.')
     for cell in result['cells']:
-        if cell['state'] == 'paused' and cell.get('provider_errors'):
-            lines.append(f'{cell["task_id"]} paused after a provider error with no model reply. '
-                         'Its checkpoint is kept and the same command resumes it.')
+        if cell['state'] == 'paused':
+            folder = Path(output) / cell['id']
+            pending = folder / 'pending.json'
+            phase = json.loads(pending.read_text()).get('phase') if pending.is_file() else None
+            if phase == STOPPED:
+                lines.append(f'{cell["task_id"]} was stopped by Ctrl-C during a decision. It cannot resume and is not scored. '
+                             f'Delete {folder} and run the same command again to rerun it.')
+            elif phase == NO_REPLY:
+                lines.append(f'{cell["task_id"]} paused after a provider error with no model reply. '
+                             'Its checkpoint is kept and the same command resumes it.')
+            else:
+                lines.append(f'{cell["task_id"]} paused. Its checkpoint is kept and the same command resumes it.')
         if cell['state'] == 'evaluation_error':
             folder = Path(output) / cell['id']
             lines.append(f'{cell["task_id"]} failed and is not retried. The reason is in {folder / "error.json"}. '
@@ -226,21 +237,26 @@ def progress(row, position, total):
     print(f'[{position}/{total}] {row["task_id"]} {row["state"]}{value}, {millions(row["tokens"])} tokens', flush=True)
 
 
-def recover(output, rom):
-    """Finish a run that was interrupted mid task, using its saved checkpoint."""
+def recover(output, rom, guard=None):
+    """Finish a run that was interrupted mid task, using its saved checkpoint. Return False after a Ctrl-C pause."""
     from .cli import execute, parser
     for row in report(output)['cells']:
         folder = output / row['id']
         if not folder.is_dir() or row['state'] in ('finished', 'evaluation_error'):
             continue
+        if guard and guard.requested:
+            return False
         if not any(folder.iterdir()):
             folder.rmdir()
         elif (folder / 'recovery.json').is_file():
             print(f'Resuming {row["task_id"]} from its checkpoint.', flush=True)
             result = execute(parser().parse_args(['resume', '--rom', str(rom), '--run', str(folder)]))
             if isinstance(result, dict) and result.get('state') == 'paused':
+                if guard and guard.requested:
+                    return False
                 raise ValueError(f'{row["task_id"]} paused again after a provider error with no model reply. '
                                  'No tokens were spent on it. Run the same command again later')
+    return True
 
 
 def run_suite(args, *, ask=None, next_step=True):
@@ -277,10 +293,15 @@ def run_suite(args, *, ask=None, next_step=True):
     if not (output / 'plan.json').is_file():
         output.mkdir(parents=True)
         write_json(output / 'plan.json', manifest)
-    recover(output, rom)
     total = len(manifest['cells'])
-    result = run_batch(fixtures, rom, game_data, output, budget=budget, resume=True, benchmark=benchmark,
-                       on_cell=lambda row: progress(row, int(row['id'][-4:]), total))
+    # One guard covers the resumed task and the batch, so Ctrl-C pauses the task and starts nothing after it.
+    with pause_on_interrupt() as guard:
+        if recover(output, rom, guard):
+            result = run_batch(fixtures, rom, game_data, output, budget=budget, resume=True, benchmark=benchmark,
+                               on_cell=lambda row: progress(row, int(row['id'][-4:]), total))
+        else:
+            result = report(output)
+            result.update(token_budget=budget, tokens_used=sum(row['tokens'] for row in result['cells']))
     result['suite'] = args.suite
     print(summary(result, output, next_step), flush=True)
     return output, result, rom, fixtures

@@ -64,8 +64,11 @@ recovery. Model service revisions cannot be frozen by the local harness.
 An in-flight marker is written before the model call. A crash during a call or
 uncommitted controller batch leaves uncertain usage or actions. Automatic resume
 refuses this case rather than retrying, replaying actions, or resetting usage.
-Only a committed complete decision can be recovered. Use the pause command for
-planned shutdowns, not Ctrl-C. Provider failures retain incomplete accounting
+Only a committed complete decision can be recovered. Since v0.37.1 one Ctrl-C
+pauses the run after the decision in progress, and the same command resumes it.
+A second Ctrl-C during a model call stops at once. That decision's reply or usage
+is lost, so the run cannot resume and is never scored. Model CLIs run in their
+own session, so Ctrl-C reaches only the harness. Provider failures retain incomplete accounting
 when usage is unavailable. This is conservative recovery, not arbitrary crash
 continuation.
 

@@ -1,11 +1,13 @@
 import json
 from pathlib import Path
+import signal
 
 import pytest
 
-from pokeagent_bench import catalog_batch, catalog_execution, quick_run
+from pokeagent_bench import catalog_batch, catalog_execution, interrupts, quick_run
 from pokeagent_bench.cli import main, parser
 from pokeagent_bench.core import write_json
+from pokeagent_bench.recovery import NO_REPLY, STOPPED
 
 # No model is called here. The task runner is replaced by one that writes a finished result.
 SMOKE = quick_run.SUITES['smoke'][2]
@@ -126,6 +128,42 @@ def test_the_same_command_resumes_after_a_stop(data, runs, monkeypatch, capsys):
     text = capsys.readouterr().out
     assert 'Resuming: 1 of 3 runs already finished, 1K tokens used.' in text
     assert 'Finished 3 of 3 runs' in text
+
+
+def test_ctrl_c_during_a_task_starts_no_later_task_and_the_same_command_continues(data, runs, monkeypatch, capsys):
+    words = ('--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out')
+    finish = catalog_batch.run_task
+
+    def press_during_first(fixtures, task, *args, **options):
+        if task == SMOKE[0]:
+            interrupts._active.handle(signal.SIGINT, None)  # the task itself finishes, as a real one does
+        finish(fixtures, task, *args, **options)
+
+    monkeypatch.setattr(catalog_batch, 'run_task', press_during_first)
+    assert command(monkeypatch, *words) == 0
+    assert [task for task, _ in runs] == [SMOKE[0]]
+    assert 'Not every run finished. Run the same command again to continue.' in capsys.readouterr().out
+    assert interrupts._active is None
+    assert command(monkeypatch, *words) == 0
+    assert [task for task, _ in runs] == list(SMOKE)
+    assert 'Finished 3 of 3 runs' in capsys.readouterr().out
+
+
+def test_paused_tasks_say_whether_the_same_command_resumes_them(tmp_path):
+    rows = []
+    for index, phase in enumerate((None, NO_REPLY, STOPPED), 1):
+        folder = tmp_path / f'cell-{index:04d}'
+        folder.mkdir()
+        if phase:
+            write_json(folder / 'pending.json', {'decision': 3, 'phase': phase})
+        rows.append({'id': folder.name, 'task_id': f'task-{index}', 'state': 'paused'})
+    model = {'name': 'PokeBench', 'provider': 'claude', 'model': 'claude-sonnet-5-5', 'completed': 0, 'planned': 3,
+             'evaluation_errors': 0, 'benchmark': 'pokebench', 'category_scores': {}, 'accounting_complete': False}
+    text = quick_run.summary({'models': [model], 'cells': rows, 'tokens_used': 0, 'token_budget': 1}, tmp_path)
+    assert 'task-1 paused. Its checkpoint is kept and the same command resumes it.' in text
+    assert 'task-2 paused after a provider error with no model reply.' in text
+    assert ('task-3 was stopped by Ctrl-C during a decision. It cannot resume and is not scored. '
+            f'Delete {tmp_path / "cell-0003"} and run the same command again to rerun it.') in text
 
 
 def test_a_failed_task_is_named_and_later_tasks_still_run(data, runs, monkeypatch, capsys):

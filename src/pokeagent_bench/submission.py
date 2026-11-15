@@ -348,7 +348,8 @@ def check_cell(cell, files, fixtures, rom, work, replay):
     maximum = protocol.pop('score_max')
     if any(manifest.get(key) != value for key, value in protocol.items()):
         raise ValueError('Goal or scoring protocol differs from the benchmark')
-    limits, standard = manifest.get('limits'), asdict(Limits())
+    # A suite cell can carry its own limits (Long does). The cell comes from the trusted plan, not the bundle.
+    limits, standard = manifest.get('limits'), {**asdict(Limits()), **(cell.get('run_limits') or {})}
     if not isinstance(limits, dict) or set(limits) != set(standard):
         raise ValueError('Limits are missing')
     if any(limits[key] != value for key, value in standard.items() if key not in ('max_total_tokens', 'max_model_calls')):

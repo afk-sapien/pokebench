@@ -24,6 +24,10 @@ EVALUATORS = {kind.__name__: kind for kind in (Evaluator, ChallengeEvaluator, Ca
 LOGS = ('actions.jsonl', 'decisions.jsonl', 'memory.jsonl')
 # Pending phase for a decision the provider failed with no model reply. Nothing was spent or played.
 NO_REPLY = 'provider-error-no-reply'
+# Pending phase for a decision a second Ctrl-C cut short. Its reply, usage or inputs are unknown.
+STOPPED = 'stopped-by-interrupt'
+STOPPED_REFUSAL = ('Ctrl-C stopped decision {decision} before it finished, so its token use or controller inputs '
+                   'are unknown and this run cannot resume. It is not scored. Delete {folder} to start the task again')
 FIELDS = ('campaign_tracking', 'frame', 'actions', 'notes', 'reason', 'operation_ids', 'operations', 'trace_head',
           'usage', 'usage_available', 'journal_enabled', 'journal_entries', 'journal_results', 'current_decision',
           'gameplay_catalog', 'gameplay_memory', 'gameplay_inspection', 'gameplay_result', 'gameplay_operations')
@@ -151,6 +155,8 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
         pending = root / 'pending.json'
         in_flight = json.loads(pending.read_text()) if pending.exists() else {}
         after_provider_error = in_flight.get('phase') == NO_REPLY
+        if in_flight.get('phase') == STOPPED:
+            raise ValueError(STOPPED_REFUSAL.format(decision=in_flight['decision'], folder=root))
         if in_flight.get('decision', 0) > saved['runner']['decision_index'] and not after_provider_error:
             raise ValueError('In-flight decision has uncertain usage or actions. Automatic retry is unsafe')
         engine_checkpoint = saved.get('engine_checkpoint')

@@ -7,6 +7,7 @@ from conftest import FakeEngine
 from pokeagent_bench import submission
 from pokeagent_bench.cli import main
 from pokeagent_bench.core import Limits, digest, encoded, write_json
+from pokeagent_bench.quick_run import LONG_LIMITS
 from pokeagent_bench.session import Session
 
 # No ROM and no model. Runs are recorded and replayed with the fake engine, through the real replay code.
@@ -436,6 +437,25 @@ def test_long_milestones_take_their_labels_from_the_catalog_not_the_bundle():
     assert submission.campaign_milestones({'achievements': awards}) == [
         {'id': 'badge:boulder', 'label': 'Earn the Boulder Badge from Brock', 'points': 40, 'decision': 40},
         {'id': 'starter', 'label': milestone_definitions()['starter']['label'], 'points': 5, 'decision': None}]
+
+
+def test_a_run_at_the_limits_its_suite_records_verifies(world, bundle, monkeypatch):
+    """Long cells carry their own limits. Verify takes them from its own plan, never from the bundle."""
+    def long_plan(suite, fixtures, provider, model):
+        value = plan(provider, model)
+        for cell in value['cells']:
+            cell['run_limits'] = dict(LONG_LIMITS)
+        return value
+
+    monkeypatch.setattr(submission, 'new_plan', long_plan)
+    assert all('Run limits differ from the benchmark' in problem for problem in check(world)['problems'])
+    for cell in ('cell-0001', 'cell-0002'):
+        repack(bundle, edit(f'{cell}/manifest.json', lambda manifest: manifest['limits'].update(LONG_LIMITS)))
+    result = check(world)
+    assert result['verified'] and result['problems'] == []
+    # A Short bundle cannot claim the Long limits for itself.
+    monkeypatch.setattr(submission, 'new_plan', lambda suite, fixtures, provider, model: plan(provider, model))
+    assert all('Run limits differ from the benchmark' in problem for problem in check(world)['problems'])
 
 
 def test_verify_attaches_the_replayed_milestones_to_a_long_run(world, bundle, monkeypatch):

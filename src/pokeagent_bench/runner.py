@@ -2,20 +2,30 @@
 from __future__ import annotations
 
 from collections import deque
+from contextlib import ExitStack
 from datetime import datetime, timezone
 import time
 
 from .core import action, digest, encoded, write_json
 from .decision_contract import rejection
+from .interrupts import pause_on_interrupt
 from .providers import PROMPT, ProviderError
 from .visual_feedback import VisualFeedback
-from .recovery import NO_REPLY, atomic, checkpoint, mark_pending
+from .recovery import NO_REPLY, STOPPED, atomic, checkpoint, mark_pending
 from .memory import validate as validate_journal
 from . import loop_budget
 
 # Waits in seconds before each new attempt after a provider error with no model reply.
 # The v0.61 test met two Cloudflare 403 outages. One lasted at least 2 min 47 s, so the waits span about 15 minutes.
 RETRY_DELAYS = (15, 60, 240, 600)
+
+
+def wait(seconds, guard):
+    """Sleep before a retry. Return True as soon as Ctrl-C asks for a pause."""
+    end = time.monotonic() + seconds
+    while not (guard and guard.requested) and (left := end - time.monotonic()) > 0:
+        time.sleep(min(1, left))
+    return bool(guard and guard.requested)
 
 
 def no_reply(error, provider):
@@ -111,16 +121,22 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                               "total_usage", "context_tokens", "history", "look_back", "compactions", "pending_summary", "packet_baseline", "packet_sequence", "segment_turns", "segment_index")
                               if hasattr(provider, k)}}
         checkpoint(session, state)
+        step["open"] = step["replied"] = False
 
+    # open: a decision started after the last checkpoint. replied: its model reply and usage are recorded.
+    step = {"open": False, "replied": False}
     write_json(session.output / "manifest.json", session.manifest)
     (session.output / "prompt.txt").write_text(prompt)
     session._persist()
     save_boundary()
     held = False
+    scope = ExitStack()
+    guard = scope.enter_context(pause_on_interrupt())
     try:
         while session.status()["state"] == "running":
             pause_request = session.output / "pause.request"
-            if pause_request.exists() or (pause_after_decisions is not None and decision_index - invocation_start >= pause_after_decisions):
+            if pause_request.exists() or (guard and guard.requested) or (
+                    pause_after_decisions is not None and decision_index - invocation_start >= pause_after_decisions):
                 session.audit_memory("pause", {"active_elapsed": session.elapsed()})
                 session.finish("paused")
                 save_boundary()
@@ -165,6 +181,7 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                 if estimate > remaining_tokens:
                     session.finish("token_budget")
                     break
+            step["open"] = True
             if provider.provider != "random":
                 session.usage["calls"] += 1
             decision_index += 1
@@ -174,9 +191,15 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
             for attempt in range(len(RETRY_DELAYS) + 1):
                 started = time.monotonic()
                 try:
-                    decision, usage, record = provider.decide(
-                        observation, session.notes, list(recent), session.limits,
-                        session.limits.max_wall_seconds - session.elapsed())
+                    if guard:
+                        guard.model_call = True
+                    try:
+                        decision, usage, record = provider.decide(
+                            observation, session.notes, list(recent), session.limits,
+                            session.limits.max_wall_seconds - session.elapsed())
+                    finally:
+                        if guard:
+                            guard.model_call = False
                     error = None
                     break
                 except ProviderError as failure:
@@ -189,7 +212,9 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                     provider.packet_baseline = None
                     if error.details.get("kind") != "provider_error" or attempt == len(RETRY_DELAYS):
                         break
-                    time.sleep(RETRY_DELAYS[attempt])
+                    # Ctrl-C during the wait pauses here. The failed attempt spent nothing, so the run resumes.
+                    if wait(RETRY_DELAYS[attempt], guard):
+                        break
             if error is not None and no_reply(error, provider):
                 # Nothing was answered or spent. Keep the last checkpoint so the same command resumes here.
                 if provider.provider != "random":
@@ -223,6 +248,7 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                 row = {"index": decision_index, "frame": session.frame, "decision": decision,
                        "seconds": duration, "usage": usage, "provider": record}
                 stream.write(encoded(row).decode() + "\n")
+            step["replied"] = True
             if session.usage["input_tokens"] + session.usage["output_tokens"] >= session.limits.max_total_tokens:
                 session.finish("token_budget")
             if session.status()["state"] != "running":
@@ -335,14 +361,26 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                 provider.remember_executed_plan(record, decision_index, session.frame)
             save_boundary()
     except KeyboardInterrupt:
-        session.finish("interrupted")
+        # Ctrl-C again stopped the run at once. It pauses and is never scored.
+        if step["open"]:
+            # The decision in progress lost its reply, its usage or some inputs, so resume must refuse it.
+            if not step["replied"]:
+                session.usage["accounting_complete"] = False
+            atomic(session.output / "pending.json", {"decision": decision_index, "phase": STOPPED})
+            held = True
+        else:
+            session.audit_memory("pause", {"active_elapsed": session.elapsed()})
+        session.finish("paused")
     except Exception as error:
         write_json(session.output / "error.json", {"kind": "infrastructure_error", "type": type(error).__name__})
         session.finish("infrastructure_error")
         raise
     finally:
-        if session.usage["accounting_complete"] and session.reason not in ("infrastructure_error", "interrupted") and not held:
-            save_boundary()
-        provider.close()
-        session.close()
+        try:
+            if session.usage["accounting_complete"] and session.reason not in ("infrastructure_error", "interrupted") and not held:
+                save_boundary()
+            provider.close()
+            session.close()
+        finally:
+            scope.close()
     return session.status()

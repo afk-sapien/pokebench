@@ -52,7 +52,8 @@ def usage_delta(models, model, previous):
 class ClaudeStream:
     def __init__(self, command, directory, env):
         self.process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL, text=True, cwd=directory, env=env, bufsize=1)
+            stderr=subprocess.DEVNULL, text=True, cwd=directory, env=env, bufsize=1,
+            start_new_session=True)  # a terminal Ctrl-C reaches only the harness, which pauses cleanly
         self.events = queue.Queue()
         threading.Thread(target=self._read, daemon=True).start()
 
