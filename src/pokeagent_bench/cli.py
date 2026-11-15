@@ -144,6 +144,23 @@ def parser():
             command.add_argument("--max-output-tokens", type=int, default=2048, help="Per-response API cap, not supported by Codex CLI")
             command.add_argument("--input-price", type=float, help="USD per million input tokens")
             command.add_argument("--output-price", type=float, help="USD per million output tokens")
+    entry = sub.add_parser("enter", help="Guided submission: estimate, ask, run with resume, pack the bundle "
+                           "and print a prefilled issue link")
+    entry.add_argument("--suite", choices=("smoke", "short", "long"), required=True,
+                       help="Smoke is a free three task setup check with --provider random")
+    entry.add_argument("--model")
+    entry.add_argument("--provider", choices=("codex", "claude", "openai-compatible", "random"),
+                       help="openai-compatible reads POKEBENCH_BASE_URL and POKEBENCH_API_KEY")
+    entry.add_argument("--handle", help="Your GitHub user name, shown on the leaderboard row")
+    entry.add_argument("--attempts", type=int, default=1, help="How many times you ran this suite with this model")
+    entry.add_argument("--yes", action="store_true", help="Start without asking after the estimate")
+    entry.add_argument("--dry-run", action="store_true", help="Print the plan and estimate, then stop")
+    entry.add_argument("--rom", type=Path, help="Defaults to the ROM that setup recorded")
+    entry.add_argument("--data", type=Path, default=Path("data"), help="Folder written by setup")
+    entry.add_argument("--output", type=Path, help="Run folder. Defaults to runs/SUITE-MODEL")
+    entry.add_argument("--budget", type=int, help="Suite reference token budget. Passing it warns, it never "
+                       "stops or shortens a task")
+    entry.add_argument("--input-price", type=float, help="USD per million input tokens, for a rough cost line")
     pack = sub.add_parser("submit", help="Pack a finished suite run into a bundle for a community submission")
     pack.add_argument("run", type=Path, help="Folder written by run --suite")
     pack.add_argument("--output", type=Path, help="Bundle path. Defaults to MODEL-SUITE.pokebench.zip")
@@ -322,6 +339,9 @@ def execute(args):
         return setup(args.rom, args.output, args.reference_archive)
     if args.command == "prepare":
         return prepare(args.rom, args.output)
+    if args.command == "enter":
+        from .enter import enter
+        return enter(args)
     if args.command == "submit":
         from .submission import submit
         return submit(args.run, args.output, handle=args.handle, attempts=args.attempts,
@@ -349,7 +369,8 @@ def execute(args):
     if args.command == "run":
         if args.suite:
             from .quick_run import run_suite
-            return run_suite(args)
+            run_suite(args)
+            return None
         missing = [name for name in ("rom", "scenario", "output", "provider") if getattr(args, name) is None]
         if missing:
             raise ValueError("Use --suite, or supply " + ", ".join("--" + name for name in missing))

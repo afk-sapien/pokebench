@@ -2,10 +2,13 @@
 
 This only chooses defaults. The work is done by the catalog batch runner.
 """
+from http.client import HTTPException
 import json
 from pathlib import Path
 import re
+import urllib.request
 
+from . import BENCHMARK_VERSION
 from .benchmark_tracks import LONG, NAMES, SHORT, for_category
 from .catalog_batch import plan, report, run_batch
 from .catalog_execution import PROVIDERS, inventory
@@ -27,15 +30,16 @@ LONG_LIMITS = {'max_actions': 150_000, 'max_frames': 10_000_000, 'max_wall_secon
                'max_loop_tokens': 2_000_000, 'max_milestone_tokens': LONG_MILESTONE_GUARD_TOKENS}
 # The published Short runs used low effort and the published Long runs medium.
 EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
-SCALE = {
-    'smoke': 'The leaderboard models used 90K to 150K tokens on these three tasks.',
-    'short': 'Two leaderboard models used 27M and 49M tokens on the earlier, smaller Short task set.',
-    'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first. '
-            'It also stops at 150K controller actions, 10M frames, 24 h, '
-            'or 2M tokens spent without reaching a new tile or milestone, '
-            'or 10M tokens spent without a new milestone.',
-}
+LONG_STOPS = (f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first. '
+              'It also stops at 150K controller actions, 10M frames, 24 h, '
+              'or 2M tokens spent without reaching a new tile or milestone, '
+              'or 10M tokens spent without a new milestone.')
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
+# The expected cost comes only from runs the public site publishes for the release being run.
+SITE = 'https://afk-sapien.github.io/pokebench/'
+SITE_DATA_BYTES = 16_000_000
+NO_EXPECTED = 'so there is no expected cost to show. The worst case above is the only firm bound.'
+MATCH_KEYS = ('task_id', 'variant', 'evaluation_spec_sha256', 'fixture_sha256', 'decision_limit', 'token_limit')
 
 
 def resolve_model(provider, model, suite=None):
@@ -92,7 +96,68 @@ def millions(tokens):
     return f'{tokens / 1e6:.1f}M' if tokens >= 1e6 else f'{tokens / 1e3:.0f}K'
 
 
-def estimate(manifest, budget, output, used=0, done=0, price=None):
+def published(url=SITE + 'showcase-data.json', timeout=10):
+    """The public site data and None, or None and the reason it could not be read."""
+    try:
+        with urllib.request.urlopen(url, timeout=timeout) as reply:
+            data = reply.read(SITE_DATA_BYTES + 1)
+        if len(data) > SITE_DATA_BYTES:
+            raise ValueError('the site data is larger than expected')
+        value = json.loads(data)
+        if not isinstance(value, dict) or value.get('schema') != 'pokebench-showcase-v1':
+            raise ValueError('the site data has an unknown format')
+        return value, None
+    except (OSError, ValueError, HTTPException) as error:
+        return None, str(error) or type(error).__name__
+
+
+def matching_runs(manifest, data, release):
+    """Published runs on this release with the plan's tasks, start states and caps. Each model must cover the plan."""
+    first = manifest['cells'][0]
+    if manifest['benchmark'] == LONG:
+        return {row['model']: [row] for row in data.get('long') or []
+                if row.get('harness') == release and row.get('state') == 'finished' and type(row.get('tokens')) is int
+                and (row.get('decision_limit'), row.get('token_limit')) == (first['decision_limit'], first['token_limit'])}
+    wanted = {tuple(cell.get(key) for key in MATCH_KEYS) for cell in manifest['cells']}
+    found = {}
+    for cell in (data.get('short') or {}).get('cells') or []:
+        key = tuple(cell.get(name) for name in MATCH_KEYS)
+        if (cell.get('harness') == release and cell.get('state') == 'finished' and not cell.get('retired')
+                and type(cell.get('tokens')) is int and key in wanted):
+            found.setdefault(cell['model'], {})[key] = cell
+    return {model: list(cells.values()) for model, cells in found.items() if len(cells) == len(wanted)}
+
+
+def expected(manifest, data, problem, release=BENCHMARK_VERSION):
+    """Lines that state what published runs of this release used. Every number is read from the site."""
+    if data is None:
+        return [f'Could not read the published runs from {SITE} ({problem}), {NO_EXPECTED}']
+    try:
+        runs = matching_runs(manifest, data, release)
+    except (AttributeError, KeyError, TypeError):
+        return [f'The published runs on {SITE} could not be read, {NO_EXPECTED}']
+    suite = manifest['suite']
+    if not runs:
+        return [f'No published {suite} runs exist yet for this release, {release}, {NO_EXPECTED}']
+    totals = sorted(sum(row['tokens'] for row in rows) for rows in runs.values())
+    spread = millions(totals[0]) if len(totals) == 1 else f'{millions(totals[0])} to {millions(totals[-1])}'
+    lines = [f'Published {suite} runs on {release}: {len(totals)} model{"s" if len(totals) > 1 else ""} '
+             f'used {spread} tokens.']
+    model = manifest['cells'][0]['model']
+    if model in runs:
+        costs = [row.get('cost') if isinstance(row.get('cost'), dict) else {} for row in runs[model]]
+        tokens = millions(sum(row['tokens'] for row in runs[model]))
+        if all(isinstance(cost.get(key), (int, float)) for cost in costs for key in ('low', 'high')) and not any(
+                cost.get('partial') for cost in costs):
+            low, high = (sum(cost[key] for cost in costs) for key in ('low', 'high'))
+            lines.append(f'{model} used {tokens} tokens there, about ${low:,.2f} to ${high:,.2f} at the API prices '
+                         'the site lists.')
+        else:
+            lines.append(f'{model} used {tokens} tokens there.')
+    return lines
+
+
+def estimate(manifest, budget, output, used=0, done=0, price=None, expected_lines=()):
     cells = manifest['cells']
     suite = manifest['suite']
     model = f'{cells[0]["provider"]}:{cells[0]["model"]}'
@@ -107,7 +172,9 @@ def estimate(manifest, budget, output, used=0, done=0, price=None):
     lines.append(f'Each task runs at its own decision and token caps. Worst case {millions(worst)} tokens, '
                  'counting input plus output.')
     lines.append(f'Reference budget {millions(budget)}. Passing it prints a warning. It never stops or shortens a task.')
-    lines.append('The random player calls no model and uses no tokens.' if cells[0]['provider'] == 'random' else SCALE[suite])
+    if suite == 'long':
+        lines.append(LONG_STOPS)
+    lines += expected_lines
     if price is not None:
         lines.append(f'At ${price:g} per million tokens the reference budget costs about ${budget * price / 1e6:,.2f} '
                      f'and the worst case about ${worst * price / 1e6:,.2f}. '
@@ -118,7 +185,7 @@ def estimate(manifest, budget, output, used=0, done=0, price=None):
     return '\n'.join(lines)
 
 
-def summary(result, output):
+def summary(result, output, next_step=True):
     row = result['models'][0]
     lines = ['', f'{row["name"]}, model {row["provider"]}:{row["model"]}',
              f'Finished {row["completed"]} of {row["planned"]} runs, {row["evaluation_errors"]} errors.']
@@ -149,6 +216,8 @@ def summary(result, output):
     elif result.get('suite') == 'smoke' and row['completed'] == row['planned']:
         lines.append('Setup works. This was a check, not a benchmark result.')
     lines.append(f'Details: {Path(output) / "report.json"}')
+    if next_step and all(cell['state'] == 'finished' for cell in result['cells']):
+        lines.append(f'Next, pack the bundle: pokebench submit {output} --handle YOUR_GITHUB_NAME')
     return '\n'.join(lines)
 
 
@@ -174,7 +243,12 @@ def recover(output, rom):
                                  'No tokens were spent on it. Run the same command again later')
 
 
-def run_suite(args):
+def run_suite(args, *, ask=None, next_step=True):
+    """Plan, estimate and run a suite with resume. Return the run folder, its report, the ROM and the fixtures.
+
+    ask, when given, is called after the estimate while some run is unfinished. A false answer starts nothing
+    and returns None.
+    """
     provider, model = resolve_model(args.provider, args.model, args.suite)
     benchmark, default_budget, _ = SUITES[args.suite]
     budget = args.budget or default_budget
@@ -192,8 +266,13 @@ def run_suite(args):
         raise ValueError(f'{output} already exists and is not a suite run. Choose another --output')
     else:
         manifest = new_plan(args.suite, fixtures, provider, model)
-    print(estimate(manifest, budget, output, used, done, args.input_price), flush=True)
+    lines = (['The random player calls no model and uses no tokens.'] if provider == 'random'
+             else expected(manifest, *published()))
+    print(estimate(manifest, budget, output, used, done, args.input_price, lines), flush=True)
     if args.dry_run:
+        return None
+    if ask is not None and done < len(manifest['cells']) and not ask():
+        print('Nothing was started.', flush=True)
         return None
     if not (output / 'plan.json').is_file():
         output.mkdir(parents=True)
@@ -203,5 +282,5 @@ def run_suite(args):
     result = run_batch(fixtures, rom, game_data, output, budget=budget, resume=True, benchmark=benchmark,
                        on_cell=lambda row: progress(row, int(row['id'][-4:]), total))
     result['suite'] = args.suite
-    print(summary(result, output), flush=True)
-    return None
+    print(summary(result, output, next_step), flush=True)
+    return output, result, rom, fixtures

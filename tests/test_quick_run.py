@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +9,16 @@ from pokeagent_bench.core import write_json
 
 # No model is called here. The task runner is replaced by one that writes a finished result.
 SMOKE = quick_run.SUITES['smoke'][2]
+FETCH = quick_run.published
+RELEASE = quick_run.BENCHMARK_VERSION
+
+
+@pytest.fixture(autouse=True)
+def site(monkeypatch):
+    """The public site data the estimate reads. Tests add published runs to it. Nothing is fetched."""
+    data = {'schema': 'pokebench-showcase-v1', 'short': {'cells': []}, 'long': []}
+    monkeypatch.setattr(quick_run, 'published', lambda: (data, None))
+    return data
 
 
 @pytest.fixture
@@ -186,6 +197,165 @@ def test_catalog_run_passes_run_limits_to_the_session(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match='Run limits'):
         catalog_execution.run_task(tmp_path, 'campaign-full-game', 'rom', 'game', tmp_path / 'out',
                                    provider='claude', model='test', run_limits={'max_note_bytes': 1})
+
+
+def published_cells(data, model, release=RELEASE, tokens=1000, **change):
+    """Site cells for every smoke task, built from the plan this checkout makes."""
+    plan = quick_run.new_plan('smoke', data / 'fixtures', 'claude', model)
+    return [{**{key: cell[key] for key in quick_run.MATCH_KEYS}, 'model': model, 'harness': release,
+             'state': 'finished', 'tokens': tokens, 'cost': {'low': 0.1, 'high': 0.2, 'partial': False}, **change}
+            for cell in plan['cells']]
+
+
+def test_the_expected_cost_comes_only_from_published_runs_of_this_release(data, runs, site, monkeypatch, capsys):
+    words = ('--model', 'claude-sonnet-5-5', '--suite', 'smoke', '--dry-run')
+    assert command(monkeypatch, *words) == 0
+    text = capsys.readouterr().out
+    assert f'No published smoke runs exist yet for this release, {RELEASE}, so there is no expected cost' in text
+    assert 'The worst case above is the only firm bound.' in text
+    # Older releases, retired copies and models missing a task never back a number.
+    site['short']['cells'] += published_cells(data, 'claude-opus-5-5', release='red-v0.59-lossless-inspection')
+    site['short']['cells'] += published_cells(data, 'gpt-6-sol', retired=True)
+    site['short']['cells'] += published_cells(data, 'gpt-6-luna')[:2]
+    assert command(monkeypatch, *words) == 0
+    assert 'No published smoke runs exist yet' in capsys.readouterr().out
+    site['short']['cells'] += published_cells(data, 'claude-haiku-5-5', tokens=2000)
+    site['short']['cells'] += published_cells(data, 'claude-sonnet-5-5', tokens=40_000)
+    assert command(monkeypatch, *words) == 0
+    text = capsys.readouterr().out
+    assert f'Published smoke runs on {RELEASE}: 2 models used 6K to 120K tokens.' in text
+    assert 'claude-sonnet-5-5 used 120K tokens there, about $0.30 to $0.60 at the API prices the site lists.' in text
+    site['short']['cells'][-1]['cost'] = {'partial': True}
+    assert command(monkeypatch, *words) == 0
+    assert 'claude-sonnet-5-5 used 120K tokens there.\n' in capsys.readouterr().out
+    monkeypatch.setattr(quick_run, 'published', lambda: (None, 'timed out'))
+    assert command(monkeypatch, *words) == 0
+    assert (f'Could not read the published runs from {quick_run.SITE} (timed out), so there is no expected cost'
+            in capsys.readouterr().out)
+    site['short'] = None
+    monkeypatch.setattr(quick_run, 'published', lambda: (site, None))
+    assert command(monkeypatch, *words) == 0
+    assert 'No published smoke runs exist yet' in capsys.readouterr().out
+    site['short'] = {'cells': ['not a cell']}
+    assert command(monkeypatch, *words) == 0
+    assert f'The published runs on {quick_run.SITE} could not be read, so there is no expected cost' in (
+        capsys.readouterr().out)
+    assert runs == []
+
+
+def test_a_published_long_run_backs_the_long_estimate(data, runs, site, monkeypatch, capsys):
+    words = ('--model', 'claude-opus-5-5', '--suite', 'long', '--dry-run')
+    row = {'model': 'claude-opus-5-5', 'harness': RELEASE, 'state': 'finished', 'tokens': 23_396_427,
+           'decision_limit': 2000, 'token_limit': catalog_batch.task_definition('campaign-full-game')['token_limit'],
+           'cost': {'low': 46.42, 'high': 65.9, 'partial': False}}
+    site['long'] = [{**row, 'decision_limit': 1000}, {**row, 'harness': 'red-v0.59-lossless-inspection'}]
+    assert command(monkeypatch, *words) == 0
+    assert 'No published long runs exist yet for this release' in capsys.readouterr().out
+    site['long'].append(row)
+    assert command(monkeypatch, *words) == 0
+    text = capsys.readouterr().out
+    assert f'Published long runs on {RELEASE}: 1 model used 23.4M tokens.' in text
+    assert 'claude-opus-5-5 used 23.4M tokens there, about $46.42 to $65.90' in text
+
+
+def test_the_site_data_is_read_with_a_size_cap_and_a_format_check(tmp_path):
+    good = tmp_path / 'good.json'
+    good.write_text(json.dumps({'schema': 'pokebench-showcase-v1', 'long': []}))
+    assert FETCH(good.as_uri()) == ({'schema': 'pokebench-showcase-v1', 'long': []}, None)
+    other = tmp_path / 'other.json'
+    other.write_text('[1, 2]')
+    assert FETCH(other.as_uri()) == (None, 'the site data has an unknown format')
+    data, problem = FETCH((tmp_path / 'missing.json').as_uri())
+    assert data is None and problem
+    (tmp_path / 'broken.json').write_text('{')
+    assert FETCH((tmp_path / 'broken.json').as_uri())[0] is None
+
+
+def enter(monkeypatch, *words, answer='y'):
+    asked = []
+
+    def reply(prompt):
+        asked.append(prompt)
+        if answer is None:
+            raise EOFError
+        return answer
+
+    monkeypatch.setattr('builtins.input', reply)
+    monkeypatch.setattr('sys.argv', ['pokebench', 'enter', *words])
+    return main(), asked
+
+
+@pytest.fixture
+def packed(monkeypatch):
+    """Record what enter packs and verifies. The submission code itself is tested in test_submission."""
+    from pokeagent_bench import enter as module
+    calls = []
+
+    def fake_submit(run, output, **options):
+        calls.append(('submit', run, output, options))
+        output.write_bytes(b'bundle')
+
+    monkeypatch.setattr(module, 'submit', fake_submit)
+    monkeypatch.setattr(module, 'verify', lambda bundle, rom, fixtures: calls.append(('verify', bundle)))
+    return calls
+
+
+def test_enter_asks_after_the_estimate_and_starts_nothing_on_no(data, runs, packed, monkeypatch, capsys):
+    for answer in ('n', '', None):
+        assert enter(monkeypatch, '--model', 'claude-sonnet-5-5', '--suite', 'short', answer=answer)[0] == 0
+        text = capsys.readouterr().out
+        assert 'Worst case' in text and 'Nothing was started.' in text
+        assert 'Credit: none. Add --handle YOUR_GITHUB_NAME' in text
+    assert runs == [] and packed == [] and not (data.parent / 'runs').exists()
+
+
+def test_enter_runs_packs_and_links_a_prefilled_issue(data, runs, packed, monkeypatch, capsys):
+    words = ('--model', 'claude-sonnet-5-5', '--suite', 'short', '--handle', 'octocat', '--attempts', '2')
+    code, asked = enter(monkeypatch, *words)
+    assert code == 0 and asked == ['Start the run? [y/N] ']
+    text = capsys.readouterr().out
+    folder = Path('runs/short-claude-sonnet-5-5')
+    bundle = Path('runs/short-claude-sonnet-5-5.pokebench.zip')
+    assert sorted(task for task, _ in runs) == sorted(SMOKE)
+    assert [call[:3] for call in packed] == [('submit', folder, bundle)]
+    assert packed[0][3] == {'handle': 'octocat', 'attempts': 2}
+    assert 'Credit: GitHub handle octocat' in text and 'pokebench submit' not in text
+    assert (f'attach {bundle}:\n  https://github.com/afk-sapien/pokebench/issues/new?template=run-submission.md'
+            '&title=Run+submission%3A+claude-sonnet-5-5%2C+short') in text
+    # The same command again finds the run finished and the bundle packed. It runs and packs nothing.
+    code, asked = enter(monkeypatch, *words, answer=None)
+    assert code == 0 and asked == [] and len(runs) == 3 and len(packed) == 1
+    assert f'{bundle} is already packed' in capsys.readouterr().out
+
+
+def test_enter_with_the_random_player_checks_the_whole_path_for_free(data, runs, packed, monkeypatch, capsys):
+    code, asked = enter(monkeypatch, '--provider', 'random', '--suite', 'smoke', '--yes', answer=None)
+    assert code == 0 and asked == []
+    text = capsys.readouterr().out
+    bundle = Path('runs/smoke-random.pokebench.zip')
+    assert [call[0] for call in packed] == ['submit', 'verify'] and packed[1][1] == bundle
+    assert 'The random player calls no model and uses no tokens.' in text
+    assert 'do not open an issue for it' in text and 'issues/new' not in text and 'Credit' not in text
+
+
+def test_enter_packs_nothing_while_a_run_is_unfinished(data, runs, packed, monkeypatch, capsys):
+    finish = catalog_batch.run_task
+
+    def fail_first(fixtures, task, *args, **options):
+        if task == SMOKE[0]:
+            raise RuntimeError('fixture would not load')
+        finish(fixtures, task, *args, **options)
+
+    monkeypatch.setattr(catalog_batch, 'run_task', fail_first)
+    assert enter(monkeypatch, '--model', 'gpt-6-sol', '--suite', 'smoke', '--yes')[0] == 0
+    assert 'Nothing was packed because not every run finished' in capsys.readouterr().out
+    assert packed == []
+
+
+def test_a_finished_run_names_the_submit_step(data, runs, monkeypatch, capsys):
+    assert command(monkeypatch, '--model', 'claude-sonnet-5-5', '--suite', 'short') == 0
+    assert ('Next, pack the bundle: pokebench submit runs/short-claude-sonnet-5-5 --handle YOUR_GITHUB_NAME'
+            in capsys.readouterr().out)
 
 
 def test_the_random_player_runs_smoke_for_free_and_nothing_else(data, runs, monkeypatch, capsys):
