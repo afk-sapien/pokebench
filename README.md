@@ -43,10 +43,12 @@ The last command runs three cheap tasks to check that your setup works. The lead
 | Suite | What it runs | Reference budget | Worst case |
 | --- | --- | --- | --- |
 | `smoke` | Three cheap tasks that check your setup. Never a leaderboard result | 500K | 4.35M |
-| `short` | Every ready PokeBench task | 60M | 203M |
+| `short` | Every ready PokeBench task, 46 starts | 60M | 280M |
 | `long` | The PokeBench Long campaign, up to 2,000 decisions | 30M | 30M |
 
-Short and smoke run at low reasoning effort and Long at medium, as the leaderboard runs did. Each task runs at its own decision and token caps, so a task never loses its allowance to the tasks that ran before it. The worst case is the sum of those caps. The reference budget is the leaderboard figure. A run that passes it prints a warning and goes on. `run --suite` prints the plan, the worst case and the reference budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see rough dollar figures for both. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the reference budget.
+Short and smoke run at low reasoning effort and Long at medium, as the leaderboard runs did. Each task runs at its own decision and token caps, so a task never loses its allowance to the tasks that ran before it. The worst case is the sum of those caps. The reference budget is the leaderboard figure. A run that passes it prints a warning and goes on. Long also stops at 150K controller actions, 10M frames, 24 h, or 2M tokens spent without reaching a new tile or milestone, the limits the published Long runs used. `run --suite` prints the plan, the worst case and the reference budget before the first model call. Add `--dry-run` to stop there, and `--input-price 3` to see rough dollar figures for both. Results go to `runs/SUITE-MODEL`, with one progress line per task and a plain summary at the end. Run the same command again to resume after a stop. Use `--budget` to change the reference budget.
+
+If one task fails, the suite names it and goes on to the next task. A failed task is not retried, because its token use may be unknown. Delete its folder and run the same command again to retry it. Two failures in a row stop the suite, because that usually means the setup is broken rather than one task.
 
 If the Claude provider fails before the model replies, the call counts no tokens. The harness tries the decision again after 15 s, 1 min, 4 min and 10 min. A usage limit is not retried. If the provider is still failing, the task pauses at its last checkpoint and the suite stops there. Run the same command later and the task resumes from that checkpoint.
 

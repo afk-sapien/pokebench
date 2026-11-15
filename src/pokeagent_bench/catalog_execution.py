@@ -6,6 +6,8 @@ from .core import Limits, digest, encoded, write_json
 from .evaluation_catalog import load_catalog, task_definition
 
 PROVIDERS = ('codex', 'claude', 'openai-compatible')
+# Run limits a plan may set per cell, beyond the decision and token caps.
+RUN_LIMITS = ('max_actions', 'max_frames', 'max_wall_seconds', 'max_loop_tokens')
 
 
 def _read(path):
@@ -112,11 +114,14 @@ def validate_fixtures(fixtures, rom):
 
 def run_task(fixtures, task_id, rom, game_data, output, *, provider=None, model=None,
              variant='default', token_limit=None, decision_limit=None, actions=None, reasoning_effort='low',
-             reference=False, presentation='current'):
+             reference=False, presentation='current', run_limits=None):
     """Run a registered task, with an optional zero-model native input reference."""
     task = task_definition(task_id)
     if presentation not in ('current', 'before-after'):
         raise ValueError('Unknown catalog screenshot presentation')
+    run_limits = run_limits or {}
+    if set(run_limits) - set(RUN_LIMITS) or any(type(v) is not int or v <= 0 for v in run_limits.values()):
+        raise ValueError('Run limits must be positive integers for ' + ', '.join(RUN_LIMITS))
     if presentation != 'current' and actions is not None:
         raise ValueError('Screenshot presentation requires a gameplay model run')
     scenario = select_scenario(fixtures, task_id, variant)
@@ -172,4 +177,7 @@ def run_task(fixtures, task_id, rom, game_data, output, *, provider=None, model=
             '--observation-format', 'text', '--context-detail', 'on-demand',
             '--reasoning-effort', reasoning_effort, '--max-total-tokens', str(token_limit),
             '--presentation', presentation, '--max-model-calls', str(decision_limit)]
+    for key in RUN_LIMITS:
+        if key in run_limits:
+            args += ['--' + key.replace('_', '-'), str(run_limits[key])]
     return execute(parser().parse_args(args))

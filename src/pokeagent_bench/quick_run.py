@@ -19,12 +19,17 @@ SUITES = {
     'long': (LONG, 30_000_000, None),
 }
 LONG_DECISIONS = 2000
+# The published Long runs used these. The single-run defaults of 20K actions and 6 h would cut a campaign short.
+LONG_LIMITS = {'max_actions': 150_000, 'max_frames': 10_000_000, 'max_wall_seconds': 86_400,
+               'max_loop_tokens': 2_000_000}
 # The published Short runs used low effort and the published Long runs medium.
 EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
 SCALE = {
     'smoke': 'The leaderboard models used 90K to 150K tokens on these three tasks.',
     'short': 'Two leaderboard models used 27M and 49M tokens on the earlier, smaller Short task set.',
-    'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first.',
+    'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first. '
+            'It also stops at 150K controller actions, 10M frames, 24 h, '
+            'or 2M tokens spent without reaching a new tile or milestone.',
 }
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
 
@@ -70,6 +75,7 @@ def new_plan(suite, fixtures, provider, model):
     if suite == 'long':
         for cell in manifest['cells']:
             cell['decision_limit'] = LONG_DECISIONS
+            cell['run_limits'] = dict(LONG_LIMITS)
     return manifest
 
 
@@ -123,9 +129,15 @@ def summary(result, output):
         if cell['state'] == 'paused' and cell.get('provider_errors'):
             lines.append(f'{cell["task_id"]} paused after a provider error with no model reply. '
                          'Its checkpoint is kept and the same command resumes it.')
-    if row['completed'] < row['planned']:
+        if cell['state'] == 'evaluation_error':
+            folder = Path(output) / cell['id']
+            lines.append(f'{cell["task_id"]} failed and is not retried. The reason is in {folder / "error.json"}. '
+                         f'Delete {folder} and run the same command again to retry it.')
+    if any(cell['state'] == 'evaluation_error' for cell in result['cells']) and not row['accounting_complete']:
+        lines.append('Some token usage of a failed task is unknown, so the token total may be low.')
+    if any(cell['state'] not in ('finished', 'evaluation_error') for cell in result['cells']):
         lines.append('Not every run finished. Run the same command again to continue.')
-    elif result.get('suite') == 'smoke':
+    elif result.get('suite') == 'smoke' and row['completed'] == row['planned']:
         lines.append('Setup works. This was a check, not a benchmark result.')
     lines.append(f'Details: {Path(output) / "report.json"}')
     return '\n'.join(lines)

@@ -117,6 +117,25 @@ def test_the_same_command_resumes_after_a_stop(data, runs, monkeypatch, capsys):
     assert 'Finished 3 of 3 runs' in text
 
 
+def test_a_failed_task_is_named_and_later_tasks_still_run(data, runs, monkeypatch, capsys):
+    words = ('--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out')
+    finish = catalog_batch.run_task
+
+    def fail_first(fixtures, task, *args, **options):
+        if task == SMOKE[0]:
+            raise RuntimeError('fixture would not load')
+        finish(fixtures, task, *args, **options)
+
+    monkeypatch.setattr(catalog_batch, 'run_task', fail_first)
+    assert command(monkeypatch, *words) == 0
+    assert [task for task, _ in runs] == list(SMOKE[1:])
+    text = capsys.readouterr().out
+    assert 'Finished 2 of 3 runs, 1 errors.' in text
+    assert f'{SMOKE[0]} failed and is not retried' in text and 'Delete ' in text
+    assert 'Some token usage of a failed task is unknown' in text
+    assert 'Setup works' not in text and 'Not every run finished' not in text
+
+
 def test_interrupted_task_continues_from_its_checkpoint(data, runs, monkeypatch, capsys):
     words = ('--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out')
     assert command(monkeypatch, *words) == 0
@@ -140,7 +159,32 @@ def test_long_suite_uses_the_published_decision_limit_and_effort(data, runs, mon
     assert command(monkeypatch, '--model', 'claude:claude-fable-5-2', '--suite', 'long') == 0
     assert [(task, options['decision_limit'], options['reasoning_effort']) for task, options in runs] == [
         ('campaign-full-game', 2000, 'medium')]
-    assert 'Campaign: 1 of 1 points' in capsys.readouterr().out
+    # The published Long runs used these, not the single-run defaults of 20K actions and 6 h.
+    assert runs[0][1]['run_limits'] == {'max_actions': 150_000, 'max_frames': 10_000_000,
+                                        'max_wall_seconds': 86_400, 'max_loop_tokens': 2_000_000}
+    text = capsys.readouterr().out
+    assert 'Campaign: 1 of 1 points' in text and '150K controller actions' in text
+
+
+def test_smoke_cells_keep_the_single_run_limits(data, runs, monkeypatch):
+    assert command(monkeypatch, '--model', 'claude-sonnet-5-5', '--suite', 'smoke') == 0
+    assert all(options['run_limits'] is None for _, options in runs)
+
+
+def test_catalog_run_passes_run_limits_to_the_session(tmp_path, monkeypatch):
+    import pokeagent_bench.cli as cli
+    monkeypatch.setattr(catalog_execution, 'select_scenario', lambda *args: tmp_path)
+    captured = []
+    monkeypatch.setattr(cli, 'execute', lambda args: captured.append(args))
+    catalog_execution.run_task(tmp_path, 'campaign-full-game', 'rom', 'game', tmp_path / 'out',
+                               provider='claude', model='test', decision_limit=2000,
+                               run_limits=quick_run.LONG_LIMITS)
+    args = captured[0]
+    assert (args.max_actions, args.max_frames, args.max_wall_seconds, args.max_loop_tokens) == (
+        150_000, 10_000_000, 86_400, 2_000_000)
+    with pytest.raises(ValueError, match='Run limits'):
+        catalog_execution.run_task(tmp_path, 'campaign-full-game', 'rom', 'game', tmp_path / 'out',
+                                   provider='claude', model='test', run_limits={'max_note_bytes': 1})
 
 
 def test_clear_errors_for_the_common_mistakes(data, runs, monkeypatch, capsys, tmp_path):

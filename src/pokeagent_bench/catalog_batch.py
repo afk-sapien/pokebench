@@ -152,6 +152,7 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
     current_report = report(output)
     write_json(output / 'report.json', current_report)
     # Check every existing cell before any new paid work, including later cells.
+    # A failed cell is never run again, so its unknown usage stays reported without blocking later tasks.
     for row in current_report['cells']:
         destination = output / row['id']
         if not destination.exists():
@@ -159,9 +160,10 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         if row['state'] not in ('finished', 'evaluation_error'):
             raise ValueError(f'Unfinished cell needs recovery before resume: {row["id"]} ({row["state"]}). '
                              'Resume its saved session first')
-        if not row.get('accounting_complete', False):
+        if row['state'] == 'finished' and not row.get('accounting_complete', False):
             raise ValueError(f'Uncertain token usage needs reconciliation before resume: {row["id"]}')
     used = sum(row['tokens'] for row in current_report['cells'])
+    failed_in_row = 0
     for cell in kept(manifest['cells']):
         destination = output / cell['id']
         if cell_result(destination) is not None:
@@ -173,15 +175,25 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         try:
             run_task(fixtures, cell['task_id'], rom, game_data, destination,
                      provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=cell['token_limit'],
-                     decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'))
+                     decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'),
+                     run_limits=cell.get('run_limits'))
         except (ValueError, OSError, RuntimeError) as error:
             destination.mkdir(parents=True, exist_ok=True)
             existing = cell_result(destination)
             write_json(destination / 'error.json', {'evaluation_error': str(error),
                 'usage': existing.get('usage', {}) if existing else {'accounting_complete': False}})
-            write_json(output / 'report.json', report(output))
-            # Unknown usage must not produce an unlimited automatic retry loop.
-            raise
+            used += token_usage(cell_result(destination))
+            latest = report(output)
+            write_json(output / 'report.json', latest)
+            if on_cell:
+                on_cell(next(row for row in latest['cells'] if row['id'] == cell['id']))
+            # The failed cell is never retried automatically, so unknown usage cannot loop.
+            # Two failures in a row point at the setup rather than one task, so the batch stops.
+            failed_in_row += 1
+            if failed_in_row >= 2:
+                raise
+            continue
+        failed_in_row = 0
         value = cell_result(destination)
         if value is None:
             raise ValueError('Task did not persist a final result')
