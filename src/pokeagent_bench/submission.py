@@ -160,7 +160,13 @@ def collect(run, *, handle=None, attempts=1, endpoint_host=False):
         hosts.add(manifest['agent'].get('configuration', {}).get('endpoint_host'))
         files[f'{cell["id"]}/manifest.json'] = encoded(manifest)
         for name in REPLAY_FILES[1:]:
-            files[f'{cell["id"]}/{name}'] = (folder / name).read_bytes()
+            path = folder / name
+            if path.is_file():
+                files[f'{cell["id"]}/{name}'] = path.read_bytes()
+            elif name == 'actions.jsonl':
+                files[f'{cell["id"]}/{name}'] = no_actions(folder, cell['task_id'])
+            else:
+                raise ValueError(f'{path} is missing. Run the same run command again to finish it')
     provider, model = next(iter(models))
     summary = {'format': FORMAT, 'suite': plan['suite'], 'benchmark': plan['benchmark'], 'provider': provider,
                'model': model, 'handle': handle, 'attempts_declared': attempts,
@@ -274,6 +280,8 @@ def check_plan(files, fixtures):
     if len(models) != 1 or models != {(summary.get('provider'), summary.get('model'))}:
         raise ValueError('A submission covers one model')
     provider, model = next(iter(models))
+    if provider == 'random' and suite != 'smoke':
+        raise ValueError('The random player runs the smoke suite only')
     trusted = new_plan(suite, fixtures, provider, model)
     expected = {cell['id']: {key: cell.get(key) for key in CELL_KEYS} for cell in trusted['cells']}
     found = {str(cell.get('id')): {key: cell.get(key) for key in CELL_KEYS} for cell in cells}
@@ -295,6 +303,14 @@ def decisions_used(actions):
         if match:
             numbers.add(int(match[1]))
     return len(numbers)
+
+
+def no_actions(folder, task_id):
+    """A run that sent no controller input never writes an action log. Pack an empty one, which replays."""
+    result = json.loads((folder / 'result.json').read_text())
+    if result.get('actions') != 0:
+        raise ValueError(f'{task_id} recorded {result.get("actions")} actions but its action log is missing')
+    return b''
 
 
 def scoring(task_id):

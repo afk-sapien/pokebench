@@ -15,6 +15,11 @@ from .session import Session, checkpoint, load_engine, prepare, replay
 BOUNDED_ONLY = ("claude", "openai-compatible")
 
 
+def random_bounded(args):
+    """The free random player speaks the bounded gameplay protocol when a suite run asks for it."""
+    return args.provider == "random" and args.codex_policy == "bounded"
+
+
 def load_labels(path):
     if path is None:
         return {}
@@ -356,13 +361,13 @@ def execute(args):
             raise ValueError("Gameplay track requires --game-data")
         from .gameplay import load_catalog
         gameplay_catalog = load_catalog(args.game_data)
-        if args.command == "run" and not (args.provider in BOUNDED_ONLY or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
+        if args.command == "run" and not (args.provider in BOUNDED_ONLY or random_bounded(args) or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
             raise ValueError("Gameplay runs require --provider codex --codex-policy gameplay")
     provider = None
     agent = None
     if args.command == "run":
         from .providers import APIProvider, RandomProvider
-        if args.observation_format != "json" and not (args.provider in BOUNDED_ONLY or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
+        if args.observation_format != "json" and not (args.provider in BOUNDED_ONLY or random_bounded(args) or (args.provider == "codex" and args.codex_policy in ("gameplay", "bounded"))):
             raise ValueError("Text observations require the gameplay Codex policy")
         if args.journal and (args.provider != "codex" or args.codex_policy != "compact"):
             raise ValueError("Journal requires the compact Codex policy")
@@ -372,7 +377,7 @@ def execute(args):
             raise ValueError("Supply both input and output prices, or neither")
         if any(p is not None and (not math.isfinite(p) or p < 0) for p in (args.input_price, args.output_price)):
             raise ValueError("Prices must be nonnegative and finite")
-        if args.context_detail != "full" and not (args.provider in BOUNDED_ONLY or (args.provider == "codex" and args.codex_policy == "bounded")):
+        if args.context_detail != "full" and not (args.provider in BOUNDED_ONLY or random_bounded(args) or (args.provider == "codex" and args.codex_policy == "bounded")):
             raise ValueError("context-detail requires a bounded gameplay provider")
         if args.provider == "openai-compatible":
             from .openai_compatible_provider import OpenAICompatibleProvider
@@ -381,6 +386,13 @@ def execute(args):
             provider = OpenAICompatibleProvider(args.model or "", reasoning_effort=args.reasoning_effort,
                 context_turns=args.context_turns, context_detail=args.context_detail, presentation=args.presentation,
                 compact_at=OpenAICompatibleProvider.default_compact_at if args.compact_at is None else args.compact_at)
+        elif random_bounded(args):
+            from .random_gameplay_provider import RandomGameplayProvider
+            if args.track != "gameplay" or args.presentation not in ("current", "before-after") or args.response_contract != "simple" or args.fresh_decisions:
+                raise ValueError("The random gameplay player requires --track gameplay, current or before-after images and the simple response contract")
+            provider = RandomGameplayProvider(args.model or "random", seed=args.seed, reasoning_effort=args.reasoning_effort,
+                context_turns=args.context_turns, context_detail=args.context_detail, presentation=args.presentation,
+                compact_at=RandomGameplayProvider.default_compact_at if args.compact_at is None else args.compact_at)
         elif args.provider == "claude":
             from .claude_provider import ClaudeCodeProvider
             if args.track != "gameplay" or args.codex_policy != "bounded" or args.presentation not in ("current", "before-after") or args.response_contract != "simple" or args.fresh_decisions:

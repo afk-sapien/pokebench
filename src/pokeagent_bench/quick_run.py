@@ -38,15 +38,20 @@ SCALE = {
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
 
 
-def resolve_model(provider, model):
+def resolve_model(provider, model, suite=None):
+    if provider == 'random' and not model:
+        model = 'random'
     if not model:
-        raise ValueError('Name a model with --model')
+        raise ValueError('Name a model with --model. To check your setup for free, run --suite smoke --provider random')
     if provider is None and model.partition(':')[0] in PROVIDERS:
         provider, _, model = model.partition(':')
     if provider is None:
         provider = next((name for prefix, name in PREFIXES if model.startswith(prefix)), None)
     if provider not in PROVIDERS or not model:
-        raise ValueError('Suite runs need --provider codex, claude or openai-compatible')
+        raise ValueError('Suite runs need --provider codex, claude or openai-compatible, '
+                         'or --provider random with --suite smoke for a free setup check')
+    if provider == 'random' and suite != 'smoke':
+        raise ValueError('The random player runs the smoke suite only. It checks your setup and calls no model')
     return provider, model
 
 
@@ -102,7 +107,7 @@ def estimate(manifest, budget, output, used=0, done=0, price=None):
     lines.append(f'Each task runs at its own decision and token caps. Worst case {millions(worst)} tokens, '
                  'counting input plus output.')
     lines.append(f'Reference budget {millions(budget)}. Passing it prints a warning. It never stops or shortens a task.')
-    lines.append(SCALE[suite])
+    lines.append('The random player calls no model and uses no tokens.' if cells[0]['provider'] == 'random' else SCALE[suite])
     if price is not None:
         lines.append(f'At ${price:g} per million tokens the reference budget costs about ${budget * price / 1e6:,.2f} '
                      f'and the worst case about ${worst * price / 1e6:,.2f}. '
@@ -170,7 +175,7 @@ def recover(output, rom):
 
 
 def run_suite(args):
-    provider, model = resolve_model(args.provider, args.model)
+    provider, model = resolve_model(args.provider, args.model, args.suite)
     benchmark, default_budget, _ = SUITES[args.suite]
     budget = args.budget or default_budget
     fixtures, game_data, rom = locate(args.data, args.rom)

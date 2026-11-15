@@ -188,6 +188,23 @@ def test_catalog_run_passes_run_limits_to_the_session(tmp_path, monkeypatch):
                                    provider='claude', model='test', run_limits={'max_note_bytes': 1})
 
 
+def test_the_random_player_runs_smoke_for_free_and_nothing_else(data, runs, monkeypatch, capsys):
+    assert command(monkeypatch, '--provider', 'random', '--suite', 'smoke') == 0
+    text = capsys.readouterr().out
+    assert [task for task, _ in runs] == list(SMOKE)
+    assert all(options['provider'] == 'random' and options['model'] == 'random' for _, options in runs)
+    assert 'model random:random' in text and 'The random player calls no model and uses no tokens.' in text
+    assert 'leaderboard models used' not in text
+    assert (data.parent / 'runs' / 'smoke-random' / 'plan.json').is_file()
+    for words in (('--provider', 'random', '--suite', 'short'), ('--provider', 'random', '--suite', 'long'),
+                  ('--model', 'random:x', '--suite', 'long')):
+        assert command(monkeypatch, *words) != 0
+        assert 'The random player runs the smoke suite only' in capsys.readouterr().err
+    assert command(monkeypatch, '--suite', 'smoke') != 0
+    assert 'run --suite smoke --provider random' in capsys.readouterr().err
+    assert len(runs) == 3
+
+
 def test_clear_errors_for_the_common_mistakes(data, runs, monkeypatch, capsys, tmp_path):
     assert command(monkeypatch, '--model', 'llama-3', '--suite', 'smoke') != 0
     assert 'need --provider codex, claude or openai-compatible' in capsys.readouterr().err

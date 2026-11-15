@@ -5,7 +5,8 @@ import json
 from .core import Limits, digest, encoded, write_json
 from .evaluation_catalog import load_catalog, task_definition
 
-PROVIDERS = ('codex', 'claude', 'openai-compatible')
+# random is the free player of the smoke suite. It calls no model, and its runs are never results.
+PROVIDERS = ('codex', 'claude', 'openai-compatible', 'random')
 # Run limits a plan may set per cell, beyond the decision and token caps.
 RUN_LIMITS = ('max_actions', 'max_frames', 'max_wall_seconds', 'max_loop_tokens', 'max_milestone_tokens')
 

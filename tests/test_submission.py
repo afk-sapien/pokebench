@@ -341,6 +341,44 @@ def test_commands_exit_nonzero_on_a_failed_bundle(world, monkeypatch, capsys):
     assert stop.value.code == 1 and 'NOT VERIFIED' in capsys.readouterr().out
 
 
+def test_a_run_that_sent_no_input_packs_an_empty_log_and_verifies(world):
+    """A random or confused player can finish a task without one controller input. Its run still submits."""
+    folder = world['run'] / 'cell-0002'
+    for path in folder.iterdir():
+        path.unlink()
+    folder.rmdir()
+    scenario = json.loads((world['fixtures'] / 'battle-two' / 'scenario.json').read_text())
+    session = Session(FakeEngine(), folder, scenario, limits=Limits(max_total_tokens=1000, max_model_calls=5),
+                      agent={'provider': 'openai-compatible', 'model': 'local-model', 'reasoning_effort': 'low'})
+    session.finish('action_budget')
+    session.close()
+    result = json.loads((folder / 'result.json').read_text())
+    write_json(folder / 'result.json', {**result, 'state': 'finished'})
+    assert result['actions'] == 0 and not (folder / 'actions.jsonl').exists()
+    submission.submit(world['run'], world['bundle'], handle='octocat')
+    with zipfile.ZipFile(world['bundle']) as archive:
+        assert archive.read('cell-0002/actions.jsonl') == b''
+    assert check(world)['verified']
+
+
+def test_a_lost_action_log_is_refused(world):
+    (world['run'] / 'cell-0002' / 'actions.jsonl').unlink()
+    with pytest.raises(ValueError, match='battle-two recorded 2 actions but its action log is missing'):
+        submission.submit(world['run'], world['bundle'], handle='octocat')
+
+
+def test_a_random_player_bundle_outside_smoke_is_refused(world, bundle):
+    def random_player(files):
+        for name in ('plan.json', 'submit.json'):
+            value = json.loads(files[name])
+            for cell in value.get('cells', [value]):
+                cell['provider'] = 'random'
+            files[name] = encoded(value)
+    repack(bundle, random_player)
+    with pytest.raises(ValueError, match='The random player runs the smoke suite only'):
+        check(world)
+
+
 def test_only_verified_short_reports_join_the_site_data(world, bundle, tmp_path, capsys):
     from pokeagent_bench.showcase import community_reports
     web = tmp_path / 'web'
