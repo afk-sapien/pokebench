@@ -127,11 +127,40 @@ def attempts_log(base, batches):
     return log
 
 
-def community_reports(web):
-    """Verified Short reports that a maintainer added with community-add."""
+def community_reports(web, suite='short'):
+    """Verified reports of one suite that a maintainer added with community-add."""
     from .submission import REPORT_FORMAT
     reports = [load(path) for path in sorted((Path(web) / 'community').glob('*.json'))]
-    return [r for r in reports if r.get('format') == REPORT_FORMAT and r.get('verified') is True and r.get('suite') == 'short']
+    return [r for r in reports if r.get('format') == REPORT_FORMAT and r.get('verified') is True and r.get('suite') == suite]
+
+
+def community_name(entry):
+    return f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
+
+
+def community_note(entry):
+    return {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
+            'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
+
+
+# Community token counts are self reported, so no cost is estimated from them.
+COMMUNITY_COST = {'low': None, 'high': None, 'partial': False, 'note': 'Community run, not priced'}
+
+
+def community_long_row(entry):
+    """A verified community Long run, shaped like an official row. It has no published replay or report page."""
+    cell = entry['cells'][0]
+    milestones = [{key: m.get(key) for key in ('label', 'decision', 'points', 'id')} for m in cell['milestones']]
+    return {'id': community_name(entry), 'label': entry['model'], 'model': entry['model'],
+            'community': community_note(entry), 'stop_detail': None, 'harness': entry['harness']['benchmark'],
+            'run_id': None, 'decision_limit': cell['decision_limit'], 'token_limit': cell['token_limit'],
+            'cost': dict(COMMUNITY_COST), 'report': None, 'score': cell['campaign']['points'],
+            'maximum': cell['campaign']['maximum_points'],
+            'badges': sum(str(m['id']).startswith('badge:') for m in milestones),
+            'state': cell['state'], 'stop_reason': cell.get('stop_reason'), 'decisions': cell.get('decisions') or 0,
+            'tokens': cell.get('tokens') or 0, 'milestones': milestones,
+            'versions': {'package': entry['harness'].get('package_version'), 'core': None, 'emulator': ''},
+            'image': None, 'replay': None, 'replay_mb': None, 'pair_blocks': None, 'extensions': []}
 
 
 def short_snapshot(source, web, extra=None, base=None, community=()):
@@ -161,14 +190,12 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
             cells.append(clean)
     submitted = {}
     for entry in community:
-        name = f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
-        submitted[name] = {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
-                           'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
+        name = community_name(entry)
+        submitted[name] = community_note(entry)
         for row in kept(entry['cells']):
             clean = {k: row.get(k) for k in CELL_FIELDS}
-            # Community token counts are self reported, so no cost is estimated from them.
             clean.update(model=name, replay=None, revision='Community', harness=entry['harness']['benchmark'],
-                         cost={'low': None, 'high': None, 'partial': False, 'note': 'Community run, not priced'})
+                         cost=dict(COMMUNITY_COST))
             cells.append(clean)
     retired = retired_tasks()
     # Retired attempts stay visible for history, but they are not scored or counted as planned.
@@ -254,8 +281,8 @@ def long_row(root, web, name, decision_limit=2000):
             'pair_blocks': dict(zip(('pair', 'blocked'), LONG_PAIR_BLOCKS[root.name])) if root.name in LONG_PAIR_BLOCKS else None}
 
 
-def long_snapshot(base, web):
-    rows = []
+def long_snapshot(base, web, community=()):
+    rows = [community_long_row(entry) for entry in community]
     runs = [(name, f'long-v065-{name}') for name in ('opus', 'sol', 'sonnet', 'terra')]
     runs += [(name, f'long-v067-{name}') for name in ('astra', 'fable') if (base / f'long-v067-{name}/pilot.json').exists()]
     if (base / 'long-v069-luna/pilot.json').exists():
@@ -286,7 +313,7 @@ def export(base, web, *, install=False):
             batch['web_prefix'] = folder
             extra.append(batch)
     data = {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base, community_reports(web)), 'long': long_snapshot(base, web),
+            'short': short_snapshot(source, web, extra, base, community_reports(web)), 'long': long_snapshot(base, web, community_reports(web, 'long')),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}
     text = json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n'

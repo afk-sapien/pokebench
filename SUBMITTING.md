@@ -84,4 +84,4 @@ For maintainers, one command adds a report from your own `verify` run to the loc
 uv run pokebench community-add MODEL-short.pokebench.verified.json --web /path/to/local/site
 ```
 
-It accepts only verified Short reports from the accepted harness version. The next local site build shows the row with the community label, the submitter's name, the declared attempts and self reported tokens. It has no cost estimate and no replay link. The site has no community rows for Long yet. Putting the row on the live site is a separate step that needs the owner's yes.
+It accepts only verified Short and Long reports from the accepted harness version. The next local site build shows the row on the matching panel with the community label, the submitter's name, the declared attempts and self reported tokens. It has no cost estimate and no replay link, and it stays out of the cost comparison. Putting the row on the live site is a separate step that needs the owner's yes.

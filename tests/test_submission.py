@@ -379,7 +379,14 @@ def test_a_random_player_bundle_outside_smoke_is_refused(world, bundle):
         check(world)
 
 
-def test_only_verified_short_reports_join_the_site_data(world, bundle, tmp_path, capsys):
+CAMPAIGN = {'task_id': 'campaign-full-game', 'state': 'finished', 'decision_limit': 2000, 'token_limit': 30_000_000,
+            'tokens': 900, 'decisions': 2000, 'stop_reason': 'model_call_budget',
+            'campaign': {'points': 48, 'maximum_points': 1000},
+            'milestones': [{'id': 'badge:boulder', 'label': 'Earn the Boulder Badge from Brock', 'points': 40,
+                            'decision': 40}]}
+
+
+def test_only_verified_short_and_long_reports_join_the_site_data(world, bundle, tmp_path, capsys):
     from pokeagent_bench.showcase import community_reports
     web = tmp_path / 'web'
     web.mkdir()
@@ -390,15 +397,42 @@ def test_only_verified_short_reports_join_the_site_data(world, bundle, tmp_path,
     assert "needs the owner's yes" in capsys.readouterr().out
     with pytest.raises(ValueError, match='already exists'):
         submission.community_add(report, web)
-    for change, message in (({'suite': 'smoke'}, 'Only Short'), ({'suite': 'long'}, 'Only Short'),
+    for change, message in (({'suite': 'smoke'}, 'Only Short and Long'), ({'suite': 'nightly'}, 'Only Short and Long'),
+                            ({'suite': 'long'}, 'one campaign run with its milestones'),
+                            ({'suite': 'long', 'cells': [{k: v for k, v in CAMPAIGN.items() if k != 'milestones'}]},
+                             'one campaign run with its milestones'),
+                            ({'suite': 'long', 'cells': [CAMPAIGN, CAMPAIGN]}, 'one campaign run'),
                             ({'verified': False}, 'not verified'), ({'problems': ['x']}, 'not verified'),
                             ({'format': 'other'}, 'not a report'), ({'harness': {'benchmark': 'red-v9'}}, 'verified on red-v9'),
-                            ({'handle': 'someone-else'}, None)):
+                            ({'handle': 'someone-else'}, None), ({'suite': 'long', 'cells': [CAMPAIGN]}, None)):
         write_json(report, {**result, **change})
         if message is None:
             submission.community_add(report, web)
             continue
         with pytest.raises(ValueError, match=message):
             submission.community_add(report, web)
+    # One handle can send Short and Long for the same model. Each lands in its own file and panel.
     assert sorted(path.name for path in (web / 'community').iterdir()) == [
-        'octocat-local-model.json', 'someone-else-local-model.json']
+        'long-octocat-local-model.json', 'short-octocat-local-model.json', 'short-someone-else-local-model.json']
+    assert [r['suite'] for r in community_reports(web, 'long')] == ['long']
+    assert {r['suite'] for r in community_reports(web)} == {'short'}
+
+
+def test_long_milestones_take_their_labels_from_the_catalog_not_the_bundle():
+    from pokeagent_bench.campaign_runtime import milestone_definitions
+    awards = [{'id': 'badge:boulder', 'label': '<img src=x onerror=alert(1)>', 'points': 40, 'frame': 9, 'decision': 40},
+              {'id': 'starter', 'points': 5, 'frame': 3, 'decision': '7'}]
+    assert submission.campaign_milestones({'achievements': awards}) == [
+        {'id': 'badge:boulder', 'label': 'Earn the Boulder Badge from Brock', 'points': 40, 'decision': 40},
+        {'id': 'starter', 'label': milestone_definitions()['starter']['label'], 'points': 5, 'decision': None}]
+
+
+def test_verify_attaches_the_replayed_milestones_to_a_long_run(world, bundle, monkeypatch):
+    """The fake engine cannot play the real campaign, so its second task stands in for it."""
+    seen = []
+    monkeypatch.setattr(submission, 'CAMPAIGN_TASK', 'battle-two')
+    monkeypatch.setattr(submission, 'campaign_milestones',
+                        lambda result: seen.append(result['actions']) or [{'id': 'badge:boulder', 'decision': 2}])
+    result = check(world)
+    assert result['verified'] and seen == [2]
+    assert [cell.get('milestones') for cell in result['cells']] == [None, [{'id': 'badge:boulder', 'decision': 2}]]

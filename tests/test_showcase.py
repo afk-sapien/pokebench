@@ -193,6 +193,32 @@ def test_community_rows_are_labeled_and_kept_out_of_the_cost_comparison(tmp_path
     assert [m['id'] for m in result['efficiency']['models']] == ['official']
 
 
+def test_a_community_long_run_joins_the_long_panel_unpriced(tmp_path):
+    from pokeagent_bench.showcase import community_long_row, community_reports
+    badge = {'id': 'badge:boulder', 'label': 'Earn the Boulder Badge from Brock', 'points': 40, 'decision': 40}
+    cell = {'id': 'cell-0001', 'task_id': 'campaign-full-game', 'state': 'finished', 'decision_limit': 2000,
+            'token_limit': 30_000_000, 'tokens': 9_000_000, 'decisions': 2000, 'stop_reason': 'model_call_budget',
+            'campaign': {'points': 48, 'maximum_points': 1000}, 'milestones': [badge], 'notes': 'private'}
+    report = {'format': 'pokebench-verified-report-v1', 'verified': True, 'suite': 'long', 'model': 'local-model',
+              'label': 'Community, replay verified, model unverified', 'handle': 'octocat', 'attempts_declared': 1,
+              'harness': {'benchmark': 'red-v0.62-next', 'package_version': '0.37.0'}, 'bundle_sha256': 'abc',
+              'cells': [cell]}
+    (tmp_path / 'community').mkdir()
+    (tmp_path / 'community' / 'long.json').write_text(json.dumps(report))
+    (tmp_path / 'community' / 'short.json').write_text(json.dumps(dict(report, suite='short')))
+    assert community_reports(tmp_path, 'long') == [report]
+    assert [r['suite'] for r in community_reports(tmp_path)] == ['short']
+    row = community_long_row(report)
+    assert row['id'] == 'community/octocat/local-model' and row['label'] == 'local-model'
+    assert row['community'] == {'label': 'Community, replay verified, model unverified', 'handle': 'octocat',
+                                'model': 'local-model', 'attempts': 1, 'bundle_sha256': 'abc'}
+    assert (row['score'], row['maximum'], row['badges'], row['decision_limit']) == (48, 1000, 1, 2000)
+    assert row['milestones'] == [badge] and row['tokens'] == 9_000_000 and row['cost']['low'] is None
+    assert row['harness'] == 'red-v0.62-next' and row['versions']['package'] == '0.37.0'
+    assert row['replay'] is None and row['report'] is None and row['extensions'] == []
+    assert 'private' not in json.dumps(row)
+
+
 def test_only_existing_local_replays_are_linked(tmp_path):
     (tmp_path / 'replay.html').write_text('replay')
     assert existing_link(tmp_path, 'replay.html') == 'replay.html'

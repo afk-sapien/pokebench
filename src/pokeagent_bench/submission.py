@@ -27,6 +27,7 @@ FORMAT = 'pokebench-submission-v1'
 REPORT_FORMAT = 'pokebench-verified-report-v1'
 LABEL = 'Community, replay verified, model unverified'
 SELF_REPORTED = ('model identity', 'token counts', 'attempts', 'no outside help')
+CAMPAIGN_TASK = 'campaign-full-game'
 ATTACHMENT_LIMIT = 25_000_000  # GitHub issue attachment limit
 UNPACKED_LIMIT = 500_000_000
 REPLAY_FILES = ('manifest.json', 'actions.jsonl', 'result.json')
@@ -315,7 +316,7 @@ def no_actions(folder, task_id):
 
 def scoring(task_id):
     """What a suite run of this task must record about how it is played and scored."""
-    if task_id == 'campaign-full-game':
+    if task_id == CAMPAIGN_TASK:
         from .campaign_runtime import VERSION
         return {'goal': 'campaign', 'track': 'gameplay', 'scoring_protocol': VERSION, 'score_max': 1000}
     from .evaluation_catalog import milestone_tasks, task_definition
@@ -415,6 +416,8 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
                 state = 'FAILED'
             print(f'[{position}/{len(plan["cells"])}] {cell["task_id"]} {state}', flush=True)
         scored = report(work) if not problems else None
+        milestones = {cell['id']: campaign_milestones(json.loads((work / cell['id'] / 'result.json').read_text()))
+                      for cell in plan['cells'] if scored and cell['task_id'] == CAMPAIGN_TASK}
     result = {'format': REPORT_FORMAT, 'verified': not problems, 'problems': problems,
               'label': LABEL, 'suite': plan['suite'], 'benchmark': plan['benchmark'],
               'provider': summary['provider'], 'model': summary['model'],
@@ -427,27 +430,45 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
         result['note'] = 'Setup check only. Not a leaderboard result.'
     if scored:
         result['summary'] = scored['models'][0]
-        result['cells'] = [{**row, 'replay_verified': True} for row in scored['cells']]
+        result['cells'] = [{**row, 'replay_verified': True,
+                            **({'milestones': milestones[row['id']]} if row['id'] in milestones else {})}
+                           for row in scored['cells']]
     output = Path(output) if output else bundle.with_name(bundle.name.removesuffix('.zip') + '.verified.json')
     write_json(output, result)
     print(conclusion(result, output), flush=True)
     return result
 
 
+def campaign_milestones(result):
+    """The milestones of a replayed Long run. Ids, points and order are replay checked, and labels come from
+    this checkout's catalog. The decision of each milestone is read from the log, so it is self reported."""
+    from .campaign_runtime import milestone_definitions
+    names = milestone_definitions()
+    return [{'id': award['id'], 'label': names.get(award['id'], {}).get('label', award['id']),
+             'points': award['points'], 'decision': award.get('decision') if type(award.get('decision')) is int else None}
+            for award in result['achievements']]
+
+
 def community_add(report, web):
-    """Copy a verified Short report into the local site data. The next site build shows it as a community row."""
+    """Copy a verified Short or Long report into the local site data. The next site build shows it as a community row."""
     result = json.loads(Path(report).read_text())
     if not isinstance(result, dict) or result.get('format') != REPORT_FORMAT:
         raise ValueError(f'{report} is not a report written by verify')
     if result.get('verified') is not True or result.get('problems') or not result.get('cells'):
         raise ValueError('The report is not verified. Only verified reports can be added')
-    if result.get('suite') != 'short':
-        raise ValueError('Only Short suite reports can be added. The smoke suite is a setup check, '
-                         'and the site has no community rows for Long yet')
+    suite = result.get('suite')
+    if suite not in ('short', 'long'):
+        raise ValueError('Only Short and Long suite reports can be added. The smoke suite is a setup check')
+    cells = result['cells']
+    if suite == 'long' and not (len(cells) == 1 and isinstance(cells[0], dict)
+                                and cells[0].get('task_id') == CAMPAIGN_TASK
+                                and isinstance(cells[0].get('campaign'), dict)
+                                and isinstance(cells[0].get('milestones'), list)):
+        raise ValueError('The Long report needs one campaign run with its milestones. Verify the bundle again')
     harness = result.get('harness') if isinstance(result.get('harness'), dict) else {}
     if not harness_accepted(harness):
         raise ValueError(harness_refusal(harness, 'The report was verified on'))
-    name = re.sub(r'[^A-Za-z0-9.]+', '-', f'{result.get("handle") or "unnamed"}-{result["model"]}') + '.json'
+    name = re.sub(r'[^A-Za-z0-9.]+', '-', f'{suite}-{result.get("handle") or "unnamed"}-{result["model"]}') + '.json'
     target = Path(web) / 'community' / name
     if target.exists():
         raise ValueError(f'{target} already exists. Remove it first to replace that row')
