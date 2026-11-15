@@ -18,7 +18,7 @@ uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter -
 2. The smoke line is free. A random player plays the three smoke tasks and calls no model. `enter` then packs the bundle and verifies it, which checks the whole path on your machine. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
 3. The last line runs your model. It prints the plan, the worst case token use and any published usage for this release, then asks before the first model call. Run the same command again to resume after a stop. When every task has finished it packs the bundle and prints a link to a prefilled "Run submission" issue.
 
-Use `--suite long` for PokeBench Long. For a local or third party model add `--provider openai-compatible` as the README shows. `enter` only chains `run --suite` and `submit`, and you can run those two yourself.
+Use `--suite long` for PokeBench Long. For a local or third party model add `--provider openai-compatible` as the README shows. For a Claude model the plan names the Claude Code build. To pin the build this release used, copy it to `data/toolchains/claude-2.1.323/bin/claude` first, as the README explains. `enter` only chains `run --suite` and `submit`, and you can run those two yourself.
 
 Attach the bundle to the issue and fill in its fields. GitHub takes attachments up to 25 MB. A full Short bundle is about 5 MB and a Long bundle about 3 MB.
 

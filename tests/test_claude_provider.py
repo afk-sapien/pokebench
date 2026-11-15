@@ -1,12 +1,14 @@
 from collections import deque
 from types import SimpleNamespace
 import json
+import os
 import time
 
 import pytest
 
 from pokeagent_bench.bounded_provider import BoundedGameplayProvider
-from pokeagent_bench.claude_provider import ClaudeCodeProvider, subscription_environment, usage_delta
+from pokeagent_bench.claude_provider import (CLAUDE_CLI, ClaudeCodeProvider, installed_version, pin_cli,
+                                             subscription_environment, usage_delta)
 from pokeagent_bench.codex_provider import CodexProvider
 from pokeagent_bench.core import Limits
 from pokeagent_bench.providers import ProviderError
@@ -34,7 +36,41 @@ def test_api_and_provider_environment_overrides_are_removed(monkeypatch):
         monkeypatch.setenv(key, 'must-not-reach-cli')
     env = subscription_environment()
     assert 'must-not-reach-cli' not in env.values()
-    assert env['CLAUDE_CODE_DISABLE_AUTO_COMPACT'] == '1'
+    assert env['CLAUDE_CODE_DISABLE_AUTO_COMPACT'] == '1' and env['DISABLE_AUTOUPDATER'] == '1'
+
+
+def fake_cli(folder, version):
+    folder.mkdir(parents=True)
+    script = folder / 'claude'
+    script.write_text(f'#!/bin/sh\necho "{version} (Claude Code)"\n')
+    script.chmod(0o755)
+    return folder
+
+
+def test_the_run_command_puts_the_pinned_build_first_on_path(tmp_path, monkeypatch):
+    elsewhere = fake_cli(tmp_path / 'elsewhere', '2.1.999')
+    monkeypatch.setenv('PATH', f'{elsewhere}{os.pathsep}/usr/bin{os.pathsep}/bin')
+    data = tmp_path / 'store' / 'setup'
+    data.mkdir(parents=True)
+    line = pin_cli(data)
+    assert 'Claude Code 2.1.999 from PATH, auto-update off. This release was run with 2.1.323.' in line
+    assert str(data / 'toolchains' / 'claude-2.1.323' / 'bin' / 'claude') in line
+    # A copy next to the data folder is found, and every later claude in this process is that build.
+    pinned = fake_cli(tmp_path / 'store' / 'toolchains' / f'claude-{CLAUDE_CLI}' / 'bin', CLAUDE_CLI)
+    assert pin_cli(data) == f'Claude Code {CLAUDE_CLI}, pinned from {pinned}. Auto-update is off.'
+    assert pin_cli(data) == f'Claude Code {CLAUDE_CLI}, pinned from {pinned}. Auto-update is off.'
+    assert os.environ['PATH'].split(os.pathsep)[:2] == [str(pinned), str(elsewhere)]
+    assert installed_version() == CLAUDE_CLI
+
+
+def test_a_pinned_copy_of_another_build_is_refused(tmp_path, monkeypatch):
+    empty = tmp_path / 'empty'
+    empty.mkdir()
+    monkeypatch.setenv('PATH', str(empty))
+    fake_cli(tmp_path / 'data' / 'toolchains' / f'claude-{CLAUDE_CLI}' / 'bin', '2.1.325')
+    with pytest.raises(ValueError, match='reports Claude Code 2.1.325, not 2.1.323'):
+        pin_cli(tmp_path / 'data')
+    assert pin_cli(tmp_path / 'elsewhere' / 'setup').startswith('Claude Code was not found on PATH')
 
 
 def test_prompt_schema_and_bounded_policy_match_codex(monkeypatch):

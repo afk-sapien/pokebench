@@ -70,6 +70,8 @@ If the Claude provider fails before the model replies, the call counts no tokens
 
 Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 
+Claude Code can update itself, so a long suite could switch builds halfway. PokeBench turns auto-update off for every Claude call. This release runs Claude Code 2.1.323. Copy that build to `data/toolchains/claude-2.1.323/bin/claude` and `run --suite` puts it first on PATH, checks its version and names it in the plan. Resumes in the same command use it too. Without that copy the suite uses the `claude` on PATH and the plan prints its version.
+
 Local and third party models run through any OpenAI compatible chat endpoint. The model must accept images.
 
 ```sh

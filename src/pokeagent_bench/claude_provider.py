@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 import queue
 import re
 import subprocess
@@ -13,14 +14,51 @@ import time
 from .bounded_provider import BoundedGameplayProvider
 from .providers import ProviderError
 
+# The Claude Code build this release's runs use. An installed claude can update itself in the middle of a suite.
+CLAUDE_CLI = '2.1.323'
+
 
 def subscription_environment():
     """Keep the official login, excluding alternate providers and credential overrides."""
     excluded = ('ANTHROPIC_', 'CLAUDE_CODE_', 'CLAUDE_CONFIG_DIR', 'CLAUDE_AGENT_', 'CLAUDE_SESSION_', 'CLAUDECODE')
     env = {key: value for key, value in os.environ.items() if not key.startswith(excluded)}
     env.update(CLAUDE_CODE_DISABLE_AUTO_COMPACT='1', CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC='1',
-               CLAUDE_CODE_MAX_OUTPUT_TOKENS='8192')
+               CLAUDE_CODE_MAX_OUTPUT_TOKENS='8192', DISABLE_AUTOUPDATER='1')
     return env
+
+
+def installed_version(executable='claude'):
+    try:
+        result = subprocess.run([executable, '--version'], capture_output=True, text=True, timeout=15,
+                                env=subscription_environment(), check=True)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return result.stdout.strip().split(' ')[0] or None
+
+
+def pin_cli(data):
+    """Put a saved copy of the pinned build first on PATH for this process. Return a line for the plan.
+
+    The copy goes in toolchains/claude-VERSION/bin/claude, inside the data folder or the folder that holds it.
+    Every task and every resume in this command then runs that build. Without a copy the claude on PATH runs.
+    """
+    data = Path(data).resolve()
+    for root in (data, data.parent):
+        folder = root / 'toolchains' / f'claude-{CLAUDE_CLI}' / 'bin'
+        if os.access(folder / 'claude', os.X_OK):
+            version = installed_version(str(folder / 'claude'))
+            if version != CLAUDE_CLI:
+                raise ValueError(f'{folder / "claude"} reports Claude Code {version}, not {CLAUDE_CLI}. Replace that copy')
+            path = os.environ.get('PATH', '')
+            if path.split(os.pathsep)[0] != str(folder):
+                os.environ['PATH'] = str(folder) + os.pathsep + path
+            return f'Claude Code {CLAUDE_CLI}, pinned from {folder}. Auto-update is off.'
+    version = installed_version()
+    if version is None:
+        return 'Claude Code was not found on PATH. Install it and sign in before the first task.'
+    note = '' if version == CLAUDE_CLI else f' This release was run with {CLAUDE_CLI}.'
+    return (f'Claude Code {version} from PATH, auto-update off.{note} To pin a build, copy it to '
+            f'{data / "toolchains" / f"claude-{CLAUDE_CLI}" / "bin" / "claude"}.')
 
 
 def subscription_status(executable, env):

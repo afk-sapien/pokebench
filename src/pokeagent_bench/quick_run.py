@@ -285,6 +285,9 @@ def run_suite(args, *, ask=None, next_step=True):
     lines = (['The random player calls no model and uses no tokens.'] if provider == 'random'
              else expected(manifest, *published()))
     print(estimate(manifest, budget, output, used, done, args.input_price, lines), flush=True)
+    if provider == 'claude':
+        from .claude_provider import pin_cli
+        print(pin_cli(args.data), flush=True)
     if args.dry_run:
         return None
     if ask is not None and done < len(manifest['cells']) and not ask():

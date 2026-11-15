@@ -14,6 +14,8 @@ pokeagent run \
   --max-total-tokens 500000 --max-action-frames 600
 ```
 
+Every Claude call sets `DISABLE_AUTOUPDATER=1`. Since v0.37.1, `run --suite` looks for `toolchains/claude-2.1.323/bin/claude` in the data folder and in the folder that holds it. When found, that build goes first on PATH for the whole command after a version check. Each run manifest records the version the CLI reported.
+
 Pause and resume use the same `pokeagent pause` and `pokeagent resume` commands as controlled Codex runs. Claude Code must retain its local session files. Deleting Claude's session storage prevents resuming that conversation. PokeBench never submits evaluator state, repository files or fixture paths to Claude.
 
 The adapter requires an exact model identifier and refuses aliases. Fable remains blocked by default because non-interactive requests can consume usage credits without a prompt. After checking subscription authentication and the exact model's billing label in the account picker, a launch can allow that model with `POKEBENCH_VERIFIED_CLAUDE_MODELS`. Record the evidence alongside the run. The override does not purchase credits or enable an API-key fallback.

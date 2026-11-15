@@ -20,6 +20,8 @@ def site(monkeypatch):
     """The public site data the estimate reads. Tests add published runs to it. Nothing is fetched."""
     data = {'schema': 'pokebench-showcase-v1', 'short': {'cells': []}, 'long': []}
     monkeypatch.setattr(quick_run, 'published', lambda: (data, None))
+    # The run command pins the Claude CLI. Tests never start a real claude.
+    monkeypatch.setattr('pokeagent_bench.claude_provider.pin_cli', lambda data: 'Claude Code pinned (test).')
     return data
 
 
