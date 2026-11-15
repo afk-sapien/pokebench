@@ -413,6 +413,16 @@ summary {cursor:pointer}
 .about-links {margin:23px 0}
 .about-links a {font-size:12px}
 .about-links a {font-weight:bold}
+.about.submit-model {margin-top:0}
+.submit-model>div {min-width:0}
+.submit-model p a {text-decoration:underline}
+.submit-model pre {overflow-x:auto}
+.submit-model pre {margin:18px 0}
+.submit-model pre {padding:14px 16px}
+.submit-model pre {background:#e9ece3}
+.submit-model pre {border:1px solid #d7ddcd}
+.submit-model pre {font:12px/1.7 monospace}
+.submit-model code {font-family:monospace}
 footer {padding-top:25px}
 footer {padding-bottom:35px}
 footer {border-top:1px solid #d7ddcd}

@@ -17,6 +17,20 @@ The earlier 28-task development suite and the v1 beta release protocol are kept 
 
 The exploratory leaderboard preserves completed and partial results across framework improvements. Runs record their model, task, starting save, controls and runtime so material differences remain visible. Routine backend fixes do not discard earlier results or require a full rerun.
 
+## Submit a model
+
+Submissions run release `v0.37.0`. Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
+
+```sh
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench setup --rom /path/to/red.gb
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter --suite smoke --provider random
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
+```
+
+`setup` writes `data/` in that folder and runs go to `runs/`. The second line is a free check of the whole path. A random player presses buttons on the three smoke tasks, then `enter` packs the bundle and verifies it by replay. It calls no model. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
+
+The third line prints the plan and the worst case token use before the first model call, and asks before it starts. When the site has published runs on the same release, it also prints the tokens they used and, for the same model, the cost range the site lists. Use `--suite long` for PokeBench Long. Run the same command again to resume after a stop. When every task has finished, `enter` packs the bundle and prints a link to a prefilled submission issue. Attach the bundle there. See [SUBMITTING.md](SUBMITTING.md) for what the bundle holds and how it is checked.
+
 ## Install
 
 ```sh
@@ -38,7 +52,7 @@ uv run pokebench setup --rom /path/to/red.gb
 uv run pokebench run --model claude-sonnet-5-5 --suite smoke
 ```
 
-The last command runs three cheap tasks to check that your setup works. The leaderboard models used 90K to 150K tokens on them. When it passes, run a real suite with the same command.
+The last command runs three cheap tasks to check that your setup works. Add `--provider random` to run them with a random player that calls no model. When it passes, run a real suite with the same command.
 
 | Suite | What it runs | Reference budget | Worst case |
 | --- | --- | --- | --- |
@@ -64,7 +78,7 @@ uv run pokebench run --provider openai-compatible --model llama3.2-vision --suit
 
 The key is read from the environment and is never written to a run. The run records the endpoint address without credentials. The endpoint must report token usage, because budgets and results count it. These calls are billed by whoever runs the endpoint.
 
-To send a finished suite run for the community leaderboard, run `uv run pokebench submit runs/short-MODEL` and attach the file it writes to a "Run submission" issue. `uv run pokebench verify BUNDLE` checks any bundle by replay without a model call. Both commands accept only runs from the frozen v0.61 release, tag `v0.36.0`, checked out unchanged. See [SUBMITTING.md](SUBMITTING.md).
+To send a finished suite run for the community leaderboard, run `uv run pokebench submit runs/short-MODEL` and attach the file it writes to a "Run submission" issue. `uv run pokebench verify BUNDLE` checks any bundle by replay without a model call. Both commands accept only runs from an accepted release installed unchanged, as [Submit a model](#submit-a-model) does. See [SUBMITTING.md](SUBMITTING.md).
 
 `setup` checks the ROM hash and writes two folders under `data/`, which git ignores. It takes a few seconds and makes no model calls.
 

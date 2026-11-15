@@ -13,7 +13,8 @@ Do these in order, on the commit that will be tagged.
    ```
 
 4. Run `uv run ruff check .` and `uv run pytest`. Then run a smoke suite, `submit` it and `verify` the bundle. A passing `verify` shows the entry matches the checkout.
-5. Commit, tag the commit with the package version and push the tag. Name the tag in [SUBMITTING.md](../SUBMITTING.md) so submitters know what to check out.
+5. Commit, tag the commit with the package version and push the tag. The `uvx` lines in [README.md](../README.md), [SUBMITTING.md](../SUBMITTING.md) and the "Submit a model" section of `src/pokeagent_bench/showcase_assets/index.html` name the tag submitters install. If the new tag differs, change it in all three. `tests/test_docs.py` fails when they differ or name a tag older than the package version.
+6. The site's "Submit a model" section ships with the `hidden` attribute. When the owner says the site may show it, remove `hidden` and redeploy the site.
 
 ## What an entry holds
 

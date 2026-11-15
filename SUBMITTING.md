@@ -1,22 +1,28 @@
 # Submitting a run
 
-Submissions are open for the frozen v0.61 release, tag `v0.36.0`. Run from that tag unchanged. `submit` and `verify` refuse a run from any other code.
+Run release `v0.37.0`, installed unchanged. `submit` and `verify` refuse a run from any other code.
 
-Anyone with the required Pokemon Red ROM and a model can send a result. A maintainer checks it by replay and then decides whether to publish it.
+Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM. The README names the exact file and its hash. PokeBench ships no ROM, save or game table, and `setup` refuses any other ROM. A maintainer checks each result by replay and then decides whether to publish it.
 
 ## The three commands
 
+Run these in an empty folder. No clone is needed.
+
 ```sh
-git checkout v0.36.0
-uv sync --locked --extra dev
-uv run pokebench setup --rom /path/to/red.gb
-uv run pokebench run --model MODEL --suite short
-uv run pokebench submit runs/short-MODEL --handle YOUR_GITHUB_NAME
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench setup --rom /path/to/red.gb
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter --suite smoke --provider random
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
 ```
 
-Use `--suite long` for PokeBench Long. For a local or third party model add `--provider openai-compatible` as the README shows. Try `--suite smoke` first. A smoke bundle checks the whole path and is never a leaderboard result.
+1. `setup` checks the ROM hash and writes `data/` in the folder.
+2. The smoke line is free. A random player plays the three smoke tasks and calls no model. `enter` then packs the bundle and verifies it, which checks the whole path on your machine. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
+3. The last line runs your model. It prints the plan, the worst case token use and any published usage for this release, then asks before the first model call. Run the same command again to resume after a stop. When every task has finished it packs the bundle and prints a link to a prefilled "Run submission" issue.
 
-`submit` writes one file, `MODEL-SUITE.pokebench.zip`. Open a "Run submission" issue and attach it. GitHub takes attachments up to 25 MB. A full Short bundle is about 5 MB and a Long bundle about 3 MB.
+Use `--suite long` for PokeBench Long. For a local or third party model add `--provider openai-compatible` as the README shows. `enter` only chains `run --suite` and `submit`, and you can run those two yourself.
+
+Attach the bundle to the issue and fill in its fields. GitHub takes attachments up to 25 MB. A full Short bundle is about 5 MB and a Long bundle about 3 MB.
+
+To work from a clone instead, check out the tag, run `uv sync --locked --extra dev` and use `uv run pokebench` in place of the `uvx` prefix.
 
 ## What the bundle holds
 
@@ -32,9 +38,9 @@ Before writing, `submit` scans the bundle for absolute paths, key shaped text, t
 
 ## Which versions are accepted
 
-Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json). It holds one release, harness `red-v0.61-fair-harness`, package 0.36.0, tag `v0.36.0`.
+Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.37.0`.
 
-Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Check out that release unchanged, run `uv sync --locked --extra dev` and run again.
+Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Install that release unchanged with the `uvx` lines above and run again.
 
 Maintainers add an entry at the freeze by following the [release checklist](docs/release-checklist.md).
 
