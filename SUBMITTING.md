@@ -70,7 +70,6 @@ Every run replayed without a mismatch. The time grows with the number of frames 
 
 - It shows that these inputs, played from the benchmark start, earn this score. It does not show what chose the inputs. A person, a script or a different model could have produced them.
 - Model identity, token counts, the number of attempts and the absence of outside help are self reported.
-- Preparation tasks are not replay verified. They are listed as such in the report and are not part of the ranked score.
 - Nothing stops someone from running many times and sending the best run. Please declare your attempts.
 
 Published community rows carry the label "Community, replay verified, model unverified" for these reasons.

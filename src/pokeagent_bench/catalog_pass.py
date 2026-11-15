@@ -141,7 +141,7 @@ a {color:#a6e8ba} p {line-height:1.6} table {width:100%} table {border-collapse:
     page += f"<p><strong>{finished} / {len(progress['cells'])} attempts finished. {active} running.</strong> {progress['tokens_used']:,} reported tokens. Shared spending backstop: {progress['token_budget']:,}. Status: {escape(progress['status'])}.</p>"
     if progress.get('archived_reported_tokens') or progress.get('unreported_usage_reserve'):
         page += f"<p>Usage includes {progress.get('archived_reported_tokens', 0):,} tokens from archived original attempts. An additional {progress.get('unreported_usage_reserve', 0):,} tokens are reserved for interrupted calls with missing usage. This reserve is not measured usage. Four navigation tasks now exclude battles. Original attempts remain archived.</p>"
-    page += '<p>One attempt per registered start, equal decision allowances across models, current-only screenshots. Preparation scores are fixed-controller win rates. Other task scores are completion rates. Available category averages exclude pending work and infrastructure errors. Compare coverage before ranking. PokeBench Long is not included.</p>'
+    page += '<p>One attempt per registered start, equal decision allowances across models, current-only screenshots. Task scores are completion rates. Available category averages exclude pending work and infrastructure errors. Compare coverage before ranking. PokeBench Long is not included.</p>'
     page += '<table><thead><tr><th>Model</th><th>Available score</th><th>Finished</th><th>Errors</th><th>Tokens</th></tr></thead><tbody>' + ''.join(models) + '</tbody></table><h2>Tasks</h2>' + ''.join(sections)
     page += '</html>'
     temporary = web / 'focused-pass-v056.html.tmp'
@@ -208,13 +208,6 @@ def _run_pass(fixtures, rom, game_data, output, web, models, *, budget, workers=
     last_export = 0
     try:
         while True:
-            repaired = [key for key, state in states.items() if state == 'evaluation_error'
-                        and (root / key / 'reassessment.json').exists()]
-            if repaired:
-                refreshed = {row['id']: row for row in report(root)['cells']}
-                for key in repaired:
-                    states[key] = refreshed[key]['state']
-                    results[key] = cell_result(root / key)
             for key, (process, log) in list(running.items()):
                 # Poll before reading, so a worker that exits in between is read after its final write.
                 exited = process.poll() is not None

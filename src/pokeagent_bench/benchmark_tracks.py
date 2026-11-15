@@ -3,14 +3,19 @@ SHORT = 'pokebench'
 LONG = 'pokebench-long'
 BENCHMARKS = (SHORT, LONG)
 NAMES = {SHORT: 'PokeBench', LONG: 'PokeBench Long'}
-# Preparation is scored and shown, but kept out of the ranked Short score.
-UNRANKED_CATEGORIES = ('preparation',)
 RANKED_CATEGORIES = ('navigation', 'battle', 'operations', 'objectives')
+# Preparation left Short. Its stored attempts stay on disk, but reports, analysis and the site skip them.
+DROPPED_CATEGORIES = ('preparation',)
+
+
+def kept(cells):
+    """Stored attempts without the dropped categories."""
+    return [cell for cell in cells if cell.get('category') not in DROPPED_CATEGORIES]
 
 
 def ranked_average(category_scores):
     """Equal-weight mean of the ranked category scores, or None when none has a score."""
-    values = [score for key, score in category_scores.items() if key not in UNRANKED_CATEGORIES]
+    values = [score for key, score in category_scores.items() if key in RANKED_CATEGORIES]
     return sum(values) / len(values) if values else None
 
 

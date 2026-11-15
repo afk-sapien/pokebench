@@ -55,7 +55,7 @@ def parser():
     launch.add_argument('--decision-limit', type=int, help='Maximum agent decisions, including inspection and invalid responses')
     launch.add_argument('--presentation', choices=('current', 'before-after'), default='current')
     launch.add_argument('--reasoning-effort', choices=('low', 'medium', 'high', 'xhigh'), default='low')
-    launch.add_argument('--actions', type=Path, help='Zero-model native inputs or preparation choices as a JSON list')
+    launch.add_argument('--actions', type=Path, help='Zero-model native inputs as a JSON list')
     launch.add_argument('--reference', action='store_true', help='Record replay verification against the starting fixture')
     batch_catalog = sub.add_parser('catalog-batch', help='Run a model matrix across registered tasks')
     batch_catalog.add_argument('--benchmark', choices=BENCHMARKS, help='Defaults to PokeBench for a new batch. Long requires pokebench-long')

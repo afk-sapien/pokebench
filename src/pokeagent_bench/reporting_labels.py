@@ -45,7 +45,6 @@ NOTES = {
     'earlier_spec': ('earlier task version', 'Ran an earlier version of this task. Its text or rules changed later.'),
     'earlier_start': ('earlier start state', 'Started from a different save state than the current version of this task, '
                       'such as a level 55 instead of a level 60 team in the scarce-resource League.'),
-    'earlier_policy': ('earlier battle controller', 'Preparation was scored with an earlier version of the fixed battle controller.'),
     'no_end_line': ('no run-ends line', 'The prompt did not say that the run ends by itself once the task is complete.'),
     'harness_fault': ('harness fault', 'The v0.61 failure study traced this zero to the harness, not to the model.'),
 }

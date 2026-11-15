@@ -30,17 +30,14 @@ SELF_REPORTED = ('model identity', 'token counts', 'attempts', 'no outside help'
 ATTACHMENT_LIMIT = 25_000_000  # GitHub issue attachment limit
 UNPACKED_LIMIT = 500_000_000
 REPLAY_FILES = ('manifest.json', 'actions.jsonl', 'result.json')
-PREPARATION_FILES = ('preparation-result.json', 'model-usage.json')
 MEMBER = re.compile(r'plan\.json|submit\.json|cell-\d{4}/(?:' + '|'.join(
-    re.escape(name) for name in REPLAY_FILES + PREPARATION_FILES) + ')')
+    re.escape(name) for name in REPLAY_FILES) + ')')
 CONTENTS = {
     'plan.json': 'the task list with its limits and start state hashes',
     'submit.json': 'this summary and a SHA-256 for every file',
     'manifest.json': 'harness and package versions, model id, provider, settings, limits, timestamps',
     'actions.jsonl': 'every controller input and the game facts read after it',
     'result.json': 'score, stop reason, token counts, timings',
-    'preparation-result.json': 'preparation outcome and token counts',
-    'model-usage.json': 'preparation token counts',
 }
 HANDLE = re.compile(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?')
 PRIVATE = re.compile(
@@ -155,11 +152,6 @@ def collect(run, *, handle=None, attempts=1, endpoint_host=False):
     harness = this_harness()
     for cell in plan['cells']:
         folder = run / cell['id']
-        if cell['mode'] == 'preparation':
-            for name in PREPARATION_FILES:
-                if (folder / name).is_file():
-                    files[f'{cell["id"]}/{name}'] = (folder / name).read_bytes()
-            continue
         manifest = json.loads((folder / 'manifest.json').read_text())
         if not harness_accepted(manifest):
             raise ValueError(harness_refusal(manifest, f'{cell["task_id"]} ran on'))
@@ -390,20 +382,13 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
     bundle = Path(bundle)
     files = open_bundle(bundle)
     summary, plan = check_plan(files, fixtures)
-    problems, unverified = [], []
+    problems = []
     with tempfile.TemporaryDirectory() as temporary:
         work = Path(temporary)
         write_json(work / 'plan.json', plan)
         (work / 'replay').mkdir()
         for position, cell in enumerate(plan['cells'], 1):
             (work / cell['id']).mkdir()
-            if cell['mode'] == 'preparation':
-                for name in PREPARATION_FILES:
-                    if f'{cell["id"]}/{name}' in files:
-                        write_json(work / cell['id'] / name, parse(files, f'{cell["id"]}/{name}'))
-                unverified.append(cell['task_id'])
-                print(f'[{position}/{len(plan["cells"])}] {cell["task_id"]} not replay verified', flush=True)
-                continue
             state = 'replayed'
             try:
                 write_json(work / cell['id'] / 'result.json',
@@ -420,13 +405,12 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
               and HANDLE.fullmatch(summary['handle']) else None,
               'attempts_declared': summary.get('attempts_declared') if type(summary.get('attempts_declared')) is int else None,
               'harness': this_harness(),
-              'bundle_sha256': digest(bundle.read_bytes()), 'self_reported': list(SELF_REPORTED),
-              'not_replay_verified': sorted(unverified)}
+              'bundle_sha256': digest(bundle.read_bytes()), 'self_reported': list(SELF_REPORTED)}
     if plan['suite'] == 'smoke':
         result['note'] = 'Setup check only. Not a leaderboard result.'
     if scored:
         result['summary'] = scored['models'][0]
-        result['cells'] = [{**row, 'replay_verified': row['mode'] != 'preparation'} for row in scored['cells']]
+        result['cells'] = [{**row, 'replay_verified': True} for row in scored['cells']]
     output = Path(output) if output else bundle.with_name(bundle.name.removesuffix('.zip') + '.verified.json')
     write_json(output, result)
     print(conclusion(result, output), flush=True)
@@ -466,12 +450,10 @@ def conclusion(result, output):
     lines = ['', f'VERIFIED. {replayed} runs replayed from the benchmark start states and matched their logs.',
              f'{row["name"]}, model {row["provider"]}:{row["model"]}, submitted by {result["handle"] or "unnamed"}']
     if row.get('available_category_average') is not None:
-        lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100. Preparation is shown but not ranked.')
+        lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100.')
     for run in row.get('campaign_runs', []):
         if run.get('campaign'):
             lines.append(f'Campaign: {run["campaign"]["points"]} of {run["campaign"]["maximum_points"]} points')
-    if result['not_replay_verified']:
-        lines.append('Not replay verified, score as reported: ' + ', '.join(result['not_replay_verified']))
     lines.append('Self reported and not checked: ' + ', '.join(result['self_reported']) + '.')
     if result.get('note'):
         lines.append(result['note'])

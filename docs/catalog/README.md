@@ -1,16 +1,15 @@
-# Six-category Gen 1 benchmark plan
+# Five-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **55 primary tasks and one inventory variant** across six
-categories: 10 navigation, 14 battle, 10 operations plus one variant, 10 preparation,
-10 quests and one campaign. Every task case has a checked starting save and a runtime
+Across both benchmarks, the catalog has **45 primary tasks and one inventory variant** across five
+categories: 10 navigation, 14 battle, 10 operations plus one variant, 10 quests and one campaign. Every task case has a checked starting save and a runtime
 evaluator. The eight [milestone tasks](#milestone-tasks) join the local fixture pack
 with the next harness version. Difficulty remains provisional until model trials.
 Historical results and the old fixture set remain available.
 
-**PokeBench** contains the 54 focused tasks and one inventory variant in five
-categories. Its ranked score averages four of them: navigation, battle, operations
-and quests. Preparation is scored and reported next to the ranked score, but it is
-not ranked. **PokeBench Long** contains only the continuous campaign. They use
+**PokeBench** contains the 44 focused tasks and one inventory variant in four
+categories. Its score averages them equally: navigation, battle, operations and
+quests. The 10 preparation tasks left Short on 14 November 2026. Their stored
+attempts stay in the run data, but no report or page reads them. **PokeBench Long** contains only the continuous campaign. They use
 separate batches, token ceilings and reports. See [track commands](../history/benchmark-tracks-v053.md).
 
 Navigation tests spatial problems. Quests test NPC instructions and meaningful
@@ -32,7 +31,6 @@ links and records. The portal calls this category Quests, and the CLI also accep
 | [Navigation](navigation.md) | Choose routes and understand space | Assisted mechanics, no route planner | Arrive at the declared destination with task constraints |
 | [Battle](battle.md) | Make tactical choices during fights | Move, item and switching shortcuts | Battle outcome and explicit survival or resource constraints |
 | [Operations](operations.md) | Carry out exact interface instructions | Manual buttons, waits and inspection | Correct targets, quantities and final state |
-| [Preparation](preparation.md) | Choose a useful team and allocate resources | Preparation choices, then freeze the submission | Automated evaluator battle outcomes |
 | [Quests](objectives.md) | Follow NPC instructions and quest dependencies | Assisted mechanics | Verified objective completion |
 | [Campaign](campaign.md) | Combine skills over a sustained objective | Assisted mechanics and shared memory rules | Completion plus declared progress milestones |
 
@@ -84,7 +82,7 @@ uv run python scripts/reference_milestone_tasks.py --rom ROM --game-data GAME_DA
 
 ```sh
 uv run pokebench catalog
-uv run pokebench catalog --category preparation
+uv run pokebench catalog --category operations
 uv run pokebench catalog --fixtures /private/fixture-root
 ```
 
@@ -99,24 +97,6 @@ Current runtime support remains Pokemon Red. Blue is an intended extension and
 needs its own ROM, observation, grading and fixture checks before results are
 presented as cross-version evidence. The same scenario in two versions is a
 transfer test, not automatically two independent skills.
-
-## Preparation is evaluated separately from battle execution
-
-The evaluated model makes preparation choices and ends its submission. Copies of
-that configuration are then tested by a fixed automated battle evaluator. The
-model is not asked to play those grading battles. Use the same controller,
-search allowance, opponent conditions and starting variants for every submission.
-No model-generated battle policy is accepted as part of the preparation answer.
-
-The controller is a strong reference policy, not a claimed optimal player. Check
-that it supports the strategies the task permits, including status, setup and
-switching. Otherwise it can incorrectly penalize a good preparation. Report win
-rate and per-condition performance. Calibrate any pass threshold against competent
-and weak reference preparations before comparing model scores. Near-threshold
-estimates may need more trials under the same sampling rule for every model.
-A frozen team alone is not proof that a team is legal or that its battle results
-are attributable to the submitted preparation. Validate the allowed roster,
-resources, moves and unchanged opponent conditions during fixture construction.
 
 ## Difficulty and rollout
 
@@ -144,8 +124,8 @@ remain pending. Existing results stay visible with their recorded conditions.
 
 ## Visual catalog
 
-Open `catalog.html` from the results page's Task catalog link to browse all six
-categories, search the 51 specifications and expand their goals, controls and
+Open `catalog.html` from the results page's Task catalog link to browse all five
+categories, search the 46 specifications and expand their goals, controls and
 remaining work. Category and task URLs can be bookmarked. Planned specifications
 are not reported as completed evaluations or assigned historical scores.
 
@@ -237,3 +217,11 @@ uv run pokebench catalog-validate --fixtures /path/to/catalog-v2 --rom /path/to/
 
 Rebinding never changes the emulator state. A changed task definition does not
 inherit a reference proof recorded under a different specification hash.
+
+## Preparation leaves Short, 14 November 2026
+
+The 10 preparation tasks, their fixed-controller assessment and the preparation
+column are gone. Stored preparation attempts stay on disk. Reports, the analysis
+page and the site skip them. Ranked scores and rank order did not change, because
+preparation was never part of the ranked score. Each published model now counts
+39 planned starts instead of 49.

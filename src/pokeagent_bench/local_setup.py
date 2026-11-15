@@ -35,8 +35,7 @@ WINDOW_LOG = 27
 MAX_TREE = 64 * 1024 * 1024
 # Only the files the runner reads go into the pack.
 PACKED = {'initial.state', 'preview.png', 'scenario.json', 'start-facts.json', 'start-validation.json',
-          'reference-validation.json', 'reference-commands.json', 'preparation-bindings.json',
-          'preparation-reference-summary.json'}
+          'reference-validation.json', 'reference-commands.json'}
 
 
 def sha256(data):
@@ -94,27 +93,6 @@ def _dictionary(rom):
     return zstandard.ZstdCompressionDict(rom, dict_type=zstandard.DICT_TYPE_RAWCONTENT)
 
 
-def _target_scenarios(root):
-    """Scenario folders outside the fixture root that preparation tasks load while running."""
-    bindings = root / 'preparation-bindings.json'
-    found = set()
-
-    def walk(value):
-        if isinstance(value, dict):
-            scenario = value.get('scenario')
-            if isinstance(scenario, str) and (Path(scenario) / 'scenario.json').is_file():
-                found.add(Path(scenario))
-            for child in value.values():
-                walk(child)
-        elif isinstance(value, list):
-            for child in value:
-                walk(child)
-
-    if bindings.is_file():
-        walk(json.loads(bindings.read_text()))
-    return sorted(path for path in found if root not in path.parents)
-
-
 def build_pack(rom, fixtures, output):
     """Maintainer step: pack a validated private fixture root for publication.
 
@@ -123,23 +101,15 @@ def build_pack(rom, fixtures, output):
     """
     rom_bytes = check_rom(rom)
     root = Path(fixtures).resolve()
-    external = {path: f'external/{"/".join(path.parts[-3:])}' for path in _target_scenarios(root)}
     sources = [(path, path.relative_to(root).as_posix()) for path in sorted(root.rglob('*'))
                if path.is_file() and path.name in PACKED]
-    for folder, name in external.items():
-        sources += [(path, f'{name}/{path.name}') for path in sorted(folder.iterdir())
-                    if path.is_file() and path.name in PACKED]
-    replacements = sorted(((str(folder), f'{TOKEN}/{name}') for folder, name in external.items()),
-                          key=lambda pair: -len(pair[0])) + [(str(root), TOKEN)]
     buffer = io.BytesIO()
     states = 0
     with tarfile.open(fileobj=buffer, mode='w', format=tarfile.PAX_FORMAT) as tree:
         for path, name in sorted(sources, key=lambda pair: pair[1]):
             data = path.read_bytes()
             if path.suffix == '.json':
-                text = data.decode()
-                for old, new in replacements:
-                    text = text.replace(old, new)
+                text = data.decode().replace(str(root), TOKEN)
                 text = re.sub(r'(?:file://)?/(?:home|Users)/[^/"\\]+', 'private:', text)
                 data = text.encode()
             states += path.suffix == '.state'

@@ -100,7 +100,7 @@ class Session:
         self.tested_skill = tested_skill(scenario)
         self.action_policy = resolve(scenario, action_policy)
         catalog_id = scenario.get('task_id') or scenario.get('objective', {}).get('task_id')
-        if catalog_id and (scenario.get('objective', {}).get('kind') in ('catalog-task', 'preparation-submission') or catalog_id == 'campaign-full-game'):
+        if catalog_id and (scenario.get('objective', {}).get('kind') == 'catalog-task' or catalog_id == 'campaign-full-game'):
             from .evaluation_catalog import task_definition
             definition = task_definition(catalog_id)
             if self.action_policy != definition['action_policy']:
@@ -175,7 +175,7 @@ class Session:
                          "agent": agent or {"provider": "external-mcp", "model": "unspecified"},
                          **emulator_manifest(),
                          "initial_sha256": digest((output / "initial.state").read_bytes())}
-        if self.campaign_tracking or self.objective and self.objective['kind'] in ('catalog-task', 'preparation-submission'):
+        if self.campaign_tracking or self.objective and self.objective['kind'] == 'catalog-task':
             from .evaluation_catalog import task_definition
             task_id = scenario.get('task_id') or self.objective['task_id']
             task = task_definition(task_id)

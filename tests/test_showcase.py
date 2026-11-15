@@ -31,26 +31,29 @@ def test_partial_scores_keep_failures_and_exclude_pending(tmp_path):
     assert result['planned'] == 4
 
 
-def test_preparation_is_unranked_and_retired_cells_stay_visible_but_unscored(tmp_path):
+def test_stored_preparation_is_dropped_and_retired_cells_stay_visible_but_unscored(tmp_path):
     def row(task, category, value):
         return {'id': task, 'task_id': task, 'category': category, 'score_group': task, 'model': 'old',
                 'state': 'finished', 'value': value, 'tokens': 10, 'cost': {'low': 1.0, 'high': 2.0, 'partial': False}}
     rows = [row('b', 'battle', 0.5), row('p', 'preparation', 1.0), row('objectives-find-capture-species', 'objectives', 1.0)]
     tasks = [{'id': r['task_id'], 'title': r['task_id'], 'category': r['category']} for r in rows]
     source = {'cells': rows, 'tasks': tasks, 'categories': ['battle', 'preparation', 'objectives']}
-    result = short_snapshot(source, tmp_path)
+    extra = {'web_prefix': 'batch', 'cells': [dict(rows[1], id='q')]}
+    result = short_snapshot(source, tmp_path, extra)
     model = result['models'][0]
     assert model['score'] == 0.5
-    assert model['categories'] == {'battle': 0.5, 'preparation': 1.0}
-    assert (model['finished'], model['planned'], model['complete']) == (2, 2, True)
-    assert [c['retired'] for c in result['cells']] == [False, False, True]
-    retired = result['tasks'][2]
+    assert model['categories'] == {'battle': 0.5}
+    assert (model['finished'], model['planned'], model['complete'], model['tokens']) == (1, 1, True, 20)
+    assert [c['id'] for c in result['cells']] == ['b', 'objectives-find-capture-species']
+    assert [c['retired'] for c in result['cells']] == [False, True]
+    assert [t['id'] for t in result['tasks']] == ['b', 'objectives-find-capture-species']
+    retired = result['tasks'][1]
     assert retired['retired'] and 'luck' in retired['retirement_reason']
-    assert (result['finished'], result['planned']) == (2, 2)
-    assert result['ranked_categories'] == ['battle', 'objectives']
-    assert result['unranked_categories'] == ['preparation']
+    assert (result['finished'], result['planned']) == (1, 1)
+    assert result['categories'] == ['battle', 'objectives']
+    assert 'ranked_categories' not in result and 'unranked_categories' not in result
     from pokeagent_bench.showcase_costs import comparison
-    priced = [dict(r, retired=r['task_id'] == 'objectives-find-capture-species') for r in rows]
+    priced = [dict(r, retired=r['task_id'] == 'objectives-find-capture-species') for r in (rows[0], rows[2])]
     value = comparison(priced, [{'id': 'old', 'label': 'Old'}])
     assert value['starts'] == 1
     assert value['models'][0]['score'] == 0.5 and value['models'][0]['cost'] == {'low': 1.0, 'high': 2.0}
@@ -69,14 +72,14 @@ def test_snapshot_does_not_export_provider_context(tmp_path):
 
 def test_harness_labels_come_from_each_run_manifest(tmp_path):
     base = tmp_path / 'data'
-    for relative, tag in (('focused-pass-v056/a', 'red-v0.10-newer'), ('focused-pass-v056/b/preparation', 'red-v0.9-older'),
+    for relative, tag in (('focused-pass-v056/a', 'red-v0.10-newer'), ('focused-pass-v056/b', 'red-v0.9-older'),
                           ('batch/c', 'red-v0.10-newer')):
         (base / relative).mkdir(parents=True)
         (base / relative / 'manifest.json').write_text(json.dumps({'benchmark': tag}))
     rows = [{'id': 'a', 'task_id': 't', 'score_group': 't', 'category': 'battle', 'model': 'old',
              'mode': 'gameplay', 'state': 'finished', 'value': 1.0},
             {'id': 'b', 'task_id': 'p', 'score_group': 'p', 'category': 'battle', 'model': 'old',
-             'mode': 'preparation', 'state': 'finished', 'value': 0.5}]
+             'mode': 'gameplay', 'state': 'finished', 'value': 0.5}]
     extra = {'web_prefix': 'batch', 'cells': [dict(rows[0], id='c', model='new')]}
     result = short_snapshot({'cells': rows, 'tasks': [], 'categories': ['battle']}, tmp_path, extra, base)
     assert [c['harness'] for c in result['cells']] == ['red-v0.10-newer', 'red-v0.9-older', 'red-v0.10-newer']
@@ -105,12 +108,9 @@ def test_cells_are_labeled_from_their_own_records(tmp_path):
     task = 'navigation-branching-cave'
     spec = current_spec(task)
     base = tmp_path / 'data'
-    facts = {'cell-0001': ('fixed-battle-v4', END_LINE), 'cell-0002': (None, None),
-             'cell-0003': ('fixed-battle-v3', 'An older prompt.'), 'cell-0223': (None, None)}
-    for cell, (policy, prompt) in facts.items():
-        (base / 'focused-pass-v056' / cell / 'assessment').mkdir(parents=True)
-        if policy:
-            (base / 'focused-pass-v056' / cell / 'assessment/assessment.json').write_text(json.dumps({'policy_version': policy}))
+    facts = {'cell-0001': END_LINE, 'cell-0002': None, 'cell-0003': 'An older prompt.', 'cell-0223': None}
+    for cell, prompt in facts.items():
+        (base / 'focused-pass-v056' / cell).mkdir(parents=True)
         if prompt:
             (base / 'focused-pass-v056' / cell / 'prompt.txt').write_text(prompt)
     def row(cell, spec_hash, fixture):
@@ -121,11 +121,10 @@ def test_cells_are_labeled_from_their_own_records(tmp_path):
     result = short_snapshot({'cells': rows, 'tasks': [], 'categories': ['navigation']}, tmp_path, None, base)
     labels = {c['id']: c['labels'] for c in result['cells']}
     assert labels == {'cell-0001': [], 'cell-0002': ['earlier_spec', 'earlier_start'],
-                      'cell-0003': ['earlier_policy', 'no_end_line'], 'cell-0223': ['harness_fault']}
+                      'cell-0003': ['no_end_line'], 'cell-0223': ['harness_fault']}
     assert 'use_item' in result['cells'][3]['harness_fault']
-    assert result['models'][0]['labels'] == {'earlier_spec': 1, 'earlier_start': 1, 'earlier_policy': 1,
-                                             'no_end_line': 1, 'harness_fault': 1}
-    assert set(result['label_text']) == {'earlier_spec', 'earlier_start', 'earlier_policy', 'no_end_line', 'harness_fault'}
+    assert result['models'][0]['labels'] == {'earlier_spec': 1, 'earlier_start': 1, 'no_end_line': 1, 'harness_fault': 1}
+    assert set(result['label_text']) == {'earlier_spec', 'earlier_start', 'no_end_line', 'harness_fault'}
 
 
 def test_attempts_log_lists_replaced_and_resumed_copies(tmp_path):
@@ -145,13 +144,6 @@ def test_attempts_log_lists_replaced_and_resumed_copies(tmp_path):
         ('main-v067-fable', 'cell-0002', 'resumed', 'usage_unavailable', 7)]
     assert attempts['log'][1]['reason'].startswith('Quota error stopped the attempt')
     assert short_snapshot({'cells': [], 'tasks': [], 'categories': []}, tmp_path)['attempts']['log'] == []
-
-
-def test_showcase_policy_matches_the_preparation_runtime():
-    pytest.importorskip('pokecore')
-    from pokeagent_bench.preparation_runtime import POLICY_VERSION
-    from pokeagent_bench.showcase import CURRENT_POLICY
-    assert CURRENT_POLICY == POLICY_VERSION
 
 
 def test_community_rows_are_labeled_and_kept_out_of_the_cost_comparison(tmp_path):
@@ -192,19 +184,16 @@ def test_score_interval_resamples_tasks_within_categories():
     rows += [{'task_id': 'n', 'category': 'navigation', 'state': 'finished', 'value': 1},
              {'task_id': 'p', 'category': 'navigation', 'state': 'pending', 'value': None}]
     same = [dict(r, value=1) for r in rows if r['state'] == 'finished']
-    ignored = rows + [{'task_id': 'q', 'category': 'preparation', 'state': 'finished', 'value': 0},
-                      {'task_id': 'r', 'category': 'objectives', 'state': 'finished', 'value': 0, 'retired': True}]
+    ignored = rows + [{'task_id': 'r', 'category': 'objectives', 'state': 'finished', 'value': 0, 'retired': True}]
     script = (f'const {{scoreInterval}} = require({json.dumps(str(stats))})\n'
               f'console.log(JSON.stringify([scoreInterval({json.dumps(rows)}), scoreInterval({json.dumps(rows)}), '
-              f'scoreInterval({json.dumps(same)}), scoreInterval([]), scoreInterval({json.dumps(ignored)}), '
-              f'scoreInterval({json.dumps(ignored)}, 2000, 20261026, [])]))')
-    first, again, perfect, empty, skipped, counted = json.loads(
+              f'scoreInterval({json.dumps(same)}), scoreInterval([]), scoreInterval({json.dumps(ignored)})]))')
+    first, again, perfect, empty, skipped = json.loads(
         subprocess.run(['node', '-e', script], check=True, capture_output=True, text=True).stdout)
     assert first == again == skipped
     assert 0.5 < first['low'] < 0.75 < first['high'] < 1.0
     assert perfect['low'] == perfect['high'] == 1.0
     assert empty is None
-    assert counted['high'] < first['high']
 
 
 def test_public_page_omits_report_link_without_report(tmp_path):
@@ -229,3 +218,4 @@ def test_public_page_states_the_scoring_change(tmp_path):
     assert note.count('.') == 1 and note.endswith('.')
     assert '14 November 2026' in note
     assert all(name in note for name in ('navigation', 'battles', 'menus', 'quests', 'preparation', 'Pikachu'))
+    assert 'four categories equally' in page and 'Preparation' not in page

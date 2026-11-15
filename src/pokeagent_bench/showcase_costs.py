@@ -4,7 +4,6 @@ from functools import lru_cache
 import json
 from pathlib import Path
 
-from .benchmark_tracks import UNRANKED_CATEGORIES
 from .focused_analysis import grouped_scores
 
 PRICING = {
@@ -94,19 +93,10 @@ def run_cost(root, model, expected_tokens=None):
     if model not in PRICING['rates']:
         return empty
     try:
-        prep = (root / 'model-usage.json').exists()
-        result = json.loads((root / ('model-usage.json' if prep else 'result.json')).read_text())
-        usage = result if prep else result['usage']
+        usage = json.loads((root / 'result.json').read_text())['usage']
         total = usage['input_tokens'] + usage['output_tokens']
         if expected_tokens is not None and total != expected_tokens:
             return dict(empty, note='Saved result and displayed attempt differ')
-        if prep:
-            cost = price_usage(model, usage)
-            if cost is None:
-                return empty
-            return {**cost, 'partial': not usage.get('accounting_complete', False),
-                    'note': 'Recorded preparation request', 'recorded_tokens': total,
-                    'unreported_token_reserve': usage.get('unreported_token_reserve', 0)}
         path = root / 'decisions.jsonl'
         stat = path.stat()
         detail = read_decisions(str(path), stat.st_size, stat.st_mtime_ns, model)
@@ -148,7 +138,7 @@ def comparison(cells, models):
     grouped = {m['id']: {} for m in models}
     for cell in cells:
         key = (cell['task_id'], cell.get('variant'))
-        if cell['category'] in UNRANKED_CATEGORIES or cell.get('retired'):
+        if cell.get('retired'):
             continue
         if cell['state'] == 'finished' and cell.get('value') is not None and cell.get('cost', {}).get('low') is not None:
             grouped[cell['model']][key] = cell
@@ -169,4 +159,4 @@ def comparison(cells, models):
                        'per_full_score': {k: v / score if v is not None and score else None for k, v in costs.items()},
                        'partial': any(r['cost']['partial'] for r in rows), 'starts': len(rows)})
     return {'starts': len(shared), 'models': output,
-            'policy': 'Shared completed task starts in the ranked categories, including failed tasks. Preparation and retired tasks are left out. Same category and group weights for score and mean cost. Full-score equivalent cost is mean cost divided by score. This is an exploratory comparison across the documented interface revisions.'}
+            'policy': 'Shared completed task starts in the ranked categories, including failed tasks. Retired tasks are left out. Same category and group weights for score and mean cost. Full-score equivalent cost is mean cost divided by score. This is an exploratory comparison across the documented interface revisions.'}

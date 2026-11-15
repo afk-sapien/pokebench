@@ -10,7 +10,7 @@ import re
 from .action_policy import ASSISTED, MANUAL, SKILLS
 from .challenges import validate_objective
 
-CATEGORIES = ('navigation', 'battle', 'operations', 'preparation', 'objectives', 'campaign')
+CATEGORIES = ('navigation', 'battle', 'operations', 'objectives', 'campaign')
 CATEGORY_REASSIGNMENTS = {'objectives-recover-earlier-mistake': 'operations'}
 REQUIRED = {'id', 'title', 'difficulty', 'tested_skill', 'mode', 'action_policy', 'objective',
             'start', 'success', 'failure', 'variants', 'token_limit', 'existing_task', 'requirements',
@@ -53,23 +53,18 @@ def validate_category(category):
         expected_policy = MANUAL if key == 'operations' else ASSISTED
         if evaluation['action_policy'] != expected_policy:
             raise ValueError(f'{identifier}: incorrect task controls')
-        expected_mode = 'preparation' if key == 'preparation' else 'gameplay'
-        if evaluation['mode'] != expected_mode:
-            raise ValueError('Preparation and battle execution must be distinct modes')
+        if evaluation['mode'] != 'gameplay':
+            raise ValueError(f'{identifier}: every task is a gameplay task')
         if evaluation['status'] != 'specified' or evaluation['calibration'] != 'pending':
             raise ValueError('A specification is not a validated or calibrated evaluation')
         if type(evaluation['token_limit']) is not int or evaluation['token_limit'] <= 0:
             raise ValueError('Token limit must be a positive provisional integer')
         if 'decision_limit' in evaluation and (type(evaluation['decision_limit']) is not int or evaluation['decision_limit'] <= 0):
             raise ValueError('Decision limit must be a positive integer')
-        if expected_mode == 'preparation' and evaluation.get('decision_limit', 1) != 1:
-            raise ValueError('Preparation accepts one frozen submission')
         source = evaluation['existing_task']
         if source is not None and (not isinstance(source, str) or not re.fullmatch(r'[a-z0-9-]+', source)):
             raise ValueError('Invalid source task')
         objective = evaluation['objective']
-        if expected_mode == 'preparation' and objective is not None:
-            raise ValueError('Preparation must be assessed from a frozen submission, not agent battle execution')
         if objective is not None:
             validate_objective(objective)
         # The campaign keeps its own milestone list, scored by the campaign evaluator.
@@ -156,9 +151,6 @@ def summary(category=None, fixtures=None, *, benchmark=None):
         from .catalog_execution import inventory
         implementation = inventory(fixtures, category=category)
         by_id = {row['id']: row for row in implementation['tasks']}
-        preparation_path = Path(fixtures) / 'preparation-reference-summary.json'
-        preparation = (json.loads(preparation_path.read_text()) if preparation_path.is_file() else {})
-        preparation_rows = {row['task_id']: row for row in preparation.get('tasks', [])}
         for entry in entries:
             state = by_id[entry['id']]
             entry['implementation'] = {
@@ -168,11 +160,6 @@ def summary(category=None, fixtures=None, *, benchmark=None):
                 'issues': state['issues'] + [issue for v in state['variants'] for issue in v['issues']],
                 'calibration': state['calibration'],
             }
-            reference = preparation_rows.get(entry['id'])
-            if reference:
-                entry['implementation']['preparation_reference'] = {
-                    key: reference[key] for key in ('submitted', 'trials', 'wins', 'evaluation_errors')}
-
         report.update(catalog='gen1-catalog-v2', status='implemented',
                       runnable_new_evals=sum(by_id[e['id']]['runnable'] for e in entries),
                       reference_verified_evals=sum(any(v['reference_verified'] for v in by_id[e['id']]['variants']) for e in entries),

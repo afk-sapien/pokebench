@@ -145,7 +145,7 @@ def test_rerunning_the_suite_command_finishes_a_cell_cut_by_a_provider_error(tmp
     monkeypatch.setattr(catalog_execution, 'select_scenario', lambda fixtures, task, variant: fixtures / task)
     monkeypatch.chdir(tmp_path)
     outage = {4: 9}  # every attempt at decision 3 fails during the first command
-    cut = next(task for task in smoke if catalog_batch.task_definition(task)['mode'] != 'preparation')
+    cut = smoke[0]
 
     class Provider(Flaky):
         def __init__(self, model=None, *, reasoning_effort='low', **extra):
@@ -155,9 +155,7 @@ def test_rerunning_the_suite_command_finishes_a_cell_cut_by_a_provider_error(tmp
         if task != cut:
             output.mkdir(parents=True)
         usage = {'input_tokens': 900, 'output_tokens': 100, 'calls': 1}
-        if options['decision_limit'] == 1:
-            write_json(output / 'preparation-result.json', {'submitted': True, 'assessment': {'win_rate': 0.5}, 'usage': usage})
-        elif task != cut:
+        if task != cut:
             write_json(output / 'result.json', {'state': 'finished', 'score': 1, 'score_max': 1, 'usage': usage})
         else:
             session = Session(FakeEngine(), output, {'rom_sha256': digest(rom.read_bytes())},

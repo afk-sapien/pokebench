@@ -58,14 +58,14 @@ def test_cli_default_catalog_is_short_and_long_is_explicit():
     short = execute(parser().parse_args(['catalog']))
     long = execute(parser().parse_args(['catalog','--benchmark','pokebench-long']))
     assert short['benchmark'] == 'pokebench'
-    assert short['primary_task_count'] == 54 and short['eval_count'] == 55
-    assert short['category_count'] == 5
+    assert short['primary_task_count'] == 44 and short['eval_count'] == 45
+    assert short['category_count'] == 4
     assert long['eval_count'] == 1 and long['categories'][0]['category'] == 'campaign'
     assert execute(parser().parse_args(['catalog','--category','campaign']))['benchmark'] == 'pokebench-long'
 
 
 def test_export_has_two_distinct_pages_and_keeps_old_campaign_links(tmp_path):
-    assert export_catalog(tmp_path) == 56
+    assert export_catalog(tmp_path) == 46
     short = (tmp_path / 'catalog.html').read_text()
     long = (tmp_path / 'pokebench-long.html').read_text()
     assert 'id="campaign-full-game"' not in short
@@ -75,7 +75,7 @@ def test_export_has_two_distinct_pages_and_keeps_old_campaign_links(tmp_path):
     assert '<h1>PokeBench Long</h1>' in long
     assert 'href="pokebench-long.json"' in long
     assert 'continuous campaign</span>' in long
-    assert '5 categories' in short
+    assert '4 categories' in short and 'id="preparation' not in short
     assert "location.replace('pokebench-long.html#' + hash)" in short
     assert json.loads((tmp_path / 'catalog.json').read_text())['benchmark'] == 'pokebench'
     assert json.loads((tmp_path / 'pokebench-long.json').read_text())['benchmark'] == 'pokebench-long'

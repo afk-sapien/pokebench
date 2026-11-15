@@ -23,15 +23,13 @@ def rom(tmp_path, monkeypatch):
 
 @pytest.fixture
 def private_tree(tmp_path):
-    """A tiny private fixture root with one task and one target scenario outside the root."""
+    """A tiny private fixture root with one task."""
     root = tmp_path / 'private' / 'catalog'
-    outside = tmp_path / 'private' / 'older' / 'task' / 'target'
-    for folder in (root / 'task' / 'default', outside):
-        folder.mkdir(parents=True)
-        (folder / 'initial.state').write_bytes(STUB_ROM[1000:9000] + b'save data')
-        (folder / 'scenario.json').write_text(json.dumps({'folder': str(folder), 'origin': '/home/someone/work/run'}))
-        (folder / 'notes.txt').write_text('private notes')
-    (root / 'preparation-bindings.json').write_text(json.dumps({'targets': [{'scenario': str(outside)}]}))
+    folder = root / 'task' / 'default'
+    folder.mkdir(parents=True)
+    (folder / 'initial.state').write_bytes(STUB_ROM[1000:9000] + b'save data')
+    (folder / 'scenario.json').write_text(json.dumps({'folder': str(folder), 'origin': '/home/someone/work/run'}))
+    (folder / 'notes.txt').write_text('private notes')
     return root
 
 
@@ -46,7 +44,7 @@ def test_wrong_rom_is_rejected_with_the_needed_hash(tmp_path):
 
 def test_pack_round_trip_restores_files_and_hides_private_paths(tmp_path, rom, private_tree):
     summary = local_setup.build_pack(rom, private_tree, tmp_path / 'pack')
-    assert summary['files'] == 5 and summary['states'] == 2
+    assert summary['files'] == 2 and summary['states'] == 1
     packed_json = json.loads((tmp_path / 'pack' / 'fixtures.json').read_text())
     assert packed_json == summary
     built = tmp_path / 'out' / 'fixtures'
@@ -56,9 +54,6 @@ def test_pack_round_trip_restores_files_and_hides_private_paths(tmp_path, rom, p
     assert not list(built.rglob('notes.txt'))
     scenario = json.loads((built / 'task' / 'default' / 'scenario.json').read_text())
     assert scenario == {'folder': str(built / 'task' / 'default'), 'origin': 'private:/work/run'}
-    target = json.loads((built / 'preparation-bindings.json').read_text())['targets'][0]['scenario']
-    assert target == str(built / 'external' / 'older' / 'task' / 'target')
-    assert (built / 'external' / 'older' / 'task' / 'target' / 'initial.state').is_file()
     everything = b''.join(path.read_bytes() for path in built.rglob('*.json'))
     assert str(private_tree.parent).encode() not in everything and b'/home/' not in everything
 

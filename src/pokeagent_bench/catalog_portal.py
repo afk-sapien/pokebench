@@ -10,9 +10,8 @@ LABELS = {
     'navigation': ('Navigation', 'Route finding and spatial puzzles', '01'),
     'battle': ('Battle tactics', 'Matchups, switching and tactical recovery', '02'),
     'operations': ('Menu operations', 'Exact commands without shortcuts', '03'),
-    'preparation': ('Preparation', 'Team building and resource choices', '04'),
-    'objectives': ('Quests', 'NPC instructions and quest dependencies', '05'),
-    'campaign': ('Full-game campaign', 'One attempt with a progress checklist', '06'),
+    'objectives': ('Quests', 'NPC instructions and quest dependencies', '04'),
+    'campaign': ('Full-game campaign', 'One attempt with a progress checklist', '05'),
 }
 
 
@@ -36,7 +35,7 @@ def render_catalog(data=None):
         rows = []
         for index, task in enumerate(group['evals'], 1):
             source = task['existing_task']
-            controls = 'Manual inputs' if key == 'operations' else 'Preparation choices' if key == 'preparation' else 'Shortcuts allowed'
+            controls = 'Manual inputs' if key == 'operations' else 'Shortcuts allowed'
             objective = task['objective']
             implementation = task.get('implementation')
             state_label = 'Runnable' if implementation and implementation['runnable'] else 'Setup pending' if implementation else 'Specified'
@@ -47,11 +46,6 @@ def render_catalog(data=None):
             if implementation:
                 source_text = (str(implementation['start_variants']) + ' checked start variants. ' +
                                str(implementation['reference_variants']) + ' completed native reference replays.')
-                reference = implementation.get('preparation_reference')
-                if reference:
-                    source_text += (' Preparation actions verified. Fixed-controller native smoke: ' +
-                                    str(reference['wins']) + ' / ' + str(reference['trials']) +
-                                    ' battles won, ' + str(reference['evaluation_errors']) + ' evaluator errors. These are not model scores.')
             badge = f'<span class="difficulty {task["difficulty"]}">Estimate: {task["difficulty"].capitalize()}</span>'
             variant_parent = task.get('variant_of', '')
             variant_note = ('<p class="variant-note">Inventory variant of <a href="#' + escape(variant_parent) + '">the inventory checklist</a>. Shares that task’s weight in category scores.</p>') if variant_parent else ''
@@ -121,7 +115,7 @@ def render_catalog(data=None):
         page = page.replace('href="catalog.json"', 'href="pokebench-long.json"')
         page = page.replace('</style>', '.categories {display:none}\n.toolbar {display:none}\n</style>')
     else:
-        description = 'Focused Pokemon Red tasks across navigation, battle tactics, menu operations, preparation and quests. Compare these skills here. Full-game campaigns have their own PokeBench Long scores and budget.'
+        description = 'Focused Pokemon Red tasks across navigation, battle tactics, menu operations and quests. Compare these skills here. Full-game campaigns have their own PokeBench Long scores and budget.'
     for original in (
         'Explore the full task plan. Choose a category or search, then open any task to see its goal, rules and what remains to build.',
         'Explore the implemented tasks. Choose a category or search, then open a task to see its goal, controls, starting setup and validation status.'):
@@ -352,7 +346,7 @@ h1 {font-size:32px}
 <nav class="categories" aria-label="Task categories">__CARDS__</nav>
 <div class="toolbar"><button id="all" aria-pressed="true">All tasks</button><label class="search"><input type="search" id="search" aria-label="Search tasks" placeholder="Search tasks, goals or difficulty..."></label><span id="visible-count" role="status" aria-live="polite">__COUNT__ tasks</span></div>
 <div id="groups">__GROUPS__</div><p id="empty" hidden>No matching tasks. Try another search or choose All tasks.</p>
-<footer>Difficulty and token caps are provisional. Preparation uses a shared battle evaluator after the agent submits its choices. <a href="catalog.json" download>Download task specifications</a></footer>
+<footer>Difficulty and token caps are provisional. <a href="catalog.json" download>Download task specifications</a></footer>
 <noscript><p>All tasks are shown. Open any task to read its details. Search and category filtering require JavaScript.</p></noscript></main>
 <script>
 const benchmarkTrack = '__TRACK__'

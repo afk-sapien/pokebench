@@ -4,7 +4,7 @@ from pathlib import Path
 
 from .catalog_execution import PROVIDERS, _read, inventory, run_task
 from .core import write_json
-from .benchmark_tracks import SHORT, LONG, NAMES, UNRANKED_CATEGORIES, for_category, ranked_average, validate
+from .benchmark_tracks import SHORT, LONG, NAMES, for_category, kept, ranked_average, validate
 from .evaluation_catalog import retired_tasks, task_definition
 
 
@@ -31,10 +31,8 @@ def plan(fixtures, models, tasks=None, repeats=1, *, benchmark=SHORT):
             continue
         if not row['runnable']:
             raise ValueError(f'Task is not runnable: {row["id"]}')
-        # Preparation opponent variants are assessed within the frozen submission.
-        variants = row['variants'] if row['mode'] != 'preparation' else row['variants'][:1]
         for provider, model in parsed:
-            for variant in variants:
+            for variant in row['variants']:
                 for repeat in range(repeats):
                     fixture = _read(Path(variant['path']) / 'scenario.json')
                     cells.append({'fixture_sha256': fixture['state_sha256'],
@@ -63,37 +61,13 @@ def accounting_complete(result):
 
 def cell_result(path):
     path = Path(path)
-    raw = None
-    for name in ('preparation-result.json', 'result.json', 'preparation/result.json'):
-        source = path / name
-        if source.is_file():
-            raw = _read(source)
-            break
-    reassessment = path / 'reassessment.json'
-    if raw is not None and reassessment.is_file():
-        update = _read(reassessment)
-        assessment = update['assessment']
-        if not raw.get('submitted') or assessment.get('submission_sha256') != raw.get('submission_sha256'):
-            raise ValueError('Reassessment must use the original frozen submission')
-        if assessment.get('evaluation_errors') or assessment.get('model_calls') != 0:
-            raise ValueError('Reassessment must finish without errors or model calls')
-        raw = {**raw, 'assessment': assessment, 'reassessment': {k: v for k, v in update.items() if k != 'assessment'}}
+    raw = _read(path / 'result.json') if (path / 'result.json').is_file() else None
     failed = path / 'error.json'
     if failed.is_file():
         error = _read(failed)
         # Error metadata overrides a partial result, but must not erase charges.
         raw = {**(raw or {}), **{key: value for key, value in error.items() if key != 'usage'},
                'usage': (raw or {}).get('usage', error.get('usage', {}))}
-    if raw is None:
-        return None
-    if raw.get('reason') == 'preparation_error':
-        raw['evaluation_error'] = raw.get('error') or 'Preparation runtime failed'
-        # Historical preparation errors recorded zero even when usage was unknown.
-        raw['usage'] = {**raw.get('usage', {})}
-        raw['usage'].setdefault('accounting_complete', False)
-    usage_path = path / 'model-usage.json'
-    if usage_path.is_file():
-        raw['usage'] = _read(usage_path)
     return raw
 
 
@@ -102,7 +76,7 @@ def report(batch):
     manifest = _read(batch / 'plan.json')
     models = defaultdict(list)
     rows = []
-    for cell in manifest['cells']:
+    for cell in kept(manifest['cells']):
         raw = cell_result(batch / cell['id'])
         benchmark = for_category(cell['category'])
         row = {**cell, 'benchmark': benchmark, 'state': 'pending', 'value': None, 'tokens': 0}
@@ -112,27 +86,13 @@ def report(batch):
             row['controller_actions'] = raw.get('actions')
             row['accounting_complete'] = accounting_complete(raw)
             row['provider_errors'] = len(raw.get('provider_errors') or [])
-            if cell['mode'] == 'preparation':
-                assessment = raw.get('assessment') or {}
-                if raw.get('evaluation_error') or assessment.get('evaluation_errors'):
-                    row['state'] = 'evaluation_error'
-                elif raw.get('state') in ('running', 'paused', 'interrupted'):
-                    row['state'] = raw['state']
-                elif raw.get('submitted') and assessment.get('win_rate') is not None:
-                    row.update(state='finished', value=assessment['win_rate'])
-                elif raw.get('submitted') or raw.get('stop_reason') == 'submitted':
-                    row['state'] = 'assessment_pending'
-                else:
-                    row.update(state='finished', value=0)
-                row['assessment'] = assessment
+            if raw.get('evaluation_error') or raw.get('outcome_category') in ('infrastructure_failure', 'interface_failure'):
+                row['state'] = 'evaluation_error'
+            elif raw.get('state') == 'finished':
+                value = raw.get('score', 0) / raw.get('score_max', 1)
+                row.update(state='finished', value=value)
             else:
-                if raw.get('evaluation_error') or raw.get('outcome_category') in ('infrastructure_failure', 'interface_failure'):
-                    row['state'] = 'evaluation_error'
-                elif raw.get('state') == 'finished':
-                    value = raw.get('score', 0) / raw.get('score_max', 1)
-                    row.update(state='finished', value=value)
-                else:
-                    row['state'] = raw.get('state', 'pending')
+                row['state'] = raw.get('state', 'pending')
             row['stop_reason'] = raw.get('stop_reason', raw.get('reason'))
             if benchmark == LONG:
                 row['campaign'] = {'points': raw.get('score', 0), 'maximum_points': raw.get('score_max', 1000),
@@ -158,7 +118,6 @@ def report(batch):
                           'tokens': sum(row['tokens'] for row in values),
                           'accounting_complete': all(row.get('accounting_complete', True) for row in values),
                           'category_scores': category_scores if ranked else {},
-                          'unranked_categories': list(UNRANKED_CATEGORIES) if benchmark == SHORT else [],
                           'available_category_average': ranked_average(category_scores) if ranked else None})
         if benchmark == LONG:
             finished = [row for row in values if row['state'] == 'finished']
@@ -167,7 +126,7 @@ def report(batch):
             summaries[-1]['campaign_runs'] = [{key: row.get(key) for key in ('id', 'state', 'campaign', 'tokens', 'accounting_complete')} for row in values]
     return {'protocol': manifest['protocol'], 'benchmark': manifest.get('benchmark'),
             'benchmarks': sorted({row['benchmark'] for row in rows}), 'models': summaries, 'cells': rows,
-            'note': 'Available results only. Equal task-family weights within categories. Inventory variants share their parent task weight. The PokeBench average covers navigation, battle, operations and objectives. Preparation is scored and reported, but it is not ranked. Retired tasks are not scored. PokeBench reports focused-task performance. PokeBench Long reports campaign progress and Champion completion separately. Milestone tasks score the share of their ordered milestones reached, from 0 to 1. These scores are never averaged together. Check coverage before comparing averages.'}
+            'note': 'Available results only. Equal task-family weights within categories. Inventory variants share their parent task weight. The PokeBench average covers navigation, battle, operations and objectives. Stored preparation attempts are not read. Retired tasks are not scored. PokeBench reports focused-task performance. PokeBench Long reports campaign progress and Champion completion separately. Milestone tasks score the share of their ordered milestones reached, from 0 to 1. These scores are never averaged together. Check coverage before comparing averages.'}
 
 
 def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repeats=1,
@@ -199,11 +158,11 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
             continue
         if row['state'] not in ('finished', 'evaluation_error'):
             raise ValueError(f'Unfinished cell needs recovery before resume: {row["id"]} ({row["state"]}). '
-                             'Resume its saved session or finish its assessment first')
+                             'Resume its saved session first')
         if not row.get('accounting_complete', False):
             raise ValueError(f'Uncertain token usage needs reconciliation before resume: {row["id"]}')
     used = sum(row['tokens'] for row in current_report['cells'])
-    for cell in manifest['cells']:
+    for cell in kept(manifest['cells']):
         destination = output / cell['id']
         if cell_result(destination) is not None:
             continue
@@ -236,6 +195,6 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
             break
     result = report(output)
     result.update(token_budget=budget, tokens_used=used,
-                  worst_case_tokens=sum(cell['token_limit'] for cell in manifest['cells']))
+                  worst_case_tokens=sum(cell['token_limit'] for cell in kept(manifest['cells'])))
     write_json(output / 'report.json', result)
     return result

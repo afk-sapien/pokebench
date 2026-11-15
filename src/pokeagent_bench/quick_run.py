@@ -14,7 +14,7 @@ from .core import write_json
 # benchmark, reference token budget, fixed task list (None means every ready task).
 # The reference budget only warns. Each task runs at its own caps, so run order never changes a task.
 SUITES = {
-    'smoke': (SHORT, 500_000, ('preparation-lead-selection', 'battle-heal-switch-attack-tradeoff', 'battle-wild-basics')),
+    'smoke': (SHORT, 500_000, ('operations-battle-switch', 'battle-heal-switch-attack-tradeoff', 'battle-wild-basics')),
     'short': (SHORT, 60_000_000, None),
     'long': (LONG, 30_000_000, None),
 }
@@ -22,7 +22,7 @@ LONG_DECISIONS = 2000
 # The published Short runs used low effort and the published Long runs medium.
 EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
 SCALE = {
-    'smoke': 'Two leaderboard models used about 40K tokens on these three tasks.',
+    'smoke': 'The leaderboard models used 90K to 150K tokens on these three tasks.',
     'short': 'Two leaderboard models used 27M and 49M tokens on the earlier, smaller Short task set.',
     'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first.',
 }
@@ -113,16 +113,9 @@ def summary(result, output):
             if campaign:
                 lines.append(f'Campaign: {campaign["points"]} of {campaign["maximum_points"]} points, '
                              f'{campaign["milestones"]} milestones, Champion {"yes" if campaign["champion"] else "no"}.')
-    elif row['category_scores']:
-        unranked = row.get('unranked_categories', [])
-        if row['available_category_average'] is not None:
-            lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100, the average of these categories:')
-            lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in sorted(row['category_scores'].items())
-                      if name not in unranked]
-        shown = [(name, value) for name, value in sorted(row['category_scores'].items()) if name in unranked]
-        if shown:
-            lines.append('Shown but not ranked:')
-            lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in shown]
+    elif row['category_scores'] and row['available_category_average'] is not None:
+        lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100, the average of these categories:')
+        lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in sorted(row['category_scores'].items())]
     lines.append(f'Tokens used {millions(result["tokens_used"])}. Reference budget {millions(result["token_budget"])}.')
     if result['tokens_used'] > result['token_budget']:
         lines.append('Warning: this run passed the reference budget. Every task still ran at its own caps.')

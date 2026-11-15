@@ -221,7 +221,7 @@ def test_milestone_tasks_plan_and_score_as_a_fraction_in_short(catalog_root, row
     assert summary['benchmark'] == tracks.SHORT and summary['name'] == 'PokeBench'
     assert summary['category_scores'] == {'navigation': pytest.approx(2 / 3)}
     assert summary['available_category_average'] == pytest.approx(2 / 3)
-    assert summary['unranked_categories'] == ['preparation']
+    assert 'unranked_categories' not in summary
 
 
 def test_short_suite_includes_ready_milestone_tasks(catalog_root, rows, monkeypatch):

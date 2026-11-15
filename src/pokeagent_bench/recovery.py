@@ -12,12 +12,12 @@ import time
 
 from .core import Limits, core_provenance, digest, encoded, validate_emulator_manifest
 from .scoring import Evaluator
-from .challenges import ChallengeEvaluator, PreparationEvaluator
+from .challenges import ChallengeEvaluator
 from .campaign_runtime import CampaignTracker
 from .catalog_runtime import CatalogEvaluator
 from .milestone_runtime import MilestoneEvaluator
 
-EVALUATORS = {kind.__name__: kind for kind in (Evaluator, ChallengeEvaluator, PreparationEvaluator, CatalogEvaluator,
+EVALUATORS = {kind.__name__: kind for kind in (Evaluator, ChallengeEvaluator, CatalogEvaluator,
                                                 MilestoneEvaluator, CampaignTracker)}
 
 

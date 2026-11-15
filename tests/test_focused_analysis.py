@@ -17,13 +17,13 @@ def test_variants_and_categories_have_declared_weights():
     assert score == .25
 
 
-def test_preparation_is_shown_but_not_ranked_and_retired_tasks_are_not_scored():
+def test_stored_preparation_and_retired_tasks_are_not_scored():
     cells = [cell('battle-a', 'battle', 1), cell('nav', 'navigation', 0), cell('prep', 'preparation', .2),
              cell('objectives-find-capture-species', 'objectives', 1)]
     categories, score = grouped_scores(cells)
-    assert categories == {'battle': 1, 'navigation': 0, 'preparation': .2}
+    assert categories == {'battle': 1, 'navigation': 0}
     assert score == .5
-    assert grouped_scores([cell('prep', 'preparation', 1)]) == ({'preparation': 1}, None)
+    assert grouped_scores([cell('prep', 'preparation', 1)]) == ({}, None)
 
 
 def test_sensitivity_omits_only_ranked_groups():

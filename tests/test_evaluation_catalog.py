@@ -52,14 +52,15 @@ def test_packaged_catalog_has_distinct_evals_and_honest_status():
     groups = load_catalog()
     assert tuple(group['category'] for group in groups) == CATEGORIES
     entries = [evaluation for group in groups for evaluation in group['evals']]
-    assert len(entries) == len({e['id'] for e in entries}) == 56
+    assert len(entries) == len({e['id'] for e in entries}) == 46
     report = summary()
     assert report['runnable_new_evals'] == report['model_calls'] == 0
-    assert report['eval_count'] == 56
+    assert report['eval_count'] == 46
     operations = load_catalog('operations')[0]['evals']
     assert all(e['action_policy'] == 'manual-menu-v1' for e in operations)
-    preparation = load_catalog('preparation')[0]['evals']
-    assert all(e['mode'] == 'preparation' and e['objective'] is None for e in preparation)
+    assert all(e['mode'] == 'gameplay' for e in entries)
+    with pytest.raises(ValueError, match='Unknown'):
+        load_catalog('preparation')
 
 
 def test_fixture_inventory_does_not_promote_readiness(tmp_path):
@@ -76,9 +77,9 @@ def test_fixture_inventory_does_not_promote_readiness(tmp_path):
 
 def test_cli_catalog_command_is_inspection_only():
     from pokeagent_bench.cli import parser
-    args = parser().parse_args(['catalog', '--category', 'preparation'])
+    args = parser().parse_args(['catalog', '--category', 'operations'])
     assert args.command == 'catalog'
-    assert args.category == 'preparation'
+    assert args.category == 'operations'
     with pytest.raises(ValueError, match='Unknown'):
         load_catalog('unknown')
 
@@ -101,7 +102,7 @@ def test_campaign_is_one_attempt_with_unique_milestones():
 def test_portal_uses_actual_counts_and_campaign_milestones():
     from pokeagent_bench.catalog_portal import render_catalog
     page = render_catalog()
-    assert '55 task drafts' in page
+    assert '45 task drafts' in page and '<strong>44</strong><span>tasks in 4 categories' in page
     assert 'Milestones within this one attempt' not in page
     long_page = render_catalog(summary(benchmark='pokebench-long'))
     assert 'Milestones within this one attempt' in long_page
@@ -137,7 +138,7 @@ def test_cleanup_keeps_quests_distinct_and_inventory_variant_manual():
     assert variant['variant_of'] == 'operations-menu-checklist'
     assert variant['action_policy'] == 'manual-menu-v1'
     assert variant['difficulty'] == 'easy'
-    assert summary()['primary_task_count'] == 55
+    assert summary()['primary_task_count'] == 45
     assert summary()['variant_count'] == 1
     retired = {task['id'] for group in load_catalog(include_retired=True)
                for task in group['evals'] if not task.get('active', True)}

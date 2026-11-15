@@ -43,10 +43,7 @@ def runs(monkeypatch):
         launched.append((task, options))
         output.mkdir(parents=True)
         usage = {'input_tokens': 900, 'output_tokens': 100, 'calls': 1}
-        if options['decision_limit'] == 1:
-            write_json(output / 'preparation-result.json', {'submitted': True, 'assessment': {'win_rate': 0.5}, 'usage': usage})
-        else:
-            write_json(output / 'result.json', {'state': 'finished', 'score': 1, 'score_max': 1, 'usage': usage})
+        write_json(output / 'result.json', {'state': 'finished', 'score': 1, 'score_max': 1, 'usage': usage})
 
     monkeypatch.setattr(catalog_batch, 'run_task', fake)
     return launched
@@ -64,7 +61,7 @@ def test_smoke_runs_three_tasks_and_prints_a_plain_summary(data, runs, monkeypat
     assert all(options['provider'] == 'claude' and options['model'] == 'claude-sonnet-5-5' for _, options in runs)
     assert {options['reasoning_effort'] for _, options in runs} == {'low'}
     assert 'Suite smoke (PokeBench), model claude:claude-sonnet-5-5' in text
-    assert 'Worst case 3.2M tokens' in text and 'Reference budget 500K.' in text
+    assert 'Worst case 4.3M tokens' in text and 'Reference budget 500K.' in text
     assert '[3/3] battle-wild-basics finished score 100, 1K tokens' in text
     assert 'Finished 3 of 3 runs, 0 errors.' in text
     assert 'Tokens used 3K. Reference budget 500K.' in text and 'Warning' not in text
@@ -79,7 +76,7 @@ def test_dry_run_prints_the_estimate_and_starts_nothing(data, runs, monkeypatch,
     assert 'Runs: 3 over 3 tasks' in text
     assert 'Left out, fixture needs revalidation: battle-prepared-gym' in text
     assert 'Reference budget 60.0M' in text
-    assert 'costs about $120.00 and the worst case about $6.40' in text
+    assert 'costs about $120.00 and the worst case about $8.70' in text
     assert runs == [] and not (data.parent / 'runs').exists()
 
 
@@ -95,7 +92,7 @@ def test_reference_budget_only_warns_and_every_task_gets_its_own_caps(data, runs
     assert 'Tokens used 3K. Reference budget 1K.' in text
     assert 'Warning: this run passed the reference budget. Every task still ran at its own caps.' in text
     report = json.loads((data.parent / 'out' / 'report.json').read_text())
-    assert (report['token_budget'], report['tokens_used'], report['worst_case_tokens']) == (1000, 3000, 3_200_000)
+    assert (report['token_budget'], report['tokens_used'], report['worst_case_tokens']) == (1000, 3000, 4_350_000)
 
 
 def test_the_same_command_resumes_after_a_stop(data, runs, monkeypatch, capsys):

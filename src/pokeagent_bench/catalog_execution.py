@@ -19,17 +19,6 @@ def scenarios(fixtures, task_id):
     return ([root] if primary.is_file() else []) + children
 
 
-def preparation_binding(fixtures, task_id):
-    source = Path(fixtures) / 'preparation-bindings.json'
-    if not source.is_file():
-        raise ValueError('Preparation assessment targets have not been bound')
-    bindings = _read(source)
-    value = bindings.get('tasks', bindings).get(task_id)
-    if not value:
-        raise ValueError(f'No preparation assessment binding for {task_id}')
-    return value
-
-
 def inventory(fixtures, *, category=None):
     """Report actual frozen fixtures without mistaking old reuse candidates for them."""
     root = Path(fixtures)
@@ -61,17 +50,9 @@ def inventory(fixtures, *, category=None):
                 rows.append({'variant': path.name if path.name != task['id'] else 'default',
                              'path': str(path), 'start_checked': not problems,
                              'reference_verified': verified, 'issues': problems})
-            issues = []
-            if task['mode'] == 'preparation':
-                try:
-                    binding = preparation_binding(root, task['id'])
-                    if not binding.get('targets') and not binding.get('target_variants'):
-                        issues.append('Missing assessment opponents')
-                except ValueError as error:
-                    issues.append(str(error))
-            runnable = bool(rows) and all(row['start_checked'] for row in rows) and not issues
+            runnable = bool(rows) and all(row['start_checked'] for row in rows)
             result.append({'id': task['id'], 'category': group['category'], 'mode': task['mode'],
-                           'runtime': True, 'runnable': runnable, 'variants': rows, 'issues': issues,
+                           'runtime': True, 'runnable': runnable, 'variants': rows, 'issues': [],
                            'calibration': 'pending', 'model_calls': 0})
     return {'protocol': 'catalog-execution-v1', 'task_count': len(result),
             'runnable': sum(row['runnable'] for row in result),
@@ -112,8 +93,7 @@ def validate_fixtures(fixtures, rom):
                     evaluator = CampaignTracker(facts)
                 else:
                     objective = scenario['objective']
-                    expected_kind = 'preparation-submission' if row['mode'] == 'preparation' else 'catalog-task'
-                    if objective['kind'] != expected_kind or objective['task_id'] != row['id']:
+                    if objective['kind'] != 'catalog-task' or objective['task_id'] != row['id']:
                         raise ValueError('Fixture is not bound to its catalog evaluator')
                     evaluator = create_challenge_evaluator(evidence(engine, objective), objective)
                 if evaluator.score or evaluator.complete('campaign' if row['id'] == 'campaign-full-game' else 'challenge'):
@@ -137,7 +117,7 @@ def run_task(fixtures, task_id, rom, game_data, output, *, provider=None, model=
     task = task_definition(task_id)
     if presentation not in ('current', 'before-after'):
         raise ValueError('Unknown catalog screenshot presentation')
-    if presentation != 'current' and (task['mode'] == 'preparation' or actions is not None):
+    if presentation != 'current' and actions is not None:
         raise ValueError('Screenshot presentation requires a gameplay model run')
     scenario = select_scenario(fixtures, task_id, variant)
     token_limit = task['token_limit'] if token_limit is None else token_limit
@@ -146,21 +126,6 @@ def run_task(fixtures, task_id, rom, game_data, output, *, provider=None, model=
     decision_limit = task.get('decision_limit', Limits().max_model_calls) if decision_limit is None else decision_limit
     if type(decision_limit) is not int or decision_limit <= 0:
         raise ValueError('Decision limit must be a positive integer')
-    if task['mode'] == 'preparation' and decision_limit != 1:
-        raise ValueError('Preparation accepts one frozen submission')
-    if task['mode'] == 'preparation':
-        from .preparation_runtime import run_preparation
-        binding = preparation_binding(fixtures, task_id)
-        transport = None
-        if actions is None:
-            transport = make_provider(provider, model, reasoning_effort)
-        try:
-            options = {key: binding[key] for key in ('targets', 'threshold', 'offsets', 'max_decisions', 'target_variants') if key in binding}
-            return run_preparation(Path(rom), scenario, Path(output), Path(game_data), task_id,
-                                   actions=actions, provider=transport, token_limit=token_limit, **options)
-        finally:
-            if transport is not None:
-                transport.close()
     if actions is not None:
         from .session import Session, load_engine, replay
         from .gameplay import load_catalog as game_catalog
@@ -208,19 +173,3 @@ def run_task(fixtures, task_id, rom, game_data, output, *, provider=None, model=
             '--reasoning-effort', reasoning_effort, '--max-total-tokens', str(token_limit),
             '--presentation', presentation, '--max-model-calls', str(decision_limit)]
     return execute(parser().parse_args(args))
-
-
-def make_provider(provider, model, reasoning_effort):
-    if not model:
-        raise ValueError('A model is required for preparation')
-    if provider == 'codex':
-        from .bounded_provider import BoundedGameplayProvider
-        return BoundedGameplayProvider(model, reasoning_effort=reasoning_effort,
-                                       observation_format='text', context_detail='on-demand')
-    if provider == 'claude':
-        from .claude_provider import ClaudeCodeProvider
-        return ClaudeCodeProvider(model, reasoning_effort=reasoning_effort, context_detail='on-demand')
-    if provider == 'openai-compatible':
-        from .openai_compatible_provider import OpenAICompatibleProvider
-        return OpenAICompatibleProvider(model, reasoning_effort=reasoning_effort, context_detail='on-demand')
-    raise ValueError('Preparation supports ' + ', '.join(PROVIDERS))

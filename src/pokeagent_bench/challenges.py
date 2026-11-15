@@ -11,7 +11,6 @@ def validate_objective(value):
     objective = deepcopy(value)
     kind = objective.get("kind")
     required = {"catalog-task": {"kind", "task_id", "description"},
-                "preparation-submission": {"kind", "task_id", "description"},
                 "guarded-milestones": {"kind", "targets", "no_faints", "description"},
                 "encounter-capture": {"kind", "description"},
                 "resource-route": {"kind", "map_id", "description"},
@@ -29,13 +28,12 @@ def validate_objective(value):
         raise ValueError("Unsupported objective or unexpected fields")
     if not isinstance(objective["description"], str) or not 1 <= len(objective["description"]) <= 1000:
         raise ValueError("An objective needs a short player-facing description")
-    if kind in ('catalog-task', 'preparation-submission'):
+    if kind == 'catalog-task':
         import json
         from .evaluation_catalog import catalog_files
         tasks = {task['id']: task for path in catalog_files() for task in json.loads(path.read_text())['evals']}
-        task = tasks.get(objective['task_id'])
-        if task is None or (task['mode'] == 'preparation') != (kind == 'preparation-submission') or task['id'] == 'campaign-full-game':
-            raise ValueError('Unknown task or incorrect catalog execution mode')
+        if objective['task_id'] not in tasks or objective['task_id'] == 'campaign-full-game':
+            raise ValueError('Unknown task for catalog execution')
     elif kind == 'guarded-milestones':
         targets=objective['targets']
         if not isinstance(targets,list) or not targets or any(not isinstance(t,str) for t in targets) or len(targets)!=len(set(targets)) or type(objective['no_faints']) is not bool:
@@ -312,26 +310,6 @@ class ChallengeEvaluator:
         return bool(self.awarded)
 
 
-class PreparationEvaluator:
-    """Preparation completes only by explicit submission, never a gameplay flag."""
-
-    def __init__(self, initial, objective):
-        self.objective = validate_objective(objective)
-        self.baseline = deepcopy(initial)
-        self.awarded = {}
-        self.initial_keys = set()
-
-    def observe(self, state, frame, wall_seconds):
-        return []
-
-    @property
-    def score(self):
-        return 0
-
-    def complete(self, goal=None):
-        return False
-
-
 def create_challenge_evaluator(initial, objective):
     objective = validate_objective(objective)
     if objective['kind'] == 'catalog-task':
@@ -341,6 +319,4 @@ def create_challenge_evaluator(initial, objective):
             return MilestoneEvaluator(initial['catalog'], objective)
         from .catalog_runtime import CatalogEvaluator
         return CatalogEvaluator(initial['catalog'], objective)
-    if objective['kind'] == 'preparation-submission':
-        return PreparationEvaluator(initial, objective)
     return ChallengeEvaluator(initial, objective)

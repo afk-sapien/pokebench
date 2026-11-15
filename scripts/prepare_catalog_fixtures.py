@@ -321,7 +321,7 @@ def main():
             print('Pending', key, str(error), flush=True)
         write_json(report_path, report)
     for key, entry in entries.items():
-        if key not in report['fixtures'] and entry.get('tested_skill') != 'preparation':
+        if key not in report['fixtures']:
             report['pending'].setdefault(key, 'Exact source checkpoint and controller reference still required')
     write_json(report_path, report)
     write_json(args.output / 'bindings.json', report['fixtures'])

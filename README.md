@@ -6,12 +6,12 @@ PokeBench evaluates how AI agents play Pokemon Red. Models choose routes, battle
 
 The current catalog is split into two benchmarks with separate rankings.
 
-- **PokeBench Gen 1 Short** has **55 tasks**: 54 focused tasks plus one inventory variant, across navigation, battle tactics, manual menu operations, preparation and quests. One battle task has three fixed starting variants, so each model plays **57 starts**. Eight longer tasks score the share of their ordered milestones reached, from 0 to 1. Scores are category-balanced.
+- **PokeBench Gen 1 Short** has **45 tasks**: 44 focused tasks plus one inventory variant, across navigation, battle tactics, manual menu operations and quests. One battle task has three fixed starting variants, so each model plays **47 starts**. Eight longer tasks score the share of their ordered milestones reached, from 0 to 1. Scores are category-balanced.
 - **PokeBench Gen 1 Long** is one continuous full-game campaign with 50 scored milestones worth 1,000 points. The comparison budget is 2,000 decisions and 30M tokens per model.
 
 Short and Long scores are never averaged together. Results and replays are on the [public site](https://afk-sapien.github.io/pokebench/). See the [catalog](docs/catalog/README.md) and [long runs](docs/long-runs.md).
 
-`pokebench catalog` and new `catalog-batch` runs default to Short. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each task runs at its own decision and token caps. A batch total is reported, never used to cut a task. No models are launched by inspecting the catalog. See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring and [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls, preparation assessment and result aggregation.
+`pokebench catalog` and new `catalog-batch` runs default to Short. Use `--benchmark pokebench-long` to inspect or run the campaign separately. Each task runs at its own decision and token caps. A batch total is reported, never used to cut a task. No models are launched by inspecting the catalog. See [the two benchmark tracks](docs/history/benchmark-tracks-v053.md) for execution and scoring and [catalog runtime and commands](docs/history/catalog-runtime-v050.md) for setup, task controls and result aggregation.
 
 The earlier 28-task development suite and the v1 beta release protocol are kept in [docs/history](docs/history/release-v1-beta.md). They are not the current catalog.
 
@@ -38,11 +38,11 @@ uv run pokebench setup --rom /path/to/red.gb
 uv run pokebench run --model claude-sonnet-5-5 --suite smoke
 ```
 
-The last command runs three cheap tasks to check that your setup works. Two leaderboard models used about 40K tokens on them. When it passes, run a real suite with the same command.
+The last command runs three cheap tasks to check that your setup works. The leaderboard models used 90K to 150K tokens on them. When it passes, run a real suite with the same command.
 
 | Suite | What it runs | Reference budget | Worst case |
 | --- | --- | --- | --- |
-| `smoke` | Three cheap tasks that check your setup. Never a leaderboard result | 500K | 3.2M |
+| `smoke` | Three cheap tasks that check your setup. Never a leaderboard result | 500K | 4.35M |
 | `short` | Every ready PokeBench task | 60M | 203M |
 | `long` | The PokeBench Long campaign, up to 2,000 decisions | 30M | 30M |
 

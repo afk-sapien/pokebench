@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import shutil
 
-from .benchmark_tracks import UNRANKED_CATEGORIES
+from .benchmark_tracks import RANKED_CATEGORIES, kept
 from .core import digest, encoded
 from .evaluation_catalog import retired_tasks, task_definition
 from .focused_analysis import grouped_scores
@@ -36,12 +36,9 @@ def existing_link(web, relative):
 
 
 def harness_tag(run):
-    """Return the benchmark version a run recorded, from its gameplay or preparation manifest."""
-    for name in ('manifest.json', 'preparation/manifest.json'):
-        path = Path(run) / name
-        if path.exists():
-            return load(path).get('benchmark')
-    return None
+    """Return the benchmark version a run recorded in its manifest."""
+    path = Path(run) / 'manifest.json'
+    return load(path).get('benchmark') if path.exists() else None
 
 
 TAG = re.compile(r'([a-z]+)-v(\d+(?:\.\d+)*)')
@@ -72,15 +69,11 @@ def harness_summary(rows):
 
 
 END_LINE = 'ends automatically when the benchmark confirms success'
-# Same as preparation_runtime.POLICY_VERSION, which imports the emulator core. A test keeps them equal.
-CURRENT_POLICY = 'fixed-battle-v4'
 
 
 def cell_facts(run):
-    """Battle policy and prompt facts that a cell folder records but its batch summary does not."""
+    """Prompt facts that a cell folder records but its batch summary does not."""
     run, facts = Path(run), {}
-    if (run / 'assessment/assessment.json').exists():
-        facts['policy_version'] = load(run / 'assessment/assessment.json').get('policy_version')
     if (run / 'prompt.txt').exists():
         facts['end_line'] = END_LINE in (run / 'prompt.txt').read_text()
     return facts
@@ -105,7 +98,6 @@ def label_cells(cells):
         c['labels'] = [code for code, applies in (
             ('earlier_spec', not c['retired'] and spec is not None and c.get('evaluation_spec_sha256') not in (None, spec)),
             ('earlier_start', len(start) == 1 and c.get('fixture_sha256') not in (None, *start)),
-            ('earlier_policy', c.get('policy_version') not in (None, CURRENT_POLICY)),
             ('no_end_line', c.get('end_line') is False),
             ('harness_fault', bool(c.get('harness_fault')))) if applies]
 
@@ -144,7 +136,7 @@ def community_reports(web):
 
 def short_snapshot(source, web, extra=None, base=None, community=()):
     cells = []
-    for row in source['cells']:
+    for row in kept(source['cells']):
         clean = {k: row.get(k) for k in CELL_FIELDS}
         clean['replay'] = existing_link(web, row.get('replay'))
         clean['revision'] = 'Original pass'
@@ -156,7 +148,7 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
         cells.append(clean)
     extras = extra if isinstance(extra, list) else [extra] if extra else []
     for batch in extras:
-        for row in batch['cells']:
+        for row in kept(batch['cells']):
             clean = {k: row.get(k) for k in CELL_FIELDS}
             revision = row.get('attempt_revision', 'v066-astra')
             clean['replay'] = existing_link(web, f"{batch.get('web_prefix', 'main-v066-astra')}/replays/focused-{revision}-{row['id']}.html")
@@ -172,7 +164,7 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
         name = f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
         submitted[name] = {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
                            'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
-        for row in entry['cells']:
+        for row in kept(entry['cells']):
             clean = {k: row.get(k) for k in CELL_FIELDS}
             # Community token counts are self reported, so no cost is estimated from them.
             clean.update(model=name, replay=None, revision='Community', harness=entry['harness']['benchmark'],
@@ -202,15 +194,14 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
                        'labels': dict(Counter(code for r in counted for code in r['labels']))})
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = []
-    for t in source['tasks']:
+    for t in kept(source['tasks']):
         task = {k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
         task['retired'] = t['id'] in retired
         if task['retired']:
             task['retirement_reason'] = task_definition(t['id']).get('retirement_reason')
         tasks.append(task)
-    return {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
-            'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
-            'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
+    return {'models': models, 'tasks': tasks, 'cells': cells,
+            'categories': [c for c in source['categories'] if c in RANKED_CATEGORIES],
             'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
             'label_text': {code: {'label': label, 'detail': detail} for code, (label, detail) in NOTES.items()},
             'attempts': {'rule': RETRY_RULE, 'log': attempts_log(base, ['focused-pass-v056'] + [b['web_prefix'] for b in extras])

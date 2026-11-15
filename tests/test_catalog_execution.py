@@ -5,7 +5,7 @@ import json
 import pytest
 
 from pokeagent_bench.catalog_execution import inventory
-from pokeagent_bench.challenges import PreparationEvaluator, create_challenge_evaluator
+from pokeagent_bench.challenges import create_challenge_evaluator
 from pokeagent_bench.core import digest, encoded
 from pokeagent_bench.evaluation_catalog import task_definition, validate_run_spec
 from pokeagent_bench.recovery import pack, unpack
@@ -14,9 +14,8 @@ from pokeagent_bench.session import Session
 
 def task_scenario(task_id):
     task = task_definition(task_id)
-    kind = 'preparation-submission' if task['mode'] == 'preparation' else 'catalog-task'
     return {'task_id': task_id, 'tested_skill': task['tested_skill'], 'action_policy': task['action_policy'],
-            'rom_sha256': 'test', 'objective': {'kind': kind, 'task_id': task_id, 'description': task['agent_goal']}}
+            'rom_sha256': 'test', 'objective': {'kind': 'catalog-task', 'task_id': task_id, 'description': task['agent_goal']}}
 
 
 def navigation_facts(map_id=1):
@@ -51,21 +50,10 @@ def test_new_evaluator_can_resume_one_confirmation_without_losing_history():
     assert restored.visits == {41}
 
 
-def test_preparation_session_never_awards_a_game_completion(tmp_path, engine):
-    session = Session(engine, tmp_path / 'prep', task_scenario('preparation-lead-selection'), goal='challenge')
-    try:
-        assert isinstance(session.evaluator, PreparationEvaluator)
-        session.act('wait', None, 2, 0)
-        assert not session.reason
-        assert not session.evaluator.complete()
-        restored = unpack(json.loads(json.dumps(pack(session.evaluator))))
-        assert not restored.complete()
-        session.finish('submitted')
-        result = json.loads((session.output / 'result.json').read_text())
-        assert result['outcome_category'] == 'submitted'
-        assert result['completed'] is False
-    finally:
-        session.close()
+def test_removed_preparation_kind_is_refused():
+    objective = {'kind': 'preparation-submission', 'task_id': 'navigation-town-landmark', 'description': 'x'}
+    with pytest.raises(ValueError):
+        create_challenge_evaluator({'catalog': navigation_facts()}, objective)
 
 
 def test_catalog_manual_policy_cannot_be_overridden(tmp_path, engine):
@@ -183,14 +171,6 @@ def test_catalog_rejects_invalid_decision_allowance(tmp_path, monkeypatch, limit
                            provider='codex', model='test', decision_limit=limit)
 
 
-def test_preparation_cannot_purchase_extra_submissions(tmp_path, monkeypatch):
-    import pokeagent_bench.catalog_execution as execution
-    monkeypatch.setattr(execution, 'select_scenario', lambda *args: tmp_path)
-    with pytest.raises(ValueError, match='one frozen submission'):
-        execution.run_task(tmp_path, 'preparation-lead-selection', 'rom', 'game', tmp_path / 'out',
-                           provider='codex', model='test', decision_limit=2)
-
-
 def test_active_focused_tasks_have_explicit_decision_budgets():
     from pokeagent_bench.evaluation_catalog import load_catalog, milestone_tasks
     for group in load_catalog():
@@ -198,9 +178,7 @@ def test_active_focused_tasks_have_explicit_decision_budgets():
             continue
         for task in group['evals']:
             assert type(task['decision_limit']) is int and task['decision_limit'] > 0
-            if group['category'] == 'preparation':
-                assert task['decision_limit'] == 1
-            elif task['id'] in milestone_tasks():
+            if task['id'] in milestone_tasks():
                 # About five times the scripted reference, at 15,000 tokens per decision.
                 assert task['token_limit'] == task['decision_limit'] * 15000
             else:
