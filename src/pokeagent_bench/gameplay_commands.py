@@ -190,11 +190,19 @@ def execute(session, operation_id, command, on_action=None):
                     if old and (old["x"], old["y"]) != (item["x"], item["y"]):
                         changes.append({"id": item["id"], "from": {"x": old["x"], "y": old["y"]},
                                         "to": {"x": item["x"], "y": item["y"]}})
+                # An object that left the screen where its old square is still in view, such as a boulder
+                # pushed into a hole, is reported too. Objects that scrolled out of view are not.
+                origin = visible_after.get("origin")
+                after_ids = {item["id"] for item in visible_after.get("objects", [])}
+                for old in before_objects.values():
+                    if (origin and old["id"] not in after_ids and old["id"].startswith("object-")
+                            and 0 <= old["x"] - origin["x"] < 10 and 0 <= old["y"] - origin["y"] < 9):
+                        changes.append({"id": old["id"], "from": {"x": old["x"], "y": old["y"]}, "to": "no longer visible"})
                 if changes:
                     result["visible_object_changes"] = changes
                     if result["position_before"] == result["position_after"]:
                         result.pop("blocked_at", None)
-                        result["outcome"] = ("Player position unchanged. Visible object positions changed. "
+                        result["outcome"] = ("Player position unchanged. Visible objects moved or disappeared. "
                                              "Check the updated map before treating the move as blocked.")
             movements = session.gameplay_memory.setdefault("movements", [])
             movements.append({key: result[key] for key in ("request", "position_before", "position_after_input", "position_after", "outcome", "tiles_moved", "map_changed")})

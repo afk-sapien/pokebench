@@ -273,9 +273,37 @@ def test_object_motion_is_not_reported_as_a_blocked_player_move(tmp_path, engine
         assert "blocked_at" not in result
         assert result["visible_object_changes"] == [
             {"id": "object-1", "from": {"x": 4, "y": 3}, "to": {"x": 4, "y": 4}}]
-        assert "Visible object positions changed" in result["outcome"]
+        assert "Visible objects moved or disappeared" in result["outcome"]
         assert "SECRET" not in json.dumps(result)
         assert session.gameplay_memory["working"]["decisions"][-1]["commands"][-1]["outcome"] == result["outcome"]
+    finally:
+        session.close()
+
+
+@pytest.mark.parametrize('player_x, reported', [(4, True), (20, False)])
+def test_an_object_gone_from_its_visible_square_is_reported(tmp_path, engine, monkeypatch, player_x, reported):
+    # A boulder pushed into a hole leaves the screen while its old square stays in view.
+    # An object whose square scrolled out of view is not reported.
+    session = setup(tmp_path, engine)
+    mem = engine.memory
+    mem[0xC110], mem[0xC112] = 1, 4
+    mem[0xC214], mem[0xC215] = 7, 8
+
+    def vanish(session, send, transcript, phase_end):
+        session.engine.memory[0xC110] = 0
+        session.engine.memory[0xD362] = player_x
+        return transcript.result("control returned", 0)
+
+    monkeypatch.setattr("pokeagent_bench.gameplay_commands.settle_dialogue", vanish)
+    try:
+        result = execute(session, "push", {"command": "move", "argument": "up", "count": 1})
+        if reported:
+            assert result["visible_object_changes"] == [
+                {"id": "object-1", "from": {"x": 4, "y": 3}, "to": "no longer visible"}]
+            assert "Visible objects moved or disappeared" in result["outcome"]
+            assert "blocked_at" not in result
+        else:
+            assert "visible_object_changes" not in result
     finally:
         session.close()
 
@@ -400,6 +428,62 @@ def test_local_map_draws_walkable_tiles_as_floor_even_when_they_share_a_water_id
     cat = catalog()
     cat['world']['0'].update(tileset='SHIP_PORT', passable=[1, 0x32])
     assert pair_view(memory(), cat, {(6, 4): 0x32})['rows'][4][6] == '.'
+
+
+# The ROM ledge table: overworld tiles 0x36 and 0x37 hop down, 0x27 left, 0x0D and 0x1D right.
+@pytest.mark.parametrize('tile, mark', [(0x36, 'v'), (0x37, 'v'), (0x27, '<'), (0x0D, '>'), (0x1D, '>')])
+def test_local_map_marks_overworld_ledges_with_their_hop_direction(tile, mark):
+    cat = catalog()
+    cat['world']['0']['tileset'] = 'OVERWORLD'
+    view = pair_view(memory(), cat, {(6, 4): tile})
+    assert view['rows'][4][6] == mark
+    assert view['legend']['v < >'] == ("ledge. Walking onto it in the arrow's direction hops over it. "
+                                       "Other directions are blocked")
+    assert '^ v < >' not in view['legend']
+    # Only the overworld tileset draws these tiles as ledges.
+    cat['world']['0']['tileset'] = 'FOREST'
+    other = pair_view(memory(), cat, {(6, 4): tile})
+    assert other['rows'][4][6] == '#' and 'v < >' not in other['legend']
+
+
+def test_local_map_lists_floor_arrows_only_on_tilesets_that_draw_them():
+    cat = catalog()
+    assert '^ v < >' not in pair_view(memory(), cat, {})['legend']
+    cat['world']['0']['tileset'] = 'OVERWORLD'
+    assert not {'^ v < >', 'v < >'} & set(pair_view(memory(), cat, {})['legend'])
+    for tileset in ('FACILITY', 'GYM'):
+        cat['world']['0']['tileset'] = tileset
+        legend = pair_view(memory(), cat, {})['legend']
+        assert legend['^ v < >'] == 'visible floor arrows pointing up, down, left, right' and 'v < >' not in legend
+
+
+def test_local_map_marks_the_mansion_3f_floor_gap_as_a_hole():
+    # Mansion 3F draws its broken floor as tile 0x11. Its script drops the player from some gap squares.
+    view = door_view(215, 'FACILITY', {(6, 4): 0x11, (2, 4): 0x60})
+    assert view['rows'][4][6] == 'o' and view['rows'][4][2] == '#'
+    assert view['legend']['o'] == 'visible gap in the floor. Some gap squares drop you to a lower floor'
+    other = door_view(214, 'FACILITY', {(6, 4): 0x11})
+    assert other['rows'][4][6] == '#' and 'o' not in other['legend']
+
+
+def test_readable_context_keeps_legend_glyphs_as_they_are():
+    from pokeagent_bench.readable_context import tree
+    lines = tree({'local_map': {'legend': {'o': 'hole', 'O': 'object', 'v < >': 'ledge'}, 'rows': ['o.O']}})
+    assert '    o: hole' in lines and '    O: object' in lines and '    v < >: ledge' in lines
+    assert 'Local map:' in lines and '  Legend:' in lines
+
+
+def test_known_map_explains_ledges_arrows_and_the_mansion_gap_by_tileset():
+    tiles = {'tiles': {'0': {'4,4': '.', '5,4': 'v'}, '215': {'4,4': '.', '5,4': 'o'}}}
+    legend = known_map(tiles, 0, 4, 4, 'OVERWORLD')['legend']
+    assert " v < > observed ledge, hopped only in the arrow's direction." in legend and 'floor arrows' not in legend
+    legend = known_map(tiles, 0, 4, 4, 'FACILITY')['legend']
+    assert ' ^ v < > observed floor arrows,' in legend and 'ledge' not in legend
+    legend = known_map(tiles, 0, 4, 4)['legend']
+    assert 'floor arrows' not in legend and 'ledge' not in legend
+    legend = known_map(tiles, 215, 4, 4, 'FACILITY')['legend']
+    assert ' o observed gap in the floor, some squares drop you to a lower floor.' in legend
+    assert 'hole' not in legend
 
 
 def test_known_map_explains_holes_and_water_only_when_it_shows_them():

@@ -23,4 +23,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Fair harness red-v0.61](fair-harness-v061.md)
 - [Milestone Short red-v0.62](release-v037.md)
 - [Short milestone guard v0.37.1](short-milestone-guard-v0371.md)
+- [Truthful local map v0.37.1](truthful-local-map-v0371.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

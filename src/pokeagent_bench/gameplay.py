@@ -76,6 +76,19 @@ VISIBLE_HIDDEN_EVENTS = {165: ((2, 5),), 214: ((2, 11),), 215: ((10, 5),), 216: 
 # block, so the tile marks the trees only. A cut tree is redrawn as grass or floor.
 CUT_TREE_TILES = {"OVERWORLD": 0x3D, "GYM": 0x50}
 CUT_TREE_LEGEND = "small tree. Blocked, Cut clears it"
+# Ledges (HandleLedges and its LedgeTiles table, read from the ROM): in the overworld tileset the player
+# hops a square whose bottom-left tile is 0x36 or 0x37 going down, 0x27 going left, or 0x0D or 0x1D
+# going right. The game checks only that tile and the tile under the player, so the mark follows it.
+LEDGE_TILES = {0x36: "v", 0x37: "v", 0x27: "<", 0x0D: ">", 0x1D: ">"}
+LEDGE_LEGEND = "ledge. Walking onto it in the arrow's direction hops over it. Other directions are blocked"
+# Only these tilesets draw floor arrows, so only their maps list the arrow glyphs.
+ARROW_TILESETS = frozenset({"FACILITY", "GYM"})
+# Pokemon Mansion 3F draws its broken floor as tile 0x11, a gray gap. Its script drops the player to a
+# lower floor from some of those squares, so the gap is marked like a hole.
+MANSION_3F = 215
+MANSION_GAP_TILE = 0x11
+MANSION_GAP_LEGEND = "visible gap in the floor. Some gap squares drop you to a lower floor"
+HOLE_LEGEND = "visible hole in the floor"
 # wMapPalOffset is nonzero in a dark cave until Flash. The game then draws the background nearly
 # black, so the terrain is hidden from the player and the text map is hidden too.
 W_MAP_PAL_OFFSET = 0xD35D
@@ -253,6 +266,10 @@ def local_map(memory, catalog, ui):
              "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
     if world.get("tileset") in CUT_TREE_TILES:
         marks = {**marks, CUT_TREE_TILES[world["tileset"]]: "T"}
+    if world.get("tileset") == "OVERWORLD":
+        marks = {**marks, **LEDGE_TILES}
+    if memory[W_CUR_MAP] == MANSION_3F:
+        marks = {**marks, MANSION_GAP_TILE: "o"}
     if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS | GATE_MAPS | HIDEOUT_DOOR_MAPS:
         marks = {**marks, 0x18: "D", 0x24: "D", **({0x5E: "D"} if memory[W_CUR_MAP] == SILPH_CO_11F else {})}
     floors = world.get("pair_floors", {})
@@ -292,12 +309,15 @@ def local_map(memory, catalog, ui):
             grid[py - top][px - left] = "E"
     grid[4][4] = "@"
     legend = {".": "walkable terrain", "#": "blocked terrain", "@": "you", "O": "visible object",
-              "S": "fixed interactable", "E": "exit or stairs, destination unknown",
-              "^ v < >": "visible floor arrows pointing up, down, left, right"}
+              "S": "fixed interactable", "E": "exit or stairs, destination unknown"}
+    if world.get("tileset") in ARROW_TILESETS:
+        legend["^ v < >"] = "visible floor arrows pointing up, down, left, right"
+    if world.get("tileset") == "OVERWORLD" and any(glyph in row for row in grid for glyph in "v<>"):
+        legend["v < >"] = LEDGE_LEGEND
     if any("*" in row for row in grid):
         legend["*"] = "visible floor switch"
     if any("o" in row for row in grid):
-        legend["o"] = "visible hole in the floor"
+        legend["o"] = MANSION_GAP_LEGEND if memory[W_CUR_MAP] == MANSION_3F else HOLE_LEGEND
     if any("~" in row for row in grid):
         legend["~"] = WATER_LEGEND
     if any("D" in row for row in grid):
@@ -315,7 +335,7 @@ def local_map(memory, catalog, ui):
             "caveat": "Terrain is local. Objects can block movement. Special directional collisions may apply."}
 
 
-def known_map(history, map_id, x, y):
+def known_map(history, map_id, x, y, tileset=None):
     """Compact recall of observed terrain only. Question marks remain unknown."""
     cells = history.get("tiles", {}).get(str(map_id), {})
     points = {(int(key.split(",")[0]), int(key.split(",")[1])): value for key, value in cells.items()}
@@ -323,13 +343,17 @@ def known_map(history, map_id, x, y):
     left, right = max(x - 16, min(px for px, py in points)), min(x + 16, max(px for px, py in points))
     top, bottom = max(y - 16, min(py for px, py in points)), min(y + 16, max(py for px, py in points))
     rows = ["".join(points.get((px, py), "?") for px in range(left, right + 1)) for py in range(top, bottom + 1)]
-    legend = "? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable, ^ v < > observed floor arrows, @ current position. Historical terrain may change."
+    arrows = " ^ v < > observed floor arrows," if tileset in ARROW_TILESETS else ""
+    legend = f"? unseen, # blocked terrain, . walkable terrain, E observed exit, S fixed interactable,{arrows} @ current position. Historical terrain may change."
+    if tileset == "OVERWORLD" and any(glyph in row for row in rows for glyph in "v<>"):
+        legend += " v < > observed ledge, hopped only in the arrow's direction."
     if any(":" in row or "," in row for row in rows):
         legend += " : and , walkable floor, no direct step between them."
     if any("*" in row for row in rows):
         legend += " * observed floor switch."
     if any("o" in row for row in rows):
-        legend += " o observed hole in the floor."
+        legend += (" o observed gap in the floor, some squares drop you to a lower floor." if int(map_id) == MANSION_3F
+                   else " o observed hole in the floor.")
     if any("~" in row for row in rows):
         legend += " ~ observed water, crossable with Surf."
     if any("D" in row for row in rows):
@@ -396,7 +420,8 @@ def observe_gameplay(session):
               "screen": ui, "local_map": view, "party": party, "bag": base["inventory"],
               "money": base["money"], "badges": base["badges"], "battle": battle,
               "memory": {"visited_maps": history["visited"], "recent_dialogue": dialogue[-2:],
-                         "known_map": known_map(history, map_id, base["location"]["x"], base["location"]["y"]) if view["available"] else None,
+                         "known_map": known_map(history, map_id, base["location"]["x"], base["location"]["y"],
+                                                catalog["world"].get(map_id, {}).get("tileset")) if view["available"] else None,
                          "recent_movements": history.get("movements", []),
                          "working_memory": recall(history, int(map_id)),
                          "agent_plan": deepcopy(history.get("agent_plan")),

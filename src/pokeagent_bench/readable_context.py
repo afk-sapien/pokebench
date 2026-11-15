@@ -16,20 +16,24 @@ def label(key):
     return str(key).replace("_", " ").capitalize()
 
 
-def tree(value, depth=0):
-    """Preserve generic public fields, including empty and unavailable values."""
+def tree(value, depth=0, glyphs=False):
+    """Preserve generic public fields, including empty and unavailable values.
+
+    A legend's keys are map glyphs, so they are printed as they are. Capitalizing them would turn the hole
+    glyph o into the object glyph O."""
     prefix = "  " * depth
     if isinstance(value, dict):
         if not value:
             return [prefix + "(empty mapping)"]
         lines = []
         for key, item in value.items():
+            name = str(key) if glyphs else label(key)
             if isinstance(item, (dict, list)):
-                lines.append(prefix + label(key) + ":")
-                lines.extend(tree(item, depth + 1))
+                lines.append(prefix + name + ":")
+                lines.extend(tree(item, depth + 1, glyphs=key == "legend"))
             else:
                 text = scalar(item).split("\n")
-                lines.append(prefix + label(key) + ": " + text[0])
+                lines.append(prefix + name + ": " + text[0])
                 lines.extend(prefix + "  " + line for line in text[1:])
         return lines
     if isinstance(value, list):
