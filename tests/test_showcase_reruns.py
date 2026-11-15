@@ -13,7 +13,8 @@ from pokeagent_bench.showcase import RERUN_FORMAT, SOURCES, SUITE_FILE, build, c
 from pokeagent_bench.showcase_costs import PRICING, comparison
 
 OPUS, SOL = 'claude-opus-5-5', 'gpt-5.6-sol'
-NEW = 'red-v0.62-milestone-short'
+NEW = 'red-v0.63-short-guard'
+ADDED = 'red-v0.62-milestone-short'
 CATEGORIES = ['navigation', 'battle', 'operations', 'preparation', 'objectives']
 OLD_STARTS = [('navigation-one', 'navigation', 'default'), ('battle-one', 'battle', 'default'),
               ('battle-one', 'battle', 'variant-b'), ('preparation-one', 'preparation', 'default')]
@@ -93,7 +94,7 @@ def site(tmp_path):
               {'agent': {'model': model}, 'scenario': {'task_id': 'navigation-one'}})
     for name, model in (('opus', OPUS), ('sol', SOL), ('sonnet', 'claude-sonnet-5-5'), ('terra', 'gpt-5.6-terra')):
         long_run(base, f'long-v065-{name}', model)
-    suite = {'format': 'pokebench-short-suite-v1', 'benchmark': NEW, 'package': '0.37.0', 'tag': 'v0.37.0', 'tasks': [
+    suite = {'format': 'pokebench-short-suite-v1', 'benchmark': NEW, 'package': '0.37.1', 'tag': 'v0.37.1', 'added_in': ADDED, 'tasks': [
         task('navigation-one', 'navigation', score_group='navigation-one', evaluation_spec_sha256='spec-navigation-one',
              variants=[{'variant': 'default', 'fixture_sha256': 'fx-navigation-one-default-new'}]),
         task('navigation-new', 'navigation', score_group='navigation-new', evaluation_spec_sha256='spec-navigation-new',
@@ -159,17 +160,17 @@ def test_a_complete_source_replaces_only_its_own_row_cells_and_the_task_table(si
     assert new[0]['replay'] == 'v037-pass/replays/focused-v056-cell-0101.html' and new[1]['replay'] is None
     row = by(a['models'], OPUS, keep=True)[0]
     assert row['suite'] == {'benchmark': NEW, 'tasks': 3, 'source': 'v037-pass'}
-    assert (row['finished'], row['planned'], row['complete'], row['harness']['label']) == (4, 4, True, 'red-v0.62')
+    assert (row['finished'], row['planned'], row['complete'], row['harness']['label']) == (4, 4, True, 'red-v0.63')
     assert row['categories'] == {'navigation': pytest.approx((1 + 2 / 3) / 2), 'battle': 0.5}
     assert 'suite' not in by(a['models'], OPUS)[0]
     # Trials count kept and adopted attempts only, never the unadopted Sol attempts still running in the batch.
     assert (a['finished'], a['planned']) == (b['finished'], b['planned']) == (8, 8)
     assert [e['cell'] for e in by(a['attempts']['log'], OPUS, keep=True)] == ['cell-0102']
-    # The task table is the union of both sets, and the added task names its suite.
+    # The task table is the union of both sets, and the added task names the release that added it.
     assert [t['id'] for t in a['tasks']] == ['navigation-one', 'navigation-new', 'battle-one', 'preparation-one']
     assert [t for t in a['tasks'] if t['id'] != 'navigation-new'] == b['tasks']
     added = a['tasks'][1]
-    assert (added['title'], added['suite'], added['milestones'], added['retired']) == ('Navigation new', NEW, 3, False)
+    assert (added['title'], added['suite'], added['milestones'], added['retired']) == ('Navigation new', ADDED, 3, False)
     # The cost comparison keeps its stored starts. The new row is priced on its own attempts at those starts.
     assert a['efficiency']['starts'] == b['efficiency']['starts'] == 3
     cost = by(a['efficiency']['models'], OPUS, keep=True)[0]
@@ -259,7 +260,7 @@ def test_a_stored_comparison_set_keeps_other_rows_fixed():
 def test_stored_suite_lists_the_v037_short_tasks():
     from pokeagent_bench.evaluation_catalog import load_catalog
     suite = showcase.load(SOURCES / SUITE_FILE)
-    assert (suite['benchmark'], suite['package']) == (NEW, '0.37.0')
+    assert (suite['benchmark'], suite['package'], suite['tag'], suite['added_in']) == (NEW, '0.37.1', 'v0.37.1', ADDED)
     assert len(suite['tasks']) == 44 and sum(len(t['variants']) for t in suite['tasks']) == 46
     added = {t['id'] for t in suite['tasks'] if t.get('milestones')}
     assert added == {'battle-elite-four-no-items', 'battle-mt-moon-underleveled', 'navigation-pewter-to-lavender',
@@ -306,9 +307,9 @@ def test_page_labels_task_sets_only_when_rows_differ(site, tmp_path):
     assert 'task' not in same['ranking']['html'].split('set</span>')[0][-40:] and ' set</span>' not in same['ranking']['html']
     assert same['suite-note']['hidden'] and 'Not run' not in same['tasks']['html']
     mixed = render(tmp_path, site.built({OPUS: {'short': 'v037-pass'}}))
-    assert '3-task red-v0.62 set</span>' in mixed['ranking']['html'] and '3-task earlier set</span>' in mixed['ranking']['html']
+    assert '3-task red-v0.63 set</span>' in mixed['ranking']['html'] and '3-task earlier set</span>' in mixed['ranking']['html']
     assert not mixed['suite-note']['hidden'] and 'The sets share 2 tasks.' in mixed['suite-note']['text']
-    assert 'the 3-task red-v0.62 set: Navigation 2 tasks, 12.5 points each' in mixed['weight-note']['text']
+    assert 'the 3-task red-v0.63 set: Navigation 2 tasks, 12.5 points each' in mixed['weight-note']['text']
     assert 'the 3-task earlier set: Navigation 1 tasks, 25.0 points each' in mixed['weight-note']['text']
     assert mixed['tasks']['html'].count('Not run.') == 2
     assert 'Added in red-v0.62' in mixed['tasks']['html'] and 'its 3 ordered milestones' in mixed['tasks']['html']

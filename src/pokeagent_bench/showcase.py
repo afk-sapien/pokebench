@@ -291,11 +291,12 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         tasks.append(task)
     if reruns:
         # Union of both task sets. Tasks only the stored suite has come from it, since this catalog lacks them.
+        # added_in names the release that first ran them, which can be older than the suite's own release.
         known = {t['id'] for t in tasks}
         for t in suite['tasks']:
             if t['id'] not in known:
                 task = {k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
-                task.update(retired=t['id'] in retired, suite=suite['benchmark'])
+                task.update(retired=t['id'] in retired, suite=suite.get('added_in', suite['benchmark']))
                 if t.get('milestones'):
                     task['milestones'] = t['milestones']
                 tasks.append(task)
@@ -391,7 +392,7 @@ def long_snapshot(base, web, reruns=None):
     return sorted(rows, key=lambda r: -r['score'])
 
 
-SUITE_FILE = 'short-red-v0.62.json'
+SUITE_FILE = 'short-red-v0.63.json'
 
 
 def inside(base, relative):
