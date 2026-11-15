@@ -311,7 +311,7 @@ summary{font-weight:600}
 </style></head><body><main>
 <header><div class="eyebrow">POKEBENCH / CAMPAIGN RESULTS</div><h1>__TITLE__</h1>
 <p>__MODEL__ · <span class="status">__STATUS__</span></p>
-<p class="muted">One continuous game. Fifty milestones within the same attempt.</p>
+<p class="muted">One continuous game. Every milestone is scored within the same attempt.</p>
 <nav aria-label="Campaign sections"><a href="#overview">Overview</a><a href="#milestones">Milestones</a>
 <a href="#timeline">Timeline</a><a href="#team">Team and resources</a></nav></header>
 <section id="overview" aria-label="Run overview"><div class="metrics">__METRICS__</div>

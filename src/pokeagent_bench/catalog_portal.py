@@ -108,7 +108,10 @@ def render_catalog(data=None):
     page = page.replace('<title>PokeBench | Task catalog</title>', '<title>' + NAMES[benchmark] + ' | Tasks</title>')
     page = page.replace('<h1>What are we testing?</h1>', '<h1>' + NAMES[benchmark] + '</h1>')
     if benchmark == LONG:
-        description = 'One continuous Pokemon Red run, from the bedroom to Champion. Score progress across 50 milestones worth 1,000 points, with tokens, elapsed time and the final team reported alongside completion.'
+        from .campaign_runtime import milestone_definitions
+        description = ('One continuous Pokemon Red run, from the bedroom to Champion. Score progress across '
+                       f'{len(milestone_definitions())} milestones worth 1,000 points, with tokens, elapsed time '
+                       'and the final team reported alongside completion.')
         page = page.replace('<span>tasks in __CATEGORY_COUNT__ categories + __VARIANTS__ inventory variant</span>', '<span>continuous campaign</span>')
         page = page.replace('<span>tasks in 1 categories + 0 inventory variant</span>', '<span>continuous campaign</span>')
         page = page.replace('<details class="task"', '<details open class="task"')

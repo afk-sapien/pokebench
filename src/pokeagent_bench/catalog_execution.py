@@ -89,7 +89,7 @@ def validate_fixtures(fixtures, rom):
             try:
                 engine, scenario = load_engine(Path(rom), Path(variant['path']))
                 if row['id'] == 'campaign-full-game':
-                    facts = read_campaign_evidence(engine)
+                    facts = read_campaign_evidence(engine, position=True)
                     if facts['party'] or facts['badges'] or facts['hall_of_fame'] or facts['map_id'] != 38:
                         raise ValueError('Campaign must start in the bedroom without a starter or earned badges')
                     evaluator = CampaignTracker(facts)

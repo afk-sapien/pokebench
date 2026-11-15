@@ -171,7 +171,8 @@ def resume(rom, root, *, engine_factory=None, clock=time.monotonic):
         session.engine, session.output, session.manifest = engine, root, manifest
         session.scenario, session.labels = manifest['scenario'], saved['labels']
         session.track, session.goal = manifest['track'], manifest['goal']
-        session.campaign_tracking = manifest.get('scoring_protocol') == 'campaign-progress-v1'
+        from .campaign_runtime import VERSIONS
+        session.campaign_tracking = manifest.get('scoring_protocol') in VERSIONS
         from .action_policy import from_manifest, tested_skill
         session.action_policy = from_manifest(manifest)
         session.tested_skill = manifest.get("tested_skill", tested_skill(manifest.get("scenario", {})))

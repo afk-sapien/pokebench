@@ -149,7 +149,7 @@ class Session:
                           if self.objective else Evaluator(engine.evidence()))
         if self.campaign_tracking:
             from .campaign_runtime import CampaignTracker, read_campaign_evidence
-            campaign_start = read_campaign_evidence(engine)
+            campaign_start = read_campaign_evidence(engine, position=True)
             if campaign_start['party'] or campaign_start['badges'] or campaign_start['hall_of_fame'] or campaign_start['map_id'] != 38:
                 raise ValueError('Full-game campaigns must start in the bedroom without a starter or badges')
             self.evaluator = CampaignTracker(json.loads(encoded(campaign_start)))
@@ -181,7 +181,7 @@ class Session:
             task = task_definition(task_id)
             self.manifest['evaluation_spec_sha256'] = digest(encoded(task))
             self.manifest['benchmark_track'] = 'pokebench-long' if self.campaign_tracking else 'pokebench'
-            self.manifest['scoring_protocol'] = 'campaign-progress-v1' if self.campaign_tracking else 'catalog-tasks-v1'
+            self.manifest['scoring_protocol'] = self.evaluator.version if self.campaign_tracking else 'catalog-tasks-v1'
             if isinstance(self.evaluator, MilestoneEvaluator):
                 from .milestone_runtime import PROTOCOL
                 self.manifest['scoring_protocol'] = PROTOCOL
@@ -377,8 +377,8 @@ class Session:
 
     def _evaluation_evidence(self):
         if self.campaign_tracking:
-            from .campaign_runtime import read_campaign_evidence
-            return json.loads(encoded(read_campaign_evidence(self.engine)))
+            from .campaign_runtime import V1, read_campaign_evidence
+            return json.loads(encoded(read_campaign_evidence(self.engine, position=self.evaluator.version != V1)))
         state = evidence(self.engine, self.objective)
         return state['catalog'] if self.objective and self.objective['kind'] == 'catalog-task' else state
 
@@ -447,7 +447,11 @@ class Session:
                 self.run_lease.close()
 
 
-def replay(rom: Path, run: Path):
+def replay(rom: Path, run: Path, *, rescore=None):
+    """Verify a run. With rescore, also score the same frames under another campaign protocol.
+
+    The rescore never changes verification. It returns the second report beside the verified score.
+    """
     manifest = json.loads((run / "manifest.json").read_text())
     from .evaluation_catalog import validate_run_spec
     validate_run_spec(manifest)
@@ -463,18 +467,23 @@ def replay(rom: Path, run: Path):
         install(engine, manifest["scenario"])
         initialize_controls(engine, manifest["scenario"])
         objective = validate_objective(manifest["scenario"].get("objective")) if manifest["goal"] == "challenge" else None
-        campaign_tracking = manifest.get('scoring_protocol') == 'campaign-progress-v1'
+        from .campaign_runtime import V1, VERSION, VERSIONS, CampaignTracker, read_campaign_evidence
+        protocol = manifest.get('scoring_protocol')
+        campaign_tracking = protocol in VERSIONS
+        if rescore is not None and (not campaign_tracking or rescore not in VERSIONS):
+            raise ValueError('Only campaign runs can be rescored, and only under a campaign protocol')
+        def campaign_evidence(version):
+            return json.loads(encoded(read_campaign_evidence(engine, position=version != V1)))
         def replay_evidence():
             if campaign_tracking:
-                from .campaign_runtime import read_campaign_evidence
-                return json.loads(encoded(read_campaign_evidence(engine)))
+                return campaign_evidence(protocol)
             state = evidence(engine, objective)
             return state['catalog'] if objective and objective['kind'] == 'catalog-task' else state
         if campaign_tracking:
-            from .campaign_runtime import CampaignTracker
-            evaluator = CampaignTracker(replay_evidence())
+            evaluator = CampaignTracker(replay_evidence(), version=protocol)
         else:
             evaluator = create_challenge_evaluator(evidence(engine, objective), objective) if objective else Evaluator(engine.evidence())
+        shadow = CampaignTracker(campaign_evidence(rescore), version=rescore) if rescore is not None else None
     except Exception:
         engine.close()
         raise
@@ -505,7 +514,14 @@ def replay(rom: Path, run: Path):
                     engine.release(button)
                 engine.tick()
                 frame += 1
-                awards.extend(evaluator.observe(replay_evidence(), frame, 0))
+                if shadow is None:
+                    awards.extend(evaluator.observe(replay_evidence(), frame, 0))
+                    continue
+                # One read serves both protocols. v1 evidence is the same facts without position.
+                facts = campaign_evidence(VERSION)
+                plain = {key: value for key, value in facts.items() if key not in ('x', 'y')}
+                awards.extend(evaluator.observe(plain if protocol == V1 else facts, frame, 0))
+                shadow.observe(plain if rescore == V1 else facts, frame, 0, actions=count + 1)
             if button:
                 engine.release(button)
             expected_awards = [(a["id"], a["points"], a["frame"]) for a in row["achievements"]]
@@ -520,7 +536,10 @@ def replay(rom: Path, run: Path):
             raise ValueError("Final result differs from replay")
         if result["completed"] and not evaluator.complete(manifest["goal"]):
             raise ValueError("Claimed completion is not supported by replay evidence")
-        return {"verified": True, "actions": count, "frames": frame, "score": evaluator.score, "trace_head": head}
+        verified = {"verified": True, "actions": count, "frames": frame, "score": evaluator.score, "trace_head": head}
+        if shadow is not None:
+            verified["rescore"] = shadow.report()
+        return verified
     finally:
         engine.close()
 

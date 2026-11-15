@@ -300,7 +300,8 @@ def decisions_used(actions):
 def scoring(task_id):
     """What a suite run of this task must record about how it is played and scored."""
     if task_id == 'campaign-full-game':
-        return {'goal': 'campaign', 'track': 'gameplay', 'scoring_protocol': 'campaign-progress-v1', 'score_max': 1000}
+        from .campaign_runtime import VERSION
+        return {'goal': 'campaign', 'track': 'gameplay', 'scoring_protocol': VERSION, 'score_max': 1000}
     from .evaluation_catalog import milestone_tasks, task_definition
     if task_id in milestone_tasks():
         from .milestone_runtime import PROTOCOL

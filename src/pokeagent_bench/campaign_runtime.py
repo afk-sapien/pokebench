@@ -14,7 +14,13 @@ from statistics import median
 from pokecore.gen1 import BADGES, event_set, read_progress
 from pokecore.snapshot import read_fields
 
-VERSION = 'campaign-progress-v1'
+V1 = 'campaign-progress-v1'
+VERSION = 'campaign-progress-v2'
+VERSIONS = (V1, VERSION)
+CATALOGS = Path(__file__).with_name('catalogs')
+# Each protocol scores against its own definition. v1 runs replay against the pinned copy.
+SOURCES = {V1: (CATALOGS / 'history' / 'campaign-v1.json', 50), VERSION: (CATALOGS / 'campaign.json', 75)}
+AREA_CHECKS = frozenset({'map', 'area', 'near', 'item'})
 
 # Zero-based event indices from pret/pokered event_constants.asm.
 STORY_FLAGS = {
@@ -37,14 +43,60 @@ VISITS = {
 }
 
 
-@lru_cache(maxsize=1)
-def milestone_definitions():
-    """Use the catalog as the one source of milestone IDs and weights."""
-    path = Path(__file__).with_name('catalogs') / 'campaign.json'
-    rows = json.loads(path.read_text())['evals'][0]['milestones']
-    if len(rows) != 50 or sum(row['points'] for row in rows) != 1000:
+@lru_cache(maxsize=2)
+def campaign_definition(version=VERSION):
+    """The catalog entry a scoring protocol was published with."""
+    if version not in SOURCES:
+        raise ValueError('Unsupported campaign scoring protocol')
+    path, count = SOURCES[version]
+    entry = json.loads(path.read_text())['evals'][0]
+    rows = entry['milestones']
+    if len(rows) != count or sum(row['points'] for row in rows) != 1000:
         raise ValueError('Campaign milestone definition changed without a protocol update')
+    return entry
+
+
+@lru_cache(maxsize=2)
+def milestone_definitions(version=VERSION):
+    """Use the catalog as the one source of milestone IDs and weights."""
+    rows = campaign_definition(version)['milestones']
     return {row['id']: {key: row[key] for key in ('id', 'label', 'group', 'points')} for row in rows}
+
+
+def _validate_area(check):
+    from .milestone_runtime import validate_check
+    if not isinstance(check, dict) or not check or not check.keys() <= AREA_CHECKS:
+        raise ValueError('An area milestone checks only map, position and bag')
+    items = check.get('item')
+    if items is not None and (not isinstance(items, list) or not items
+                              or any(type(item) is not int or not 1 <= item <= 255 for item in items)):
+        raise ValueError('An area item check is a list of item IDs')
+    position = {key: value for key, value in check.items() if key != 'item'}
+    if position:
+        validate_check(position)
+    return check
+
+
+@lru_cache(maxsize=2)
+def area_checks(version=VERSION):
+    """Dungeon and route milestones, checked on the native map, position and bag."""
+    return {row['id']: _validate_area(row.get('check')) for row in campaign_definition(version)['milestones']
+            if row['group'] == 'areas'}
+
+
+def _holds(check, state):
+    """The Short milestone check semantics, with an item check that accepts any listed item."""
+    if 'map' in check and (state['map_id'] != check['map'] or state['battle']):
+        return False
+    if 'area' in check:
+        x0, y0, x1, y1 = check['area']
+        if not (x0 <= state['x'] <= x1 and y0 <= state['y'] <= y1):
+            return False
+    if 'near' in check and abs(state['x'] - check['near'][0]) + abs(state['y'] - check['near'][1]) > 1:
+        return False
+    if 'item' in check and not any(item in check['item'] and count > 0 for item, count in state['items']):
+        return False
+    return True
 
 
 def read_evolution_families(memory):
@@ -85,8 +137,11 @@ def read_evolution_families(memory):
     return {'families': {str(species): family(species) for species in parents}, 'edges': edges}
 
 
-def read_campaign_evidence(engine):
-    """Read private facts without exposing quest flags to the agent."""
+def read_campaign_evidence(engine, *, position=False):
+    """Read private facts without exposing quest flags to the agent.
+
+    v1 evidence has no player position, so stored v1 runs keep byte-identical evidence.
+    """
     fields = read_fields(engine.memory)
     progress = read_progress(engine.memory)
     if not hasattr(engine, '_campaign_evolution_data'):
@@ -102,7 +157,7 @@ def read_campaign_evidence(engine):
                                         and 0 < mon['max_hp'] <= 999 and mon['hp'] <= mon['max_hp']
                                         for mon in party)
     started = bool(fields['player_name']) and (bool(party) or fields['map'] in (0, 37, 38, 40))
-    return {
+    state = {
         'valid': valid_party and started, 'map_id': fields['map'], 'story': story,
         'badges': progress['badges'], 'gym_flags': progress['gym_flags'],
         'elite': progress['elite'], 'champion': progress['champion'],
@@ -117,6 +172,9 @@ def read_campaign_evidence(engine):
         'overworld': not fields['in_battle'] and not fields['textbox'] and not fields['start_menu'],
         'evolution_data': engine._campaign_evolution_data,
     }
+    if position:
+        state.update(x=engine.memory[0xD362], y=engine.memory[0xD361])
+    return state
 
 
 def _identity(mon):
@@ -147,9 +205,17 @@ def party_profile(state):
 class CampaignTracker:
     """Persistent, baseline-excluding awards for one continuous campaign."""
 
-    def __init__(self, initial):
+    # Trackers saved before v2 carry no version attribute. They scored v1.
+    version = V1
+
+    def __init__(self, initial, version=VERSION):
+        if version not in VERSIONS:
+            raise ValueError('Unsupported campaign scoring protocol')
         if not initial['valid']:
             raise ValueError('Campaign requires a valid started game')
+        if version != V1 and not {'x', 'y'} <= initial.keys():
+            raise ValueError('Campaign v2 scoring needs player position evidence')
+        self.version = version
         self.baseline = deepcopy(initial)
         self.last_state = deepcopy(initial)
         self.awarded = {}
@@ -190,7 +256,8 @@ class CampaignTracker:
         keys.update(f'evolved-lines:{n}' for n in (1, 3) if len(self.evolved_families) >= n)
         if len({mon['species'] for mon in state['party']}) == 6:
             keys.add('party-six-species')
-        return keys & milestone_definitions().keys()
+        keys.update(key for key, check in area_checks(self.version).items() if _holds(check, state))
+        return keys & milestone_definitions(self.version).keys()
 
     def _transitions(self, state, stamp):
         old = self.last_state
@@ -273,7 +340,7 @@ class CampaignTracker:
         confirmed = (self.previous & candidates) - self.initial_keys - self.awarded.keys()
         self.previous = candidates
         new = []
-        definitions = milestone_definitions()
+        definitions = milestone_definitions(self.version)
         for key in sorted(confirmed):
             award = {**definitions[key], **stamp}
             self.awarded[key] = award
@@ -291,7 +358,7 @@ class CampaignTracker:
         return 'champion' in self.awarded
 
     def report(self):
-        definitions = milestone_definitions()
+        definitions = milestone_definitions(self.version)
         groups = {}
         for row in definitions.values():
             group = groups.setdefault(row['group'], {'points': 0, 'maximum_points': 0, 'completed': 0, 'total': 0})
@@ -300,8 +367,9 @@ class CampaignTracker:
             if row['id'] in self.awarded:
                 group['points'] += row['points']
                 group['completed'] += 1
-        return {'version': VERSION, 'score': self.score, 'maximum_points': 1000, 'champion': self.complete(),
-                'completed_milestones': len(self.awarded), 'total_milestones': 50,
+        return {'version': self.version, 'score': self.score,
+                'maximum_points': sum(row['points'] for row in definitions.values()), 'champion': self.complete(),
+                'completed_milestones': len(self.awarded), 'total_milestones': len(definitions),
                 'groups': groups, 'milestones': [{**row, 'status': 'achieved' if key in self.awarded else
                     'present-at-start' if key in self.initial_keys else 'not-reached',
                     'achievement': deepcopy(self.awarded.get(key))} for key, row in definitions.items()],
@@ -319,14 +387,15 @@ class CampaignTracker:
         value = deepcopy(vars(self))
         for key in ('collected_items', 'caught_species', 'evolved_families', 'previous', 'initial_keys'):
             value[key] = sorted(value[key])
-        return {'version': VERSION, 'state': value}
+        return {'version': self.version, 'state': value}
 
     @classmethod
     def from_dict(cls, value):
-        if value.get('version') != VERSION:
+        if value.get('version') not in VERSIONS:
             raise ValueError('Unsupported campaign checkpoint version')
         instance = object.__new__(cls)
         instance.__dict__.update(deepcopy(value['state']))
+        instance.version = value['version']
         for key in ('collected_items', 'caught_species', 'evolved_families', 'previous', 'initial_keys'):
             setattr(instance, key, set(getattr(instance, key)))
         pending = instance.pending_evolution

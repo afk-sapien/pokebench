@@ -10,7 +10,7 @@ from pokecore.gen1 import W_EVENT_FLAGS, event_set
 from pokecore.gen1_ui import read_screen
 from pokecore.storage import decode_box, memory_bytes
 
-from .campaign_runtime import CampaignTracker, read_campaign_evidence
+from .campaign_runtime import V1, CampaignTracker, read_campaign_evidence
 from .gameplay import ui_state
 
 VERSION = 'catalog-runtime-v062'
@@ -146,7 +146,8 @@ class CatalogEvaluator:
         self.wild_xp = False
         self.wild_finished = False
         self.wild_won = False
-        self.capture_tracker = CampaignTracker(self.baseline) if self.task_id in CAPTURES else None
+        # Short capture tasks count captures with the v1 tracker, unchanged by the Long v2 milestones.
+        self.capture_tracker = CampaignTracker(self.baseline, version=V1) if self.task_id in CAPTURES else None
         self.capture_record = None
         self.capture_event_count = 0
         self.command_ledger = []

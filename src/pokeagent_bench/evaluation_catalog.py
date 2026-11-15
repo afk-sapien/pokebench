@@ -191,5 +191,10 @@ def validate_run_spec(manifest):
         return
     scenario = manifest['scenario']
     task_id = scenario.get('task_id') or scenario.get('objective', {}).get('task_id')
-    if digest(encoded(task_definition(task_id))) != expected:
+    definition = task_definition(task_id)
+    if task_id == 'campaign-full-game':
+        # Each campaign protocol keeps the definition it was published with.
+        from .campaign_runtime import campaign_definition
+        definition = campaign_definition(manifest.get('scoring_protocol'))
+    if digest(encoded(definition)) != expected:
         raise ValueError('The catalog specification changed since this run started')

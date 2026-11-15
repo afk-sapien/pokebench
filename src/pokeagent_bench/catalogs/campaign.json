@@ -30,9 +30,9 @@
       "token_limit": 30000000,
       "existing_task": null,
       "requirements": [
-        "Validate the fresh-game checkpoint and bind each of the 50 milestone predicates to native game evidence.",
+        "Validate the fresh-game checkpoint and bind each of the 75 milestone predicates to native game evidence.",
         "Integrate a persistent event history for captures, evolution, location visits, purchases and battle outcomes. Retain this history across context resets and process resume.",
-        "Apply the proposed scoring definition only to new evaluated runs or historical traces with sufficient evidence. Existing runtime scoring remains unchanged by this plan.",
+        "Score new runs with campaign-progress-v2. Runs recorded under campaign-progress-v1 keep that protocol and replay against the pinned v1 definition in catalogs/history/campaign-v1.json.",
         "Record the party and resources at matched milestones, and join milestone events to cumulative tokens, decisions, frames and time.",
         "Pilot milestone weights and collection thresholds before using the new score in the leaderboard. No model sweep is launched by editing this plan."
       ],
@@ -47,14 +47,14 @@
         "Any legal route, team, shopping, training, capture, and recovery strategy is permitted.",
         "One continuous game per model attempt, one token budget and one evolving party. Do not restart from the bedroom for each milestone.",
         "Record the first achievement of each milestone with cumulative tokens, decisions, game frames and elapsed wall time. Milestones are observations from one trajectory, not independent trials.",
-        "Badges need not be earned in the display order. Preserve the actual event order. Use the 50 weighted milestones below, while recording other events as unscored timeline annotations.",
+        "Badges need not be earned in the display order. Preserve the actual event order. Use the 75 weighted milestones below, while recording other events as unscored timeline annotations.",
         "After a budget stop, later milestones are marked not reached in this attempt. An early infrastructure error is incomplete evaluation, not evidence that the model cannot do the remaining tasks.",
         "Keep isolated checkpoint results separate. A campaign victory cannot be assigned to a battle benchmark with a different supplied team or resources.",
-        "One attempt produces Champion completion, a proposed 1000-point progress breakdown and an unscored run profile. The 50 milestones do not create additional model runs."
+        "One attempt produces Champion completion, a 1000-point progress score and an unscored run profile. The 75 milestones do not create additional model runs."
       ],
       "open_questions": [
         "Validate the fresh save and evidence hooks against a real replay.",
-        "Choose a practical shared campaign budget after a pilot. The displayed cap is provisional.",
+        "Each run plays in 2000-decision chunks, and only a run that is still earning milestones gets another chunk.",
         "Verify that a resumed attempt preserves milestone history and the original total budget.",
         "Check that location and item events cannot be awarded from transient menu or battle memory.",
         "Measure whether the capped collection bonuses induce unnecessary detours. Adjust weights before freezing the comparison, not after seeing preferred model rankings."
@@ -66,160 +66,160 @@
           "label": "Choose a starter",
           "evidence": "Confirm the starter handover event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "parcel-collected",
           "label": "Collect Oak's Parcel",
           "evidence": "Confirm the parcel receipt event, not mere inventory presence in a supplied save.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "parcel",
           "label": "Deliver Oak's Parcel and receive the Pokedex",
           "evidence": "Confirm parcel delivery and Pokedex ownership.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "cerulean-rival",
           "label": "Defeat the rival at Nugget Bridge",
           "evidence": "Confirm the Cerulean rival victory flag.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "bill-ticket",
           "label": "Help Bill and receive the S.S. Ticket",
           "evidence": "Confirm Bill restoration and ticket receipt.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "ss-anne-rival",
           "label": "Defeat the rival aboard the S.S. Anne",
           "evidence": "Confirm the S.S. Anne rival victory flag.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "hm-cut",
           "label": "Obtain HM01 Cut from the captain",
           "evidence": "Confirm the native HM01 reward event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "lift-key",
           "label": "Obtain the Rocket Hideout Lift Key",
           "evidence": "Confirm the Lift Key pickup event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "hideout-giovanni",
           "label": "Defeat Giovanni in Rocket Hideout",
           "evidence": "Confirm the Hideout Giovanni victory flag.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "silph-scope",
           "label": "Collect the Silph Scope",
           "evidence": "Confirm the post-Giovanni Silph Scope pickup.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "ghost-marowak",
           "label": "Resolve the ghost Marowak encounter in Pokemon Tower",
           "evidence": "Confirm the ghost Marowak completion event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "fuji-flute",
           "label": "Rescue Mr. Fuji and receive the Poke Flute",
           "evidence": "Confirm the rescue and Poke Flute reward events.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "snorlax-resolved",
           "label": "Clear either sleeping Snorlax roadblock",
           "evidence": "Confirm either Route 12 or Route 16 Snorlax removal and resolved encounter. Award once across both locations.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "card-key",
           "label": "Obtain the Silph Co. Card Key",
           "evidence": "Confirm the Card Key pickup event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "silph-rival",
           "label": "Defeat the rival in Silph Co.",
           "evidence": "Confirm the Silph Co. rival victory event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "silph-giovanni",
           "label": "Defeat Giovanni and liberate Silph Co.",
           "evidence": "Confirm the Silph Co. Giovanni victory and liberation events.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "hm-surf",
           "label": "Obtain HM03 Surf in the Safari Zone",
           "evidence": "Confirm the native Secret House reward event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "gold-teeth",
           "label": "Find the Gold Teeth in the Safari Zone",
           "evidence": "Confirm the Gold Teeth pickup event even if the item is later handed over.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "hm-strength",
           "label": "Return the Gold Teeth and receive HM04 Strength",
           "evidence": "Confirm the Warden handover and HM04 reward events.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "secret-key",
           "label": "Find the Secret Key in Pokemon Mansion",
           "evidence": "Confirm the Secret Key pickup event.",
           "group": "story",
-          "points": 5,
-          "tracking_status": "integration-pending"
+          "points": 8,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:viridian-city",
@@ -227,7 +227,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:pewter-city",
@@ -235,7 +235,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:cerulean-city",
@@ -243,7 +243,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:vermilion-city",
@@ -251,7 +251,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:lavender-town",
@@ -259,7 +259,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:celadon-city",
@@ -267,7 +267,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:fuchsia-city",
@@ -275,7 +275,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:saffron-city",
@@ -283,7 +283,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:cinnabar-island",
@@ -291,7 +291,7 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "visit:indigo-plateau",
@@ -299,111 +299,410 @@
           "group": "exploration",
           "points": 5,
           "evidence": "Confirm first arrival on the named outdoor map through normal gameplay. Revisits do not earn more points.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:viridian-forest",
+          "label": "Enter Viridian Forest",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 51
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:mt-moon",
+          "label": "Enter Mt. Moon",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 59
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:mt-moon-b2f",
+          "label": "Reach the Mt. Moon fossil floor",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 61,
+            "near": [
+              21,
+              17
+            ]
+          },
+          "evidence": "Confirm the player on Mt. Moon B2F within one tile of the ladder that leads to the fossil room, outside battle. The dead-end B2F rooms do not count.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:mt-moon-exit",
+          "label": "Leave Mt. Moon onto east Route 4",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 15,
+            "area": [
+              24,
+              0,
+              89,
+              17
+            ]
+          },
+          "evidence": "Confirm the player on Route 4 east of Mt. Moon, outside battle. Route 4 west of the cave does not count.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:route-9",
+          "label": "Reach Route 9",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 20
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:rock-tunnel",
+          "label": "Enter Rock Tunnel",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 82
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:rock-tunnel-b1f",
+          "label": "Reach Rock Tunnel B1F",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 232
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:rock-tunnel-exit",
+          "label": "Leave Rock Tunnel onto south Route 10",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 21,
+            "area": [
+              0,
+              52,
+              19,
+              71
+            ]
+          },
+          "evidence": "Confirm the player on Route 10 south of Rock Tunnel, outside battle. Route 10 north of the tunnel does not count.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:underground-west-east",
+          "label": "Enter the west-east Underground Path",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 121
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:pokemon-tower",
+          "label": "Enter Pokemon Tower",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 142
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:saffron-drink",
+          "label": "Get a drink for the Saffron gate guards",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "item": [
+              60,
+              61,
+              62
+            ]
+          },
+          "evidence": "Confirm Fresh Water, Soda Pop or Lemonade in the bag. A drink held at the start does not count.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:rocket-hideout",
+          "label": "Enter the Rocket Hideout",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 199
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:hideout-b4f",
+          "label": "Reach Rocket Hideout B4F",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 202
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:silph-co",
+          "label": "Enter Silph Co.",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 181
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:silph-7f",
+          "label": "Reach Silph Co. 7F",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 212
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:safari-zone",
+          "label": "Enter the Safari Zone",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 220
+          },
+          "evidence": "Confirm the player in the Safari Zone center area outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:safari-north",
+          "label": "Reach the Safari Zone north area",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 218
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:safari-west",
+          "label": "Reach the Safari Zone west area",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 219
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:mansion",
+          "label": "Enter the Pokemon Mansion",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 165
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:mansion-b1f",
+          "label": "Reach Pokemon Mansion B1F",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 216
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:route-23",
+          "label": "Reach Route 23",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 34
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:victory-road",
+          "label": "Enter Victory Road",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 108
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:victory-road-2f",
+          "label": "Reach Victory Road 2F",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 194
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:victory-road-3f",
+          "label": "Reach Victory Road 3F",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 198
+          },
+          "evidence": "Confirm the player on this map outside battle. Revisits do not earn more points.",
+          "tracking_status": "runtime-tracked"
+        },
+        {
+          "id": "area:victory-road-exit",
+          "label": "Leave Victory Road toward Indigo Plateau",
+          "group": "areas",
+          "points": 8,
+          "check": {
+            "map": 34,
+            "near": [
+              14,
+              31
+            ]
+          },
+          "evidence": "Confirm the player on Route 23 within one tile of the Victory Road exit, outside battle.",
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:boulder",
           "label": "Earn the Boulder Badge from Brock",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:cascade",
           "label": "Earn the Cascade Badge from Misty",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:thunder",
           "label": "Earn the Thunder Badge from Lt. Surge",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:rainbow",
           "label": "Earn the Rainbow Badge from Erika",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:soul",
           "label": "Earn the Soul Badge from Koga",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:marsh",
           "label": "Earn the Marsh Badge from Sabrina",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:volcano",
           "label": "Earn the Volcano Badge from Blaine",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "badge:earth",
           "label": "Earn the Earth Badge from Giovanni",
           "evidence": "Existing evaluator requires the badge bit and corresponding Gym victory flag.",
           "group": "badges",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 40,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "elite:lorelei",
           "label": "Defeat Lorelei",
           "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
           "group": "elite",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 35,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "elite:bruno",
           "label": "Defeat Bruno",
           "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
           "group": "elite",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 35,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "elite:agatha",
           "label": "Defeat Agatha",
           "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
           "group": "elite",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 35,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "elite:lance",
           "label": "Defeat Lance",
           "evidence": "Existing evaluator confirms the corresponding Elite Four victory event.",
           "group": "elite",
-          "points": 50,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 35,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "champion",
           "label": "Defeat the Champion and enter the Hall of Fame",
           "evidence": "Existing evaluator requires Champion victory and a new Hall of Fame entry.",
           "group": "champion",
-          "points": 200,
-          "tracking_status": "existing-evidence-new-score-pending"
+          "points": 80,
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "caught-species:1",
@@ -411,7 +710,7 @@
           "group": "collection",
           "points": 5,
           "evidence": "Confirm 1 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "caught-species:5",
@@ -419,7 +718,7 @@
           "group": "collection",
           "points": 5,
           "evidence": "Confirm 5 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "caught-species:10",
@@ -427,7 +726,7 @@
           "group": "collection",
           "points": 5,
           "evidence": "Confirm 10 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "caught-species:20",
@@ -435,7 +734,7 @@
           "group": "collection",
           "points": 10,
           "evidence": "Confirm 20 distinct species from successful wild capture events, including captures sent to the PC. Gifts, trades, evolutions and repeat catches of the same species do not increase this counter.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "evolved-lines:1",
@@ -443,7 +742,7 @@
           "group": "collection",
           "points": 5,
           "evidence": "Confirm evolution events in 1 different families. Two evolutions of the same starter family count as one. Evolution cancellations do not count.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "evolved-lines:3",
@@ -451,7 +750,7 @@
           "group": "collection",
           "points": 10,
           "evidence": "Confirm evolution events in 3 different families. Two evolutions of the same starter family count as one. Evolution cancellations do not count.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         },
         {
           "id": "party-six-species",
@@ -459,19 +758,19 @@
           "group": "collection",
           "points": 10,
           "evidence": "Confirm six different species simultaneously in the party through legal acquisitions. This measures roster breadth, not tactical quality. Reordering and repeated assembly do not score again.",
-          "tracking_status": "integration-pending"
+          "tracking_status": "runtime-tracked"
         }
       ],
       "scoring_plan": {
-        "version": "campaign-progress-v1-draft",
-        "status": "proposed-not-runtime-scoring",
+        "version": "campaign-progress-v2",
+        "status": "runtime-scoring",
         "maximum_points": 1000,
         "groups": [
           {
             "id": "story",
             "label": "Story and quest progress",
             "count": 20,
-            "points": 100
+            "points": 160
           },
           {
             "id": "exploration",
@@ -480,22 +779,28 @@
             "points": 50
           },
           {
+            "id": "areas",
+            "label": "Dungeons and routes",
+            "count": 25,
+            "points": 200
+          },
+          {
             "id": "badges",
             "label": "Gym badges",
             "count": 8,
-            "points": 400
+            "points": 320
           },
           {
             "id": "elite",
             "label": "Elite Four",
             "count": 4,
-            "points": 200
+            "points": 140
           },
           {
             "id": "champion",
             "label": "Champion and Hall of Fame",
             "count": 1,
-            "points": 200
+            "points": 80
           },
           {
             "id": "collection",
@@ -511,9 +816,10 @@
           "Milestone points never decrease. Keep blackouts, item waste and current party condition in the run profile so they explain progress without erasing completed achievements.",
           "The optional collection component is capped at 50 points. Becoming Champion does not require collecting every bonus, and 1000 points is not required for a full-game pass.",
           "Award progress from verified game evidence. Do not infer completion from the agent notebook or a claimed tool result. Missing telemetry is unknown, not a zero or an automatic failure.",
-          "Record the first achievement time, frame, decision and cumulative token use. These are 50 observations within one trajectory, not 50 independent trials.",
+          "Record the first achievement time, frame, decision and cumulative token use. These are 75 observations within one trajectory, not 75 independent trials.",
           "Publish the score definition to agents before an evaluated run. Keep hidden evaluator state private, and give every model the same scoring rules and budget.",
-          "The weights are provisional design choices. Pilot the breakdown before using it for model ranking. Do not relabel historical scores without enough saved evidence to recompute this definition."
+          "A dungeon or route milestone needs the player on its map outside battle, and at its named spot where it has one, on two checked frames in a row. These milestones show progress through the long stretches between badges.",
+          "Version 2 added the 25 dungeon and route milestones and moved weight from badges, the Elite Four and the Champion to keep the 1000-point total. Runs recorded under campaign-progress-v1 keep their v1 scores and replay against the pinned v1 definition. Their v2 scores come from exact replays and are stored beside the v1 results, never written over them."
         ]
       },
       "run_metrics": [

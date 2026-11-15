@@ -36,16 +36,16 @@ def report():
     return tracker.report()
 
 
-def test_page_has_all_fifty_read_only_milestones_and_correct_earned_count():
+def test_page_has_every_read_only_milestone_and_correct_earned_count():
     data = report()
     page = render_campaign_report(data)
     parsed = Elements()
     parsed.feed(page)
-    assert len(parsed.inputs) == 50
+    assert len(parsed.inputs) == 75
     assert all('disabled' in item for item in parsed.inputs)
     assert sum('checked' in item for item in parsed.inputs) == 1
-    assert '5 / 1,000' in page
-    assert '1 / 50' in page
+    assert '8 / 1,000' in page
+    assert '1 / 75' in page
     assert 'SQUIRTLE' in page
     assert '#overview' in parsed.links
     assert '#team' in parsed.links

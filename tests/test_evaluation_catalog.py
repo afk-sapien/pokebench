@@ -2,7 +2,9 @@ from copy import deepcopy
 
 import pytest
 
-from pokeagent_bench.evaluation_catalog import CATEGORIES, load_catalog, retired_tasks, summary, validate_category
+from pokeagent_bench.evaluation_catalog import (
+    CATEGORIES, catalog_files, load_catalog, retired_tasks, summary, validate_category,
+)
 
 
 def category():
@@ -90,9 +92,10 @@ def test_campaign_is_one_attempt_with_unique_milestones():
     campaign = campaigns[0]
     assert campaign['run_unit'] == 'one-continuous-attempt'
     milestones = [m['id'] for m in campaign['milestones']]
-    assert len(milestones) == len(set(milestones)) == 50
+    assert len(milestones) == len(set(milestones)) == 75
     assert campaign['objective']['target'] == 'champion'
     assert sum(key.startswith('badge:') for key in milestones) == 8
+    assert sum(key.startswith('area:') for key in milestones) == 25
     groups = load_catalog()
     ids = {e['id'] for group in groups for e in group['evals']}
     assert 'objectives-resume-context-reset' not in ids
@@ -113,14 +116,35 @@ def test_portal_uses_actual_counts_and_campaign_milestones():
 def test_campaign_score_is_bounded_and_diagnostic_metrics_do_not_award_points():
     campaign = load_catalog('campaign')[0]['evals'][0]
     plan = campaign['scoring_plan']
-    assert plan['status'] == 'proposed-not-runtime-scoring'
+    assert plan['status'] == 'runtime-scoring'
+    assert plan['version'] == 'campaign-progress-v2'
     assert sum(m['points'] for m in campaign['milestones']) == plan['maximum_points'] == 1000
+    assert {group['id'] for group in plan['groups']} == {m['group'] for m in campaign['milestones']}
     for group in plan['groups']:
         milestones = [m for m in campaign['milestones'] if m['group'] == group['id']]
         assert len(milestones) == group['count']
         assert sum(m['points'] for m in milestones) == group['points']
     assert all(m['points'] == 0 for m in campaign['run_metrics'])
-    assert sum(m['points'] for m in campaign['milestones'] if m['group'] in ('badges', 'elite', 'champion')) == 800
+    assert sum(m['points'] for m in campaign['milestones'] if m['group'] in ('badges', 'elite', 'champion')) == 540
+    assert sum(m['points'] for m in campaign['milestones'] if m['group'] == 'areas') == 200
+
+
+def test_published_long_runs_keep_the_pinned_v1_definition():
+    from pokeagent_bench.campaign_runtime import V1, VERSION, campaign_definition
+    from pokeagent_bench.core import digest, encoded
+    from pokeagent_bench.evaluation_catalog import validate_run_spec
+    # The digest every published Long run recorded in its manifest.
+    published = '1b479e4ab14965293cb37c3094778d3cdb4972b7a7b0c7a62bfcbb119bfb69c3'
+    assert digest(encoded(campaign_definition(V1))) == published
+    assert digest(encoded(campaign_definition(VERSION))) == digest(encoded(load_catalog('campaign')[0]['evals'][0]))
+    manifest = {'evaluation_spec_sha256': published, 'scenario': {'task_id': 'campaign-full-game'},
+                'scoring_protocol': V1}
+    validate_run_spec(manifest)
+    with pytest.raises(ValueError, match='changed'):
+        validate_run_spec({**manifest, 'scoring_protocol': VERSION})
+    with pytest.raises(ValueError, match='Unsupported'):
+        validate_run_spec({**manifest, 'scoring_protocol': 'campaign-progress-v0'})
+    assert all(path.name != 'history' for path in catalog_files())
 
 
 def test_cleanup_keeps_quests_distinct_and_inventory_variant_manual():
