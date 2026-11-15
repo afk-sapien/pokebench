@@ -103,6 +103,29 @@ def test_long_rows_carry_their_harness_version(tmp_path):
     assert long_row(tmp_path / 'long-v065-sonnet', tmp_path, 'sonnet')['pair_blocks'] == {'pair': 246, 'blocked': 434}
 
 
+def test_long_rows_show_the_stored_v2_rescore(tmp_path):
+    root = tmp_path / 'long-run'
+    (root / 'run').mkdir(parents=True)
+    badge = {'id': 'badge:boulder', 'label': 'Earn the Boulder Badge from Brock', 'decision': 40, 'points': 50}
+    (root / 'run/result.json').write_text(json.dumps({'state': 'finished', 'score': 50, 'achievements': [badge]}))
+    events = [{'kind': 'milestone', 'id': 'area:viridian-forest', 'label': 'Enter Viridian Forest', 'decision': 12,
+               'points': 8, 'tokens': 9},
+              {'kind': 'profile', 'id': 'start'},
+              {'kind': 'milestone', 'id': 'badge:boulder', 'label': 'Earn the Boulder Badge from Brock', 'decision': 40,
+               'points': 40, 'tokens': 30}]
+    rescore = {'run': 'long-run', 'recorded_score': 50, 'score': 48, 'campaign': {'events': events}}
+    (root / 'campaign-progress-v2.json').write_text(json.dumps(rescore))
+    row = long_row(root, tmp_path, 'opus')
+    assert row['score'] == 48 and row['badges'] == 1
+    assert row['milestones'] == [{'label': 'Enter Viridian Forest', 'decision': 12, 'points': 8, 'id': 'area:viridian-forest'},
+                                 {'label': 'Earn the Boulder Badge from Brock', 'decision': 40, 'points': 40,
+                                  'id': 'badge:boulder'}]
+    # A rescore of a different recording must not replace this run's numbers.
+    (root / 'campaign-progress-v2.json').write_text(json.dumps({**rescore, 'recorded_score': 45}))
+    with pytest.raises(ValueError, match='does not match'):
+        long_row(root, tmp_path, 'opus')
+
+
 def test_cells_are_labeled_from_their_own_records(tmp_path):
     from pokeagent_bench.showcase import END_LINE, current_spec
     task = 'navigation-branching-cave'
@@ -219,3 +242,6 @@ def test_public_page_states_the_scoring_change(tmp_path):
     assert '14 November 2026' in note
     assert all(name in note for name in ('navigation', 'battles', 'menus', 'quests', 'preparation', 'Pikachu'))
     assert 'four categories equally' in page and 'Preparation' not in page
+    long_note = page.split('<p id="long-scoring-change" class="small">')[1].split('</p>')[0]
+    assert long_note.count('.') == 1 and long_note.endswith('.')
+    assert all(part in long_note for part in ('14 November 2026', '75 milestones', 'same recorded runs', 'no new model calls'))

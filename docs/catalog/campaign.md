@@ -119,7 +119,7 @@ Capture counts come from successful wild capture events, including captures sent
 - **campaign-progress-v2** (current): adds the 25 dungeon and route milestones. To keep the 1000-point total, it moves weight from the badges (50 to 40 each), the Elite Four (50 to 35 each) and the Champion (200 to 80). Story milestones rise from 5 to 8 points each.
 - **campaign-progress-v1**: 50 milestones. The definition is pinned in `src/pokeagent_bench/catalogs/history/campaign-v1.json`. Every run recorded under v1 replays and verifies against that file, so its recorded score never changes.
 
-`scripts/rescore_long.py` replays a stored v1 run's exact inputs, without model calls, and scores the same frames under v2. Every shared milestone must land on its recorded frame, decision, tokens and action count, or the script stops. It writes `campaign-progress-v2.json` beside the run folder. That file is not part of the verified run, and publishing v2 numbers is a separate decision.
+`scripts/rescore_long.py` replays a stored v1 run's exact inputs, without model calls, and scores the same frames under v2. Every shared milestone must land on its recorded frame, decision, tokens and action count, or the script stops. It writes `campaign-progress-v2.json` beside the run folder. That file is not part of the verified run. Since 14 November 2026 the public Long table shows these v2 scores and milestones.
 
 ## Holistic run profile
 
