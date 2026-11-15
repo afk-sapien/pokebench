@@ -1,12 +1,12 @@
 # Five-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **45 primary tasks and one inventory variant** across five
-categories: 10 navigation, 14 battle, 10 operations plus one variant, 10 quests and one campaign. Every task case has a checked starting save and a runtime
-evaluator. The eight [milestone tasks](#milestone-tasks) join the local fixture pack
+Across both benchmarks, the catalog has **44 primary tasks and one inventory variant** across five
+categories: 10 navigation, 14 battle, 10 operations plus one variant, 9 quests and one campaign. Every task case has a checked starting save and a runtime
+evaluator. The seven [milestone tasks](#milestone-tasks) join the local fixture pack
 with the next harness version. Difficulty remains provisional until model trials.
 Historical results and the old fixture set remain available.
 
-**PokeBench** contains the 44 focused tasks and one inventory variant in four
+**PokeBench** contains the 43 focused tasks and one inventory variant in four
 categories. Its score averages them equally: navigation, battle, operations and
 quests. The 10 preparation tasks left Short on 14 November 2026. Their stored
 attempts stay in the run data, but no report or page reads them. **PokeBench Long** contains only the continuous campaign. They use
@@ -36,7 +36,7 @@ links and records. The portal calls this category Quests, and the CLI also accep
 
 ## Milestone tasks
 
-Eight Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
+Seven Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
 its usual category and weighs the same as any other task in that category's average.
 
 Each one lists ordered milestones in its catalog entry, for example the floors of a
@@ -63,7 +63,6 @@ is 15,000 tokens per allowed decision. No model has run these tasks yet.
 | [Defeat the Elite Four and the Champion with no items](battle.md#defeat-the-elite-four-and-the-champion-with-no-items) | Battle | Lorelei's room, empty bag, six level 56 Pokemon | 5 | 100 | 500 |
 | [Cross Mt. Moon to Cerulean City with an underleveled party](battle.md#cross-mt-moon-to-cerulean-city-with-an-underleveled-party) | Battle | Mt. Moon Pokemon Center, two level 5 Pokemon, 2 Potions, wild encounters on | 4 | 109 | 550 |
 | [Find the Secret Key in the Pokemon Mansion and win the Volcano Badge](objectives.md#find-the-secret-key-in-the-pokemon-mansion-and-win-the-volcano-badge) | Quests | Cinnabar Pokemon Center, Mansion switch off, gym locked, two Pokemon near level 47 | 5 | 202 | 1,000 |
-| [Take the Silph Scope from the Rocket Hideout and rescue Mr. Fuji for the Poke Flute](objectives.md#take-the-silph-scope-from-the-rocket-hideout-and-rescue-mr-fuji-for-the-poke-flute) | Quests | Lavender Pokemon Center, Hideout unfound, Mr. Fuji held, Kadabra and Wartortle level 35 | 7 | 405 | 2,000 |
 
 Published rows keep the harness version and task set they were run on. Each row averages
 only the tasks its version ran, so these tasks count only on rows run on a version that
@@ -125,7 +124,7 @@ remain pending. Existing results stay visible with their recorded conditions.
 ## Visual catalog
 
 Open `catalog.html` from the results page's Task catalog link to browse all five
-categories, search the 46 specifications and expand their goals, controls and
+categories, search the 45 specifications and expand their goals, controls and
 remaining work. Category and task URLs can be bookmarked. Planned specifications
 are not reported as completed evaluations or assigned historical scores.
 
@@ -225,3 +224,12 @@ column are gone. Stored preparation attempts stay on disk. Reports, the analysis
 page and the site skip them. Ranked scores and rank order did not change, because
 preparation was never part of the ranked score. Each published model now counts
 39 planned starts instead of 49.
+
+## The Poke Flute milestone task is retired, 14 November 2026
+
+`objectives-poke-flute` chained the Rocket Hideout and the Pokemon Tower rescue. Both
+halves are already Short quests, `objectives-quest-trainer` and
+`objectives-prerequisite-chain`, so it scored the same skills twice. Its cap of 2,000
+decisions and 30M tokens was also the size of a whole Long run. No model ran it. Its
+definition, start recipe and reference script stay for history. Short now has seven
+milestone tasks and nine quests.

@@ -7,7 +7,7 @@ from pokeagent_bench import navigation_conditions
 TOKENS_PER_DECISION = 15_000
 SHIPPED = {'navigation-victory-road', 'navigation-seafoam-islands', 'navigation-silph-co',
            'navigation-pewter-to-lavender', 'battle-elite-four-no-items', 'battle-mt-moon-underleveled',
-           'objectives-cinnabar-gym', 'objectives-poke-flute'}
+           'objectives-cinnabar-gym'}
 
 
 def shipped():
@@ -125,13 +125,10 @@ def test_cinnabar_gym_milestones_follow_the_mansion_key_and_the_gym():
     assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED
 
 
-def test_poke_flute_milestones_follow_the_hideout_then_the_tower():
-    task = shipped()['objectives-poke-flute']
+def test_poke_flute_is_retired_but_keeps_its_definition():
+    # Its Hideout and Tower halves are already the quest-trainer and prerequisite-chain tasks.
+    assert 'objectives-poke-flute' not in shipped()
+    assert 'objectives-poke-flute' in catalog.retired_tasks()
+    task = catalog.task_definition('objectives-poke-flute')
     assert [row['id'] for row in task['milestones']] == [
         'rocket-hideout', 'lift-key', 'hideout-giovanni', 'silph-scope', 'ghost-marowak', 'mr-fuji', 'poke-flute']
-    # Hideout B1F is map 199. LIFT_KEY is item 0x4A, SILPH_SCOPE 0x48 and POKE_FLUTE 0x49.
-    assert task['milestones'][0]['check'] == {'map': 199}
-    assert [task['milestones'][i]['check'] for i in (1, 3, 6)] == [{'item': 74}, {'item': 72}, {'item': 73}]
-    # EVENT_BEAT_ROCKET_HIDEOUT_GIOVANNI, EVENT_BEAT_GHOST_MAROWAK and EVENT_RESCUED_MR_FUJI.
-    assert [task['milestones'][i]['check'] for i in (2, 4, 5)] == [{'event': 1703}, {'event': 271}, {'event': 1231}]
-    assert 'navigation_condition' not in task and task['id'] not in navigation_conditions.AFFECTED

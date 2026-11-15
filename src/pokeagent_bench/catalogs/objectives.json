@@ -664,7 +664,9 @@
             "item": 73
           }
         }
-      ]
+      ],
+      "active": false,
+      "retirement_reason": "Retired before any model ran it. Its two halves are already Short tasks, the Rocket Hideout in objectives-quest-trainer and the Tower rescue in objectives-prerequisite-chain, and the combined run needed a cap the size of a Long run. Retained only for historical references."
     }
   ]
 }
