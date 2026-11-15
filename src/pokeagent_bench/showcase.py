@@ -219,11 +219,22 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
                                      [m for m in models if m['id'] not in submitted])}
 
 
+def rescored(root, result):
+    """The score and milestones under the current Long protocol, from the stored exact replay of the run."""
+    path = root / 'campaign-progress-v2.json'
+    if not path.exists():
+        return result.get('score', 0), result.get('achievements', [])
+    rescore = load(path)
+    if rescore['run'] != root.name or rescore['recorded_score'] != result.get('score'):
+        raise ValueError(f'{path} does not match the recorded run')
+    return rescore['score'], [e for e in rescore['campaign']['events'] if e['kind'] == 'milestone']
+
+
 def long_row(root, web, name, decision_limit=2000):
     result = load(root / 'run/result.json') if (root / 'run/result.json').exists() else {'state': 'queued'}
     pilot = load(root / 'pilot.json') if (root / 'pilot.json').exists() else {}
     usage = result.get('usage', {})
-    achievements = result.get('achievements', [])
+    score, achievements = rescored(root, result)
     manifest = load(root / 'run/manifest.json') if (root / 'run/manifest.json').exists() else {}
     cost = run_cost(root / 'run', manifest.get('agent', {}).get('model'))
     replay = existing_link(web, f'{root.name}-replay.html')
@@ -235,7 +246,7 @@ def long_row(root, web, name, decision_limit=2000):
             'harness': manifest.get('benchmark'),
             'run_id': root.name, 'decision_limit': decision_limit,
             'token_limit': pilot.get('token_limit', 30000000), 'cost': cost,
-            'report': existing_link(web, f'{root.name}.html'), 'score': result.get('score', 0),
+            'report': existing_link(web, f'{root.name}.html'), 'score': score,
             'maximum': 1000, 'badges': sum(a['id'].startswith('badge:') for a in achievements),
             'state': result['state'], 'stop_reason': result.get('stop_reason'),
             'decisions': usage.get('calls', 0),
