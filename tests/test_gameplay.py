@@ -430,20 +430,44 @@ def test_local_map_draws_walkable_tiles_as_floor_even_when_they_share_a_water_id
     assert pair_view(memory(), cat, {(6, 4): 0x32})['rows'][4][6] == '.'
 
 
-# The ROM ledge table: overworld tiles 0x36 and 0x37 hop down, 0x27 left, 0x0D and 0x1D right.
-@pytest.mark.parametrize('tile, mark', [(0x36, 'v'), (0x37, 'v'), (0x27, '<'), (0x0D, '>'), (0x1D, '>')])
-def test_local_map_marks_overworld_ledges_with_their_hop_direction(tile, mark):
+# The ROM ledge table: ledge tile, the tile of the square the player hops from, and the hop direction.
+LEDGE_HOPS = [(0x37, 0x2C, 'v'), (0x36, 0x39, 'v'), (0x37, 0x39, 'v'), (0x27, 0x2C, '<'), (0x27, 0x39, '<'),
+              (0x0D, 0x2C, '>'), (0x1D, 0x2C, '>'), (0x0D, 0x39, '>')]
+BEHIND = {'v': (6, 3), '<': (7, 4), '>': (5, 4)}
+
+
+@pytest.mark.parametrize('tile, stand, mark', LEDGE_HOPS)
+def test_local_map_marks_overworld_ledges_with_their_hop_direction(tile, stand, mark):
     cat = catalog()
     cat['world']['0']['tileset'] = 'OVERWORLD'
-    view = pair_view(memory(), cat, {(6, 4): tile})
+    view = pair_view(memory(), cat, {(6, 4): tile, BEHIND[mark]: stand})
     assert view['rows'][4][6] == mark
     assert view['legend']['v < >'] == ("ledge. Walking onto it in the arrow's direction hops over it. "
                                        "Other directions are blocked")
     assert '^ v < >' not in view['legend']
     # Only the overworld tileset draws these tiles as ledges.
     cat['world']['0']['tileset'] = 'FOREST'
-    other = pair_view(memory(), cat, {(6, 4): tile})
+    other = pair_view(memory(), cat, {(6, 4): tile, BEHIND[mark]: stand})
     assert other['rows'][4][6] == '#' and 'v < >' not in other['legend']
+
+
+@pytest.mark.parametrize('tile, stand, mark', [(0x36, 0x2C, 'v'), (0x1D, 0x39, '>'), (0x37, 0x11, 'v'),
+                                               (0x27, 0x60, '<')])
+def test_local_map_keeps_ledge_tiles_blocked_where_no_hop_starts(tile, stand, mark):
+    # The same tiles draw tree and cliff edges. Without a paired square behind them they cannot be hopped.
+    cat = catalog()
+    cat['world']['0']['tileset'] = 'OVERWORLD'
+    view = pair_view(memory(), cat, {(6, 4): tile, BEHIND[mark]: stand})
+    assert view['rows'][4][6] == '#' and 'v < >' not in view['legend']
+
+
+def test_local_map_leaves_a_ledge_blocked_when_the_square_behind_is_off_screen():
+    # Seen from its landing side, a ledge is blocked. Here the hop square is above the top row.
+    cat = catalog()
+    cat['world']['0']['tileset'] = 'OVERWORLD'
+    view = pair_view(memory(), cat, {(6, 0): 0x37, (6, 1): 0x37, (6, 2): 0x2C, (0, 4): 0x0D, (9, 4): 0x27})
+    assert view['rows'][0][6] == '#' and view['rows'][1][6] == '#'
+    assert view['rows'][4][0] == '#' and view['rows'][4][9] == '#'
 
 
 def test_local_map_lists_floor_arrows_only_on_tilesets_that_draw_them():
@@ -458,12 +482,21 @@ def test_local_map_lists_floor_arrows_only_on_tilesets_that_draw_them():
 
 
 def test_local_map_marks_the_mansion_3f_floor_gap_as_a_hole():
-    # Mansion 3F draws its broken floor as tile 0x11. Its script drops the player from some gap squares.
-    view = door_view(215, 'FACILITY', {(6, 4): 0x11, (2, 4): 0x60})
+    # Mansion 3F draws its broken floor and its border as tile 0x11. Its script drops the player from some
+    # gap squares. The border lies outside the map, here 4 blocks of 2 squares each way, and is blocked.
+    cat = catalog()
+    cat['world']['0']['passable'] = [1, 0x11]
+    for map_id in (215, 214):
+        cat['world'][str(map_id)] = dict(cat['world']['0'], tileset='FACILITY')
+    mem = memory()
+    mem[0xD35E], mem[0xD368], mem[0xD369] = 215, 4, 4
+    view = pair_view(mem, cat, {(6, 4): 0x11, (8, 4): 0x11, (6, 8): 0x11, (2, 4): 0x60})
     assert view['rows'][4][6] == 'o' and view['rows'][4][2] == '#'
+    assert view['rows'][4][8] == '#' and view['rows'][8][6] == '#'
     assert view['legend']['o'] == 'visible gap in the floor. Some gap squares drop you to a lower floor'
-    other = door_view(214, 'FACILITY', {(6, 4): 0x11})
-    assert other['rows'][4][6] == '#' and 'o' not in other['legend']
+    mem[0xD35E] = 214
+    other = pair_view(mem, cat, {})
+    assert other['rows'][4][6] == '.' and 'o' not in other['legend']
 
 
 def test_readable_context_keeps_legend_glyphs_as_they_are():

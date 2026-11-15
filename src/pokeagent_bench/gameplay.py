@@ -78,15 +78,23 @@ CUT_TREE_TILES = {"OVERWORLD": 0x3D, "GYM": 0x50}
 CUT_TREE_LEGEND = "small tree. Blocked, Cut clears it"
 # Ledges (HandleLedges and its LedgeTiles table, read from the ROM): in the overworld tileset the player
 # hops a square whose bottom-left tile is 0x36 or 0x37 going down, 0x27 going left, or 0x0D or 0x1D
-# going right. The game checks only that tile and the tile under the player, so the mark follows it.
+# going right, when the bottom-left tile of the square the player stands on is paired with it below.
+# The same tiles also draw tree and cliff edges with no such square behind them, about half of all uses.
+# So a square is marked only when the square behind it is on screen and its tile is paired. A ledge whose
+# square behind is off screen is seen from its landing side, where it is blocked.
 LEDGE_TILES = {0x36: "v", 0x37: "v", 0x27: "<", 0x0D: ">", 0x1D: ">"}
+LEDGE_STANDS = {0x36: {0x39}, 0x37: {0x2C, 0x39}, 0x27: {0x2C, 0x39}, 0x0D: {0x2C, 0x39}, 0x1D: {0x2C}}
+LEDGE_STEPS = {"v": (0, 1), "<": (-1, 0), ">": (1, 0)}
 LEDGE_LEGEND = "ledge. Walking onto it in the arrow's direction hops over it. Other directions are blocked"
 # Only these tilesets draw floor arrows, so only their maps list the arrow glyphs.
 ARROW_TILESETS = frozenset({"FACILITY", "GYM"})
 # Pokemon Mansion 3F draws its broken floor as tile 0x11, a gray gap. Its script drops the player to a
-# lower floor from some of those squares, so the gap is marked like a hole.
+# lower floor from some of those squares, so the gap is marked like a hole. The map border uses the same
+# tile and is never entered, so squares outside the map (wCurMapHeight and wCurMapWidth, in blocks of two
+# squares) are blocked.
 MANSION_3F = 215
 MANSION_GAP_TILE = 0x11
+W_CUR_MAP_HEIGHT, W_CUR_MAP_WIDTH = 0xD368, 0xD369
 MANSION_GAP_LEGEND = "visible gap in the floor. Some gap squares drop you to a lower floor"
 HOLE_LEGEND = "visible hole in the floor"
 # wMapPalOffset is nonzero in a dark cave until Flash. The game then draws the background nearly
@@ -266,23 +274,33 @@ def local_map(memory, catalog, ui):
              "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
     if world.get("tileset") in CUT_TREE_TILES:
         marks = {**marks, CUT_TREE_TILES[world["tileset"]]: "T"}
-    if world.get("tileset") == "OVERWORLD":
-        marks = {**marks, **LEDGE_TILES}
-    if memory[W_CUR_MAP] == MANSION_3F:
-        marks = {**marks, MANSION_GAP_TILE: "o"}
     if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS | GATE_MAPS | HIDEOUT_DOOR_MAPS:
         marks = {**marks, 0x18: "D", 0x24: "D", **({0x5E: "D"} if memory[W_CUR_MAP] == SILPH_CO_11F else {})}
     floors = world.get("pair_floors", {})
     water = WATER_TILES.get(world.get("tileset"), set())
+    ledges = world.get("tileset") == "OVERWORLD"
+    mansion = memory[W_CUR_MAP] == MANSION_3F
+    width, height = 2 * memory[W_CUR_MAP_WIDTH], 2 * memory[W_CUR_MAP_HEIGHT]
 
-    def glyph(tile):
+    def tile_at(col, row):
+        return tiles[(2 * row + 1) * 20 + 2 * col] if 0 <= col < 10 and 0 <= row < 9 else None
+
+    def glyph(col, row):
+        tile = tile_at(col, row)
+        if ledges and tile in LEDGE_TILES:
+            mark = LEDGE_TILES[tile]
+            dx, dy = LEDGE_STEPS[mark]
+            if tile_at(col - dx, row - dy) in LEDGE_STANDS[tile]:
+                return mark
+        if mansion and tile == MANSION_GAP_TILE:
+            return "o" if 0 <= left + col < width and 0 <= top + row < height else "#"
         if tile in marks:
             return marks[tile]
         if tile in world["passable"]:
             return floors.get(tile, ".")
         return "~" if tile in water else "#"
     # Read only on-screen graphics. Never include scripted paths or destinations.
-    grid = [[glyph(tiles[(2 * row + 1) * 20 + 2 * col]) for col in range(10)] for row in range(9)]
+    grid = [[glyph(col, row) for col in range(10)] for row in range(9)]
     objects = []
     def inside(px, py):
         return left <= px < left + 10 and top <= py < top + 9
