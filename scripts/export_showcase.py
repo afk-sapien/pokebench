@@ -7,10 +7,11 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--data', required=True)
 parser.add_argument('--web', required=True)
 parser.add_argument('--watch', action='store_true')
+parser.add_argument('--sources', help='Rerun source map to use instead of the checked-in showcase_sources/rerun-sources.json')
 args = parser.parse_args()
 first = True
 while True:
-    result = export(args.data, args.web, install=first)
+    result = export(args.data, args.web, install=first, sources=args.sources)
     first = False
     print(result['updated_at'], result['short']['finished'], '/', result['short']['planned'], flush=True)
     if not args.watch or (result['short']['finished'] == result['short']['planned']

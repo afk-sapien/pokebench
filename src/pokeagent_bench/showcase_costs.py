@@ -143,8 +143,12 @@ def sum_cost(rows):
             'priced': len(costs), 'planned': len(rows)}
 
 
-def comparison(cells, models):
-    """Compare equal category/group weights over the shared completed starts."""
+def comparison(cells, models, shared=None):
+    """Compare equal category/group weights over the shared completed starts.
+
+    shared is a stored set of (task, variant) starts. Without it, the starts every model completed are used.
+    A model that lacks a stored start is compared on the stored starts it has, and its row says how many.
+    """
     grouped = {m['id']: {} for m in models}
     for cell in cells:
         key = (cell['task_id'], cell.get('variant'))
@@ -152,10 +156,11 @@ def comparison(cells, models):
             continue
         if cell['state'] == 'finished' and cell.get('value') is not None and cell.get('cost', {}).get('low') is not None:
             grouped[cell['model']][key] = cell
-    shared = set.intersection(*(set(g) for g in grouped.values())) if grouped else set()
+    if shared is None:
+        shared = set.intersection(*(set(g) for g in grouped.values())) if grouped else set()
     output = []
     for model in models:
-        rows = [grouped[model['id']][k] for k in sorted(shared)]
+        rows = [grouped[model['id']][k] for k in sorted(shared) if k in grouped[model['id']]]
         groups = defaultdict(list)
         for row in rows:
             groups[(row['category'], row.get('score_group', row['task_id']))].append(row)

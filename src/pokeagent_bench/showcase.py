@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import sys
 
 from .benchmark_tracks import UNRANKED_CATEGORIES
 from .core import digest, encoded
@@ -20,6 +21,12 @@ ASSETS = ('showcase.css', 'showcase-stats.js', 'showcase.js')
 CELL_FIELDS = ('id', 'task_id', 'category', 'score_group', 'model', 'variant', 'mode',
                'state', 'value', 'tokens', 'decisions', 'stop_reason', 'decision_limit',
                'token_limit', 'evaluation_spec_sha256', 'fixture_sha256')
+# Checked-in inputs: which models have a new v0.37 source, the v0.37 Short task list, and the sets frozen before any swap.
+SOURCES = Path(__file__).with_name('showcase_sources')
+RERUN_FORMAT = 'pokebench-rerun-sources-v1'
+RERUN_REVISION = 'v0.37 rerun'
+LONG_NAMES = {'claude-opus-5-5': 'opus', 'gpt-5.6-sol': 'sol', 'claude-sonnet-5-5': 'sonnet', 'gpt-5.6-terra': 'terra',
+              'gpt-6-astra': 'astra', 'claude-fable-5-1': 'fable', 'gpt-5.6-luna': 'luna', 'claude-haiku-5-5': 'haiku'}
 
 
 def load(path):
@@ -93,15 +100,21 @@ def current_spec(task_id):
         return None
 
 
-def label_cells(cells):
-    """Note each attempt that ran under conditions the current version no longer uses. Scores are unchanged."""
-    specs = {task: current_spec(task) for task in {c['task_id'] for c in cells}}
-    starts = defaultdict(set)
+def label_cells(cells, specs=None, starts=None):
+    """Note each attempt that ran under conditions the current version no longer uses. Scores are unchanged.
+
+    specs maps a task to its current definition hash and starts maps (task, variant) to its current start hashes.
+    Without them, specs come from the catalog and starts from the cells that ran the current definition.
+    """
+    if specs is None:
+        specs = {task: current_spec(task) for task in {c['task_id'] for c in cells}}
+    if starts is None:
+        starts = defaultdict(set)
+        for c in cells:
+            if c.get('fixture_sha256') and c.get('evaluation_spec_sha256') == specs[c['task_id']]:
+                starts[c['task_id'], c.get('variant')].add(c['fixture_sha256'])
     for c in cells:
-        if c.get('fixture_sha256') and c.get('evaluation_spec_sha256') == specs[c['task_id']]:
-            starts[c['task_id'], c.get('variant')].add(c['fixture_sha256'])
-    for c in cells:
-        spec, start = specs[c['task_id']], starts.get((c['task_id'], c.get('variant')), set())
+        spec, start = specs.get(c['task_id']), starts.get((c['task_id'], c.get('variant')), set())
         c['labels'] = [code for code, applies in (
             ('earlier_spec', not c['retired'] and spec is not None and c.get('evaluation_spec_sha256') not in (None, spec)),
             ('earlier_start', len(start) == 1 and c.get('fixture_sha256') not in (None, *start)),
@@ -142,9 +155,52 @@ def community_reports(web):
     return [r for r in reports if r.get('format') == REPORT_FORMAT and r.get('verified') is True and r.get('suite') == 'short']
 
 
-def short_snapshot(source, web, extra=None, base=None, community=()):
+def suite_hashes(suite):
+    """The definition hash per task and the start hash per (task, variant) of a stored Short suite."""
+    specs = {t['id']: t['evaluation_spec_sha256'] for t in suite['tasks']}
+    starts = {(t['id'], v['variant']): {v['fixture_sha256']} for t in suite['tasks'] for v in t['variants']}
+    return specs, starts
+
+
+def frozen_sets(frozen):
+    """The stored cost comparison starts and the stored start hashes for the earlier start label."""
+    return ({tuple(key) for key in frozen['comparison_starts']},
+            {(task, variant): set(hashes) for task, variant, hashes in frozen['current_starts']})
+
+
+def freeze(short):
+    """The comparison starts and start hashes of a built Short panel with no rerun, as frozen.json stores them."""
+    official = {m['id'] for m in short['models'] if 'community' not in m}
+    grouped = {m: set() for m in official}
+    for c in short['cells']:
+        if (c['model'] in official and not c['retired'] and c['category'] not in UNRANKED_CATEGORIES
+                and c['state'] == 'finished' and c.get('value') is not None and c.get('cost', {}).get('low') is not None):
+            grouped[c['model']].add((c['task_id'], c.get('variant')))
+    shared = set.intersection(*grouped.values()) if grouped else set()
+    specs = {task: current_spec(task) for task in {c['task_id'] for c in short['cells']}}
+    starts = defaultdict(set)
+    for c in short['cells']:
+        if c.get('fixture_sha256') and c.get('evaluation_spec_sha256') == specs[c['task_id']]:
+            starts[c['task_id'], c.get('variant')].add(c['fixture_sha256'])
+    def order(key):
+        return key[0], key[1] or ''
+    return {'comparison_starts': [list(k) for k in sorted(shared, key=order)],
+            'current_starts': [[t, v, sorted(h)] for (t, v), h in sorted(starts.items(), key=lambda kv: order(kv[0]))]}
+
+
+def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None, frozen=None, suite=None):
+    """Build the Short panel.
+
+    reruns maps a model to an adopted v0.37 batch, as {'folder', 'web', 'cells'}. Its cells replace every
+    earlier cell of that model and are never merged with them. frozen holds the stored comparison starts and
+    start hashes, so a swap moves no other row. suite is the stored v0.37 Short suite that adopted rows ran.
+    """
+    reruns = reruns or {}
+    shared, frozen_starts = frozen_sets(frozen) if frozen else (None, None)
     cells = []
     for row in source['cells']:
+        if row['model'] in reruns:
+            continue
         clean = {k: row.get(k) for k in CELL_FIELDS}
         clean['replay'] = existing_link(web, row.get('replay'))
         clean['revision'] = 'Original pass'
@@ -157,6 +213,8 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
     extras = extra if isinstance(extra, list) else [extra] if extra else []
     for batch in extras:
         for row in batch['cells']:
+            if row['model'] in reruns:
+                continue
             clean = {k: row.get(k) for k in CELL_FIELDS}
             revision = row.get('attempt_revision', 'v066-astra')
             clean['replay'] = existing_link(web, f"{batch.get('web_prefix', 'main-v066-astra')}/replays/focused-{revision}-{row['id']}.html")
@@ -167,6 +225,23 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
                 clean['harness'] = harness_tag(base / batch['web_prefix'] / row['id'])
                 clean.update(cell_facts(base / batch['web_prefix'] / row['id']))
             cells.append(clean)
+    fresh = []
+    for model, swap in reruns.items():
+        for row in swap['cells']:
+            clean = {k: row.get(k) for k in CELL_FIELDS}
+            # The same replay name the catalog pass writes under its web folder.
+            revision = row.get('attempt_revision') or ('v057' if row.get('replacement_condition') else 'v056')
+            clean['replay'] = existing_link(web, f"{swap['web']}/replays/focused-{revision}-{row['id']}.html")
+            clean['revision'] = RERUN_REVISION
+            clean['source'] = swap['folder']
+            clean['harness_fault'] = HARNESS_FAULTS.get(f"{swap['folder']}/{row['id']}")
+            if base is not None:
+                run = base / swap['folder'] / row['id']
+                clean['cost'] = run_cost(run, model, row.get('tokens'))
+                clean['harness'] = harness_tag(run)
+                clean.update(cell_facts(run))
+            fresh.append(clean)
+    cells += fresh
     submitted = {}
     for entry in community:
         name = f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
@@ -182,7 +257,10 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
     # Retired attempts stay visible for history, but they are not scored or counted as planned.
     for cell in cells:
         cell['retired'] = cell['task_id'] in retired
-    label_cells(cells)
+    adopted = {id(c) for c in fresh}
+    label_cells([c for c in cells if id(c) not in adopted], starts=frozen_starts)
+    if fresh:
+        label_cells(fresh, *suite_hashes(suite))
     scored = [c for c in cells if not c['retired']]
     by_model = defaultdict(list)
     for cell in cells:
@@ -200,6 +278,9 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
                        'cost': sum_cost(rows), 'harness': harness_summary(rows),
                        'errors': sum(r['state'] == 'evaluation_error' for r in counted),
                        'labels': dict(Counter(code for r in counted for code in r['labels']))})
+        if name in reruns:
+            models[-1]['suite'] = {'benchmark': suite['benchmark'], 'tasks': len(suite['tasks']),
+                                   'source': reruns[name]['folder']}
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = []
     for t in source['tasks']:
@@ -208,15 +289,32 @@ def short_snapshot(source, web, extra=None, base=None, community=()):
         if task['retired']:
             task['retirement_reason'] = task_definition(t['id']).get('retirement_reason')
         tasks.append(task)
+    if reruns:
+        # Union of both task sets. Tasks only the stored suite has come from it, since this catalog lacks them.
+        known = {t['id'] for t in tasks}
+        for t in suite['tasks']:
+            if t['id'] not in known:
+                task = {k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
+                task.update(retired=t['id'] in retired, suite=suite['benchmark'])
+                if t.get('milestones'):
+                    task['milestones'] = t['milestones']
+                tasks.append(task)
+        order = list(source['categories'])
+        tasks.sort(key=lambda t: order.index(t['category']) if t['category'] in order else len(order))
+    log = []
+    if base is not None:
+        batches = ['focused-pass-v056'] + [b['web_prefix'] for b in extras]
+        log = [e for e in attempts_log(base, batches) if e['model'] not in reruns]
+        for model, swap in reruns.items():
+            log += [e for e in attempts_log(base, [swap['folder']]) if e['model'] == model]
     return {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
             'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
             'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
             'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
             'label_text': {code: {'label': label, 'detail': detail} for code, (label, detail) in NOTES.items()},
-            'attempts': {'rule': RETRY_RULE, 'log': attempts_log(base, ['focused-pass-v056'] + [b['web_prefix'] for b in extras])
-                         if base is not None else []},
+            'attempts': {'rule': RETRY_RULE, 'log': log},
             'efficiency': comparison([c for c in scored if c['model'] not in submitted],
-                                     [m for m in models if m['id'] not in submitted])}
+                                     [m for m in models if m['id'] not in submitted], shared)}
 
 
 def rescored(root, result):
@@ -260,7 +358,9 @@ def long_row(root, web, name, decision_limit=2000):
             'pair_blocks': dict(zip(('pair', 'blocked'), LONG_PAIR_BLOCKS[root.name])) if root.name in LONG_PAIR_BLOCKS else None}
 
 
-def long_snapshot(base, web):
+def long_snapshot(base, web, reruns=None):
+    """Build the Long panel. reruns maps a row name to an adopted run folder that replaces that row's run."""
+    reruns = reruns or {}
     rows = []
     runs = [(name, f'long-v065-{name}') for name in ('opus', 'sol', 'sonnet', 'terra')]
     runs += [(name, f'long-v067-{name}') for name in ('astra', 'fable') if (base / f'long-v067-{name}/pilot.json').exists()]
@@ -268,21 +368,108 @@ def long_snapshot(base, web):
         runs.append(('luna', 'long-v069-luna'))
     if (base / 'long-v073-haiku/pilot.json').exists():
         runs.append(('haiku', 'long-v073-haiku'))
+    runs = [(name, reruns.get(name, run_id)) for name, run_id in runs]
+    runs += [(name, run_id) for name, run_id in reruns.items() if name not in {n for n, _ in runs}]
     extensions = defaultdict(list)
     for path in sorted(base.glob('long-*/continuation.json')):
         record = load(path)
         if record.get('protocol') == 'long-decision-boundaries-v1':
             extensions[record['origin_run_id']].append((path.parent, record['decision_limit']))
     for name, run_id in runs:
-        row = long_row(base / run_id, web, name)
+        if name in reruns:
+            # An adopted run states its own limits, and the stored ones describe only the earlier runs.
+            root = base / run_id
+            limits = load(root / 'run/manifest.json').get('limits', {})
+            row = long_row(root, web, name, limits.get('max_model_calls') or 2000)
+            if not (root / 'pilot.json').exists():
+                row['token_limit'] = limits.get('max_total_tokens') or row['token_limit']
+        else:
+            row = long_row(base / run_id, web, name)
         row['extensions'] = [long_row(root, web, name, limit)
                              for root, limit in sorted(extensions[run_id], key=lambda item: item[1])]
         rows.append(row)
     return sorted(rows, key=lambda r: -r['score'])
 
 
-def export(base, web, *, install=False):
+SUITE_FILE = 'short-red-v0.62.json'
+
+
+def inside(base, relative):
+    """The folder a source names, only when it is a folder below the data folder."""
+    base = Path(base).resolve()
+    path = (base / str(relative)).resolve()
+    return path if path.is_relative_to(base) and path != base and path.is_dir() else None
+
+
+def rerun_sources(path):
+    """Read the checked-in map from a model to its new Short batch and Long run."""
+    sources = load(path)
+    if sources.get('format') != RERUN_FORMAT:
+        raise ValueError(f'{path} is not a {RERUN_FORMAT} file')
+    for model, entry in sources.get('models', {}).items():
+        if not isinstance(entry, dict) or not set(entry) <= {'short', 'short_web', 'long', 'note'}:
+            raise ValueError(f'{path}: {model} may only name short, short_web, long and note')
+    return sources.get('models', {})
+
+
+def adopt_short(base, model, folder, suite):
+    """Return (cells, None) when a new batch finished every start of the stored suite for this model, else (None, why)."""
+    root = inside(base, folder)
+    if root is None:
+        return None, f'{folder} is not a folder under the data folder.'
+    if not (root / 'progress.json').exists():
+        return None, f'{folder} has no progress.json yet.'
+    rows = [c for c in load(root / 'progress.json').get('cells', []) if c.get('model') == model]
+    if not rows:
+        return None, f'{folder} has no cells for this model.'
+    states = Counter(c.get('state') for c in rows)
+    if states['finished'] != len(rows):
+        others = ', '.join(f'{n} {s}' for s, n in sorted(states.items(), key=lambda kv: str(kv[0])) if s != 'finished')
+        return None, f'{states["finished"]} of {len(rows)} cells finished ({others}).'
+    specs, starts = suite_hashes(suite)
+    keys = Counter((c.get('task_id'), c.get('variant')) for c in rows)
+    missing = sorted(set(starts) - set(keys), key=str)
+    unknown = sorted(set(keys) - set(starts), key=str)
+    repeated = sorted((k for k, n in keys.items() if n > 1), key=str)
+    if missing or unknown or repeated:
+        return None, (f'{len(keys)} of {len(starts)} {suite["benchmark"]} starts, with {len(missing)} missing, '
+                      f'{len(unknown)} not in the suite and {len(repeated)} repeated.')
+    for c in rows:
+        if c.get('evaluation_spec_sha256') != specs[c['task_id']] or c.get('fixture_sha256') not in starts[c['task_id'], c['variant']]:
+            return None, f'{c["id"]} ran a task definition or start that {SUITE_FILE} does not list. Regenerate it from the tag the batch ran.'
+        tag = harness_tag(root / c['id'])
+        if tag != suite['benchmark']:
+            return None, f'{c["id"]} recorded harness {tag}, not {suite["benchmark"]}.'
+    return rows, None
+
+
+def adopt_long(base, model, run_id, suite):
+    """Return (row name, None) when a new Long run finished for this model on the suite's release, else (None, why)."""
+    if model not in LONG_NAMES:
+        return None, 'this model has no Long row.'
+    root = inside(base, run_id)
+    if root is None:
+        return None, f'{run_id} is not a folder under the data folder.'
+    if not (root / 'run/result.json').exists() or not (root / 'run/manifest.json').exists():
+        return None, f'{run_id} has no result yet.'
+    state = load(root / 'run/result.json').get('state')
+    if state != 'finished':
+        return None, f'{run_id} is {state}, not finished.'
+    manifest = load(root / 'run/manifest.json')
+    if manifest.get('agent', {}).get('model') != model:
+        return None, f'{run_id} ran {manifest.get("agent", {}).get("model")}, not this model.'
+    release = suite['package'].rsplit('.', 1)[0] + '.'
+    if not str(manifest.get('package_version')).startswith(release):
+        return None, f'{run_id} ran package {manifest.get("package_version")}, not {release}x.'
+    return LONG_NAMES[model], None
+
+
+def build(base, web, *, sources=None, frozen=None, suite=None):
+    """Return the showcase data. A model keeps its earlier source unless its listed new source is complete."""
     base, web = Path(base), Path(web)
+    sources = rerun_sources(sources or SOURCES / 'rerun-sources.json')
+    frozen = load(frozen or SOURCES / 'frozen.json')
+    suite = load(suite or SOURCES / SUITE_FILE)
     source = load(web / 'focused-analysis.json')
     extra = []
     for folder in ('main-v066-astra', 'main-v067-fable'):
@@ -291,10 +478,30 @@ def export(base, web, *, install=False):
             batch = load(path)
             batch['web_prefix'] = folder
             extra.append(batch)
-    data = {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base, community_reports(web)), 'long': long_snapshot(base, web),
+    short, long = {}, {}
+    for model, entry in sources.items():
+        if entry.get('short'):
+            cells, why = adopt_short(base, model, entry['short'], suite)
+            if cells is None:
+                print(f'{model} Short: kept the old row. {why}', file=sys.stderr)
+            else:
+                short[model] = {'folder': entry['short'], 'web': entry.get('short_web', entry['short']), 'cells': cells}
+        if entry.get('long'):
+            name, why = adopt_long(base, model, entry['long'], suite)
+            if name is None:
+                print(f'{model} Long: kept the old row. {why}', file=sys.stderr)
+            else:
+                long[name] = entry['long']
+    return {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
+            'short': short_snapshot(source, web, extra, base, community_reports(web), short, frozen, suite),
+            'long': long_snapshot(base, web, long),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}
+
+
+def export(base, web, *, install=False, sources=None):
+    base, web = Path(base), Path(web)
+    data = build(base, web, sources=sources)
     text = json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n'
     temporary = web / 'showcase-data.json.tmp'
     temporary.write_text(text)
@@ -371,9 +578,11 @@ def export_public(web, output, *, report=None):
     if not report:
         page = page.replace('<a id="report-link" href="technical-report.pdf">Technical report ↗</a>', '')
         page = page.replace(' The technical report covers an earlier snapshot.', '')
-    hero = next((r for r in data['long'] if r['run_id'] == 'long-v065-opus'), None)
+    # The hero shows the Opus Long row, whichever run that row uses.
+    hero = next((r for r in data['long'] if r.get('id') == 'opus'), None)
     if hero and hero['replay'] and hero['image']:
         page = page.replace('href="long-v065-opus-replay.html"', f'href="{hero["replay"]}"').replace('src="long-v065-opus.png"', f'src="{hero["image"]}"')
+        page = page.replace('<span>2 badges.', f'<span>{hero["badges"]} badge{"" if hero["badges"] == 1 else "s"}.')
     (output / 'index.html').write_text(page)
     (output / '.nojekyll').write_text('')
     return data

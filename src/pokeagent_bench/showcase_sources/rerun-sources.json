@@ -1,0 +1,5 @@
+{
+ "format": "pokebench-rerun-sources-v1",
+ "note": "Maps a model id to its new v0.37.x source. short is a batch folder under the data folder whose progress.json comes from the catalog batch report. short_web is the folder under the site folder that holds its replays, and defaults to short. long is a Long run folder under the data folder. A new source replaces that model's old cells or Long run as a whole and is used only when it is complete. A model with no entry keeps its old source.",
+ "models": {}
+}

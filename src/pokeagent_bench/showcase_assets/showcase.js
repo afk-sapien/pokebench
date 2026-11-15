@@ -36,13 +36,37 @@ function stopText(r) {
   return ''
 }
 const unranked = c => (data.short.unranked_categories || []).includes(c)
-function renderWeights() {
+// A row's task set: the stored suite for a rerun row, else the earlier tasks its own attempts cover.
+const taskSet = m => m.suite ? `${m.suite.tasks}-task ${shortTag(m.suite.benchmark)}` : `${new Set(data.short.cells.filter(c => c.model === m.id).map(c => c.task_id)).size}-task earlier`
+const splitSets = () => (data.short.models.some(m => m.suite) && data.short.models.some(m => !m.suite)) || new Set(data.short.models.map(taskSet)).size > 1
+const setNote = m => `<span class="note-label" title="${esc(m.suite ? `Scored on the ${m.suite.tasks} tasks of ${m.suite.benchmark}, from ${m.suite.source}.` : 'Scored on the earlier task set. Kept until this model has a complete rerun.')} Rows on different task sets are not strictly comparable.">${esc(taskSet(m))} set</span>`
+function weightParts(cells, ranked) {
   const groups = {}
-  for (const c of data.short.cells) if (!c.retired) (groups[c.category] ||= new Set()).add(c.score_group || c.task_id)
+  for (const c of cells) if (!c.retired) (groups[c.category] ||= new Set()).add(c.score_group || c.task_id)
+  return ranked.map(c => `${categoryNames[c]} ${groups[c]?.size || 0} tasks, ${(100 / ranked.length / (groups[c]?.size || 1)).toFixed(1)} points each`).join(' · ')
+}
+function renderWeights() {
   const ranked = data.short.ranked_categories || data.short.categories
-  const parts = ranked.map(c => `${categoryNames[c]} ${groups[c]?.size || 0} tasks, ${(100 / ranked.length / (groups[c]?.size || 1)).toFixed(1)} points each`)
   const shown = (data.short.unranked_categories || []).map(c => categoryNames[c])
-  $('weight-note').textContent = `Each of the ${ranked.length} ranked categories counts for ${(100 / ranked.length).toFixed(0)}% of the score, whatever its task count. Turning one failed task into a full pass moves the score by: ${parts.join(' · ')}.${shown.length ? ` ${shown.join(', ')} is scored and shown, but not ranked.` : ''}`
+  let parts = ': ' + weightParts(data.short.cells, ranked)
+  if (splitSets()) {
+    const setOf = new Map(data.short.models.map(m => [m.id, taskSet(m)]))
+    parts = [...new Set(setOf.values())].map((name, i) => `${i ? ' On' : ', on'} the ${name} set: ${weightParts(data.short.cells.filter(c => setOf.get(c.model) === name), ranked)}`).join('.')
+  }
+  $('weight-note').textContent = `Each of the ${ranked.length} ranked categories counts for ${(100 / ranked.length).toFixed(0)}% of the score, whatever its task count. Turning one failed task into a full pass moves the score by${parts}.${shown.length ? ` ${shown.join(', ')} is scored and shown, but not ranked.` : ''}`
+}
+function renderSuiteNote() {
+  const s = data.short
+  const split = splitSets()
+  $('suite-note').hidden = !split
+  if (!split) return
+  const fresh = s.models.filter(m => m.suite)
+  const tasksOf = rows => new Set(s.cells.filter(c => rows.some(m => m.id === c.model)).map(c => c.task_id))
+  const newer = tasksOf(fresh)
+  const earlier = tasksOf(s.models.filter(m => !m.suite))
+  const both = [...newer].filter(t => earlier.has(t)).length
+  const suites = [...new Set(fresh.map(m => m.suite.benchmark))].map(shortTag).join(', ')
+  $('suite-note').textContent = `Task sets differ between rows. ${fresh.map(m => m.label).join(', ')} ${fresh.length === 1 ? 'has' : 'have'} been rerun on the ${suites} Short suite. Every other row keeps its earlier results until its own rerun is complete. The sets share ${both} tasks. Each row is scored only on its own set, with the categories weighted equally, so ranks across different sets are not strictly comparable. In the task list, a row shows Not run for a task outside its set.`
 }
 let data
 let category = 'all'
@@ -78,12 +102,16 @@ function renderRank() {
   const s = data.short
   $('rank-head').innerHTML = '<tr><th>Model</th><th>Score</th>' + s.categories.map(c => `<th>${categoryNames[c]}${unranked(c) ? '<small class="partial-label">Not ranked</small>' : ''}</th>`).join('') + '<th>Finished</th><th>Harness</th><th>Est. cost</th></tr>'
   let rank = 0
+  const split = splitSets()
+  const ran = (m, c) => s.cells.some(r => r.model === m.id && r.category === c)
+  const categoryCell = (m, c) => m.categories[c] == null && !ran(m, c) ? '<td title="Not in this row\'s task set">—</td>' : `<td>${pct(m.categories[c])}</td>`
   $('ranking').innerHTML = s.models.map(m => {
     if (m.complete) rank += 1
-    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td><span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span><button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(m.community ? m.community.model : m.id)}</span>${communityNote(m.community)}</td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(modelInterval(m))}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}</td>${s.categories.map(c => `<td>${pct(m.categories[c])}</td>`).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}${modelNotes(m.labels)}</td><td>${harnessCell(m.harness)}</td>${m.community ? `<td>${million(m.tokens)} tokens<small class="partial-label">SELF REPORTED</small></td>` : `<td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td>`}</tr>`
+    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td><span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span><button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(m.community ? m.community.model : m.id)}</span>${communityNote(m.community)}</td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(modelInterval(m))}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}${split ? setNote(m) : ''}</td>${s.categories.map(c => categoryCell(m, c)).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}${modelNotes(m.labels)}</td><td>${harnessCell(m.harness)}</td>${m.community ? `<td>${million(m.tokens)} tokens<small class="partial-label">SELF REPORTED</small></td>` : `<td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td>`}</tr>`
   }).join('')
   renderCost('short')
   renderWeights()
+  renderSuiteNote()
   renderAttempts()
   $('short-stats').innerHTML = [[s.tasks.filter(t => !t.retired).length,'tasks'],[s.models.length,'models'],[s.finished + '/' + s.planned,'trials finished']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('')
 }
@@ -104,7 +132,8 @@ $('ranking').addEventListener('click', event => {
 function rowStatus(row) {
   if (row.state !== 'finished') return `<span class="state wait">${esc(row.state.replaceAll('_',' '))}</span>`
   if (row.value == null) return '<span class="state wait">Unscored</span>'
-  return `<span class="state ${row.value === 0 ? 'fail' : ''}">${row.mode === 'preparation' ? pct(row.value) : row.value === 1 ? 'Pass' : 'Fail'}</span>`
+  // Milestone tasks score the share of their ordered milestones reached, so a partial value shows as a share.
+  return `<span class="state ${row.value === 0 ? 'fail' : ''}">${row.mode === 'preparation' || (row.value > 0 && row.value < 1) ? pct(row.value) : row.value === 1 ? 'Pass' : 'Fail'}</span>`
 }
 function renderTasks() {
   const s = data.short
@@ -117,12 +146,15 @@ function renderTasks() {
   if (model) $('model-filter').textContent = s.models.find(m => m.id === model).label + ' only ×'
   $('show-all').hidden = shown.length === tasks.length
   $('show-all').textContent = `Show all ${tasks.length} tasks ↓`
+  const split = splitSets()
   $('tasks').innerHTML = shown.map(t => {
     const rows = s.cells.filter(c => c.task_id === t.id && (!model || c.model === model))
     rows.sort((a,b) => s.models.findIndex(m => m.id === a.model) - s.models.findIndex(m => m.id === b.model))
     const finished = rows.filter(c => c.state === 'finished').length
+    // With mixed task sets, a row that never ran this task gets an empty line instead of disappearing.
+    const missing = split ? s.models.filter(m => (!model || m.id === model) && !rows.some(r => r.model === m.id)) : []
     const policy = t.mode === 'preparation' ? 'Team and resource choices, assessed by a fixed battle controller.' : (t.action_policy || '').includes('manual') ? 'Manual controls. Menu shortcuts disabled.' : 'Game information and mechanical shortcuts enabled.'
-    return `<details class="task" data-task="${esc(t.id)}" ${open.has(t.id) ? 'open' : ''}><summary><span class="tag">${categoryNames[t.category]}${t.retired ? ' · Retired, not scored' : unranked(t.category) ? ' · Not ranked' : ''}</span><span class="task-title">${esc(t.title)}</span><span class="task-coverage">${finished}/${rows.length} finished</span></summary><div class="task-body">${t.retired ? `<p class="small"><strong>Retired:</strong> ${esc(t.retirement_reason || 'No longer run or scored.')}</p>` : ''}<p><strong>Goal:</strong> ${esc(t.goal)}</p><p><strong>Start:</strong> ${esc(t.start)}</p><p class="small">${policy}</p><div class="table-scroll"><table><thead><tr><th>Model / start</th><th>Result</th><th>Decisions</th><th>Tokens</th><th>Est. cost</th><th>End reason</th><th>Replay</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(s.models.find(m => m.id === r.model).label)}${r.variant !== 'default' ? ' / ' + esc(r.variant) : ''}<span class="model-id">${cellMeta(r)}</span>${cellNotes(r)}</td><td>${rowStatus(r)}</td><td>${count(r.decisions)} / ${count(r.decision_limit)}</td><td title="Ceiling: ${count(r.token_limit)} tokens">${million(r.tokens)}</td><td>${costCell(r.cost)}</td><td>${r.state === 'finished' ? esc(reason(r.stop_reason) || 'Preparation assessed') : esc(r.state.replaceAll('_',' '))}</td><td>${r.replay ? `<a class="replay-link" target="_blank" rel="noopener" href="${esc(r.replay)}">Watch ↗</a>` : r.mode === 'preparation' ? '<span class="small">Preparation score</span>' : '<span class="small">Not available yet</span>'}</td></tr>`).join('')}</tbody></table></div></div></details>`
+    return `<details class="task" data-task="${esc(t.id)}" ${open.has(t.id) ? 'open' : ''}><summary><span class="tag">${categoryNames[t.category]}${t.retired ? ' · Retired, not scored' : unranked(t.category) ? ' · Not ranked' : ''}${t.suite ? ' · Added in ' + esc(shortTag(t.suite)) : ''}</span><span class="task-title">${esc(t.title)}</span><span class="task-coverage">${finished}/${rows.length} finished</span></summary><div class="task-body">${t.retired ? `<p class="small"><strong>Retired:</strong> ${esc(t.retirement_reason || 'No longer run or scored.')}</p>` : ''}<p><strong>Goal:</strong> ${esc(t.goal)}</p><p><strong>Start:</strong> ${esc(t.start)}</p><p class="small">${policy}${t.milestones ? ` Scored by the share of its ${t.milestones} ordered milestones reached.` : ''}</p><div class="table-scroll"><table><thead><tr><th>Model / start</th><th>Result</th><th>Decisions</th><th>Tokens</th><th>Est. cost</th><th>End reason</th><th>Replay</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(s.models.find(m => m.id === r.model).label)}${r.variant !== 'default' ? ' / ' + esc(r.variant) : ''}<span class="model-id">${cellMeta(r)}</span>${cellNotes(r)}</td><td>${rowStatus(r)}</td><td>${count(r.decisions)} / ${count(r.decision_limit)}</td><td title="Ceiling: ${count(r.token_limit)} tokens">${million(r.tokens)}</td><td>${costCell(r.cost)}</td><td>${r.state === 'finished' ? esc(reason(r.stop_reason) || 'Preparation assessed') : esc(r.state.replaceAll('_',' '))}</td><td>${r.replay ? `<a class="replay-link" target="_blank" rel="noopener" href="${esc(r.replay)}">Watch ↗</a>` : r.mode === 'preparation' ? '<span class="small">Preparation score</span>' : '<span class="small">Not available yet</span>'}</td></tr>`).join('')}${missing.map(m => `<tr class="not-run"><td>${esc(m.label)}<span class="model-id">${esc(taskSet(m))} set</span></td><td colspan="6"><span class="small">Not run. This task is not in this row's task set.</span></td></tr>`).join('')}</tbody></table></div></div></details>`
   }).join('') || '<p class="empty">No matching tasks. Try another search or category.</p>'
 }
 $('categories').addEventListener('click', event => {
@@ -175,8 +207,8 @@ function renderCost(kind, selected) {
   const valueLabel = isLong ? 'Cost / 100 points' : 'Cost / full-score equivalent'
   const sourceLinks = data.pricing.sources.map((url,i) => `<a href="${esc(url)}" target="_blank" rel="noopener">${['OpenAI rates','Terra','Luna','Opus','Sonnet','Haiku','Fable'][i]}</a>`).join(' · ')
   $(kind + '-cost').innerHTML = `<div class="cost-heading"><div><p class="eyebrow">WHAT DOES PERFORMANCE COST?</p><h3>${title}</h3></div><div class="filters" aria-label="Sort cost comparison"><button data-cost-kind="${kind}" data-cost-sort="score" aria-pressed="${costSort[kind] === 'score'}">Score</button><button data-cost-kind="${kind}" data-cost-sort="value" aria-pressed="${costSort[kind] === 'value'}">Value</button></div></div>
-  <p class="small">${isLong ? `At the selected ${count(longLimit)}-decision allowance. Costs and progress stay cumulative.` : `${data.short.efficiency.starts} shared completed starts across all models. Failed tasks count toward cost. Scores here use this shared subset.`} Lower dollar values are better.</p>
-  <div class="table-scroll"><table class="cost-table"><thead><tr><th>Model</th><th>${isLong ? 'Progress' : 'Shared score'}</th><th>${quantity}</th><th>${valueLabel}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.label)}${r.provisional ? '<small class="partial-label">PROVISIONAL</small>' : ''}</td><td>${isLong ? count(r.score) + ' / 1,000' : pct(r.quality)}<span class="scorebar"><i style="width:${100*(r.quality || 0)}%"></i></span></td><td>${costCell({...r.cost,partial:r.cost?.partial || r.partial})}<span class="spendbar"><i style="width:${maxCost ? 100*(r.cost?.high || 0)/maxCost : 0}%"></i></span></td><td>${r.quality === 0 ? 'No score earned' : costRange(r.unitCost)}</td></tr>`).join('')}</tbody></table></div>
+  <p class="small">${isLong ? `At the selected ${count(longLimit)}-decision allowance. Costs and progress stay cumulative.` : `${data.short.efficiency.starts} shared completed starts across all models. Failed tasks count toward cost. Scores here use this shared subset.${splitSets() ? ' These shared starts were fixed before the reruns, so a rerun moves only its own row. A rerun row is priced on its own attempts at the same starts.' : ''}`} Lower dollar values are better.</p>
+  <div class="table-scroll"><table class="cost-table"><thead><tr><th>Model</th><th>${isLong ? 'Progress' : 'Shared score'}</th><th>${quantity}</th><th>${valueLabel}</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(r.label)}${r.provisional ? '<small class="partial-label">PROVISIONAL</small>' : ''}${!isLong && r.starts !== data.short.efficiency.starts ? `<small class="partial-label">${r.starts} OF ${data.short.efficiency.starts} STARTS</small>` : ''}</td><td>${isLong ? count(r.score) + ' / 1,000' : pct(r.quality)}<span class="scorebar"><i style="width:${100*(r.quality || 0)}%"></i></span></td><td>${costCell({...r.cost,partial:r.cost?.partial || r.partial})}<span class="spendbar"><i style="width:${maxCost ? 100*(r.cost?.high || 0)/maxCost : 0}%"></i></span></td><td>${r.quality === 0 ? 'No score earned' : costRange(r.unitCost)}</td></tr>`).join('')}</tbody></table></div>
   <p class="small">Estimated API-equivalent USD, not your subscription bill. Ranges reflect uncertain cache-write pricing. ${isLong ? 'Live or incomplete usage is provisional.' : 'Value = category-balanced mean cost ÷ shared score, over the ranked categories. Preparation is left out.'}</p>
   <details class="cost-method"><summary>Pricing and calculation</summary><p>${esc(data.pricing.basis)} Verified ${esc(data.pricing.as_of)}. ${esc(data.pricing.range)}</p><p>Only the displayed attempts are priced. Earlier replaced trials and development runs are excluded. Calls interrupted by outages never reported usage. The high estimate prices each one at its full token reserve as output tokens; the low estimate excludes it. Missing usage without a reserve is marked partial, never free. Value ordering uses the low end of the estimate, and overlapping ranges may reverse that ordering. Lower cost does not imply better gameplay.</p><p>${sourceLinks}</p></details>`
 }
