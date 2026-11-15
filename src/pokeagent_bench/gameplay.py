@@ -62,6 +62,10 @@ CARD_KEY_DOOR_MAPS = frozenset({207, 208, 209, 210, 211, 212, 213, 233, 234, SIL
 # Mansion 1F (165), the Cinnabar Gym (166), Mansion 2F, 3F and B1F (214 to 216) those tiles appear
 # only where a script places a gate. An opened gate is redrawn as floor.
 GATE_MAPS = frozenset({165, 166, 214, 215, 216})
+# Rocket Hideout doors: the B1F (199) and B4F (202) scripts place closed door blocks whose bottom-left
+# tile is 0x18 until the trainers that guard them are beaten. The pret Hideout maps have no other 0x18
+# or 0x24 tiles. An opened door is redrawn as floor.
+HIDEOUT_DOOR_MAPS = frozenset({199, 202})
 # Hidden events (hidden_events.asm) are not signs, so the game data has no fixed interactable for them.
 # The Mansion switch statues and the Cinnabar Gym quiz machines are drawn on screen, so they show as S.
 # Hidden items and the plain gym statue stay unmarked.
@@ -249,7 +253,7 @@ def local_map(memory, catalog, ui):
              "CAVERN": {0x2D: "*", 0x22: "o"}}.get(world.get("tileset"), {})
     if world.get("tileset") in CUT_TREE_TILES:
         marks = {**marks, CUT_TREE_TILES[world["tileset"]]: "T"}
-    if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS | GATE_MAPS:
+    if memory[W_CUR_MAP] in CARD_KEY_DOOR_MAPS | GATE_MAPS | HIDEOUT_DOOR_MAPS:
         marks = {**marks, 0x18: "D", 0x24: "D", **({0x5E: "D"} if memory[W_CUR_MAP] == SILPH_CO_11F else {})}
     floors = world.get("pair_floors", {})
     water = WATER_TILES.get(world.get("tileset"), set())

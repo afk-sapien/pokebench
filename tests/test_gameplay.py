@@ -424,16 +424,17 @@ def test_local_map_marks_the_visible_card_key_doors_on_silph_co_floors(map_id, t
     assert view['legend']['D'] == 'visible closed door'
 
 
-@pytest.mark.parametrize('map_id, tileset, tile', [(181, 'FACILITY', 0x18), (199, 'FACILITY', 0x24),
+@pytest.mark.parametrize('map_id, tileset, tile', [(181, 'FACILITY', 0x18), (200, 'FACILITY', 0x24),
                                                    (212, 'FACILITY', 0x5E), (0, 'INTERIOR', 0x5E)])
 def test_local_map_keeps_door_tiles_blocked_where_the_card_key_cannot_open_them(map_id, tileset, tile):
-    # Silph Co 1F, the Rocket Hideout and 0x5E away from 11F are not Card Key doors.
+    # Silph Co 1F, Rocket Hideout B2F and 0x5E away from 11F are not doors.
     view = door_view(map_id, tileset, {(6, 4): tile})
     assert view['rows'][4][6] == '#' and 'D' not in view['legend']
 
 
-@pytest.mark.parametrize('map_id, tile', [(165, 0x18), (166, 0x18), (166, 0x24), (216, 0x24)])
-def test_local_map_marks_the_closed_mansion_and_cinnabar_gym_gates(map_id, tile):
+@pytest.mark.parametrize('map_id, tile', [(165, 0x18), (166, 0x18), (166, 0x24), (216, 0x24),
+                                          (199, 0x18), (202, 0x18)])
+def test_local_map_marks_the_closed_gates_and_hideout_doors(map_id, tile):
     view = door_view(map_id, 'FACILITY', {(6, 4): tile, (7, 4): tile, (2, 4): 0x60})
     assert view['rows'][4][6:8] == 'DD' and view['rows'][4][2] == '#'
     assert view['legend']['D'] == 'visible closed door'
