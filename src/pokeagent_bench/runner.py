@@ -98,6 +98,12 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
             write_json(session.output / "loop_budget.json", {**monitored, "limit": session.limits.max_loop_tokens})
             if monitored["tokens_without_progress"] >= session.limits.max_loop_tokens and not session.reason:
                 session.finish("loop_token_budget")
+        if session.limits.max_milestone_tokens:
+            gap = loop_budget.milestone_gap(session.evaluator.awarded,
+                session.usage["input_tokens"] + session.usage["output_tokens"], decision_index)
+            write_json(session.output / "milestone_budget.json", {**gap, "limit": session.limits.max_milestone_tokens})
+            if gap["tokens_without_milestone"] >= session.limits.max_milestone_tokens and not session.reason:
+                session.finish("milestone_token_budget")
         state = {"recent": recent, "invalid": invalid, "decision_index": decision_index,
                  "previous_unique_views": previous_unique_views, "stagnant_decisions": stagnant_decisions, "area_budget": area_budget, "loop_state": loop_state,
                  "feedback": {k: v for k, v in vars(feedback).items() if k != "output"} if feedback else None,

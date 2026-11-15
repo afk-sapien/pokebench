@@ -9,9 +9,13 @@ from .recovery import atomic, pack, unpack
 
 BOUNDARY_FILES = (
     'recovery.json', 'manifest.json', 'result.json', 'campaign.json', 'final.state',
-    'notes.txt', 'prompt.txt', 'loop_budget.json', 'latest.png',
+    'notes.txt', 'prompt.txt', 'loop_budget.json', 'milestone_budget.json', 'latest.png',
     'actions.jsonl', 'decisions.jsonl', 'memory.jsonl',
 )
+# Every extension adds exactly one chunk of decisions.
+CHUNK_DECISIONS = 2000
+# Each chunk gets the first chunk's allowance of these, on top of what the run has used.
+CHUNK_ALLOWANCES = ('max_total_tokens', 'max_wall_seconds', 'max_frames', 'max_actions')
 
 
 def verified_boundary(root):
@@ -67,18 +71,34 @@ def archive_boundary(root):
     return target
 
 
-def create_continuation(parent, destination, *, additional_decisions=2000):
+def first_chunk_allowance(parent):
+    """Follow the extension chain back to the first chunk and return its spending allowance."""
+    manifest = json.loads((parent / 'run/manifest.json').read_text())
+    while (parent / 'continuation.json').exists():
+        record = json.loads((parent / 'continuation.json').read_text())
+        if 'chunk_allowance' in record:
+            return record['chunk_allowance']
+        checkpoint = Path(record['parent_checkpoint'])
+        manifest = json.loads((checkpoint / 'manifest.json').read_text())
+        parent = Path(json.loads((checkpoint / 'checkpoint-index.json').read_text())['run_root'])
+    return {key: manifest['limits'][key] for key in CHUNK_ALLOWANCES}
+
+
+def create_continuation(parent, destination):
+    """Add one 2000-decision chunk to a run that stopped on its decision cap.
+
+    The chunk gets the first chunk's allowance of tokens, active time, frames and actions on top of what
+    the run has used. The no-progress and no-milestone guards count across chunks, so a run that a guard
+    stopped never gets another chunk.
+    """
     parent, destination = Path(parent).resolve(), Path(destination).resolve()
-    if type(additional_decisions) is not int or additional_decisions <= 0:
-        raise ValueError('Additional decisions must be positive')
     if destination.exists():
         raise ValueError('Continuation destination already exists')
     result, saved = verified_boundary(parent)
-    if result['stop_reason'] != 'model_call_budget':
-        raise ValueError('Decision extension requires a decision-limited parent run')
-    used = result['usage']['input_tokens'] + result['usage']['output_tokens']
-    if used >= saved['limits']['max_total_tokens']:
-        raise ValueError('No token allowance remains under the existing ceiling')
+    if result['stop_reason'] != 'model_call_budget' or result['usage']['calls'] != saved['limits']['max_model_calls']:
+        raise ValueError('Only a run that stopped on its decision cap gets another chunk, '
+                         f"not one that stopped on {result['stop_reason']}")
+    allowance = first_chunk_allowance(parent)
     boundary = archive_boundary(parent)
     prior = json.loads((parent / 'continuation.json').read_text()) if (parent / 'continuation.json').exists() else {}
     destination.mkdir(parents=True)
@@ -88,20 +108,26 @@ def create_continuation(parent, destination, *, additional_decisions=2000):
     for name in ('pilot.json', 'RESUME.md', 'subscription-access.json'):
         if (parent / name).exists():
             shutil.copy2(parent / name, destination / name)
-    limit = result['usage']['calls'] + additional_decisions
+    used = {'max_total_tokens': result['usage']['input_tokens'] + result['usage']['output_tokens'],
+            'max_wall_seconds': saved['elapsed'], 'max_frames': saved['session']['frame'],
+            'max_actions': saved['session']['actions']}
+    limits = {key: used[key] + allowance[key] for key in CHUNK_ALLOWANCES}
+    limits['max_model_calls'] = result['usage']['calls'] + CHUNK_DECISIONS
     record = {
         'protocol': 'long-decision-boundaries-v1',
         'origin_run_id': prior.get('origin_run_id', parent.name),
         'parent_run_id': parent.name, 'parent_checkpoint': str(boundary),
         'parent_result_sha256': digest((parent / 'run/result.json').read_bytes()),
-        'start_decisions': result['usage']['calls'], 'decision_limit': limit,
-        'additional_decisions': additional_decisions,
-        'reported_token_limit': saved['limits']['max_total_tokens'],
-        'total_token_ceiling': saved['limits']['max_total_tokens'] + result['usage'].get('unreported_token_reserve', 0),
-        'policy': 'Cumulative decisions, tokens, time and stuck tracking. Only the decision limit increases. Parent result is preserved.',
+        'start_decisions': result['usage']['calls'], 'decision_limit': limits['max_model_calls'],
+        'additional_decisions': CHUNK_DECISIONS, 'chunk_allowance': allowance,
+        'reported_token_limit': limits['max_total_tokens'],
+        'total_token_ceiling': limits['max_total_tokens'] + result['usage'].get('unreported_token_reserve', 0),
+        'policy': 'One more 2000-decision chunk for a run that stopped on its decision cap. The chunk gets the '
+                  'first chunk\'s token, time, frame and action allowance on top of what was used. '
+                  'The no-progress and no-milestone guards count across chunks. Parent result is preserved.',
     }
-    saved['limits']['max_model_calls'] = limit
-    saved['manifest']['limits']['max_model_calls'] = limit
+    saved['limits'].update(limits)
+    saved['manifest']['limits'].update(limits)
     saved['manifest']['continuation'] = record
     saved['session']['reason'] = None
     run = destination / 'run'

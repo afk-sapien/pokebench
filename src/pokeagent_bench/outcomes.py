@@ -2,7 +2,7 @@
 
 BUDGET_STOPS = frozenset({
     "token_budget", "model_call_budget", "wall_budget", "frame_budget", "action_budget",
-    "observation_stagnation_budget", "area_token_budget", "loop_token_budget",
+    "observation_stagnation_budget", "area_token_budget", "loop_token_budget", "milestone_token_budget",
 })
 INFRASTRUCTURE_STOPS = frozenset({
     "provider_error", "infrastructure_error", "usage_unavailable", "observation_budget",

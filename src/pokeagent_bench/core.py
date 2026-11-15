@@ -120,10 +120,11 @@ class Limits:
     max_stagnant_decisions: int = 12
     max_area_tokens: int = 0
     max_loop_tokens: int = 0
+    max_milestone_tokens: int = 0
 
     def __post_init__(self):
         for key, value in asdict(self).items():
-            if key in ("max_area_tokens", "max_loop_tokens") and type(value) is int and value == 0:
+            if key in ("max_area_tokens", "max_loop_tokens", "max_milestone_tokens") and type(value) is int and value == 0:
                 continue
             if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{key} must be positive and finite")

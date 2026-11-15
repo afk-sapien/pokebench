@@ -8,7 +8,7 @@ const costCell = c => `<span class="cost-value">${costRange(c)}</span>${c?.parti
 const count = x => Number(x || 0).toLocaleString()
 const cap = x => x[0].toUpperCase() + x.slice(1)
 const categoryNames = {navigation:'Navigation',battle:'Battles',operations:'Menus',objectives:'Quests'}
-const reason = x => ({completed:'Completed',model_call_budget:'Decision limit',token_budget:'Token limit',challenge_failed:'Task failed',provider_error:'Evaluation error',loop_budget:'No-progress limit',loop_token_budget:'No-progress limit'}[x] || (x || '').replaceAll('_',' '))
+const reason = x => ({completed:'Completed',model_call_budget:'Decision limit',token_budget:'Token limit',challenge_failed:'Task failed',provider_error:'Evaluation error',loop_budget:'No-progress limit',loop_token_budget:'No-progress limit',milestone_token_budget:'No-milestone limit'}[x] || (x || '').replaceAll('_',' '))
 const shortTag = t => (t || '').match(/^[a-z]+-v\d+(?:\.\d+)*/)?.[0] || t || ''
 const harnessCell = h => `<span class="harness-revision">${esc(h?.revisions?.join(' + ') || 'Unknown')}</span><span class="harness-version" title="${esc((h?.versions || []).join(', '))}">${esc(h?.label || '')}</span>`
 const communityNote = c => c ? `<span class="community-note">${esc(c.label)}<br>Submitted by ${esc(c.handle || 'unnamed')}. ${count(c.attempts || 1)} declared attempt${(c.attempts || 1) === 1 ? '' : 's'}</span>` : ''
@@ -32,6 +32,10 @@ function stopText(r) {
   if (r.stop_reason === 'loop_token_budget') {
     const d = r.stop_detail || {}
     return `Stopped early after ${million(d.limit || 2000000)} tokens without reaching a new location or milestone${d.last_progress_decision ? `. Last progress at decision ${count(d.last_progress_decision)}` : ''}.`
+  }
+  if (r.stop_reason === 'milestone_token_budget') {
+    const d = r.stop_detail || {}
+    return `Stopped early after ${million(d.limit || 10000000)} tokens without a new milestone${d.last_milestone_decision ? `. Last milestone at decision ${count(d.last_milestone_decision)}` : ''}.`
   }
   return ''
 }

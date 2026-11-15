@@ -7,7 +7,7 @@ from .evaluation_catalog import load_catalog, task_definition
 
 PROVIDERS = ('codex', 'claude', 'openai-compatible')
 # Run limits a plan may set per cell, beyond the decision and token caps.
-RUN_LIMITS = ('max_actions', 'max_frames', 'max_wall_seconds', 'max_loop_tokens')
+RUN_LIMITS = ('max_actions', 'max_frames', 'max_wall_seconds', 'max_loop_tokens', 'max_milestone_tokens')
 
 
 def _read(path):

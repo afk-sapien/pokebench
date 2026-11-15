@@ -219,8 +219,11 @@ def long_row(root, web, name, decision_limit=2000):
     cost = run_cost(root / 'run', manifest.get('agent', {}).get('model'))
     replay = existing_link(web, f'{root.name}-replay.html')
     loop = load(root / 'run/loop_budget.json') if (root / 'run/loop_budget.json').exists() else {}
+    gap = load(root / 'run/milestone_budget.json') if (root / 'run/milestone_budget.json').exists() else {}
     stop_detail = ({'last_progress_decision': loop.get('last_progress_decision'), 'limit': loop.get('limit')}
-                   if result.get('stop_reason') == 'loop_token_budget' else None)
+                   if result.get('stop_reason') == 'loop_token_budget' else
+                   {'last_milestone_decision': gap.get('last_milestone_decision'), 'limit': gap.get('limit')}
+                   if result.get('stop_reason') == 'milestone_token_budget' else None)
     return {'id': name, 'label': 'Fable 5.1' if name == 'fable' else name.title(),
             'model': manifest.get('agent', {}).get('model'), 'stop_detail': stop_detail,
             'harness': manifest.get('benchmark'),

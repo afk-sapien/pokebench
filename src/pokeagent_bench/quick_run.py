@@ -19,9 +19,12 @@ SUITES = {
     'long': (LONG, 30_000_000, None),
 }
 LONG_DECISIONS = 2000
+# Stop after this many tokens without a new v2 milestone. The longest stored stretch that still ended
+# in a milestone is 8.2M (Terra through Mt. Moon), so 10M leaves a 1.8M margin.
+LONG_MILESTONE_GUARD_TOKENS = 10_000_000
 # The published Long runs used these. The single-run defaults of 20K actions and 6 h would cut a campaign short.
 LONG_LIMITS = {'max_actions': 150_000, 'max_frames': 10_000_000, 'max_wall_seconds': 86_400,
-               'max_loop_tokens': 2_000_000}
+               'max_loop_tokens': 2_000_000, 'max_milestone_tokens': LONG_MILESTONE_GUARD_TOKENS}
 # The published Short runs used low effort and the published Long runs medium.
 EFFORT = {'smoke': 'low', 'short': 'low', 'long': 'medium'}
 SCALE = {
@@ -29,7 +32,8 @@ SCALE = {
     'short': 'Two leaderboard models used 27M and 49M tokens on the earlier, smaller Short task set.',
     'long': f'The campaign stops at {LONG_DECISIONS:,} decisions or its token cap, whichever comes first. '
             'It also stops at 150K controller actions, 10M frames, 24 h, '
-            'or 2M tokens spent without reaching a new tile or milestone.',
+            'or 2M tokens spent without reaching a new tile or milestone, '
+            'or 10M tokens spent without a new milestone.',
 }
 PREFIXES = (('claude', 'claude'), ('gpt', 'codex'))
 

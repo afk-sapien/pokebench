@@ -161,7 +161,8 @@ def test_long_suite_uses_the_published_decision_limit_and_effort(data, runs, mon
         ('campaign-full-game', 2000, 'medium')]
     # The published Long runs used these, not the single-run defaults of 20K actions and 6 h.
     assert runs[0][1]['run_limits'] == {'max_actions': 150_000, 'max_frames': 10_000_000,
-                                        'max_wall_seconds': 86_400, 'max_loop_tokens': 2_000_000}
+                                        'max_wall_seconds': 86_400, 'max_loop_tokens': 2_000_000,
+                                        'max_milestone_tokens': 10_000_000}
     text = capsys.readouterr().out
     assert 'Campaign: 1 of 1 points' in text and '150K controller actions' in text
 
@@ -180,8 +181,8 @@ def test_catalog_run_passes_run_limits_to_the_session(tmp_path, monkeypatch):
                                provider='claude', model='test', decision_limit=2000,
                                run_limits=quick_run.LONG_LIMITS)
     args = captured[0]
-    assert (args.max_actions, args.max_frames, args.max_wall_seconds, args.max_loop_tokens) == (
-        150_000, 10_000_000, 86_400, 2_000_000)
+    assert (args.max_actions, args.max_frames, args.max_wall_seconds, args.max_loop_tokens,
+            args.max_milestone_tokens) == (150_000, 10_000_000, 86_400, 2_000_000, 10_000_000)
     with pytest.raises(ValueError, match='Run limits'):
         catalog_execution.run_task(tmp_path, 'campaign-full-game', 'rom', 'game', tmp_path / 'out',
                                    provider='claude', model='test', run_limits={'max_note_bytes': 1})

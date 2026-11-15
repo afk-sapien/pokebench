@@ -15,7 +15,7 @@ MAX_RELEASE_TOKENS = 50_000_000
 IN_FLIGHT_RESERVE = 100_000
 EVALUATED_STOPS = frozenset(('completed', 'battle_loss', 'token_budget', 'model_call_budget',
     'wall_budget', 'frame_budget', 'action_budget', 'observation_stagnation_budget',
-    'area_token_budget', 'loop_token_budget', 'invalid_model_response'))
+    'area_token_budget', 'loop_token_budget', 'milestone_token_budget', 'invalid_model_response'))
 CANDIDATES = {'bad-matchup','healthy-capture','team-rescue','pp-gauntlet','adaptive-champion','recovery-detour'}
 RETIRED = {'wild-battle','first-capture','brock','erika','sabrina'}
 PRIORITY = ['lorelei-tactics', 'starter', 'viridian-forest', 'bad-matchup', 'team-rescue',
