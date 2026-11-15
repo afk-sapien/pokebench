@@ -22,10 +22,11 @@ class Flaky:
     config_identity = {}
     prompt = 'test'
 
-    def __init__(self, model=None, *, reasoning_effort='low', failures=None, kind='provider_error', reply=False):
+    def __init__(self, model=None, *, reasoning_effort='low', failures=None, kind='provider_error', reply=False,
+                 extra=None):
         self.reasoning_effort = reasoning_effort
         self.failures = {} if failures is None else failures  # frame -> failures left
-        self.kind, self.reply = kind, reply
+        self.kind, self.reply, self.extra = kind, reply, extra or {}
         self.packet_baseline = None
         self.seen = []
 
@@ -35,7 +36,7 @@ class Flaky:
             self.failures[observation['frame']] -= 1
             raise ProviderError('Claude returned a synthetic provider error',
                                 details={'kind': self.kind, 'status': 529, 'no_reply': not self.reply,
-                                         'text': 'API Error: 529 Overloaded'})
+                                         'text': 'API Error: 529 Overloaded', **self.extra})
         self.packet_baseline = 'segment'
         return {'actions': [{'button': 'wait', 'hold_frames': 2, 'release_frames': 0}], 'notes': None}, {
             'input_tokens': 10, 'output_tokens': 5}, {}
@@ -111,6 +112,79 @@ def test_a_subscription_limit_pauses_without_retrying(tmp_path):
     assert paused['state'] == 'paused'
     assert [row['kind'] for row in read(session.output, 'provider-errors.jsonl')] == ['subscription_limit']
     resume(rom, session.output, engine_factory=factory).close()
+
+
+class Clock:
+    def __init__(self):
+        self.now = 100.0
+
+    def __call__(self):
+        return self.now
+
+
+def waiting(monkeypatch, clock, *, stop=False):
+    """Replace the wait with one that moves the session clock, and record each wait."""
+    waits = []
+
+    def fake(seconds, guard):
+        waits.append(seconds)
+        clock.now += seconds
+        return stop
+    monkeypatch.setattr(runner, 'wait', fake)
+    monkeypatch.setattr(runner.time, 'time', lambda: 1_000_000.0)
+    return waits
+
+
+def test_a_subscription_limit_waits_for_its_reset_and_asks_again(tmp_path, monkeypatch, capsys):
+    session, _ = start(tmp_path)
+    session.clock = clock = Clock()
+    session.started = clock.now
+    waits = waiting(monkeypatch, clock)
+    reset = {'resets_at': 1_000_000 + 3 * 3600, 'limit_type': 'five_hour'}
+    final = run(session, Flaky(failures={4: 1}, kind='subscription_limit', extra=reset))
+    assert waits == [3 * 3600 + runner.RESET_MARGIN]
+    assert final['stop_reason'] == 'model_call_budget'
+    assert final['usage']['calls'] == 4 and final['usage']['input_tokens'] == 40
+    # The wait is not the model's time, so the run's wall clock leaves it out.
+    assert final['wall_seconds'] < 60
+    assert [row['index'] for row in read(session.output, 'decisions.jsonl')] == [1, 2, 3, 4]
+    assert 'Waiting 182 min until' in capsys.readouterr().out
+
+
+def test_ctrl_c_during_the_reset_wait_pauses_the_run(tmp_path, monkeypatch):
+    session, rom = start(tmp_path)
+    session.clock = clock = Clock()
+    session.started = clock.now
+    waiting(monkeypatch, clock, stop=True)
+    paused = run(session, Flaky(failures={4: 9}, kind='subscription_limit', extra={'resets_at': 1_000_600}))
+    assert paused['state'] == 'paused'
+    assert json.loads((session.output / 'pending.json').read_text()) == {'decision': 3, 'phase': NO_REPLY}
+    resume(rom, session.output, engine_factory=factory).close()
+
+
+def test_a_limit_still_hit_after_the_reset_waits_pauses(tmp_path, monkeypatch):
+    session, _ = start(tmp_path)
+    session.clock = clock = Clock()
+    session.started = clock.now
+    waits = waiting(monkeypatch, clock)
+    paused = run(session, Flaky(failures={4: 9}, kind='subscription_limit', extra={'resets_at': 1_000_600}))
+    assert paused['state'] == 'paused'
+    assert len(waits) == runner.RESET_WAITS
+    assert len(read(session.output, 'provider-errors.jsonl')) == runner.RESET_WAITS + 1
+
+
+@pytest.mark.parametrize('details, expected', [
+    ({'kind': 'subscription_limit', 'resets_at': 1_003_600}, 3600 + runner.RESET_MARGIN),
+    ({'kind': 'subscription_limit', 'resets_at': '1970-01-12T14:46:40Z'}, 3600 + runner.RESET_MARGIN),
+    ({'kind': 'subscription_limit', 'resets_at': 999_000}, runner.RESET_MARGIN),
+    ({'kind': 'subscription_limit', 'resets_at': 1_000_000 + 3 * 86400}, None),
+    ({'kind': 'subscription_limit', 'resets_at': None}, None),
+    ({'kind': 'subscription_limit', 'resets_at': 'soon'}, None),
+    ({'kind': 'subscription_limit'}, None),
+    ({'kind': 'provider_error', 'resets_at': 1_003_600}, None),
+])
+def test_only_a_near_parseable_reset_is_waited_for(details, expected):
+    assert runner.until_reset(ProviderError('limit', details=details), now=1_000_000) == expected
 
 
 def test_an_error_after_a_model_reply_keeps_the_old_refusal(tmp_path):

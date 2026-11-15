@@ -19,6 +19,29 @@ from . import loop_budget
 # The v0.61 test met two Cloudflare 403 outages. One lasted at least 2 min 47 s, so the waits span about 15 minutes.
 RETRY_DELAYS = (15, 60, 240, 600)
 
+# A subscription limit with no reply names when it resets. The run waits until then plus a margin and asks again.
+# A reset more than MAX_RESET_WAIT away, such as a weekly limit, pauses the run as before.
+RESET_MARGIN = 120
+MAX_RESET_WAIT = 6 * 3600
+RESET_WAITS = 2
+
+
+def until_reset(error, now=None):
+    """Seconds to wait for a subscription limit to reset, or None when the run should pause instead."""
+    if error.details.get("kind") != "subscription_limit":
+        return None
+    value = error.details.get("resets_at")
+    try:
+        if isinstance(value, str) and not value.replace(".", "", 1).isdigit():
+            moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            at = (moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)).timestamp()
+        else:
+            at = float(value)
+    except (TypeError, ValueError):
+        return None
+    seconds = max(0.0, at - (time.time() if now is None else now)) + RESET_MARGIN
+    return seconds if seconds <= MAX_RESET_WAIT else None
+
 
 def wait(seconds, guard):
     """Sleep before a retry. Return True as soon as Ctrl-C asks for a pause."""
@@ -188,7 +211,9 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
             session.current_decision = decision_index
             mark_pending(session, decision_index)
             error = None
-            for attempt in range(len(RETRY_DELAYS) + 1):
+            attempt = retries = resets = 0
+            while True:
+                attempt += 1
                 started = time.monotonic()
                 try:
                     if guard:
@@ -206,14 +231,27 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                     error = failure
                     if not no_reply(error, provider):
                         break
-                    note_provider_error(session, decision_index, attempt + 1, error, time.monotonic() - started)
+                    note_provider_error(session, decision_index, attempt, error, time.monotonic() - started)
                     # The failed turn may sit in the CLI transcript, so the next attempt starts a fresh segment.
                     provider.close()
                     provider.packet_baseline = None
-                    if error.details.get("kind") != "provider_error" or attempt == len(RETRY_DELAYS):
+                    seconds = until_reset(error) if resets < RESET_WAITS else None
+                    if seconds is not None:
+                        resets += 1
+                        at = datetime.fromtimestamp(time.time() + seconds, timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+                        print(f"Subscription limit reached at decision {decision_index}. Waiting {seconds / 60:.0f} min "
+                              f"until {at}, then asking again. Ctrl-C pauses the run.", flush=True)
+                        # The reset wait is not the model's time, so it does not count toward the wall limit.
+                        before = session.clock()
+                        stopped = wait(seconds, guard)
+                        session.started += session.clock() - before
+                    elif error.details.get("kind") == "provider_error" and retries < len(RETRY_DELAYS):
+                        stopped = wait(RETRY_DELAYS[retries], guard)
+                        retries += 1
+                    else:
                         break
                     # Ctrl-C during the wait pauses here. The failed attempt spent nothing, so the run resumes.
-                    if wait(RETRY_DELAYS[attempt], guard):
+                    if stopped:
                         break
             if error is not None and no_reply(error, provider):
                 # Nothing was answered or spent. Keep the last checkpoint so the same command resumes here.

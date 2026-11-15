@@ -34,6 +34,8 @@ Claude's `modelUsage` counters accumulate within a session, including across pro
 
 The subscription price is not allocated to individual runs. CLI dollar estimates are API-equivalent estimates, not subscription charges. The runner uses conservative admission estimates and checks reported usage between decisions. A timeout or missing usage ends the trial with incomplete accounting. The version 4 response boundary handles malformed decisions as metered invalid model responses when complete usage is available. It is not counted as a model failure. Automatic provider retries may consume tokens before a failed CLI response, which the CLI may not fully report.
 
+When the CLI reports a usage limit with no model reply, the error carries `resetsAt` in epoch seconds. If the reset is at most 6 hours away, the runner waits until 2 minutes after it and runs the same decision again, at most twice per decision. The wait is left out of the task's wall time. A later reset, a missing `resetsAt` or a third limit on the same decision pauses the task at its last checkpoint, and the same command resumes it.
+
 ## Local model inventory
 
 The official CLI initialize response on October 5, 2026 reported these exact IDs under the installed Max subscription. This is an availability inventory, not evidence that every model has completed a benchmark call.

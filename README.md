@@ -66,7 +66,7 @@ If one task fails, the suite names it and goes on to the next task. A failed tas
 
 Press Ctrl-C once to stop. The task pauses after the decision in progress, no later task starts, and the same command resumes it. A second Ctrl-C during a model call stops at once, and that task cannot resume and is not scored. Delete its folder and run the same command again to rerun it.
 
-If the Claude provider fails before the model replies, the call counts no tokens. The harness tries the decision again after 15 s, 1 min, 4 min and 10 min. A usage limit is not retried. If the provider is still failing, the task pauses at its last checkpoint and the suite stops there. Run the same command later and the task resumes from that checkpoint.
+If the Claude provider fails before the model replies, the call counts no tokens. The harness tries the decision again after 15 s, 1 min, 4 min and 10 min. A usage limit that names a reset within 6 hours, such as the five hour limit, makes the harness print the reset time, wait until 2 min after it and ask again. The wait does not count toward the task's wall limit, and Ctrl-C during it pauses the task. A later reset, such as a weekly limit, pauses the task. If the provider is still failing, the task pauses at its last checkpoint and the suite stops there. Run the same command later and the task resumes from that checkpoint.
 
 Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 
