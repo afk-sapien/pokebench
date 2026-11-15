@@ -16,13 +16,29 @@ from pokeagent_bench.session import replay
 
 
 def decision_stamps(run):
-    """The decision and cumulative tokens for each action, as the live run stamped its awards."""
-    tokens, total = {}, 0
+    """The decision and cumulative tokens for each action, as the live run stamped its awards.
+
+    A call that hit the provider output limit has no decision row. The live run counted its measured
+    usage from output-limit-accounting.json at that call, so the same tokens enter here at the same call.
+    """
+    spent = {}
     for line in (run / 'decisions.jsonl').read_text().splitlines():
         row = json.loads(line)
         usage = row.get('usage') or {}
-        total += (usage.get('input_tokens') or 0) + (usage.get('output_tokens') or 0)
-        tokens[row['index']] = total
+        spent[row['index']] = (usage.get('input_tokens') or 0) + (usage.get('output_tokens') or 0)
+    accounting = run / 'output-limit-accounting.json'
+    if accounting.exists():
+        failed = json.loads(accounting.read_text())
+        if failed['failed_decision'] in spent:
+            raise ValueError(f'{run}: the failed call also has a decision row')
+        spent[failed['failed_decision']] = failed['recovered_input_tokens'] + failed['recovered_output_tokens']
+    tokens, total = {}, 0
+    for index in sorted(spent):
+        total += spent[index]
+        tokens[index] = total
+    usage = json.loads((run / 'result.json').read_text())['usage']
+    if total != usage['input_tokens'] + usage['output_tokens']:
+        raise ValueError(f'{run}: call usage does not add up to the recorded total')
     decisions = []
     for line in (run / 'actions.jsonl').read_text().splitlines():
         match = re.fullmatch(r'decision-(\d+)-.+', json.loads(line)['operation_id'])
