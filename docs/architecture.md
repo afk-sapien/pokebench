@@ -69,9 +69,13 @@ campaign has been used to claim gameplay capability or calibrated budgets.
 Core releases are adopted explicitly by changing the wheel URL and SHA-256, then
 regenerating `uv.lock`. Run the test suite and replay existing private ROM traces
 before upgrading. Any change to observations, scoring, prompts, or budgets also
-requires a benchmark version change. The current tag is `red-v0.62-milestone-short`,
-released as package 0.37.0. It adds the seven milestone tasks to Short, scores Long by
-the v2 milestone list and ships the rebuilt fixture pack, as listed in
+requires a benchmark version change. The current tag is `red-v0.63-short-guard`,
+released as package 0.37.1. It stops each Short task after two thirds of its token cap
+without a new milestone, draws ledges and the Mansion 3F gap truthfully, pauses on
+Ctrl-C and waits out a near subscription reset, as listed in
+[the v0.37.1 notes](history/release-v0371.md). `red-v0.62-milestone-short`, package
+0.37.0, added the seven milestone tasks to Short, scored Long by the v2 milestone list
+and shipped the rebuilt fixture pack, as listed in
 [the v0.37.0 notes](history/release-v037.md). `red-v0.61-fair-harness`, package 0.36.0,
 was for PokeSim Core 0.12.0 and PyBoy RS 0.1.5 and collects the harness fixes listed in
 [the v0.61 notes](history/fair-harness-v061.md). `red-v0.60-pokecore-0.12` was the core upgrade alone. Earlier published rows used

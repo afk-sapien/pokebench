@@ -24,4 +24,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Milestone Short red-v0.62](release-v037.md)
 - [Short milestone guard v0.37.1](short-milestone-guard-v0371.md)
 - [Truthful local map v0.37.1](truthful-local-map-v0371.md)
+- [Short guard red-v0.63](release-v0371.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

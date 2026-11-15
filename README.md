@@ -19,12 +19,12 @@ The exploratory leaderboard preserves completed and partial results across frame
 
 ## Submit a model
 
-Submissions run release `v0.37.0`. Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
+Submissions run release `v0.37.1`. Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
 
 ```sh
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench setup --rom /path/to/red.gb
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter --suite smoke --provider random
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.0 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.1 pokebench setup --rom /path/to/red.gb
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.1 pokebench enter --suite smoke --provider random
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.1 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
 ```
 
 `setup` writes `data/` in that folder and runs go to `runs/`. The second line is a free check of the whole path. A random player presses buttons on the three smoke tasks, then `enter` packs the bundle and verifies it by replay. It calls no model. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
