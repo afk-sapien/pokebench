@@ -268,6 +268,76 @@ def test_a_cloudflare_403_keeps_its_status_and_text():
     assert details['text'] == text and details['no_reply'] is True
 
 
+def over_cap_stream(tokens=8192):
+    """The pinned CLI's events when a reply runs past the output cap, as in cell 7 of the v0.37.1 Short pilot."""
+    text = (f"API Error: Claude's response exceeded the {tokens} output token maximum. To configure this behavior, "
+            'set the CLAUDE_CODE_MAX_OUTPUT_TOKENS environment variable.')
+    return [{'type': 'assistant', 'message': {'model': MODEL, 'stop_reason': 'max_tokens',
+                                              'content': [{'type': 'thinking', 'thinking': 'Route north first'}]}},
+            {'type': 'assistant', 'error': 'max_output_tokens', 'api_error': 'max_output_tokens',
+             'is_api_error_message': True, 'api_error_params': {'cut': 'output_limit'},
+             'message': {'model': '<synthetic>', 'content': [{'type': 'text', 'text': text}]}},
+            {'type': 'result', 'subtype': 'success', 'is_error': True, 'terminal_reason': 'api_error',
+             'structured_output': None,
+             'modelUsage': {MODEL: dict(inputTokens=8, outputTokens=tokens, cacheReadInputTokens=0,
+                                        cacheCreationInputTokens=5084)}}]
+
+
+def test_a_reply_over_the_output_cap_is_a_metered_invalid_reply_not_a_provider_error():
+    # v0.37.1 raised a provider error here, which ended the cell as an infrastructure failure and stopped the run.
+    after = {'type': 'result', 'subtype': 'success', 'is_error': False,
+             'structured_output': {'actions': [{'command': 'use_move', 'argument': '1', 'count': 1}]},
+             'modelUsage': {MODEL: dict(inputTokens=20, outputTokens=8292, cacheReadInputTokens=5084,
+                                        cacheCreationInputTokens=5084)}}
+    value = provider(over_cap_stream() + [after])
+    sent = []
+    value.server.send = sent.append
+    message, usage = complete(value)
+    assert json.loads(message)['actions'] == []
+    assert (usage['input_tokens'], usage['output_tokens']) == (5092, 8192)
+    assert value.interface_record['correction_needed'] and value.interface_record['provider_code'] == 'max_output_tokens'
+    assert value.interface_feedback.startswith(
+        'Response format error. No action was executed and this still used one decision. '
+        'The reply reached the 8192 output token limit before it returned a decision. Return the decision')
+    assert json.loads(message)['interface_error'] == value.interface_feedback
+    # The same session answers the next decision, which carries the correction like any rejected reply.
+    message, usage = complete(value)
+    assert json.loads(message)['actions'][0]['argument'] == '1'
+    assert (usage['input_tokens'], usage['output_tokens']) == (5096, 100)
+    assert sent[-1]['message']['content'][-1]['text'].startswith('Response format error.')
+    assert value.interface_feedback is None and 'provider_code' not in value.interface_record
+
+
+class OverCap:
+    """Every decision is one reply past the output cap, through the real Claude interface."""
+    provider = 'claude-code'
+    model = MODEL
+
+    def decide(self, observation, notes, recent, limits, timeout):
+        from pokeagent_bench.decision_contract import parse_response
+        value = provider(over_cap_stream())
+        message, usage = complete(value)
+        decision, _, _ = parse_response(message, value.schema, limits)
+        return decision, usage, {'response_interface': value.interface_record}
+
+    def close(self):
+        pass
+
+
+@pytest.mark.parametrize('calls, stop', [(2, 'model_call_budget'), (5, 'invalid_model_response')])
+def test_over_cap_replies_count_their_tokens_and_end_the_run_by_the_normal_rules(tmp_path, calls, stop):
+    from conftest import FakeEngine
+    from pokeagent_bench.runner import run
+    from pokeagent_bench.session import Session
+    session = Session(FakeEngine(), tmp_path / 'run', {}, limits=Limits(max_model_calls=calls))
+    result = run(session, OverCap())
+    replies = min(calls, 3)
+    assert result['stop_reason'] == stop and result['outcome_category'] != 'infrastructure_failure'
+    assert result['usage']['calls'] == replies and result['usage']['accounting_complete']
+    assert (result['usage']['input_tokens'], result['usage']['output_tokens']) == (5092 * replies, 8192 * replies)
+    assert result['actions'] == 0 and not (session.output / 'error.json').exists()
+
+
 def test_a_synthetic_error_after_a_model_message_is_not_a_clean_failure():
     # The model already answered part of this decision, so its usage is unknown and the decision cannot rerun.
     events = [{'type': 'assistant', 'message': {'model': MODEL, 'content': [{'type': 'text', 'text': 'thinking'}]}},

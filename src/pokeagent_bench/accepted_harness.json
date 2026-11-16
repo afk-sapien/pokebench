@@ -15,6 +15,11 @@
       "benchmark": "red-v0.63-short-guard",
       "package_version": "0.37.1",
       "source_sha256": "68657f674f214621885c76f64eb445bd5c220ebc1f24c24e5a31b770bb435dfd"
+    },
+    {
+      "benchmark": "red-v0.63-short-guard",
+      "package_version": "0.37.2",
+      "source_sha256": "d0b09e3ede729d859ac5519fe2414831e91916add600127677318617699013ae"
     }
   ]
 }

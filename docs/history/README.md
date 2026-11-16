@@ -25,4 +25,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Short milestone guard v0.37.1](short-milestone-guard-v0371.md)
 - [Truthful local map v0.37.1](truthful-local-map-v0371.md)
 - [Short guard red-v0.63](release-v0371.md)
+- [Output cap reply v0.37.2](release-v0372.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

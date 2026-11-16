@@ -5,7 +5,9 @@ import re
 
 from .decision_contract import OPTIONAL, SPENT, normalize, reason
 
-ADAPTER = 'claude-interface-v8'
+ADAPTER = 'claude-interface-v9'
+# The CLI's code when a reply runs past CLAUDE_CODE_MAX_OUTPUT_TOKENS after its own continuation attempts.
+OUTPUT_CAP = 'max_output_tokens'
 
 
 def wire_schema(schema):
@@ -58,6 +60,9 @@ def install(module):
         commands = set(COMMANDS)
         # A synthetic error before any model message means the model never answered this decision.
         replied = False
+        # A reply past the output cap is the model's own answer, not an outage. The CLI follows its error
+        # with a metered result, which is then handled like any other reply that holds no valid decision.
+        over_cap = False
         while True:
             event = self.server.event(deadline)
             kind = event.get('type')
@@ -85,6 +90,9 @@ def install(module):
                                'status': event.get('apiErrorStatus') or (int(found.group(1)) if found else None),
                                'resets_at': quota.get('resetsAt'), 'limit_type': quota.get('rateLimitType'),
                                'no_reply': not replied, 'text': text or None}
+                    if not limited and details['provider_code'] == OUTPUT_CAP:
+                        over_cap = True
+                        continue
                     raise module.ProviderError('Claude subscription usage limit reached' if limited
                                                else 'Claude returned a synthetic provider error', details=details)
                 if message.get('model') != self.model:
@@ -108,7 +116,12 @@ def install(module):
             recoverable = event.get('subtype') in ('success', 'error_max_structured_output_retries', 'error_max_turns')
             if not recoverable:
                 raise module.ProviderError('Claude transport failed. Usage may be unreported')
+            if over_cap:
+                self.interface_record['provider_code'] = OUTPUT_CAP
             try:
+                if over_cap:
+                    raise ValueError(f'The reply reached the {self.max_output_tokens} output token limit '
+                                     'before it returned a decision')
                 if event.get('is_error') or event.get('subtype') != 'success':
                     raise ValueError('No valid structured decision was returned')
                 normalizer = getattr(self, 'response_normalizer', normalize)
