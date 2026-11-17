@@ -37,7 +37,7 @@ Both bundles also pass `pokebench verify` on this branch under 0.1.7, with this 
 
 The 16 Long runs and 400 Short runs (focused-pass-v056, main-v066-astra and main-v067-fable) were recorded under 0.1.1. They were replayed six at a time under 0.1.7. The Short runs were then replayed again under the old pins with the same code, as a control.
 
-- 16 of 16 Long runs pass, 12,930,007 frames in total. The largest is long-v072-astra-8k, with 2,222,534 frames, 80,799 actions and a score of 710.
+- 16 of 16 Long runs pass, 12,930,007 frames in total. The largest is long-v072-astra-8k, with 2,222,534 frames, 80,799 actions and a score of 710. The [0.1.5 note](pyboy-rs-015.md) shows the same 16 identical under 0.1.5, so each matches its record under both builds.
 - 300 of 400 Short runs pass under 0.1.7, 6,119,911 frames and 223,099 actions.
 - The control gives the same 400 rows under 0.1.5 as under 0.1.7, field for field apart from time. 300 pass under both.
 
