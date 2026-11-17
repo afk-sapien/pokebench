@@ -70,14 +70,16 @@ Core releases are adopted explicitly by changing the wheel URL and SHA-256, then
 regenerating `uv.lock`. Run the test suite and replay existing private ROM traces
 before upgrading. Any change to observations, scoring, prompts, or budgets also
 requires a benchmark version change. The current tag is `red-v0.63-short-guard`,
-released as package 0.37.3. Package 0.37.1 stops each Short task after two thirds of its
+released as package 0.37.4. Package 0.37.1 stops each Short task after two thirds of its
 token cap without a new milestone, draws ledges and the Mansion 3F gap truthfully, pauses
 on Ctrl-C and waits out a near subscription reset, as listed in
 [the v0.37.1 notes](history/release-v0371.md). Package 0.37.2 treats a Claude reply that
 runs past the output cap as a metered invalid reply instead of a provider error, as listed
 in [the v0.37.2 notes](history/release-v0372.md). Package 0.37.3 keeps a local folder out
 of the rebound fixtures and the bundles, as listed in
-[the v0.37.3 notes](history/release-v0373.md). `red-v0.62-milestone-short`, package
+[the v0.37.3 notes](history/release-v0373.md). Package 0.37.4 pins PyBoy RS 0.1.7 and
+PokeSim Core 0.12.3, as listed in [the v0.37.4 notes](history/release-v0374.md).
+`red-v0.62-milestone-short`, package
 0.37.0, added the seven milestone tasks to Short, scored Long by the v2 milestone list
 and shipped the rebuilt fixture pack, as listed in
 [the v0.37.0 notes](history/release-v037.md). `red-v0.61-fair-harness`, package 0.36.0,

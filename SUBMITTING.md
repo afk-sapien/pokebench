@@ -1,6 +1,6 @@
 # Submitting a run
 
-Run release `v0.37.3`, installed unchanged. `submit` and `verify` refuse a run from any other code.
+Run release `v0.37.4`, installed unchanged. `submit` and `verify` refuse a run from any other code.
 
 Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM. The README names the exact file and its hash. PokeBench ships no ROM, save or game table, and `setup` refuses any other ROM. A maintainer checks each result by replay and then decides whether to publish it.
 
@@ -9,9 +9,9 @@ Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you 
 Run these in an empty folder. No clone is needed.
 
 ```sh
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.3 pokebench setup --rom /path/to/red.gb
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.3 pokebench enter --suite smoke --provider random
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.3 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench setup --rom /path/to/red.gb
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite smoke --provider random
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
 ```
 
 1. `setup` checks the ROM hash and writes `data/` in the folder.
@@ -38,7 +38,7 @@ Before writing, `submit` scans the bundle for absolute paths, key shaped text, t
 
 ## Which versions are accepted
 
-Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.37.3`. The `v0.37.1` and `v0.37.2` entries stay listed. Their runs have the limits of `v0.37.3` and are checked on the `v0.37.3` checkout. The `v0.36.0` and `v0.37.0` entries stay listed so their runs keep their labels. Their Short run limits differ from `v0.37.3`, and `v0.36.0` also has a different Short suite and starts, so a bundle from either is checked on its own release's checkout.
+Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.37.4`. The `v0.37.1`, `v0.37.2` and `v0.37.3` entries stay listed. Their runs have the limits of `v0.37.4` and are checked on the `v0.37.4` checkout. A run paused on `v0.37.3` or older must be resumed on that same release, because resume refuses a different emulator, core or harness. The `v0.36.0` and `v0.37.0` entries stay listed so their runs keep their labels. Their Short run limits differ from `v0.37.4`, and `v0.36.0` also has a different Short suite and starts, so a bundle from either is checked on its own release's checkout.
 
 Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Install that release unchanged with the `uvx` lines above and run again.
 

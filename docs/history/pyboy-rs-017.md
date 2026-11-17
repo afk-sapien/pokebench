@@ -77,4 +77,4 @@ In the 0.1.7 sweep, the largest Long run peaked at 700.7 MB, and each process av
 1. The full test suite passes, 1122 passed and 12 skipped. `ruff check .` is clean.
 2. All five wheel hashes in `pyproject.toml` and the Core wheel hash match the SHA256SUMS of PyBoy RS v0.1.7 and pokecore-v0.12.3.
 
-This change edits `core.py`, so the harness source hash differs from the accepted 0.37.3 entry. `pokebench verify` refuses on this checkout until a release adds its own accepted entry.
+This change edits `core.py`, so the harness source hash differs from the accepted 0.37.3 entry. `pokebench verify` refuses on this checkout until a release adds its own accepted entry. Release 0.37.4 adds it, as listed in [the v0.37.4 notes](release-v0374.md).
