@@ -90,7 +90,7 @@ source hashes so locally edited builds remain distinct.
 
 ## References
 
-- [PokeSim Core 0.12.0](https://github.com/afk-sapien/pokesim/releases/tag/pokecore-v0.12.0), released from the PokeSim repository. The older pokesim-core repository is archived.
+- [PokeSim Core 0.12.3](https://github.com/afk-sapien/pokesim/releases/tag/pokecore-v0.12.3), released from the PokeSim repository, and [PyBoy RS 0.1.7](https://github.com/afk-sapien/pyboy-rs/releases/tag/v0.1.7). [The 0.1.7 note](history/pyboy-rs-017.md) records the replay proof for both pins. The older pokesim-core repository is archived.
 
 - [PokeSim source](https://github.com/afk-sapien/PokeSim)
 - [PyBoy API](https://docs.pyboy.dk/)

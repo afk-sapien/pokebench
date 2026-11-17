@@ -7,7 +7,9 @@ not an intrinsic model capability independent of its tools and memory.
 
 Use the same scenario directory for every compared run. The manifest identifies
 the ROM and state by SHA-256 and records the exact emulator build. Current runs
-use PyBoy RS 0.1.5 through PokeSim Core. Older runs that recorded PyBoy 2.7.0
+use PyBoy RS 0.1.7 through PokeSim Core. Runs recorded under PyBoy RS 0.1.1 or
+0.1.5 replay under 0.1.7 because the replay sweep in
+[the 0.1.7 note](history/pyboy-rs-017.md) proved those build pairs identical. Older runs that recorded PyBoy 2.7.0
 replay only under that backend. The initial state contains the
 cartridge RNG and machine state. Python's random-controller seed only controls
 that baseline's choices. It does not reseed Pokemon.

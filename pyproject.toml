@@ -10,12 +10,12 @@ requires-python = ">=3.11"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-  "pokecore @ https://github.com/afk-sapien/pokesim/releases/download/pokecore-v0.12.0/pokecore-0.12.0-py3-none-any.whl#sha256=d46507a9ad1da173d395d473c07ff0c9d586fc91d5fd1f16246f2f82ae195869",
-  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.5/pyboy_rs-0.1.5-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=85d000b9d6607f449b6a945bed7923ca3e1adb5bb97dc1606508501eef1da89d ; sys_platform == 'linux' and platform_machine == 'x86_64'",
-  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.5/pyboy_rs-0.1.5-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl#sha256=b332de4bec17fbd4c9f5bca3c399923c98df382344d9394174a2474cd5056759 ; sys_platform == 'linux' and platform_machine == 'aarch64'",
-  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.5/pyboy_rs-0.1.5-cp311-abi3-macosx_10_12_x86_64.whl#sha256=e604f8d4e0bc33e6d37ebc0bf77e85beab5223e68324ff57f175a56d6ff9c9f3 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
-  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.5/pyboy_rs-0.1.5-cp311-abi3-macosx_11_0_arm64.whl#sha256=2ff240cc2156ca201c6dca0ad2c2829c2deb4b4a3428553e6bd0e23c91f6f172 ; sys_platform == 'darwin' and platform_machine == 'arm64'",
-  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.5/pyboy_rs-0.1.5-cp311-abi3-win_amd64.whl#sha256=2517a5e44acc30f380e0070a8492a4d3241063b0a72638f87a84bd5651b3d9f7 ; sys_platform == 'win32' and (platform_machine == 'AMD64' or platform_machine == 'x86_64')",
+  "pokecore @ https://github.com/afk-sapien/pokesim/releases/download/pokecore-v0.12.3/pokecore-0.12.3-py3-none-any.whl#sha256=c064f6e564d22efa38e38b75a6de552f40d2f21cb9afb03c1d19666f47531668",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.7/pyboy_rs-0.1.7-cp311-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl#sha256=9c781e7bf5b09c8e7818c8a09b5c48d08b791c18a2871e81c306c456564019dd ; sys_platform == 'linux' and platform_machine == 'x86_64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.7/pyboy_rs-0.1.7-cp311-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl#sha256=bd485b88179252cbe33152e0cc5e787c99f3652e08f0a05dd2e988d9dc2a9b68 ; sys_platform == 'linux' and platform_machine == 'aarch64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.7/pyboy_rs-0.1.7-cp311-abi3-macosx_10_12_x86_64.whl#sha256=93408f3bca231f36a9dca0ef6279d03e0bb87694acb4d33e3162a711d53e1ec6 ; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.7/pyboy_rs-0.1.7-cp311-abi3-macosx_11_0_arm64.whl#sha256=95162264d07374deaabb49d3fda25cfd83d7804cf6b127f8316e1fe4e1f411d6 ; sys_platform == 'darwin' and platform_machine == 'arm64'",
+  "pyboy-rs @ https://github.com/afk-sapien/pyboy-rs/releases/download/v0.1.7/pyboy_rs-0.1.7-cp311-abi3-win_amd64.whl#sha256=7be26347ccd3d4cd6b9de9781dd91c6c40a8d3e0f3e08114802609d82bd43193 ; sys_platform == 'win32' and (platform_machine == 'AMD64' or platform_machine == 'x86_64')",
   "pillow>=10,<13",
   "numpy>=1.26,<3",
   "httpx>=0.28,<0.29",

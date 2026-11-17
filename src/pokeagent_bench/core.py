@@ -47,12 +47,17 @@ _PYBOY_RS_011 = {"backend": "pyboy-rs", "version": "0.1.1", "state_format": "pyb
 _PYBOY_RS_015 = {"backend": "pyboy-rs", "version": "0.1.5", "state_format": "pyboy-format-15",
                  "native_sha256": "c82540b72344fc7120decdf816bcc60c242d200542e25eda2568fbd5971b44ce",
                  "binding_sha256": "52fe3e8f575e065a37a4bad0187bdec5c5f68dec702038596ef9064c444be118"}
+_PYBOY_RS_017 = {"backend": "pyboy-rs", "version": "0.1.7", "state_format": "pyboy-format-15",
+                 "native_sha256": "61eb1a0fabbc89605f61d6ee5909793b435a0a4ec692d9897f90fdc56ded2885",
+                 "binding_sha256": "c0f52d21b1b0e2d8eeb5f289d133b12742e49148775a7db934edece2328650da"}
 
 # Build pairs proven by a replay sweep: every recorded run replayed under the
 # runtime build with identical frames, screens, evidence and scores. A shared
 # state format alone is not proof, so each entry names the note with its sweep.
 VERIFIED_EMULATOR_PAIRS = (
     {"recorded": _PYBOY_RS_011, "runtime": _PYBOY_RS_015, "evidence": "docs/history/pyboy-rs-015.md"},
+    {"recorded": _PYBOY_RS_011, "runtime": _PYBOY_RS_017, "evidence": "docs/history/pyboy-rs-017.md"},
+    {"recorded": _PYBOY_RS_015, "runtime": _PYBOY_RS_017, "evidence": "docs/history/pyboy-rs-017.md"},
 )
 
 
