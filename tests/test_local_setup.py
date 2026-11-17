@@ -58,6 +58,22 @@ def test_pack_round_trip_restores_files_and_hides_private_paths(tmp_path, rom, p
     assert str(private_tree.parent).encode() not in everything and b'/home/' not in everything
 
 
+def test_a_sibling_folder_of_the_fixture_root_is_never_filled_with_a_local_path(tmp_path, rom, private_tree):
+    # The rebind step records a sibling folder of the root. The pack holds it as the token glued to "-source".
+    scenario = private_tree / 'task' / 'default' / 'scenario.json'
+    sibling = f'{private_tree}-source/task/default/scenario.json'
+    scenario.write_text(json.dumps({'folder': str(private_tree / 'task' / 'default'), 'root': str(private_tree),
+                                    'catalog_rebind': {'source': sibling}}))
+    local_setup.build_pack(rom, private_tree, tmp_path / 'pack')
+    built = tmp_path / 'out' / 'fixtures'
+    local_setup.unpack_fixtures(STUB_ROM, built, tmp_path / 'pack')
+    restored = json.loads((built / 'task' / 'default' / 'scenario.json').read_text())
+    assert restored['folder'] == str(built / 'task' / 'default') and restored['root'] == str(built)
+    assert restored['catalog_rebind'] == {'source': local_setup.TOKEN + '-source/task/default/scenario.json'}
+    everything = b''.join(path.read_bytes() for path in built.rglob('*.json'))
+    assert f'{built}-source'.encode() not in everything and str(private_tree).encode() not in everything
+
+
 def test_pack_does_not_open_with_another_rom(tmp_path, rom, private_tree):
     local_setup.build_pack(rom, private_tree, tmp_path / 'pack')
     with pytest.raises(ValueError, match='different ROM'):

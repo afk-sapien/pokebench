@@ -31,6 +31,7 @@ GAME_DATA_SHA256 = {
 }
 PACK = Path(__file__).with_name('fixture_pack')
 TOKEN = '@POKEBENCH_FIXTURES@'
+FOLDER_TOKEN = re.compile(re.escape(TOKEN.encode()) + rb'(?![^/"])')
 WINDOW_LOG = 27
 MAX_TREE = 64 * 1024 * 1024
 # Only the files the runner reads go into the pack.
@@ -153,7 +154,9 @@ def unpack_fixtures(rom_bytes, destination, pack=None):
                 raise ValueError('The fixture pack holds an unexpected entry')
             data = tree.extractfile(member).read()
             if target.suffix == '.json':
-                data = data.replace(TOKEN.encode(), destination.as_posix().encode())
+                # Only a whole folder name is filled. The pack also holds the token glued to a sibling
+                # folder name, which stays as it is so no local path is written there.
+                data = FOLDER_TOKEN.sub(lambda _: destination.as_posix().encode(), data)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
     return summary

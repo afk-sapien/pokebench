@@ -200,6 +200,61 @@ def test_changed_scenario_fails(world, bundle):
     assert 'Scenario differs' in check(world)['problems'][0]
 
 
+REBIND = {'previous_catalog_sha256': 'b' * 64, 'state_unchanged': True}
+
+
+def rebound(world):
+    """A rebound fixture as setup on 0.37.0 to 0.37.2 wrote it: its source names a folder on each machine."""
+    fixture = world['fixtures'] / 'battle-one' / 'scenario.json'
+    scenario = {**json.loads(fixture.read_text()), 'catalog_sha256': 'c' * 64, 'objective': {'kind': 'win'}}
+    write_json(fixture, {**scenario, 'catalog_rebind': {
+        **REBIND, 'source': '/home/verifier/data/fixtures-source/battle-one/scenario.json'}})
+    path = world['run'] / 'cell-0001' / 'manifest.json'
+    write_json(path, {**json.loads(path.read_text()), 'scenario': {**scenario, 'catalog_rebind': {
+        **REBIND, 'source': '/home/someone/data/fixtures-source/battle-one/scenario.json'}}})
+
+
+def test_a_rebound_fixture_path_is_left_out_of_the_bundle_and_verifies(world):
+    rebound(world)
+    submission.submit(world['run'], world['bundle'])
+    with zipfile.ZipFile(world['bundle']) as archive:
+        packed = json.loads(archive.read('cell-0001/manifest.json'))
+    assert packed['scenario']['catalog_rebind'] == REBIND
+    result = check(world)
+    assert result['verified'] and result['problems'] == []
+
+
+@pytest.mark.parametrize('change', [
+    lambda scenario: scenario.update(objective={'kind': 'lose'}),
+    lambda scenario: scenario.update(catalog_sha256='d' * 64),
+    lambda scenario: scenario['catalog_rebind'].update(previous_catalog_sha256='e' * 64),
+    lambda scenario: scenario['catalog_rebind'].update(state_unchanged=False),
+    lambda scenario: scenario.pop('catalog_rebind'),
+], ids=['objective', 'catalog', 'previous-catalog', 'state-unchanged', 'no-rebind'])
+def test_ignoring_the_rebind_source_lets_no_other_scenario_change_through(world, change):
+    rebound(world)
+    submission.submit(world['run'], world['bundle'])
+    repack(world['bundle'], edit('cell-0001/manifest.json', lambda manifest: change(manifest['scenario'])))
+    result = check(world)
+    assert not result['verified'] and 'Scenario differs' in result['problems'][0]
+
+
+@pytest.mark.parametrize('place', [
+    lambda manifest: manifest.update(run_folder='/home/someone/runs/short'),
+    lambda manifest: manifest['scenario'].update(provenance={'origin': '/home/someone/catalog/battle-one'}),
+    lambda manifest: manifest['scenario'].update(catalog_rebind={'origin': '/home/someone/catalog/battle-one'}),
+], ids=['top-level', 'scenario', 'rebind'])
+def test_a_home_path_anywhere_else_in_a_manifest_still_stops_the_pack(world, place):
+    path = world['run'] / 'cell-0001' / 'manifest.json'
+    manifest = json.loads(path.read_text())
+    place(manifest)
+    write_json(path, manifest)
+    with pytest.raises(ValueError, match='Privacy scan stopped the bundle') as error:
+        submission.submit(world['run'], world['bundle'])
+    assert 'cell-0001/manifest.json: path or key shaped' in str(error.value)
+    assert not world['bundle'].exists()
+
+
 def test_missing_task_is_refused(world, bundle):
     def change(files):
         value = json.loads(files['plan.json'])

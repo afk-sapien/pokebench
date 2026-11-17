@@ -115,10 +115,28 @@ def privacy_findings(files, names):
     return findings
 
 
+def without_provenance(scenario):
+    """The scenario without catalog_rebind.source, which only records where a fixture was rebuilt.
+
+    Setup on 0.37.0 to 0.37.2 wrote the user's own fixture folder there, so it differs between
+    machines and can hold a local path. Every other field still has to match the benchmark fixture.
+    """
+    scenario = json.loads(json.dumps(scenario))
+    rebind = scenario.get('catalog_rebind') if isinstance(scenario, dict) else None
+    if isinstance(rebind, dict):
+        rebind.pop('source', None)
+    return scenario
+
+
 def public_manifest(manifest, endpoint_host):
-    """Drop the endpoint address and the platform string. A host name can identify the submitter."""
+    """Drop the endpoint address, the platform string and the fixture provenance path.
+
+    A host name can identify the submitter.
+    """
     manifest = json.loads(json.dumps(manifest))
     manifest.pop('platform', None)
+    if 'scenario' in manifest:
+        manifest['scenario'] = without_provenance(manifest['scenario'])
     configuration = manifest.get('agent', {}).get('configuration') or {}
     endpoint = configuration.pop('endpoint', None)
     if endpoint and endpoint_host:
@@ -342,7 +360,7 @@ def check_cell(cell, files, fixtures, rom, work, replay):
     scenario = json.loads((source / 'scenario.json').read_text())
     if manifest.get('initial_sha256') != scenario['state_sha256']:
         raise ValueError('Start state is not the benchmark start for this task')
-    if manifest.get('scenario') != scenario:
+    if without_provenance(manifest.get('scenario')) != without_provenance(scenario):
         raise ValueError('Scenario differs from the benchmark fixture')
     protocol = scoring(cell['task_id'])
     maximum = protocol.pop('score_max')

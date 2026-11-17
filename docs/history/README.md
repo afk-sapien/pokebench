@@ -26,4 +26,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Truthful local map v0.37.1](truthful-local-map-v0371.md)
 - [Short guard red-v0.63](release-v0371.md)
 - [Output cap reply v0.37.2](release-v0372.md)
+- [Fixture path in Long bundles v0.37.3](release-v0373.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)
