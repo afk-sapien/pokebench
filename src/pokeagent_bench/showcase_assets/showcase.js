@@ -37,8 +37,8 @@ function stopText(r) {
   return ''
 }
 const unranked = c => (data.short.unranked_categories || []).includes(c)
-// A row's task set: the stored suite for a rerun row, else the earlier tasks its own attempts cover.
-const taskSet = m => m.suite ? `${m.suite.tasks}-task ${shortTag(m.suite.benchmark)}` : `${new Set(data.short.cells.filter(c => c.model === m.id).map(c => c.task_id)).size}-task earlier`
+// A row's task set: the stored suite for a rerun row, else the scored earlier tasks its own attempts cover.
+const taskSet = m => m.suite ? `${m.suite.tasks}-task ${shortTag(m.suite.benchmark)}` : `${new Set(data.short.cells.filter(c => c.model === m.id && !c.retired).map(c => c.task_id)).size}-task earlier`
 const splitSets = () => (data.short.models.some(m => m.suite) && data.short.models.some(m => !m.suite)) || new Set(data.short.models.map(taskSet)).size > 1
 const setNote = m => `<span class="note-label" title="${esc(m.suite ? `Scored on the ${m.suite.tasks} tasks of ${m.suite.benchmark}, from ${m.suite.source}.` : 'Scored on the earlier task set. Kept until this model has a complete rerun.')} Rows on different task sets are not strictly comparable.">${esc(taskSet(m))} set</span>`
 function weightParts(cells, ranked) {
@@ -123,7 +123,15 @@ function renderRank() {
   renderWeights()
   renderSuiteNote()
   renderAttempts()
-  $('short-stats').innerHTML = [[s.tasks.filter(t => !t.retired).length,'tasks'],[new Set(s.models.map(m => m.maintainer ? m.maintainer.model : m.id)).size,'models'],[s.finished + '/' + s.planned,'trials finished']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('')
+  // With two task sets on the page, their union is a count no row ran, so each set's own size is shown.
+  const sets = new Map()
+  for (const m of [...s.models].sort((a, b) => !a.suite - !b.suite)) {
+    const name = m.suite ? shortTag(m.suite.benchmark) + ' set' : 'earlier set'
+    if (!sets.has(name)) sets.set(name, new Set())
+    for (const c of s.cells) if (c.model === m.id && !c.retired) sets.get(name).add(c.task_id)
+  }
+  const taskStats = split ? [...sets].map(([name, ids]) => [ids.size, name + ' tasks']) : [[s.tasks.filter(t => !t.retired).length,'tasks']]
+  $('short-stats').innerHTML = [...taskStats,[new Set(s.models.map(m => m.maintainer ? m.maintainer.model : m.id)).size,'models'],[s.finished + '/' + s.planned,'trials finished']].map(([n,label]) => `<div><strong>${n}</strong><span>${label}</span></div>`).join('')
 }
 function renderAttempts() {
   const a = data.short.attempts || {rule: '', log: []}

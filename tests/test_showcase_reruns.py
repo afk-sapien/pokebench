@@ -438,6 +438,10 @@ def test_page_gives_a_maintainer_row_no_rank_and_names_it_in_the_notes(site, tmp
     assert 'fixed before the reruns' not in page['short-cost']['html'] and 'Verified, not published' in page['tasks']['html']
     # Models are counted once each. Haiku has no earlier row here, so it is the third.
     assert '<strong>3</strong><span>models</span>' in page['short-stats']['html']
+    # Each task set shows its own size, the current set first, and the union no row ran is not shown.
+    stats = re.findall(r'<strong>([^<]*)</strong><span>([^<]*)</span>', page['short-stats']['html'])
+    assert stats[:2] == [('3', 'red-v0.63 set tasks'), ('3', 'earlier set tasks')] and all(label != 'tasks' for _, label in stats)
+    assert '<strong>3</strong><span>tasks</span>' in render(tmp_path, site.built({}))['short-stats']['html']
     # A maintainer row of a model that already has a ranked row adds no model.
     data = site.built({}, [maintainer_entry(site.base)])
     for row in data['short']['models']:
