@@ -1,6 +1,7 @@
 """A model's new v0.37 source replaces its old Short cells or Long run only when complete, and moves no other row."""
 import copy
 import hashlib
+from html import unescape
 import json
 import os
 from pathlib import Path
@@ -532,17 +533,38 @@ def test_short_snapshot_shows_community_rows_only_against_a_stored_suite(site):
         short_snapshot({'cells': [], 'tasks': [], 'categories': []}, site.web, community=[report])
 
 
-def test_submit_section_pins_one_release_and_links_the_guide_on_main():
-    page = (ASSETS / 'index.html').read_text()
-    section = page.split('<section id="submit"', 1)[1].split('</section>', 1)[0]
+GUIDE = re.compile(r'href="https://github\.com/afk-sapien/pokebench/blob/([0-9a-f]{40})/SUBMITTING\.md"')
+
+
+def submit_section():
+    page =(ASSETS / 'index.html').read_text()
+    return page, page.split('<section id="submit"', 1)[1].split('</section>', 1)[0]
+
+
+def test_submit_section_pins_one_release_and_one_guide_commit():
+    page, section = submit_section()
     assert '<a href="#submit">Submit</a>' in page
     commands = re.findall(r'<code>(uvx [^<]*)</code>', section)
     tags = {re.search(r'pokebench@(v[\d.]+) pokebench ', c)[1] for c in commands}
     assert len(commands) == 4 and len(tags) == 1 and f'from release {tags.pop()}, installed unchanged' in section
     assert [c.split(' pokebench ', 1)[1].split()[:3] for c in commands] == [
         ['setup', '--rom', '/path/to/red.gb'], ['enter', '--suite', 'smoke'], ['enter', '--suite', 'short'], ['enter', '--suite', 'short']]
-    assert 'href="https://github.com/afk-sapien/pokebench/blob/main/SUBMITTING.md"' in section
+    # The guide link names one commit, so a later change on a branch cannot change the guide under these commands.
+    assert len(GUIDE.findall(section)) == 1 and section.count('/SUBMITTING.md"') == 1
     assert '—' not in section and ';' not in section.replace('&amp;', '')
+
+
+def test_submit_guide_commit_holds_every_command_on_the_page():
+    _, section = submit_section()
+    commit = GUIDE.search(section)[1]
+    shown = subprocess.run(['git', 'show', f'{commit}:SUBMITTING.md'], cwd=ASSETS, capture_output=True, text=True) \
+        if shutil.which('git') else None
+    if not shown or shown.returncode:
+        pytest.skip(f'commit {commit} is not in this clone')
+    commands = [unescape(c) for c in re.findall(r'<code>([^<]*)</code>', section)]
+    tag = re.search(r'pokebench@(v[\d.]+) ', section)[1]
+    assert len(commands) == 5 and [c for c in commands if c not in shown.stdout] == []
+    assert f'Run release `{tag}`, installed unchanged.' in shown.stdout
 
 
 @pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
