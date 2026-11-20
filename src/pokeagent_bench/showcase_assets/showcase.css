@@ -192,6 +192,7 @@ thead {border-top:1px solid #bfc6b5}
 .community-note {color:#9b6525}
 .community-note {display:block}
 .community-note {margin:5px 0 0 27px}
+.maintainer-note {color:#3d6b5a}
 .harness-revision {font-size:12px}
 .harness-revision {display:block}
 .harness-version {font:9px monospace}
@@ -413,6 +414,40 @@ summary {cursor:pointer}
 .about-links {margin:23px 0}
 .about-links a {font-size:12px}
 .about-links a {font-weight:bold}
+.submit {border-top:1px solid #bfc8b5}
+.submit {margin-top:70px}
+.submit {padding:46px 0 0}
+.submit {display:grid}
+.submit {grid-template-columns:1fr 1.5fr}
+.submit {gap:70px}
+.submit>div {min-width:0}
+.submit h2 {font-size:30px}
+.submit h3 {font-size:15px}
+.submit h3 {margin:28px 0 8px}
+.submit h3:first-child {margin-top:0}
+.submit p:not(.eyebrow):not(.small),.submit li {color:#697360}
+.submit p:not(.eyebrow):not(.small),.submit li {line-height:1.7}
+.submit p:not(.eyebrow):not(.small),.submit li {font-size:14px}
+.submit a:hover {color:#a62824}
+.commands {margin:10px 0 14px}
+.commands {padding:14px 16px}
+.commands {background:#24291f}
+.commands {color:#e9eddf}
+.commands {border-radius:8px}
+.commands {font-size:12px}
+.commands {line-height:1.7}
+.commands code {display:block}
+.commands code {padding-left:2em}
+.commands code {text-indent:-2em}
+.commands code {overflow-wrap:anywhere}
+.commands code+code {margin-top:6px}
+.checks {margin-top:28px}
+.steps,.checks ul {padding-left:20px}
+.steps,.checks ul {margin:8px 0 14px}
+.submit-cost p {margin:6px 0}
+.checks {display:grid}
+.checks {grid-template-columns:1fr 1fr}
+.checks {gap:30px}
 footer {padding-top:25px}
 footer {padding-bottom:35px}
 footer {border-top:1px solid #d7ddcd}
@@ -488,6 +523,11 @@ h2 {font-size:23px}
 .about {grid-template-columns:1fr}
 .about {gap:12px}
 .about {margin-top:45px}
+.submit {grid-template-columns:1fr}
+.submit {gap:12px}
+.submit {margin-top:45px}
+.checks {grid-template-columns:1fr}
+.checks {gap:0}
 footer {flex-wrap:wrap}
 footer>span {width:100%}
 }

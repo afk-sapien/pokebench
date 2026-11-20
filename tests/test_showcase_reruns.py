@@ -1,15 +1,19 @@
 """A model's new v0.37 source replaces its old Short cells or Long run only when complete, and moves no other row."""
 import copy
+import hashlib
+from html import unescape
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import subprocess
 
 import pytest
 
 from pokeagent_bench import showcase
-from pokeagent_bench.showcase import RERUN_FORMAT, SOURCES, SUITE_FILE, build, community_reports, freeze, long_snapshot, short_snapshot
+from pokeagent_bench.showcase import (MAINTAINER_FORMAT, MAINTAINER_REVISION, RERUN_FORMAT, SOURCES, SUITE_FILE, build,
+                                     community_reports, freeze, long_snapshot, maintainer_sources, short_snapshot)
 from pokeagent_bench.showcase_costs import PRICING, comparison
 
 OPUS, SOL = 'claude-opus-5-5', 'gpt-5.6-sol'
@@ -117,10 +121,11 @@ def site(tmp_path):
 
     write(tmp_path / 'frozen.json', dict(format='pokebench-showcase-frozen-v1', **freeze(current()['short'])))
 
-    def built(models):
+    def built(models, maintainer=()):
         write(tmp_path / 'sources.json', {'format': RERUN_FORMAT, 'models': models})
+        write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': list(maintainer)})
         data = plain(build(base, web, sources=tmp_path / 'sources.json', frozen=tmp_path / 'frozen.json',
-                           suite=tmp_path / 'suite.json'))
+                           suite=tmp_path / 'suite.json', maintainer=tmp_path / 'maintainer.json'))
         data.pop('updated_at')
         return data
 
@@ -316,6 +321,203 @@ def test_page_labels_task_sets_only_when_rows_differ(site, tmp_path):
     assert '66.7%' in mixed['tasks']['html'] and 'fixed before the reruns' in mixed['short-cost']['html']
 
 
+HAIKU = 'claude-haiku-5-5'
+EXTRA = f'{HAIKU}@red-v0.63'
+RUNS = 'release-runs/short-haiku'
+BACKUP = 'release-runs/backup/cell-0302-v0371-provider-error'
+
+
+def report_cells():
+    return [dict(c, replay_verified=True) for c in new_cells(HAIKU, 301)]
+
+
+def maintainer_entry(base, cells=None, **change):
+    """A verified report, the run folder it came from and one kept copy, as a maintainer-rows.json entry."""
+    cells = report_cells() if cells is None else cells
+    for c in report_cells():
+        if not (base / RUNS / c['id']).exists():
+            attempt(base / RUNS / c['id'], NEW, c['tokens'], HAIKU)
+            write(base / RUNS / c['id'] / 'manifest.json', {'benchmark': NEW, 'agent': {'model': HAIKU}, 'package_version': '0.37.2',
+                                                           'scenario': {'task_id': c['task_id']}})
+    write(base / BACKUP / 'manifest.json', {'agent': {'model': HAIKU}, 'scenario': {'task_id': 'navigation-new'}})
+    write(base / BACKUP / 'result.json', {'state': 'evaluation_error', 'stop_reason': 'provider_error', 'usage': {'calls': 40}})
+    write(base / 'release-rows/haiku.json', {'format': 'pokebench-verified-report-v1', 'verified': True, 'problems': [],
+                                             'suite': 'short', 'model': HAIKU, 'bundle_sha256': 'bundle',
+                                             'harness': {'benchmark': NEW, 'package_version': '0.37.4'}, 'cells': cells})
+    entry = {'id': EXTRA, 'model': HAIKU, 'suite': 'short', 'report': 'release-rows/haiku.json',
+             'report_sha256': hashlib.sha256((base / 'release-rows/haiku.json').read_bytes()).hexdigest(), 'runs': RUNS,
+             'replaced': {BACKUP: 'Stopped by a provider error.'}, 'release': 'v0.37.4',
+             'label': 'Maintainer run, replay verified', 'detail': 'Not given a rank.'}
+    return dict(entry, **change)
+
+
+def test_a_maintainer_row_sits_beside_the_ranked_rows_and_moves_none_of_them(site, capsys):
+    before, after = site.built({}), site.built({}, [maintainer_entry(site.base)])
+    assert capsys.readouterr().err == ''
+    b, a = before['short'], after['short']
+    assert by(a['models'], EXTRA) == b['models'] and by(a['cells'], EXTRA) == b['cells']
+    assert by(a['attempts']['log'], EXTRA) == b['attempts']['log'] and after['long'] == before['long']
+    # It takes no part in the cost comparison or the frozen starts.
+    assert a['efficiency'] == b['efficiency'] and freeze(copy.deepcopy(a)) == freeze(copy.deepcopy(b))
+    row = by(a['models'], EXTRA, keep=True)[0]
+    assert (row['label'], row['complete'], row['harness']['label']) == ('Haiku (red-v0.63)', True, 'red-v0.63')
+    assert row['suite'] == {'benchmark': NEW, 'tasks': 3, 'source': RUNS}
+    assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Not given a rank.', 'model': HAIKU,
+                                 'release': 'v0.37.4', 'packages': ['0.37.2'], 'verified_on': '0.37.4',
+                                 'report_sha256': maintainer_entry(site.base)['report_sha256'], 'bundle_sha256': 'bundle',
+                                 'wall_seconds': None}
+    cells = by(a['cells'], EXTRA, keep=True)
+    assert [c['id'] for c in cells] == ['cell-0301', 'cell-0302', 'cell-0303', 'cell-0304']
+    assert {(c['source'], c['revision'], c['harness'], c['replay']) for c in cells} == {(RUNS, MAINTAINER_REVISION, NEW, None)}
+    assert all(c['cost']['low'] > 0 for c in cells) and (a['finished'], a['planned']) == (12, 12)
+    assert by(a['attempts']['log'], EXTRA, keep=True) == [
+        {'batch': RUNS, 'cell': 'cell-0302', 'kind': 'replaced', 'reason': 'Stopped by a provider error.', 'model': EXTRA,
+         'task_id': 'navigation-new', 'stop_reason': 'provider_error', 'decisions': 40}]
+    assert [t for t in a['tasks'] if t['id'] != 'navigation-new'] == b['tasks']
+
+
+OFF = {'sha': 'does not match its listed sha256.', 'tokens': 'used a different token count than the report.',
+       'unverified': 'is finished and not replay verified.', 'missing': 'with 1 missing, 0 not in the suite and 0 repeated.',
+       'harness': f'recorded harness red-v0.61-older, not {NEW}.', 'model': 'ran a different model or task than the report.',
+       'outside': 'is not a folder under the data folder.', 'other spec': f'that {SUITE_FILE} does not list.'}
+
+
+@pytest.mark.parametrize('break_it', OFF)
+def test_a_maintainer_row_its_runs_do_not_back_stays_off_the_site(site, capsys, break_it):
+    before = site.built({})
+    cells = report_cells()
+    if break_it == 'unverified':
+        cells[1]['replay_verified'] = False
+    elif break_it == 'missing':
+        cells.pop()
+    elif break_it == 'other spec':
+        cells[0]['evaluation_spec_sha256'] = 'spec-older'
+    entry = maintainer_entry(site.base, cells)
+    if break_it == 'sha':
+        entry['report_sha256'] = '0' * 64
+    elif break_it == 'tokens':
+        write(site.base / RUNS / 'cell-0303/result.json', {'state': 'finished', 'usage': {'input_tokens': 1, 'output_tokens': 1}})
+    elif break_it in ('harness', 'model'):
+        manifest = json.loads((site.base / RUNS / 'cell-0303/manifest.json').read_text())
+        if break_it == 'harness':
+            manifest['benchmark'] = 'red-v0.61-older'
+        else:
+            manifest['agent']['model'] = OPUS
+        write(site.base / RUNS / 'cell-0303/manifest.json', manifest)
+    elif break_it == 'outside':
+        entry['runs'] = '../outside'
+    assert site.built({}, [entry]) == before
+    error = capsys.readouterr().err
+    assert error.startswith(f'{EXTRA}: left off the site. ') and error.count('\n') == 1 and OFF[break_it] in error
+
+
+@pytest.mark.parametrize('change, why', [({'format': 'other'}, 'is not a'), ({'rows': [{'id': 'x'}]}, 'each row names exactly'),
+                                         ({'rows': [dict.fromkeys(showcase.MAINTAINER_KEYS, 'x')]}, 'only Short rows')])
+def test_the_maintainer_list_names_every_field_and_only_short_rows(tmp_path, change, why):
+    write(tmp_path / 'rows.json', {'format': MAINTAINER_FORMAT, 'rows': [], **change})
+    with pytest.raises(ValueError, match=why):
+        maintainer_sources(tmp_path / 'rows.json')
+
+
+def test_the_checked_in_maintainer_list_holds_the_haiku_row():
+    rows = maintainer_sources(SOURCES / 'maintainer-rows.json')
+    assert [(r['id'], r['model'], r['release'], r['label']) for r in rows] == [
+        (EXTRA, HAIKU, 'v0.37.4', 'Maintainer run, replay verified')]
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_page_gives_a_maintainer_row_no_rank_and_names_it_in_the_notes(site, tmp_path):
+    page = render(tmp_path, site.built({}, [maintainer_entry(site.base)]))
+    rows = page['ranking']['html'].split('<tr ')[1:]
+    ranks = [(re.search(r'<span class="rank"[^>]*>([^<]*)</span>', r)[1], 'Haiku (red-v0.63)' in r) for r in rows]
+    assert [rank for rank, extra in ranks if not extra] == ['01', '02'] and [rank for rank, extra in ranks if extra] == ['—']
+    extra = next(r for r in rows if 'Haiku (red-v0.63)' in r)
+    assert 'Haiku (red-v0.63)' in extra and 'maintainer-note' in extra and 'Maintainer run, replay verified' in extra
+    assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra
+    assert 'Haiku (red-v0.63) is a maintainer run on the red-v0.63 Short suite' in page['suite-note']['text']
+    assert 'The ranked rows keep their earlier results.' in page['suite-note']['text']
+    assert 'is a maintainer run on a newer harness and stays out of this comparison.' in page['short-cost']['html']
+    assert 'fixed before the reruns' not in page['short-cost']['html'] and 'Verified, not published' in page['tasks']['html']
+    # Models are counted once each. Haiku has no earlier row here, so it is the third.
+    assert '<strong>3</strong><span>models</span>' in page['short-stats']['html']
+    # Each task set shows its own size, the current set first, and the union no row ran is not shown.
+    stats = re.findall(r'<strong>([^<]*)</strong><span>([^<]*)</span>', page['short-stats']['html'])
+    assert stats[:2] == [('3', 'red-v0.63 set tasks'), ('3', 'earlier set tasks')] and all(label != 'tasks' for _, label in stats)
+    assert '<strong>3</strong><span>tasks</span>' in render(tmp_path, site.built({}))['short-stats']['html']
+    # A maintainer row of a model that already has a ranked row adds no model.
+    data = site.built({}, [maintainer_entry(site.base)])
+    for row in data['short']['models']:
+        row.get('maintainer', {}).update(model=OPUS)
+    assert '<strong>2</strong><span>models</span>' in render(tmp_path, data)['short-stats']['html']
+
+
+GUIDE = re.compile(r'href="https://github\.com/afk-sapien/pokebench/blob/([0-9a-f]{40})/SUBMITTING\.md"')
+
+
+def submit_section():
+    page = (ASSETS / 'index.html').read_text()
+    return page, page.split('<section id="submit"', 1)[1].split('</section>', 1)[0]
+
+
+def test_submit_section_pins_one_release_and_one_guide_commit():
+    page, section = submit_section()
+    assert '<a href="#submit">Submit</a>' in page
+    commands = re.findall(r'<code>(uvx [^<]*)</code>', section)
+    tags = {re.search(r'pokebench@(v[\d.]+) pokebench ', c)[1] for c in commands}
+    assert len(commands) == 4 and len(tags) == 1 and f'from release {tags.pop()}, installed unchanged' in section
+    assert [c.split(' pokebench ', 1)[1].split()[:3] for c in commands] == [
+        ['setup', '--rom', '/path/to/red.gb'], ['enter', '--suite', 'smoke'], ['enter', '--suite', 'short'], ['enter', '--suite', 'short']]
+    # The guide link names one commit, so a later change on a branch cannot change the guide under these commands.
+    assert len(GUIDE.findall(section)) == 1 and section.count('/SUBMITTING.md"') == 1
+    assert '—' not in section and ';' not in section.replace('&amp;', '')
+
+
+def test_submit_guide_commit_holds_every_command_on_the_page():
+    _, section = submit_section()
+    commit = GUIDE.search(section)[1]
+    shown = subprocess.run(['git', 'show', f'{commit}:SUBMITTING.md'], cwd=ASSETS, capture_output=True, text=True) \
+        if shutil.which('git') else None
+    if not shown or shown.returncode:
+        pytest.skip(f'commit {commit} is not in this clone')
+    commands = [unescape(c) for c in re.findall(r'<code>([^<]*)</code>', section)]
+    tag = re.search(r'pokebench@(v[\d.]+) ', section)[1]
+    assert len(commands) == 5 and [c for c in commands if c not in shown.stdout] == []
+    assert f'Run release `{tag}`, installed unchanged.' in shown.stdout
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_submit_cost_reads_the_current_set_caps_and_its_priced_runs(site, tmp_path):
+    data = site.built({}, [maintainer_entry(site.base)])
+    row = next(m for m in data['short']['models'] if m.get('maintainer'))
+    worst = sum(c['token_limit'] for c in data['short']['cells'] if c['model'] == row['id'] and not c.get('retired'))
+    html = render(tmp_path, data)['submit-cost']['html']
+    assert f'up to {worst / 1e6:.1f}M tokens, input plus output' in html
+    assert f'{HAIKU} used {row["tokens"] / 1e6:.1f}M, an estimated ${row["cost"]["low"]:.2f}' in html
+    assert '<strong>Local model:</strong> free.' in html and '—' not in html.replace('–', '')
+    # The test runs record no play time, so no time line is shown.
+    assert row['maintainer']['wall_seconds'] is None and 'Time:' not in html
+    # With no priced row on a stored set the page keeps its static text.
+    assert 'submit-cost' not in render(tmp_path, site.built({}))
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_submit_time_is_one_example_from_the_kept_attempts_play_time(site, tmp_path):
+    entry = maintainer_entry(site.base)
+    for number, seconds in zip(range(301, 305), (20000, 21000, 20000, 1000)):
+        path = site.base / RUNS / f'cell-{number:04d}/result.json'
+        write(path, dict(json.loads(path.read_text()), wall_seconds=seconds + 0.4))
+    data = site.built({}, [entry])
+    row = next(m for m in data['short']['models'] if m.get('maintainer'))
+    # The replaced attempt is not counted, only the four kept ones.
+    assert row['maintainer']['wall_seconds'] == 62002
+    html = render(tmp_path, data)['submit-cost']['html']
+    assert ('<p><strong>Time:</strong> one example, not a promise. The published claude-haiku-5-5 run played the whole Short suite, '
+            'one task at a time, in about 17 hours. Yours depends on the model, its provider and your machine.</p>') in html
+    for row in data['short']['models']:
+        row.get('maintainer', {}).update(wall_seconds=600)
+    assert 'in about 10 minutes.' in render(tmp_path, data)['submit-cost']['html']
+
+
 REAL = os.environ.get('POKEBENCH_SITE_DATA')
 
 
@@ -325,9 +527,28 @@ def test_real_site_data_is_unchanged_with_no_entries(tmp_path):
     web = base / 'reviews/all-results-preview'
     stored = json.loads((web / 'showcase-data.json').read_text())
     write(tmp_path / 'sources.json', {'format': RERUN_FORMAT, 'models': {}})
-    data = plain(build(base, web, sources=tmp_path / 'sources.json'))
+    write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': []})
+    data = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))
     for value in (stored, data):
         value.pop('updated_at')
     assert data == stored
     frozen = showcase.load(SOURCES / 'frozen.json')
     assert freeze(copy.deepcopy(data['short'])) == {k: frozen[k] for k in ('comparison_starts', 'current_starts')}
+
+
+@pytest.mark.skipif(not REAL, reason='set POKEBENCH_SITE_DATA to the data folder to check the checked-in maintainer rows')
+def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys):
+    base = Path(REAL)
+    web = base / 'reviews/all-results-preview'
+    write(tmp_path / 'sources.json', {'format': RERUN_FORMAT, 'models': {}})
+    write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': []})
+    before = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))['short']
+    after = plain(build(base, web, sources=tmp_path / 'sources.json'))['short']
+    assert capsys.readouterr().err == ''
+    assert by(after['models'], EXTRA) == before['models'] and by(after['cells'], EXTRA) == before['cells']
+    assert after['efficiency'] == before['efficiency']
+    row = by(after['models'], EXTRA, keep=True)[0]
+    assert (row['label'], row['finished'], row['planned'], round(row['score'], 3)) == ('Haiku (red-v0.63)', 46, 46, 0.628)
+    assert row['maintainer']['packages'] == ['0.37.1', '0.37.2'] and row['maintainer']['release'] == 'v0.37.4'
+    # 46 kept attempts, summed: about 17.2 hours of play.
+    assert row['maintainer']['wall_seconds'] == 61934
