@@ -7,8 +7,8 @@ from pokeagent_bench import quick_run
 from pokeagent_bench.bounded_provider import BoundedGameplayProvider
 from pokeagent_bench.codex_provider import CodexProvider
 from pokeagent_bench.core import Limits
-from pokeagent_bench.openai_compatible_provider import OpenAICompatibleProvider
-from pokeagent_bench.providers import ProviderError
+from pokeagent_bench.openai_compatible_provider import OpenAICompatibleProvider, probe
+from pokeagent_bench.providers import ProviderError, SetupError
 
 # No model is called here. A fake transport answers every request.
 MOVE = {'actions': [{'command': 'move', 'argument': 'up', 'count': 2}]}
@@ -110,9 +110,76 @@ def test_endpoint_failures_stop_the_run(monkeypatch, response, message):
         decide(value)
 
 
+def test_a_refused_connection_sent_nothing_so_the_run_asks_again(monkeypatch):
+    # The runner retries a no_reply error and then pauses the run, so the same command resumes it.
+    for failure in (httpx.ConnectError('refused'), httpx.ConnectTimeout('slow')):
+        def refuse(request, failure=failure):
+            raise failure
+        monkeypatch.setenv('POKEBENCH_BASE_URL', 'http://localhost:11434/v1')
+        value = OpenAICompatibleProvider('llama3:8b', transport=httpx.MockTransport(refuse))
+        monkeypatch.setattr(value, 'prepare_packet', lambda observation, notes, recent: (
+            {}, {'segment': 1, 'sequence': 1}, 'baseline', 'Current observation', True))
+        with pytest.raises(ProviderError, match='Could not connect') as raised:
+            decide(value)
+        assert raised.value.details == {'kind': 'provider_error', 'no_reply': True}
+    # A request that was sent and then failed may have been billed, so it is not a no_reply error.
+    def drop(request):
+        raise httpx.ReadTimeout('no answer')
+    value = OpenAICompatibleProvider('llama3:8b', transport=httpx.MockTransport(drop))
+    monkeypatch.setattr(value, 'prepare_packet', lambda observation, notes, recent: (
+        {}, {'segment': 1, 'sequence': 1}, 'baseline', 'Current observation', True))
+    with pytest.raises(ProviderError, match='Usage may be unreported') as raised:
+        decide(value)
+    assert raised.value.details.get('no_reply') is not True
+
+
+def answer(status=200, body=None, seen=None):
+    def handler(request):
+        if seen is not None:
+            seen.append(request)
+        return httpx.Response(status, json=body if body is not None else {'data': []})
+    return httpx.MockTransport(handler)
+
+
+def test_the_probe_reads_the_model_list_and_names_the_endpoint(monkeypatch):
+    monkeypatch.setenv('POKEBENCH_BASE_URL', 'http://localhost:11434/v1/')
+    monkeypatch.setenv('POKEBENCH_API_KEY', 'secret-key')
+    seen = []
+    listed = {'data': [{'id': 'llama3:8b'}, {'id': 'qwen3:32b'}]}
+    assert probe('llama3:8b', transport=answer(body=listed, seen=seen)) == [
+        'Model endpoint http://localhost:11434/v1 answered.']
+    assert seen[0].method == 'GET' and str(seen[0].url) == 'http://localhost:11434/v1/models'
+    assert seen[0].headers['authorization'] == 'Bearer secret-key'
+    # The plan line never shows credentials from the URL.
+    monkeypatch.setenv('POKEBENCH_BASE_URL', 'http://user:hidden@localhost:11434/v1/')
+    assert probe('llama3:8b', transport=answer(body=listed)) == ['Model endpoint http://localhost:11434/v1 answered.']
+    assert probe('llama3:70b', transport=answer(body=listed))[1] == (
+        'It does not list llama3:70b. It lists llama3:8b, qwen3:32b.')
+    many = {'data': [{'id': f'model-{index}'} for index in range(7)]}
+    assert probe('x', transport=answer(body=many))[1].endswith('model-4 and more.')
+    # A server without a model list still answered, so the plan only names it.
+    for transport in (answer(status=404), answer(body={'object': 'list'}), answer(body=[1, 2])):
+        assert probe('llama3:8b', transport=transport) == ['Model endpoint http://localhost:11434/v1 answered.']
+
+
+def test_the_probe_stops_on_a_missing_url_a_refused_key_or_no_server(monkeypatch):
+    monkeypatch.delenv('POKEBENCH_BASE_URL', raising=False)
+    with pytest.raises(SetupError, match='Set POKEBENCH_BASE_URL'):
+        probe('llama3:8b', transport=answer())
+    monkeypatch.setenv('POKEBENCH_BASE_URL', 'http://localhost:11434/v1')
+    for status in (401, 403):
+        with pytest.raises(SetupError, match=f'refused the request with HTTP {status}. Set POKEBENCH_API_KEY'):
+            probe('llama3:8b', transport=answer(status=status))
+
+    def refuse(request):
+        raise httpx.ConnectError('refused')
+    with pytest.raises(SetupError, match=r'http://localhost:11434/v1 did not answer \(ConnectError\). Start the server'):
+        probe('llama3:8b', transport=httpx.MockTransport(refuse))
+
+
 def test_missing_endpoint_and_suite_model_names(monkeypatch):
     monkeypatch.delenv('POKEBENCH_BASE_URL', raising=False)
-    with pytest.raises(ValueError, match='POKEBENCH_BASE_URL'):
+    with pytest.raises(SetupError, match='POKEBENCH_BASE_URL'):
         OpenAICompatibleProvider('llama3:8b')
     assert quick_run.resolve_model('openai-compatible', 'llama3:8b') == ('openai-compatible', 'llama3:8b')
     assert quick_run.resolve_model(None, 'openai-compatible:llama3:8b') == ('openai-compatible', 'llama3:8b')

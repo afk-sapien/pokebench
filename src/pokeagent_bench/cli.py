@@ -380,8 +380,11 @@ def execute(args):
         return None
     if args.command == "run":
         if args.suite:
-            from .quick_run import run_suite
-            run_suite(args)
+            from .quick_run import run_suite, stopped_on_failure
+            ran = run_suite(args)
+            # Scripts see a failed or stalled task. A pause asked for with Ctrl-C is not a failure.
+            if ran is not None and stopped_on_failure(ran[1]):
+                raise SystemExit(1)
             return None
         missing = [name for name in ("rom", "scenario", "output", "provider") if getattr(args, name) is None]
         if missing:

@@ -246,6 +246,8 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                         stopped = wait(seconds, guard)
                         session.started += session.clock() - before
                     elif error.details.get("kind") == "provider_error" and retries < len(RETRY_DELAYS):
+                        print(f"{error} at decision {decision_index}. Asking again in {RETRY_DELAYS[retries]} s. "
+                              "Ctrl-C pauses the run.", flush=True)
                         stopped = wait(RETRY_DELAYS[retries], guard)
                         retries += 1
                     else:

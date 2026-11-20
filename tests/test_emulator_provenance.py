@@ -249,7 +249,8 @@ def test_seeded_pairs_share_format_and_cite_a_sweep():
         assert (recorded["backend"], recorded["state_format"]) == (runtime["backend"], runtime["state_format"])
         assert (root / pair["evidence"]).is_file()
     assert [(p["recorded"]["version"], p["runtime"]["version"]) for p in core.VERIFIED_EMULATOR_PAIRS] == [
-        ("0.1.1", "0.1.5"), ("0.1.1", "0.1.7"), ("0.1.5", "0.1.7")]
+        ("0.1.1", "0.1.5"), ("0.1.1", "0.1.7"), ("0.1.5", "0.1.7"),
+        ("0.1.1", "0.1.9"), ("0.1.5", "0.1.9"), ("0.1.7", "0.1.9")]
 
 
 def test_core_checkpoint_never_falls_back_to_lossy_raw_restore(tmp_path):

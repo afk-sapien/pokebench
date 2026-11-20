@@ -179,10 +179,13 @@ def test_a_failed_task_is_named_and_later_tasks_still_run(data, runs, monkeypatc
         finish(fixtures, task, *args, **options)
 
     monkeypatch.setattr(catalog_batch, 'run_task', fail_first)
-    assert command(monkeypatch, *words) == 0
+    # Later tasks still run, and the command exits 1 so a script sees the failed task.
+    with pytest.raises(SystemExit) as stopped:
+        command(monkeypatch, *words)
+    assert stopped.value.code == 1
     assert [task for task, _ in runs] == list(SMOKE[1:])
     text = capsys.readouterr().out
-    assert 'Finished 2 of 3 runs, 1 errors.' in text
+    assert 'Finished 2 of 3 runs, 1 error.' in text
     assert f'{SMOKE[0]} failed and is not retried' in text and 'Delete ' in text
     assert 'Some token usage of a failed task is unknown' in text
     assert 'Setup works' not in text and 'Not every run finished' not in text
@@ -388,9 +391,76 @@ def test_enter_packs_nothing_while_a_run_is_unfinished(data, runs, packed, monke
         finish(fixtures, task, *args, **options)
 
     monkeypatch.setattr(catalog_batch, 'run_task', fail_first)
-    assert enter(monkeypatch, '--model', 'gpt-6-sol', '--suite', 'smoke', '--yes')[0] == 0
+    with pytest.raises(SystemExit) as stopped:
+        enter(monkeypatch, '--model', 'gpt-6-sol', '--suite', 'smoke', '--yes')
+    assert stopped.value.code == 1
     assert 'Nothing was packed because not every run finished' in capsys.readouterr().out
     assert packed == []
+
+
+def test_enter_refuses_the_placeholder_handle_before_any_run(data, runs, packed, monkeypatch, capsys):
+    for handle in ('YOUR_GITHUB_NAME', 'your_github_name', 'not a name'):
+        code, asked = enter(monkeypatch, '--model', 'claude-sonnet-5-5', '--suite', 'short', '--handle', handle)
+        assert code == 2 and asked == []
+        captured = capsys.readouterr()
+        assert 'Credit' not in captured.out and 'Worst case' not in captured.out
+        assert ('placeholder' in captured.err) == (handle != 'not a name')
+    assert runs == [] and packed == [] and not (data.parent / 'runs').exists()
+
+
+def test_a_local_endpoint_is_checked_and_named_before_the_prompt(data, runs, packed, monkeypatch, capsys):
+    import httpx
+    from pokeagent_bench import openai_compatible_provider as local
+    real, calls = local.probe, []
+
+    def listing(request):
+        calls.append(str(request.url))
+        return httpx.Response(200, json={'data': [{'id': 'qwen3:32b'}]})
+
+    monkeypatch.setattr(local, 'probe', lambda model: real(model, transport=httpx.MockTransport(listing)))
+    words = ('--model', 'openai-compatible:qwen3:32b', '--suite', 'short')
+    # No URL: the command stops before the prompt, and nothing is planned on disk or marked failed.
+    monkeypatch.delenv('POKEBENCH_BASE_URL', raising=False)
+    code, asked = enter(monkeypatch, *words)
+    assert code == 2 and asked == [] and calls == []
+    assert 'Set POKEBENCH_BASE_URL' in capsys.readouterr().err
+    # A dry run shows the same problem as a plan line and exits 0.
+    assert command(monkeypatch, *words, '--dry-run') == 0
+    assert 'Not ready to run: Set POKEBENCH_BASE_URL' in capsys.readouterr().out
+    # With a server, the plan names it before asking.
+    monkeypatch.setenv('POKEBENCH_BASE_URL', 'http://localhost:11434/v1')
+    code, asked = enter(monkeypatch, *words, answer='n')
+    text = capsys.readouterr().out
+    assert code == 0 and asked == ['Start the run? [y/N] '] and calls == ['http://localhost:11434/v1/models']
+    assert text.index('Model endpoint http://localhost:11434/v1 answered.') < text.index('Runs: 3 over 3 tasks')
+    assert runs == [] and not (data.parent / 'runs').exists()
+
+
+def test_a_setup_error_inside_the_batch_marks_no_task_failed(data, monkeypatch, tmp_path):
+    from pokeagent_bench.providers import SetupError
+
+    def no_url(*args, **options):
+        raise SetupError('Set POKEBENCH_BASE_URL to an OpenAI compatible endpoint')
+
+    monkeypatch.setattr(catalog_batch, 'run_task', no_url)
+    output = tmp_path / 'batch'
+    with pytest.raises(SetupError):
+        catalog_batch.run_batch(data / 'fixtures', None, None, output, models=['openai-compatible:qwen3'],
+                                tasks=list(SMOKE))
+    assert not list(output.glob('cell-*/error.json'))
+    assert {row['state'] for row in catalog_batch.report(output)['cells']} == {'pending'}
+
+
+def test_singular_counts_read_as_one_run_and_one_task():
+    rows = [{'id': 'cell-0001', 'task_id': 'task-1', 'state': 'finished'}]
+    model = {'name': 'PokeBench', 'provider': 'claude', 'model': 'claude-sonnet-5-5', 'completed': 1, 'planned': 1,
+             'evaluation_errors': 0, 'benchmark': 'pokebench', 'category_scores': {}, 'accounting_complete': True}
+    text = quick_run.summary({'models': [model], 'cells': rows, 'tokens_used': 0, 'token_budget': 1}, Path('out'))
+    assert 'Finished 1 of 1 run, 0 errors.' in text
+    plan = {'suite': 'smoke', 'benchmark': 'pokebench', 'cells': [
+        {'provider': 'claude', 'model': 'm', 'task_id': 'task-1', 'token_limit': 10}]}
+    assert 'Runs: 1 over 1 task, one at a time.' in quick_run.estimate(plan, 100, Path('out'))
+    assert 'Resuming: 1 of 1 run already finished' in quick_run.estimate(plan, 100, Path('out'), done=1)
 
 
 def test_a_finished_run_names_the_submit_step(data, runs, monkeypatch, capsys):

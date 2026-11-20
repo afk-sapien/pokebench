@@ -8,6 +8,7 @@ import subprocess
 import urllib.request
 import zipfile
 
+from .core import counted
 from .submission import ATTACHMENT_LIMIT, LABEL, harness_accepted, harness_refusal, this_harness, verify
 
 REPO = 'afk-sapien/pokebench'
@@ -120,7 +121,7 @@ def draft_reply(report, refusal):
         problems = report['problems']
         return '\n'.join([
             f'Thanks for the submission. The bundle did not verify on {release}. '
-            f'{len(problems)} problem(s) were found:', '',
+            f'{counted(len(problems), "problem")} {"was" if len(problems) == 1 else "were"} found:', '',
             *[f'- {code(problem, 300)}' for problem in problems[:20]],
             *(['- and more'] if len(problems) > 20 else []), '',
             'Nothing was added to the site. Please check that you ran the release named in SUBMITTING.md '
@@ -132,9 +133,10 @@ def draft_reply(report, refusal):
             'The smoke suite is a setup check and is never a leaderboard result. Run the Short or Long suite '
             'with your model and attach that bundle in a new issue.', ''])
     replayed = sum(cell.get('replay_verified') is True for cell in report.get('cells', []))
+    matched = ('The run matched its log from the benchmark start state.' if replayed == 1 else
+               f'All {replayed} runs matched their logs from the benchmark start states.')
     return '\n'.join([
-        f'Thanks for the submission. The bundle replayed and verified on {release}. '
-        f'All {replayed} runs matched their logs from the benchmark start states.', '',
+        f'Thanks for the submission. The bundle replayed and verified on {release}. {matched}', '',
         *result_lines(report), '',
         f'The row will appear on the site labeled "{LABEL}" at the next site update. '
         'These parts are self reported and not checked: ' + ', '.join(report['self_reported']) + '.', ''])

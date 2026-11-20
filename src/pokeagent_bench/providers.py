@@ -45,6 +45,10 @@ class ProviderError(RuntimeError):
         self.details = details or {}
 
 
+class SetupError(ValueError):
+    """Local setup stops a task before it starts. Nothing ran or was spent, so a rerun starts the task again."""
+
+
 class APIProvider:
     def __init__(self, provider, model, *, max_output_tokens=2048, client=None):
         if provider not in ("openai", "anthropic") or not model:

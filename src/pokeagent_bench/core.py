@@ -50,6 +50,9 @@ _PYBOY_RS_015 = {"backend": "pyboy-rs", "version": "0.1.5", "state_format": "pyb
 _PYBOY_RS_017 = {"backend": "pyboy-rs", "version": "0.1.7", "state_format": "pyboy-format-15",
                  "native_sha256": "61eb1a0fabbc89605f61d6ee5909793b435a0a4ec692d9897f90fdc56ded2885",
                  "binding_sha256": "c0f52d21b1b0e2d8eeb5f289d133b12742e49148775a7db934edece2328650da"}
+_PYBOY_RS_019 = {"backend": "pyboy-rs", "version": "0.1.9", "state_format": "pyboy-format-15",
+                 "native_sha256": "1d5f1e5c6666352e09d4698aa30959b221b3e669bc608cf01fa7c696db955c6d",
+                 "binding_sha256": "c0f52d21b1b0e2d8eeb5f289d133b12742e49148775a7db934edece2328650da"}
 
 # Build pairs proven by a replay sweep: every recorded run replayed under the
 # runtime build with identical frames, screens, evidence and scores. A shared
@@ -58,6 +61,9 @@ VERIFIED_EMULATOR_PAIRS = (
     {"recorded": _PYBOY_RS_011, "runtime": _PYBOY_RS_015, "evidence": "docs/history/pyboy-rs-015.md"},
     {"recorded": _PYBOY_RS_011, "runtime": _PYBOY_RS_017, "evidence": "docs/history/pyboy-rs-017.md"},
     {"recorded": _PYBOY_RS_015, "runtime": _PYBOY_RS_017, "evidence": "docs/history/pyboy-rs-017.md"},
+    {"recorded": _PYBOY_RS_011, "runtime": _PYBOY_RS_019, "evidence": "docs/history/pyboy-rs-019.md"},
+    {"recorded": _PYBOY_RS_015, "runtime": _PYBOY_RS_019, "evidence": "docs/history/pyboy-rs-019.md"},
+    {"recorded": _PYBOY_RS_017, "runtime": _PYBOY_RS_019, "evidence": "docs/history/pyboy-rs-019.md"},
 )
 
 
@@ -109,6 +115,11 @@ def write_json(path: Path, value):
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, indent=2, sort_keys=True, allow_nan=False) + "\n")
     temporary.replace(path)
+
+
+def counted(number, noun):
+    """A count and its noun, singular for exactly one: 1 run, 2 runs, 0 errors."""
+    return f"{number} {noun}" + ("" if number == 1 else "s")
 
 
 @dataclass(frozen=True)

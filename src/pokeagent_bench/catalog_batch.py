@@ -7,6 +7,7 @@ from .core import write_json
 from .benchmark_tracks import SHORT, LONG, NAMES, for_category, kept, ranked_average, validate
 from .evaluation_catalog import retired_tasks, task_definition
 from .interrupts import pause_on_interrupt
+from .providers import SetupError
 
 
 def plan(fixtures, models, tasks=None, repeats=1, *, benchmark=SHORT):
@@ -182,6 +183,10 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
                          provider=cell['provider'], model=cell['model'], variant=cell['variant'], token_limit=cell['token_limit'],
                          decision_limit=cell.get('decision_limit'), reasoning_effort=cell.get('reasoning_effort', 'low'),
                          run_limits=cell.get('run_limits'))
+            except SetupError:
+                # Local setup stopped the task before it started, so nothing ran or was spent.
+                # The task stays pending and the same command starts it once the setup is fixed.
+                raise
             except (ValueError, OSError, RuntimeError) as error:
                 destination.mkdir(parents=True, exist_ok=True)
                 existing = cell_result(destination)

@@ -181,9 +181,14 @@ def test_replies_for_smoke_failed_and_long_runs():
     assert 'never a leaderboard result' in smoke and LABEL not in smoke
     failed = draft_reply(report(verified=False, problems=['cell-0001 nav: final state differs'], cells=None), None)
     assert 'did not verify' in failed and '`cell-0001 nav: final state differs`' in failed
+    assert '1 problem was found:' in failed
+    twice = draft_reply(report(verified=False, problems=['one', 'two'], cells=None), None)
+    assert '2 problems were found:' in twice
     long = draft_reply(report(suite='long', summary={'campaign_runs': [{'campaign': {'points': 9, 'maximum_points': 1000}}]},
                               cells=[{'id': 'cell-0001', 'replay_verified': True}]), None)
     assert 'Campaign: 9 of 1000 points' in long and 'Suite: Long' in long
+    # One run reads as one run, never "All 1 runs".
+    assert 'The run matched its log from the benchmark start state.' in long and 'All 1' not in long
 
 
 def test_untrusted_text_stays_inside_code_spans():

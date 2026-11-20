@@ -4,8 +4,8 @@ This only chains run --suite and submit. The same command resumes an unfinished 
 """
 from urllib.parse import urlencode
 
-from .quick_run import run_suite
-from .submission import submit, verify
+from .quick_run import run_suite, stopped_on_failure
+from .submission import PLACEHOLDER, check_handle, submit, verify
 
 ISSUES = 'https://github.com/afk-sapien/pokebench/issues/new'
 
@@ -23,9 +23,11 @@ def issue_link(model, suite):
 
 
 def enter(args):
+    # Checked before the run, so a bad handle never waits for the end of a long suite.
+    check_handle(args.handle)
     if args.suite != 'smoke':
         print(f'Credit: GitHub handle {args.handle}' if args.handle else
-              'Credit: none. Add --handle YOUR_GITHUB_NAME to be named on the leaderboard row', flush=True)
+              f'Credit: none. Add --handle {PLACEHOLDER} to be named on the leaderboard row', flush=True)
     ran = run_suite(args, ask=None if args.yes else ask, next_step=False)
     if ran is None:
         return None
@@ -33,6 +35,8 @@ def enter(args):
     if any(cell['state'] != 'finished' for cell in result['cells']):
         print('Nothing was packed because not every run finished. Run the same enter command again to continue.',
               flush=True)
+        if stopped_on_failure(result):
+            raise SystemExit(1)
         return None
     bundle = output.with_name(output.name + '.pokebench.zip')
     if bundle.exists():

@@ -383,6 +383,19 @@ def test_unfinished_or_foreign_folders_are_not_packed(world, tmp_path):
         submission.submit(tmp_path, world['bundle'])
     with pytest.raises(ValueError, match='GitHub user name'):
         submission.collect(world['run'], handle='../x')
+    # The placeholder from the docs is a valid GitHub name, so it is refused by name.
+    for handle in ('YOUR_GITHUB_NAME', ' your_github_name '):
+        with pytest.raises(ValueError, match='YOUR_GITHUB_NAME is a placeholder'):
+            submission.collect(world['run'], handle=handle)
+
+
+def test_one_verified_run_reads_as_one_run():
+    result = {'verified': True, 'cells': [{'replay_verified': True}], 'handle': None, 'self_reported': ['model'],
+              'summary': {'name': 'PokeBench', 'provider': 'openai-compatible', 'model': 'm'}}
+    text = submission.conclusion(result, 'report.json')
+    assert 'VERIFIED. 1 run replayed from the benchmark start state and matched its log.' in text
+    text = submission.conclusion({'verified': False, 'problems': ['one']}, 'report.json')
+    assert 'NOT VERIFIED. 1 problem:' in text
 
 
 def test_commands_exit_nonzero_on_a_failed_bundle(world, monkeypatch, capsys):
