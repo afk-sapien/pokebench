@@ -426,15 +426,23 @@ body {overflow:hidden}
 .transport {position:sticky}
 .transport {bottom:0}
 .transport {padding:6px 16px 10px}
-.controls {flex-wrap:wrap}
+.controls {display:grid}
+.controls {grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) auto}
 .controls .key-btn {height:44px}
-.controls .key-btn {flex:1}
+.controls .key-btn {min-width:0}
+.controls .key-btn {padding:0 8px}
+#play {min-width:0}
+#play {padding:0 4px}
 #speed {margin-left:0}
 #position {margin-left:0}
-#position,#spent {order:-1}
-#spent {margin-left:auto}
+#position,#spent {grid-row:1}
+#position,#spent {grid-column:1 / -1}
+#spent {justify-self:end}
 .controls .wide {display:none}
 .hint {display:none}
+}
+@media (max-width:359px) {
+#spent {grid-row:2}
 }
 @media (prefers-reduced-motion:no-preference) {
 .key-btn,.row,.ms {transition:background-color 80ms linear}
