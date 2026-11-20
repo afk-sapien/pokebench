@@ -449,7 +449,7 @@ body {overflow:hidden}
 <button id="theme" class="key-btn" type="button"></button>
 </header>
 <section class="brief" aria-label="Task and result">
-<p id="goal"></p>
+<p id="goal">This replay needs JavaScript and a version of Chrome, Edge, Firefox or Safari from 2023 or later.</p>
 <div class="outcome"><div><span id="score"></span><span id="score-max"></span></div><div id="badge-meter" class="badge-meter" hidden></div><p id="stop"></p></div>
 </section>
 <div class="work">
@@ -495,9 +495,11 @@ const $ = id => document.getElementById(id)
 // replay decoder begin
 // Reads replay format 3, see docs/replay-format.md. The checks and node tests run this block as it stands.
 const NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/
+const UNSUPPORTED = 'This browser cannot open replays. Use a version of Chrome, Edge, Firefox or Safari from 2023 or later.'
 async function inflate(bytes) {
   // The header's opening brace sits at byte 4 once inflated. A gzip file has 0 there, its time field.
   if (bytes[4] === 0x7b) return bytes
+  if (typeof DecompressionStream !== 'function') throw new Error(UNSUPPORTED)
   const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
   return new Uint8Array(await new Response(stream).arrayBuffer())
 }

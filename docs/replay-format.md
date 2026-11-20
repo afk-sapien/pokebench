@@ -54,7 +54,8 @@ the tile count of one screen. A reader refuses a file that does not match, a til
 ## Old addresses
 
 Replays published before format 3 were self-contained pages at `replays/<name>.html`. That address is
-now a small page that opens `view.html?r=<name>` and keeps any `#d=` decision in the address.
+now a small page that opens `view.html?r=<name>` with the same `#` part, so `#d=` (decision), `theme=`
+and `tab=` still work.
 `scripts/check_replay_tiles.py` compares a new export with the published format 2 pages, screen by
 screen in RGBA pixels and step by step in every field.
 

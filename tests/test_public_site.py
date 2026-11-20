@@ -98,13 +98,13 @@ def node():
     return found
 
 
-def decoded(raw):
+def decoded(raw, setup=''):
     """Run the viewer's own decoder on the bytes of a replay file.
 
     Returns the header, the unpacked steps and the sha256 of each frame's RGBA pixels.
     """
     block = REPLAY[REPLAY.index('// replay decoder begin'):REPLAY.index('// replay decoder end')]
-    script = block + '''
+    script = block + setup + '''
 const hash = bytes => require('crypto').createHash('sha256').update(bytes).digest('hex')
 inflate(new Uint8Array(require('fs').readFileSync(0))).then(bytes => {
   const {data, frame} = parse(bytes)
@@ -274,6 +274,11 @@ def test_replay_page_refuses_other_formats_and_damaged_files(tmp_path):
     bad = bytearray(body)
     bad[0] = 9
     assert decoded(replay_file(payload, bytes(bad))) == {'error': 'This replay file is damaged.'}
+    # A browser without the built-in gzip reader gets a plain message. One that cannot run
+    # the page script at all keeps the text written in the page.
+    older = decoded(replay_file(payload, body), setup='\ndelete globalThis.DecompressionStream\n')
+    assert older == {'error': 'This browser cannot open replays. Use a version of Chrome, Edge, Firefox or Safari from 2023 or later.'}
+    assert '<p id="goal">This replay needs JavaScript and a version of Chrome' in REPLAY
 
 
 def test_old_replay_address_opens_the_viewer_at_the_same_decision(tmp_path):
