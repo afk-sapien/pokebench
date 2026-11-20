@@ -254,7 +254,11 @@ function renderSubmitCost() {
   const tokens = x => (x / 1e6).toFixed(1) + 'M'
   const worst = s.cells.filter(c => c.model === runs[0].id && !c.retired).reduce((total, c) => total + (c.token_limit || 0), 0)
   const used = runs.map(m => `${esc(m.maintainer ? m.maintainer.model : m.id)} used ${tokens(m.tokens)}, an estimated ${costRange(m.cost)} at API list prices`).join('. ')
-  $('submit-cost').innerHTML = `<p><strong>Local model:</strong> free. It uses only your own computer.</p><p><strong>Hosted model:</strong> up to ${tokens(worst)} tokens, input plus output, the sum of every task's own cap. Published runs on this task set: ${used}. Through a Claude Code or Codex login the run counts against that account's usage like any other session.</p>`
+  // One run's summed play time, as an example. Only a maintainer row records it.
+  const timed = runs.find(m => m.maintainer?.wall_seconds > 0)
+  const span = w => w >= 5400 ? `${Math.round(w / 3600)} hours` : `${Math.max(1, Math.round(w / 60))} minutes`
+  const time = timed ? `<p><strong>Time:</strong> one example, not a promise. The published ${esc(timed.maintainer.model)} run played the whole Short suite, one task at a time, in about ${span(timed.maintainer.wall_seconds)}. Yours depends on the model, its provider and your machine.</p>` : ''
+  $('submit-cost').innerHTML = `<p><strong>Local model:</strong> free. It uses only your own computer.</p><p><strong>Hosted model:</strong> up to ${tokens(worst)} tokens, input plus output, the sum of every task's own cap. Published runs on this task set: ${used}. Through a Claude Code or Codex login the run counts against that account's usage like any other session.</p>${time}`
 }
 function renderStatus() {
   const remaining = data.short.planned - data.short.finished

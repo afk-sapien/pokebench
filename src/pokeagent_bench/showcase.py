@@ -525,6 +525,7 @@ def adopt_maintainer(base, entry, suite):
     if root is None:
         return None, f'{entry["runs"]} is not a folder under the data folder.'
     rows = report.get('cells', [])
+    walls = []
     specs, starts = suite_hashes(suite)
     keys = Counter((c.get('task_id'), c.get('variant')) for c in rows)
     missing = sorted(set(starts) - set(keys), key=str)
@@ -549,13 +550,16 @@ def adopt_maintainer(base, entry, suite):
             return None, f'{c["id"]} in {entry["runs"]} used a different token count than the report.'
         if harness_tag(run) != suite['benchmark']:
             return None, f'{c["id"]} recorded harness {harness_tag(run)}, not {suite["benchmark"]}.'
+        walls.append(result.get('wall_seconds'))
     for folder in entry['replaced']:
         if inside(base, folder) is None or not re.match(r'cell-\d+', Path(folder).name):
             return None, f'{folder} is not a kept cell folder under the data folder.'
     packages = sorted({load(root / str(c['id']) / 'manifest.json').get('package_version') for c in rows}, key=str)
     note = {'label': entry['label'], 'detail': entry['detail'], 'model': entry['model'], 'release': entry['release'],
             'packages': packages, 'verified_on': report['harness'].get('package_version'),
-            'report_sha256': entry['report_sha256'], 'bundle_sha256': report.get('bundle_sha256')}
+            'report_sha256': entry['report_sha256'], 'bundle_sha256': report.get('bundle_sha256'),
+            # The kept attempts' own play time, summed. Replaced attempts and pauses between attempts are not in it.
+            'wall_seconds': round(sum(walls)) if all(isinstance(w, (int, float)) for w in walls) else None}
     return {'id': entry['id'], 'model': entry['model'], 'runs': entry['runs'], 'cells': rows,
             'replaced': entry['replaced'], 'note': note}, None
 

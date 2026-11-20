@@ -363,7 +363,8 @@ def test_a_maintainer_row_sits_beside_the_ranked_rows_and_moves_none_of_them(sit
     assert row['suite'] == {'benchmark': NEW, 'tasks': 3, 'source': RUNS}
     assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Not given a rank.', 'model': HAIKU,
                                  'release': 'v0.37.4', 'packages': ['0.37.2'], 'verified_on': '0.37.4',
-                                 'report_sha256': maintainer_entry(site.base)['report_sha256'], 'bundle_sha256': 'bundle'}
+                                 'report_sha256': maintainer_entry(site.base)['report_sha256'], 'bundle_sha256': 'bundle',
+                                 'wall_seconds': None}
     cells = by(a['cells'], EXTRA, keep=True)
     assert [c['id'] for c in cells] == ['cell-0301', 'cell-0302', 'cell-0303', 'cell-0304']
     assert {(c['source'], c['revision'], c['harness'], c['replay']) for c in cells} == {(RUNS, MAINTAINER_REVISION, NEW, None)}
@@ -471,8 +472,28 @@ def test_submit_cost_reads_the_current_set_caps_and_its_priced_runs(site, tmp_pa
     assert f'up to {worst / 1e6:.1f}M tokens, input plus output' in html
     assert f'{HAIKU} used {row["tokens"] / 1e6:.1f}M, an estimated ${row["cost"]["low"]:.2f}' in html
     assert '<strong>Local model:</strong> free.' in html and '—' not in html.replace('–', '')
+    # The test runs record no play time, so no time line is shown.
+    assert row['maintainer']['wall_seconds'] is None and 'Time:' not in html
     # With no priced row on a stored set the page keeps its static text.
     assert 'submit-cost' not in render(tmp_path, site.built({}))
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_submit_time_is_one_example_from_the_kept_attempts_play_time(site, tmp_path):
+    entry = maintainer_entry(site.base)
+    for number, seconds in zip(range(301, 305), (20000, 21000, 20000, 1000)):
+        path = site.base / RUNS / f'cell-{number:04d}/result.json'
+        write(path, dict(json.loads(path.read_text()), wall_seconds=seconds + 0.4))
+    data = site.built({}, [entry])
+    row = next(m for m in data['short']['models'] if m.get('maintainer'))
+    # The replaced attempt is not counted, only the four kept ones.
+    assert row['maintainer']['wall_seconds'] == 62002
+    html = render(tmp_path, data)['submit-cost']['html']
+    assert ('<p><strong>Time:</strong> one example, not a promise. The published claude-haiku-5-5 run played the whole Short suite, '
+            'one task at a time, in about 17 hours. Yours depends on the model, its provider and your machine.</p>') in html
+    for row in data['short']['models']:
+        row.get('maintainer', {}).update(wall_seconds=600)
+    assert 'in about 10 minutes.' in render(tmp_path, data)['submit-cost']['html']
 
 
 REAL = os.environ.get('POKEBENCH_SITE_DATA')
@@ -507,3 +528,5 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
     row = by(after['models'], EXTRA, keep=True)[0]
     assert (row['label'], row['finished'], row['planned'], round(row['score'], 3)) == ('Haiku (red-v0.63)', 46, 46, 0.628)
     assert row['maintainer']['packages'] == ['0.37.1', '0.37.2'] and row['maintainer']['release'] == 'v0.37.4'
+    # 46 kept attempts, summed: about 17.2 hours of play.
+    assert row['maintainer']['wall_seconds'] == 61934
