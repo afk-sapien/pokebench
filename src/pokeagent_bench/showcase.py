@@ -164,6 +164,34 @@ def suite_hashes(suite):
     return specs, starts
 
 
+def suite_mismatch(rows, suite):
+    """Why report cells are not exactly the starts of a stored Short suite, or None when they are."""
+    specs, starts = suite_hashes(suite)
+    keys = Counter((c.get('task_id'), c.get('variant')) for c in rows)
+    missing = sorted(set(starts) - set(keys), key=str)
+    unknown = sorted(set(keys) - set(starts), key=str)
+    repeated = sorted((k for k, n in keys.items() if n > 1), key=str)
+    if missing or unknown or repeated:
+        return (f'{len(keys)} of {len(starts)} {suite["benchmark"]} starts, with {len(missing)} missing, '
+                f'{len(unknown)} not in the suite and {len(repeated)} repeated.')
+    for c in rows:
+        if c.get('evaluation_spec_sha256') != specs[c['task_id']] or c.get('fixture_sha256') not in starts[c['task_id'], c['variant']]:
+            return f'{c.get("id")} ran a task definition or start that {SUITE_FILE} does not list.'
+    return None
+
+
+def community_id(report):
+    return f'community/{report.get("handle") or "unnamed"}/{report["model"]}'
+
+
+def community_mismatch(report, suite):
+    """Why a community report did not run the stored Short suite, or None when it did. Only such a report is shown."""
+    benchmark = report.get('harness', {}).get('benchmark')
+    if benchmark != suite['benchmark']:
+        return f'It ran {benchmark}, not the stored {suite["benchmark"]} suite.'
+    return suite_mismatch(report.get('cells', []), suite)
+
+
 def frozen_sets(frozen):
     """The stored cost comparison starts and the stored start hashes for the earlier start label."""
     return ({tuple(key) for key in frozen['comparison_starts']},
@@ -197,7 +225,8 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
     earlier cell of that model and are never merged with them. frozen holds the stored comparison starts and
     start hashes, so a swap moves no other row. suite is the stored v0.37 Short suite that adopted rows ran.
     maintained lists rows from adopt_maintainer. Each is a row of its own beside the model's earlier row, and it
-    stays out of the cost comparison.
+    stays out of the cost comparison. community lists verified reports that ran the stored suite, as build keeps
+    them with community_mismatch. They are labeled against that suite and also stay out of the cost comparison.
     """
     reruns = reruns or {}
     shared, frozen_starts = frozen_sets(frozen) if frozen else (None, None)
@@ -256,10 +285,11 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
                          harness_fault=None, cost=run_cost(run, row_set['model'], row.get('tokens')),
                          harness=harness_tag(run), **cell_facts(run))
             fresh.append(clean)
-    cells += fresh
     submitted = {}
+    if community and suite is None:
+        raise ValueError('Community rows are shown only on the stored suite, so short_snapshot needs it.')
     for entry in community:
-        name = f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
+        name = community_id(entry)
         submitted[name] = {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
                            'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
         for row in entry['cells']:
@@ -267,7 +297,8 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
             # Community token counts are self reported, so no cost is estimated from them.
             clean.update(model=name, replay=None, revision='Community', harness=entry['harness']['benchmark'],
                          cost={'low': None, 'high': None, 'partial': False, 'note': 'Community run, not priced'})
-            cells.append(clean)
+            fresh.append(clean)
+    cells += fresh
     retired = retired_tasks()
     # Retired attempts stay visible for history, but they are not scored or counted as planned.
     for cell in cells:
@@ -296,9 +327,9 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
                        'cost': sum_cost(rows), 'harness': harness_summary(rows),
                        'errors': sum(r['state'] == 'evaluation_error' for r in counted),
                        'labels': dict(Counter(code for r in counted for code in r['labels']))})
-        if name in reruns or kept:
-            models[-1]['suite'] = {'benchmark': suite['benchmark'], 'tasks': len(suite['tasks']),
-                                   'source': reruns[name]['folder'] if name in reruns else kept['runs']}
+        if name in reruns or kept or note:
+            origin = reruns[name]['folder'] if name in reruns else kept['runs'] if kept else f'bundle {note["bundle_sha256"][:12]}'
+            models[-1]['suite'] = {'benchmark': suite['benchmark'], 'tasks': len(suite['tasks']), 'source': origin}
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = []
     for t in source['tasks']:
@@ -307,7 +338,7 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         if task['retired']:
             task['retirement_reason'] = task_definition(t['id']).get('retirement_reason')
         tasks.append(task)
-    if reruns or beside:
+    if reruns or beside or submitted:
         # Union of both task sets. Tasks only the stored suite has come from it, since this catalog lacks them.
         # added_in names the release that first ran them, which can be older than the suite's own release.
         known = {t['id'] for t in tasks}
@@ -526,19 +557,12 @@ def adopt_maintainer(base, entry, suite):
         return None, f'{entry["runs"]} is not a folder under the data folder.'
     rows = report.get('cells', [])
     walls = []
-    specs, starts = suite_hashes(suite)
-    keys = Counter((c.get('task_id'), c.get('variant')) for c in rows)
-    missing = sorted(set(starts) - set(keys), key=str)
-    unknown = sorted(set(keys) - set(starts), key=str)
-    repeated = sorted((k for k, n in keys.items() if n > 1), key=str)
-    if missing or unknown or repeated:
-        return None, (f'{len(keys)} of {len(starts)} {suite["benchmark"]} starts, with {len(missing)} missing, '
-                      f'{len(unknown)} not in the suite and {len(repeated)} repeated.')
+    why = suite_mismatch(rows, suite)
+    if why:
+        return None, why
     for c in rows:
         if c.get('state') != 'finished' or c.get('replay_verified') is not True:
             return None, f'{c.get("id")} is {c.get("state")} and not replay verified.'
-        if c.get('evaluation_spec_sha256') != specs[c['task_id']] or c.get('fixture_sha256') not in starts[c['task_id'], c['variant']]:
-            return None, f'{c["id"]} ran a task definition or start that {SUITE_FILE} does not list.'
         run = root / str(c['id'])
         if not re.fullmatch(r'cell-\d+', str(c['id'])) or not (run / 'manifest.json').is_file() or not (run / 'result.json').is_file():
             return None, f'{entry["runs"]} has no run folder for {c.get("id")}.'
@@ -600,8 +624,16 @@ def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None):
             print(f'{entry["id"]}: left off the site. {why}', file=sys.stderr)
         else:
             maintained.append(row)
+    # A community row joins the current set or stays off. It never ranks among the earlier rows.
+    community = []
+    for report in community_reports(web):
+        why = community_mismatch(report, suite)
+        if why:
+            print(f'{community_id(report)}: left off the site. {why}', file=sys.stderr)
+        else:
+            community.append(report)
     return {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base, community_reports(web), short, frozen, suite, maintained),
+            'short': short_snapshot(source, web, extra, base, community, short, frozen, suite, maintained),
             'long': long_snapshot(base, web, long),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}

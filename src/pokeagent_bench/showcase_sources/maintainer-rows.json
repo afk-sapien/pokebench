@@ -14,7 +14,7 @@
    },
    "release": "v0.37.4",
    "label": "Maintainer run, replay verified",
-   "detail": "Run by the maintainers on a newer harness than the ranked rows. Not given a rank."
+   "detail": "Run by the maintainers on a newer harness than the ranked rows. Ranked with the rows on the current set."
   }
  ]
 }

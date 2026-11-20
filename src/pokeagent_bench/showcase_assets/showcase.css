@@ -181,6 +181,18 @@ thead {border-top:1px solid #bfc6b5}
 .leaderboard td:not(:first-child) {white-space:nowrap}
 .leaderboard td:first-child {min-width:184px}
 .leaderboard tbody tr:hover {background:#eeeFE7}
+.leaderboard .set-row th {padding:22px 12px 8px}
+.leaderboard .set-row th {text-align:left}
+.leaderboard .set-row th {font:600 11px monospace}
+.leaderboard .set-row th {letter-spacing:.5px}
+.leaderboard .set-row th {text-transform:none}
+.leaderboard .set-row th {color:#3d4a33}
+.leaderboard .set-row th {border-bottom:1px solid #bfc6b5}
+.leaderboard tbody tr.set-row:hover {background:none}
+/* The title stays in view while the wide table scrolls sideways on a phone. */
+.leaderboard .set-row span {position:sticky}
+.leaderboard .set-row span {left:12px}
+.leaderboard .set-row span {display:inline-block}
 .model-name {font-weight:bold}
 .model-name {font-size:15px}
 .model-name {padding:0}

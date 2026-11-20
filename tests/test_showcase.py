@@ -158,21 +158,25 @@ def test_community_rows_are_labeled_and_kept_out_of_the_cost_comparison(tmp_path
     from pokeagent_bench.showcase import community_reports
     row = {'id': 'cell-0001', 'task_id': 't', 'score_group': 't', 'category': 'battle', 'model': 'official',
            'mode': 'gameplay', 'state': 'finished', 'value': 0.0, 'tokens': 100}
+    suite = {'benchmark': 'red-v0.63-short-guard', 'tasks': [
+        {'id': 't', 'category': 'battle', 'evaluation_spec_sha256': 'spec', 'variants': [{'variant': 'default', 'fixture_sha256': 'fx'}]}]}
     report = {'format': 'pokebench-verified-report-v1', 'verified': True, 'suite': 'short', 'model': 'local-model',
               'label': 'Community, replay verified, model unverified', 'handle': 'octocat', 'attempts_declared': 2,
-              'harness': {'benchmark': 'red-v0.61-fair-harness'}, 'bundle_sha256': 'abc',
-              'cells': [dict(row, model='local-model', value=1.0, tokens=500, notes='private')]}
+              'harness': {'benchmark': 'red-v0.63-short-guard'}, 'bundle_sha256': 'abc',
+              'cells': [dict(row, model='local-model', value=1.0, tokens=500, notes='private', variant='default',
+                             evaluation_spec_sha256='spec', fixture_sha256='fx')]}
     (tmp_path / 'community').mkdir()
     for name, value in (('a', report), ('b', dict(report, verified=False)), ('c', dict(report, suite='smoke'))):
         (tmp_path / 'community' / f'{name}.json').write_text(json.dumps(value))
     assert community_reports(tmp_path) == [report]
-    result = short_snapshot({'cells': [row], 'tasks': [], 'categories': ['battle']}, tmp_path, community=[report])
+    result = short_snapshot({'cells': [row], 'tasks': [], 'categories': ['battle']}, tmp_path, community=[report], suite=suite)
     added, official = result['models']
     assert added['id'] == 'community/octocat/local-model' and added['label'] == 'local-model'
     assert added['community'] == {'label': 'Community, replay verified, model unverified', 'handle': 'octocat',
                                   'model': 'local-model', 'attempts': 2, 'bundle_sha256': 'abc'}
     assert added['score'] == 1.0 and added['tokens'] == 500 and added['cost']['low'] is None
-    assert 'community' not in official
+    assert added['suite'] == {'benchmark': 'red-v0.63-short-guard', 'tasks': 1, 'source': 'bundle abc'}
+    assert 'community' not in official and 'suite' not in official
     cell = result['cells'][1]
     assert cell['revision'] == 'Community' and cell['replay'] is None and 'notes' not in cell
     assert [m['id'] for m in result['efficiency']['models']] == ['official']

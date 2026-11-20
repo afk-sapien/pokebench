@@ -310,7 +310,13 @@ def test_page_labels_task_sets_only_when_rows_differ(site, tmp_path):
     same = render(tmp_path, site.built({}))
     assert 'task' not in same['ranking']['html'].split('set</span>')[0][-40:] and ' set</span>' not in same['ranking']['html']
     assert same['suite-note']['hidden'] and 'Not run' not in same['tasks']['html']
+    # One set is one group with no title, ranked as before.
+    assert 'set-row' not in same['ranking']['html'] and re.findall(r'<span class="rank">([^<]*)</span>', same['ranking']['html']) == ['01', '02']
     mixed = render(tmp_path, site.built({OPUS: {'short': 'v037-pass'}}))
+    found = groups(mixed['ranking']['html'])
+    assert [(title, [rank for rank, _ in rows]) for title, rows in found] == [
+        ('Current set, red-v0.63, 3 tasks', ['01']), ('Earlier set, 3 tasks', ['01'])]
+    assert 'Opus' in found[0][1][0][1] and 'Opus' not in found[1][1][0][1]
     assert '3-task red-v0.63 set</span>' in mixed['ranking']['html'] and '3-task earlier set</span>' in mixed['ranking']['html']
     assert not mixed['suite-note']['hidden'] and 'The sets share 2 tasks.' in mixed['suite-note']['text']
     assert 'the 3-task red-v0.63 set: Navigation 2 tasks, 12.5 points each' in mixed['weight-note']['text']
@@ -346,7 +352,7 @@ def maintainer_entry(base, cells=None, **change):
     entry = {'id': EXTRA, 'model': HAIKU, 'suite': 'short', 'report': 'release-rows/haiku.json',
              'report_sha256': hashlib.sha256((base / 'release-rows/haiku.json').read_bytes()).hexdigest(), 'runs': RUNS,
              'replaced': {BACKUP: 'Stopped by a provider error.'}, 'release': 'v0.37.4',
-             'label': 'Maintainer run, replay verified', 'detail': 'Not given a rank.'}
+             'label': 'Maintainer run, replay verified', 'detail': 'Ranked with the rows on the current set.'}
     return dict(entry, **change)
 
 
@@ -361,7 +367,7 @@ def test_a_maintainer_row_sits_beside_the_ranked_rows_and_moves_none_of_them(sit
     row = by(a['models'], EXTRA, keep=True)[0]
     assert (row['label'], row['complete'], row['harness']['label']) == ('Haiku (red-v0.63)', True, 'red-v0.63')
     assert row['suite'] == {'benchmark': NEW, 'tasks': 3, 'source': RUNS}
-    assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Not given a rank.', 'model': HAIKU,
+    assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Ranked with the rows on the current set.', 'model': HAIKU,
                                  'release': 'v0.37.4', 'packages': ['0.37.2'], 'verified_on': '0.37.4',
                                  'report_sha256': maintainer_entry(site.base)['report_sha256'], 'bundle_sha256': 'bundle',
                                  'wall_seconds': None}
@@ -425,16 +431,35 @@ def test_the_checked_in_maintainer_list_holds_the_haiku_row():
 
 
 @pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
-def test_page_gives_a_maintainer_row_no_rank_and_names_it_in_the_notes(site, tmp_path):
+def groups(html):
+    """The ranking table as [(group title, [(rank, row html)])], in page order."""
+    found = []
+    for row in html.split('<tr ')[1:]:
+        title = re.search(r'scope="colgroup"><span>([^<]*)</span>', row)
+        if title:
+            found.append((title[1], []))
+        else:
+            found[-1][1].append((re.search(r'<span class="rank"[^>]*>([^<]*)</span>', row)[1], row))
+    return found
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_page_ranks_each_task_set_as_its_own_group_with_the_current_set_first(site, tmp_path):
     page = render(tmp_path, site.built({}, [maintainer_entry(site.base)]))
-    rows = page['ranking']['html'].split('<tr ')[1:]
-    ranks = [(re.search(r'<span class="rank"[^>]*>([^<]*)</span>', r)[1], 'Haiku (red-v0.63)' in r) for r in rows]
-    assert [rank for rank, extra in ranks if not extra] == ['01', '02'] and [rank for rank, extra in ranks if extra] == ['—']
-    extra = next(r for r in rows if 'Haiku (red-v0.63)' in r)
+    found = groups(page['ranking']['html'])
+    assert [title for title, _ in found] == ['Current set, red-v0.63, 3 tasks', 'Earlier set, 3 tasks']
+    assert [[rank for rank, _ in rows] for _, rows in found] == [['01'], ['01', '02']]
+    extra = found[0][1][0][1]
     assert 'Haiku (red-v0.63)' in extra and 'maintainer-note' in extra and 'Maintainer run, replay verified' in extra
-    assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra
-    assert 'Haiku (red-v0.63) is a maintainer run on the red-v0.63 Short suite' in page['suite-note']['text']
-    assert 'The ranked rows keep their earlier results.' in page['suite-note']['text']
+    assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra and 'Ranked with the rows on the current set.' in extra
+    assert not any('Haiku' in row for _, row in found[1][1]) and '—</span>' not in page['ranking']['html']
+    assert f'colspan="{len(CATEGORIES) + 5}"' in page['ranking']['html']
+    note = page['suite-note']['text']
+    assert note.startswith('Task sets differ between rows, so each set is ranked as its own group, the current set first.')
+    assert ('Haiku (red-v0.63) is a maintainer run on the red-v0.63 Short suite, ranked in the current set. '
+            "That model's earlier row keeps its place in the earlier set.") in note
+    assert 'The rows in the earlier set keep their earlier results.' in note and 'scores in different groups are not' in note
+    assert 'not given a rank' not in note and ';' not in note and '—' not in note
     assert 'is a maintainer run on a newer harness and stays out of this comparison.' in page['short-cost']['html']
     assert 'fixed before the reruns' not in page['short-cost']['html'] and 'Verified, not published' in page['tasks']['html']
     # Models are counted once each. Haiku has no earlier row here, so it is the third.
@@ -448,6 +473,63 @@ def test_page_gives_a_maintainer_row_no_rank_and_names_it_in_the_notes(site, tmp
     for row in data['short']['models']:
         row.get('maintainer', {}).update(model=OPUS)
     assert '<strong>2</strong><span>models</span>' in render(tmp_path, data)['short-stats']['html']
+
+
+LOCAL = 'community/octocat/local-model'
+
+
+def community_report(site, **change):
+    """A verified community report of the stored suite, as community-add leaves it in the web folder."""
+    report = {'format': 'pokebench-verified-report-v1', 'verified': True, 'suite': 'short', 'model': 'local-model',
+              'label': 'Community, replay verified, model unverified', 'handle': 'octocat', 'attempts_declared': 2,
+              'harness': {'benchmark': NEW}, 'bundle_sha256': 'abcdef0123456789', 'problems': [],
+              'cells': [dict(c, replay_verified=True, value=1.0) for c in new_cells('local-model', 401)]}
+    report.update(change)
+    write(site.web / 'community/octocat.json', report)
+    return report
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_a_community_row_on_the_stored_suite_ranks_in_the_current_set_with_its_own_label(site, tmp_path, capsys):
+    before = site.built({}, [maintainer_entry(site.base)])
+    community_report(site)
+    data = site.built({}, [maintainer_entry(site.base)])
+    assert capsys.readouterr().err == ''
+    a, b = data['short'], before['short']
+    # It moves no other row and stays out of the cost comparison.
+    assert by(a['models'], LOCAL) == b['models'] and by(a['cells'], LOCAL) == b['cells'] and a['efficiency'] == b['efficiency']
+    row = by(a['models'], LOCAL, keep=True)[0]
+    assert row['suite'] == {'benchmark': NEW, 'tasks': 3, 'source': 'bundle abcdef012345'} and row['cost']['low'] is None
+    # Its cells are checked against the stored suite, so they carry no earlier start label.
+    assert all(c['labels'] == [] and c['harness'] == NEW for c in by(a['cells'], LOCAL, keep=True))
+    found = groups(render(tmp_path, data)['ranking']['html'])
+    assert [title for title, _ in found] == ['Current set, red-v0.63, 3 tasks', 'Earlier set, 3 tasks']
+    # Every task passed, so the community row outscores Haiku and takes 01 of the current set.
+    current = [(rank, 'Haiku (red-v0.63)' in html, 'Community, replay verified, model unverified' in html) for rank, html in found[0][1]]
+    assert current == [('01', False, True), ('02', True, False)]
+    assert not any('local-model' in html for _, html in found[1][1])
+    note = render(tmp_path, data)['suite-note']['text']
+    assert 'local-model is a community run on the red-v0.63 Short suite, ranked in the current set with its own label.' in note
+
+
+@pytest.mark.parametrize('change, why', [
+    ({'harness': {'benchmark': 'red-v0.61-fair-harness'}}, f'It ran red-v0.61-fair-harness, not the stored {NEW} suite.'),
+    ({'cells': [dict(c, replay_verified=True) for c in new_cells('local-model', 401)][:-1]},
+     'with 1 missing, 0 not in the suite and 0 repeated.'),
+    ({'cells': [dict(c, replay_verified=True, fixture_sha256='fx-older') for c in new_cells('local-model', 401)]},
+     f'cell-0401 ran a task definition or start that {SUITE_FILE} does not list.')])
+def test_a_community_row_off_the_stored_suite_stays_off_the_board_with_the_reason(site, capsys, change, why):
+    before = site.built({})
+    community_report(site, **change)
+    assert site.built({}) == before
+    error = capsys.readouterr().err
+    assert error.startswith(f'{LOCAL}: left off the site. ') and error.count('\n') == 1 and why in error
+
+
+def test_short_snapshot_shows_community_rows_only_against_a_stored_suite(site):
+    report = community_report(site)
+    with pytest.raises(ValueError, match='only on the stored suite'):
+        short_snapshot({'cells': [], 'tasks': [], 'categories': []}, site.web, community=[report])
 
 
 def test_submit_section_pins_one_release_and_links_the_guide_on_main():
