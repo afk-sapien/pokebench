@@ -1,0 +1,20 @@
+{
+ "format": "pokebench-maintainer-rows-v1",
+ "note": "Rows the maintainers ran on a newer harness than the ranked rows. Each sits beside that model's earlier row and moves no other row. report is a verified report under the data folder, and report_sha256 pins it. runs is the run folder the report was packed from, which gives the cost and the harness. replaced maps a kept earlier attempt folder to the reason it was run again. A row is shown only when the report, its hash and the run folder all agree with the stored Short suite.",
+ "rows": [
+  {
+   "id": "claude-haiku-5-5@red-v0.63",
+   "model": "claude-haiku-5-5",
+   "suite": "short",
+   "report": "release-rows/short-claude-haiku-5-5.pokebench.verified.json",
+   "report_sha256": "4a3a7f9edd32cf8a326da495e211275e3669a298e3f6c401d4b8cedc39996f0d",
+   "runs": "rerun-v0371-runs/runs/short-claude-haiku-5-5",
+   "replaced": {
+    "rerun-v0371-runs/backup/cell-0007-v0371-provider-error": "Stopped by a provider error. Rerun from the start on v0.37.2."
+   },
+   "release": "v0.37.4",
+   "label": "Maintainer run, replay verified",
+   "detail": "Run by the maintainers on a newer harness than the ranked rows. Not given a rank."
+  }
+ ]
+}
