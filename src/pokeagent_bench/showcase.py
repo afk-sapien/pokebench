@@ -1,6 +1,7 @@
 """Build the compact local showcase from existing benchmark evidence."""
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -25,6 +26,7 @@ CELL_FIELDS = ('id', 'task_id', 'category', 'score_group', 'model', 'variant', '
 SOURCES = Path(__file__).with_name('showcase_sources')
 RERUN_FORMAT = 'pokebench-rerun-sources-v1'
 RERUN_REVISION = 'v0.37 rerun'
+MAINTAINER_REVISION = 'Maintainer run'
 LONG_NAMES = {'claude-opus-5-5': 'opus', 'gpt-5.6-sol': 'sol', 'claude-sonnet-5-5': 'sonnet', 'gpt-5.6-terra': 'terra',
               'gpt-6-astra': 'astra', 'claude-fable-5-1': 'fable', 'gpt-5.6-luna': 'luna', 'claude-haiku-5-5': 'haiku'}
 
@@ -162,6 +164,34 @@ def suite_hashes(suite):
     return specs, starts
 
 
+def suite_mismatch(rows, suite):
+    """Why report cells are not exactly the starts of a stored Short suite, or None when they are."""
+    specs, starts = suite_hashes(suite)
+    keys = Counter((c.get('task_id'), c.get('variant')) for c in rows)
+    missing = sorted(set(starts) - set(keys), key=str)
+    unknown = sorted(set(keys) - set(starts), key=str)
+    repeated = sorted((k for k, n in keys.items() if n > 1), key=str)
+    if missing or unknown or repeated:
+        return (f'{len(keys)} of {len(starts)} {suite["benchmark"]} starts, with {len(missing)} missing, '
+                f'{len(unknown)} not in the suite and {len(repeated)} repeated.')
+    for c in rows:
+        if c.get('evaluation_spec_sha256') != specs[c['task_id']] or c.get('fixture_sha256') not in starts[c['task_id'], c['variant']]:
+            return f'{c.get("id")} ran a task definition or start that {SUITE_FILE} does not list.'
+    return None
+
+
+def community_id(report):
+    return f'community/{report.get("handle") or "unnamed"}/{report["model"]}'
+
+
+def community_mismatch(report, suite):
+    """Why a community report did not run the stored Short suite, or None when it did. Only such a report is shown."""
+    benchmark = report.get('harness', {}).get('benchmark')
+    if benchmark != suite['benchmark']:
+        return f'It ran {benchmark}, not the stored {suite["benchmark"]} suite.'
+    return suite_mismatch(report.get('cells', []), suite)
+
+
 def frozen_sets(frozen):
     """The stored cost comparison starts and the stored start hashes for the earlier start label."""
     return ({tuple(key) for key in frozen['comparison_starts']},
@@ -170,7 +200,7 @@ def frozen_sets(frozen):
 
 def freeze(short):
     """The comparison starts and start hashes of a built Short panel with no rerun, as frozen.json stores them."""
-    official = {m['id'] for m in short['models'] if 'community' not in m}
+    official = {m['id'] for m in short['models'] if 'community' not in m and 'maintainer' not in m}
     grouped = {m: set() for m in official}
     for c in short['cells']:
         if (c['model'] in official and not c['retired'] and c['category'] not in UNRANKED_CATEGORIES
@@ -188,12 +218,15 @@ def freeze(short):
             'current_starts': [[t, v, sorted(h)] for (t, v), h in sorted(starts.items(), key=lambda kv: order(kv[0]))]}
 
 
-def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None, frozen=None, suite=None):
+def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None, frozen=None, suite=None, maintained=()):
     """Build the Short panel.
 
     reruns maps a model to an adopted v0.37 batch, as {'folder', 'web', 'cells'}. Its cells replace every
     earlier cell of that model and are never merged with them. frozen holds the stored comparison starts and
     start hashes, so a swap moves no other row. suite is the stored v0.37 Short suite that adopted rows ran.
+    maintained lists rows from adopt_maintainer. Each is a row of its own beside the model's earlier row, and it
+    stays out of the cost comparison. community lists verified reports that ran the stored suite, as build keeps
+    them with community_mismatch. They are labeled against that suite and also stay out of the cost comparison.
     """
     reruns = reruns or {}
     shared, frozen_starts = frozen_sets(frozen) if frozen else (None, None)
@@ -241,10 +274,22 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
                 clean['harness'] = harness_tag(run)
                 clean.update(cell_facts(run))
             fresh.append(clean)
-    cells += fresh
+    beside = {}
+    for row_set in maintained:
+        beside[row_set['id']] = row_set
+        for row in row_set['cells']:
+            clean = {k: row.get(k) for k in CELL_FIELDS}
+            run = base / row_set['runs'] / row['id']
+            # The verified report gives the cell. The run folder it came from gives the cost and the harness.
+            clean.update(model=row_set['id'], replay=None, revision=MAINTAINER_REVISION, source=row_set['runs'],
+                         harness_fault=None, cost=run_cost(run, row_set['model'], row.get('tokens')),
+                         harness=harness_tag(run), **cell_facts(run))
+            fresh.append(clean)
     submitted = {}
+    if community and suite is None:
+        raise ValueError('Community rows are shown only on the stored suite, so short_snapshot needs it.')
     for entry in community:
-        name = f'community/{entry.get("handle") or "unnamed"}/{entry["model"]}'
+        name = community_id(entry)
         submitted[name] = {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
                            'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
         for row in entry['cells']:
@@ -252,7 +297,8 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
             # Community token counts are self reported, so no cost is estimated from them.
             clean.update(model=name, replay=None, revision='Community', harness=entry['harness']['benchmark'],
                          cost={'low': None, 'high': None, 'partial': False, 'note': 'Community run, not priced'})
-            cells.append(clean)
+            fresh.append(clean)
+    cells += fresh
     retired = retired_tasks()
     # Retired attempts stay visible for history, but they are not scored or counted as planned.
     for cell in cells:
@@ -270,17 +316,20 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         categories, score = grouped_scores(rows)
         counted = [r for r in rows if not r['retired']]
         finished = sum(r['state'] == 'finished' for r in counted)
-        note = submitted.get(name)
-        models.append({'id': name, 'label': note['model'] if note else LABELS.get(name, name), 'score': score,
-                       **({'community': note} if note else {}),
+        note, kept = submitted.get(name), beside.get(name)
+        # A maintainer row names its suite, so it reads apart from the same model's earlier row.
+        label = (note['model'] if note else f'{LABELS.get(kept["model"], kept["model"])} ({short_tag(suite["benchmark"])})'
+                 if kept else LABELS.get(name, name))
+        models.append({'id': name, 'label': label, 'score': score,
+                       **({'community': note} if note else {}), **({'maintainer': kept['note']} if kept else {}),
                        'categories': categories, 'finished': finished, 'planned': len(counted),
                        'complete': finished == len(counted), 'tokens': sum(r.get('tokens') or 0 for r in rows),
                        'cost': sum_cost(rows), 'harness': harness_summary(rows),
                        'errors': sum(r['state'] == 'evaluation_error' for r in counted),
                        'labels': dict(Counter(code for r in counted for code in r['labels']))})
-        if name in reruns:
-            models[-1]['suite'] = {'benchmark': suite['benchmark'], 'tasks': len(suite['tasks']),
-                                   'source': reruns[name]['folder']}
+        if name in reruns or kept or note:
+            origin = reruns[name]['folder'] if name in reruns else kept['runs'] if kept else f'bundle {note["bundle_sha256"][:12]}'
+            models[-1]['suite'] = {'benchmark': suite['benchmark'], 'tasks': len(suite['tasks']), 'source': origin}
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = []
     for t in source['tasks']:
@@ -289,7 +338,7 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         if task['retired']:
             task['retirement_reason'] = task_definition(t['id']).get('retirement_reason')
         tasks.append(task)
-    if reruns:
+    if reruns or beside or submitted:
         # Union of both task sets. Tasks only the stored suite has come from it, since this catalog lacks them.
         # added_in names the release that first ran them, which can be older than the suite's own release.
         known = {t['id'] for t in tasks}
@@ -308,14 +357,20 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         log = [e for e in attempts_log(base, batches) if e['model'] not in reruns]
         for model, swap in reruns.items():
             log += [e for e in attempts_log(base, [swap['folder']]) if e['model'] == model]
+        for row_set in maintained:
+            for folder, why in row_set['replaced'].items():
+                manifest, result = load(base / folder / 'manifest.json'), load(base / folder / 'result.json')
+                log.append({'batch': row_set['runs'], 'cell': re.match(r'cell-\d+', Path(folder).name)[0], 'kind': 'replaced',
+                            'reason': why, 'model': row_set['id'], 'task_id': manifest.get('scenario', {}).get('task_id'),
+                            'stop_reason': result.get('stop_reason'), 'decisions': result.get('usage', {}).get('calls')})
     return {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
             'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
             'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
             'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
             'label_text': {code: {'label': label, 'detail': detail} for code, (label, detail) in NOTES.items()},
             'attempts': {'rule': RETRY_RULE, 'log': log},
-            'efficiency': comparison([c for c in scored if c['model'] not in submitted],
-                                     [m for m in models if m['id'] not in submitted], shared)}
+            'efficiency': comparison([c for c in scored if c['model'] not in submitted and c['model'] not in beside],
+                                     [m for m in models if m['id'] not in submitted and m['id'] not in beside], shared)}
 
 
 def rescored(root, result):
@@ -465,10 +520,79 @@ def adopt_long(base, model, run_id, suite):
     return LONG_NAMES[model], None
 
 
-def build(base, web, *, sources=None, frozen=None, suite=None):
+MAINTAINER_FORMAT = 'pokebench-maintainer-rows-v1'
+MAINTAINER_KEYS = {'id', 'model', 'suite', 'report', 'report_sha256', 'runs', 'replaced', 'release', 'label', 'detail'}
+
+
+def maintainer_sources(path):
+    """Read the checked-in list of maintainer rows, each a verified report beside the model's earlier row."""
+    sources = load(path)
+    if sources.get('format') != MAINTAINER_FORMAT:
+        raise ValueError(f'{path} is not a {MAINTAINER_FORMAT} file')
+    for entry in sources.get('rows', []):
+        if not isinstance(entry, dict) or set(entry) != MAINTAINER_KEYS:
+            raise ValueError(f'{path}: each row names exactly {", ".join(sorted(MAINTAINER_KEYS))}')
+        if entry['suite'] != 'short':
+            raise ValueError(f'{path}: {entry["id"]} is a {entry["suite"]} row, and only Short rows are supported')
+    return sources.get('rows', [])
+
+
+def adopt_maintainer(base, entry, suite):
+    """Return (row, None) when a verified report and the run folder it came from agree on every stored start, else (None, why)."""
+    base = Path(base)
+    report_path = base / str(entry['report'])
+    if not report_path.resolve().is_relative_to(base.resolve()) or not report_path.is_file():
+        return None, f'{entry["report"]} is not a file under the data folder.'
+    if hashlib.sha256(report_path.read_bytes()).hexdigest() != entry['report_sha256']:
+        return None, f'{entry["report"]} does not match its listed sha256.'
+    report = load(report_path)
+    if report.get('format') != 'pokebench-verified-report-v1' or report.get('verified') is not True or report.get('problems'):
+        return None, f'{entry["report"]} is not a verified report with no problems.'
+    if report.get('suite') != entry['suite'] or report.get('model') != entry['model']:
+        return None, f'{entry["report"]} is {report.get("suite")} {report.get("model")}, not {entry["suite"]} {entry["model"]}.'
+    if report.get('harness', {}).get('benchmark') != suite['benchmark']:
+        return None, f'{entry["report"]} ran {report.get("harness", {}).get("benchmark")}, not {suite["benchmark"]}.'
+    root = inside(base, entry['runs'])
+    if root is None:
+        return None, f'{entry["runs"]} is not a folder under the data folder.'
+    rows = report.get('cells', [])
+    walls = []
+    why = suite_mismatch(rows, suite)
+    if why:
+        return None, why
+    for c in rows:
+        if c.get('state') != 'finished' or c.get('replay_verified') is not True:
+            return None, f'{c.get("id")} is {c.get("state")} and not replay verified.'
+        run = root / str(c['id'])
+        if not re.fullmatch(r'cell-\d+', str(c['id'])) or not (run / 'manifest.json').is_file() or not (run / 'result.json').is_file():
+            return None, f'{entry["runs"]} has no run folder for {c.get("id")}.'
+        manifest, result = load(run / 'manifest.json'), load(run / 'result.json')
+        if manifest.get('agent', {}).get('model') != entry['model'] or manifest.get('scenario', {}).get('task_id') != c['task_id']:
+            return None, f'{c["id"]} in {entry["runs"]} ran a different model or task than the report.'
+        usage = result.get('usage', {})
+        if usage.get('input_tokens', 0) + usage.get('output_tokens', 0) != c.get('tokens'):
+            return None, f'{c["id"]} in {entry["runs"]} used a different token count than the report.'
+        if harness_tag(run) != suite['benchmark']:
+            return None, f'{c["id"]} recorded harness {harness_tag(run)}, not {suite["benchmark"]}.'
+        walls.append(result.get('wall_seconds'))
+    for folder in entry['replaced']:
+        if inside(base, folder) is None or not re.match(r'cell-\d+', Path(folder).name):
+            return None, f'{folder} is not a kept cell folder under the data folder.'
+    packages = sorted({load(root / str(c['id']) / 'manifest.json').get('package_version') for c in rows}, key=str)
+    note = {'label': entry['label'], 'detail': entry['detail'], 'model': entry['model'], 'release': entry['release'],
+            'packages': packages, 'verified_on': report['harness'].get('package_version'),
+            'report_sha256': entry['report_sha256'], 'bundle_sha256': report.get('bundle_sha256'),
+            # The kept attempts' own play time, summed. Replaced attempts and pauses between attempts are not in it.
+            'wall_seconds': round(sum(walls)) if all(isinstance(w, (int, float)) for w in walls) else None}
+    return {'id': entry['id'], 'model': entry['model'], 'runs': entry['runs'], 'cells': rows,
+            'replaced': entry['replaced'], 'note': note}, None
+
+
+def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None):
     """Return the showcase data. A model keeps its earlier source unless its listed new source is complete."""
     base, web = Path(base), Path(web)
     sources = rerun_sources(sources or SOURCES / 'rerun-sources.json')
+    listed = maintainer_sources(maintainer or SOURCES / 'maintainer-rows.json')
     frozen = load(frozen or SOURCES / 'frozen.json')
     suite = load(suite or SOURCES / SUITE_FILE)
     source = load(web / 'focused-analysis.json')
@@ -493,16 +617,31 @@ def build(base, web, *, sources=None, frozen=None, suite=None):
                 print(f'{model} Long: kept the old row. {why}', file=sys.stderr)
             else:
                 long[name] = entry['long']
+    maintained = []
+    for entry in listed:
+        row, why = adopt_maintainer(base, entry, suite)
+        if row is None:
+            print(f'{entry["id"]}: left off the site. {why}', file=sys.stderr)
+        else:
+            maintained.append(row)
+    # A community row joins the current set or stays off. It never ranks among the earlier rows.
+    community = []
+    for report in community_reports(web):
+        why = community_mismatch(report, suite)
+        if why:
+            print(f'{community_id(report)}: left off the site. {why}', file=sys.stderr)
+        else:
+            community.append(report)
     return {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base, community_reports(web), short, frozen, suite),
+            'short': short_snapshot(source, web, extra, base, community, short, frozen, suite, maintained),
             'long': long_snapshot(base, web, long),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}
 
 
-def export(base, web, *, install=False, sources=None):
+def export(base, web, *, install=False, sources=None, maintainer=None):
     base, web = Path(base), Path(web)
-    data = build(base, web, sources=sources)
+    data = build(base, web, sources=sources, maintainer=maintainer)
     text = json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n'
     temporary = web / 'showcase-data.json.tmp'
     temporary.write_text(text)
