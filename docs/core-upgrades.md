@@ -1,6 +1,7 @@
 # Core 0.1.4 review and benchmark upgrades
 
-The published PokeSim Core 0.1.4 wheel is pinned by SHA-256 in this package.
+This note covers the published PokeSim Core 0.1.4 wheel, pinned by SHA-256 at the time.
+The current pins are listed under Install in the [README](../README.md#install).
 The release consolidates the same mechanical item and party commands introduced
 for the v036 benchmark. It does not add an autonomous game strategy.
 

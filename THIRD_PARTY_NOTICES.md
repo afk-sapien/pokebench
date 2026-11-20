@@ -1,8 +1,8 @@
 # Third-party notices
 
-Shared RAM decoding and emulator primitives are provided by
-[PokeSim Core](https://github.com/afk-sapien/pokesim-core), installed separately
-under its MIT License. The original decoder was adapted from
+Shared RAM decoding and emulator primitives are provided by PokeSim Core, the
+`pokecore` wheel released from the [PokeSim](https://github.com/afk-sapien/PokeSim)
+repository and installed separately under its MIT License. The original decoder was adapted from
 [PokeSim](https://github.com/afk-sapien/PokeSim), copyright 2026 AFK Sapien,
 under the MIT License reproduced in [LICENSE](LICENSE).
 

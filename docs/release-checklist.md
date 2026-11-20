@@ -4,7 +4,7 @@ Community submissions are accepted only from a frozen release. A release is froz
 
 Do these in order, on the commit that will be tagged.
 
-1. Bump the package version in `pyproject.toml` and `src/pokeagent_bench/__init__.py`, and set `BENCHMARK_VERSION` if the harness name changes. Run `uv lock`.
+1. Bump the package version in `pyproject.toml` and `src/pokeagent_bench/__init__.py`, and set `BENCHMARK_VERSION` if the harness name changes. Run `uv lock`. If the PyBoy RS or PokeSim Core pins changed, change the versions under Install in [README.md](../README.md). `tests/test_docs.py` fails when the README names a version the pins do not.
 2. If any task spec or start state changed, rebuild the fixture pack with `local_setup.build_pack(rom, fixtures, output)` and commit it. Run `uv run pokebench setup --rom /path/to/red.gb` on a clean checkout to confirm the pack opens.
 3. Print this checkout's harness entry and paste it into the `accepted` list. Do this last among code changes, because any change to a `.py` file in the package changes the source hash. Editing the JSON file does not.
 
@@ -14,7 +14,13 @@ Do these in order, on the commit that will be tagged.
 
 4. Run `uv run ruff check .` and `uv run pytest`. Then run a smoke suite, `submit` it and `verify` the bundle. A passing `verify` shows the entry matches the checkout.
 5. Commit, tag the commit with the package version and push the tag. The `uvx` lines in [README.md](../README.md), [SUBMITTING.md](../SUBMITTING.md) and the "Submit a model" section of `src/pokeagent_bench/showcase_assets/index.html` name the tag submitters install. If the new tag differs, change it in all three. `tests/test_docs.py` fails when they differ or name a tag older than the package version.
-6. The site's "Submit a model" section ships with the `hidden` attribute. When the owner says the site may show it, remove `hidden` and redeploy the site.
+6. Publish a GitHub release page for the tag, with the release note from `docs/history` as its body, and mark it latest. Submitters find the release to run on that page, so a tag without one leaves the page naming an older release.
+
+   ```sh
+   gh release create vX.Y.Z --verify-tag --latest --title "PokeBench X.Y.Z" --notes-file NOTES.md
+   ```
+
+7. The site's "Submit a model" section ships with the `hidden` attribute. When the owner says the site may show it, remove `hidden` and redeploy the site.
 
 ## What an entry holds
 

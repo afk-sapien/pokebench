@@ -17,6 +17,17 @@ def test_every_uvx_line_names_one_tag_no_older_than_the_package():
     assert tuple(int(part) for part in found.pop()) >= package
 
 
+def test_readme_names_the_emulator_and_core_versions_the_package_pins():
+    pins = (ROOT / 'pyproject.toml').read_text()
+    pinned = {'PyBoy RS': set(re.findall(r'pyboy_rs-(\d+\.\d+\.\d+)-', pins)),
+              'PokeSim Core': set(re.findall(r'pokecore-(\d+\.\d+\.\d+)-py3', pins))}
+    readme = (ROOT / 'README.md').read_text()
+    for name, versions in pinned.items():
+        assert len(versions) == 1, f'pyproject.toml pins {name} {versions}'
+        named = set(re.findall(name + r' (\d+\.\d+\.\d+)', readme))
+        assert named == versions, f'README names {name} {named}, pyproject.toml pins {versions}'
+
+
 def test_each_doc_says_which_release_to_run_and_that_the_rom_is_yours():
     for name in ['README.md', 'SUBMITTING.md']:
         text = (ROOT / name).read_text()
