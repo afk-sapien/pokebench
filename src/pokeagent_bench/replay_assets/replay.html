@@ -426,15 +426,23 @@ body {overflow:hidden}
 .transport {position:sticky}
 .transport {bottom:0}
 .transport {padding:6px 16px 10px}
-.controls {flex-wrap:wrap}
+.controls {display:grid}
+.controls {grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) minmax(0,1fr) auto}
 .controls .key-btn {height:44px}
-.controls .key-btn {flex:1}
+.controls .key-btn {min-width:0}
+.controls .key-btn {padding:0 8px}
+#play {min-width:0}
+#play {padding:0 4px}
 #speed {margin-left:0}
 #position {margin-left:0}
-#position,#spent {order:-1}
-#spent {margin-left:auto}
+#position,#spent {grid-row:1}
+#position,#spent {grid-column:1 / -1}
+#spent {justify-self:end}
 .controls .wide {display:none}
 .hint {display:none}
+}
+@media (max-width:359px) {
+#spent {grid-row:2}
 }
 @media (prefers-reduced-motion:no-preference) {
 .key-btn,.row,.ms {transition:background-color 80ms linear}
@@ -449,7 +457,7 @@ body {overflow:hidden}
 <button id="theme" class="key-btn" type="button"></button>
 </header>
 <section class="brief" aria-label="Task and result">
-<p id="goal"></p>
+<p id="goal">This replay needs JavaScript and a version of Chrome, Edge, Firefox or Safari from 2023 or later.</p>
 <div class="outcome"><div><span id="score"></span><span id="score-max"></span></div><div id="badge-meter" class="badge-meter" hidden></div><p id="stop"></p></div>
 </section>
 <div class="work">
@@ -489,25 +497,72 @@ body {overflow:hidden}
 </div>
 </footer>
 <script id="face" type="text/plain">__FACE__</script>
-<script id="data" type="application/json">__DATA__</script>
-<script>
-const data = JSON.parse(document.getElementById('data').textContent)
+<script type="module">
 const $ = id => document.getElementById(id)
 
-// Format 2 packs screens into sprite sheets and steps into columns.
-// Replays published before it carry one image per screen and one object per step.
-function unpack() {
-  if (data.format !== 2) {
-    const lone = key => ({src: data.images[key], x: 0, y: 0})
-    return data.steps.map(s => ({...s, before: lone(s.before), after: lone(s.after), same: s.before === s.after}))
-  }
+// replay decoder begin
+// Reads replay format 3, see docs/replay-format.md. The checks and node tests run this block as it stands.
+const NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/
+const UNSUPPORTED = 'This browser cannot open replays. Use a version of Chrome, Edge, Firefox or Safari from 2023 or later.'
+async function inflate(bytes) {
+  // The header's opening brace sits at byte 4 once inflated. A gzip file has 0 there, its time field.
+  if (bytes[4] === 0x7b) return bytes
+  if (typeof DecompressionStream !== 'function') throw new Error(UNSUPPORTED)
+  const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'))
+  return new Uint8Array(await new Response(stream).arrayBuffer())
+}
+function parse(bytes) {
+  const size = (bytes[0] | bytes[1] << 8 | bytes[2] << 16 | bytes[3] << 24) >>> 0
+  const data = JSON.parse(new TextDecoder().decode(bytes.subarray(4, 4 + size)))
+  if (data.format !== 3) throw new Error('This replay is in format ' + data.format + ', and this page reads format 3.')
   const f = data.frames
-  const c = data.steps
-  const ref = n => {
-    const slot = n % f.per_sheet
-    return {src: f.sheets[Math.floor(n / f.per_sheet)], x: slot % f.columns * f.width,
-      y: Math.floor(slot / f.columns) * f.height, w: f.width, h: f.height}
+  const side = f.tile_side
+  const across = f.width / side
+  const cells = across * (f.height / side)
+  const area = side * side
+  const wide = f.index_bytes
+  const tiles = bytes.subarray(4 + size, 4 + size + f.tiles * area)
+  const index = bytes.subarray(4 + size + tiles.length)
+  if (!Number.isInteger(across) || !Number.isInteger(cells) || tiles.length !== f.tiles * area || index.length !== f.count * cells * wide) {
+    throw new Error('This replay file is damaged.')
   }
+  if (tiles.some(colour => colour >= f.palette.length)) throw new Error('This replay file is damaged.')
+  const palette = f.palette.map(hex => parseInt(hex, 16))
+  // Paints frame n as RGBA, one tile at a time.
+  function frame(n) {
+    const rgba = new Uint8ClampedArray(f.width * f.height * 4)
+    let cell = 0
+    while (cell < cells) {
+      let at = (n * cells + cell) * wide
+      let tile = 0
+      let shift = 1
+      while (shift < 256 ** wide) {
+        tile += index[at] * shift
+        at += 1
+        shift *= 256
+      }
+      if (tile >= f.tiles) throw new Error('This replay file is damaged.')
+      const left = cell % across * side
+      const top = Math.floor(cell / across) * side
+      let k = 0
+      while (k < area) {
+        const colour = palette[tiles[tile * area + k]]
+        const out = ((top + Math.floor(k / side)) * f.width + left + k % side) * 4
+        rgba[out] = colour >> 16
+        rgba[out + 1] = colour >> 8 & 255
+        rgba[out + 2] = colour & 255
+        rgba[out + 3] = 255
+        k += 1
+      }
+      cell += 1
+    }
+    return rgba
+  }
+  return {data, frame}
+}
+// Steps are stored as columns. A step's screens are frame numbers.
+function unpack(data) {
+  const c = data.steps
   const pick = (list, column, i) => column && column[i] >= 0 ? list[column[i]] : undefined
   const changed = (column, i) => Boolean(column) && column[i] >= 0 && (i === 0 || column[i] !== column[i - 1])
   let total = 0
@@ -518,7 +573,7 @@ function unpack() {
     total += c.tokens[i]
     return {decision, tokens: c.tokens[i], cumulative_tokens: c.cumulative ? c.cumulative[i] : total,
       before_frame: c.before_frame[i], after_frame: c.after_frame[i],
-      before: ref(before), after: ref(previous), same: before === previous,
+      before, after: previous, same: before === previous,
       actions: c.actions[i].flatMap(([button, hold_frames, release_frames, times]) =>
         Array.from({length: times}, () => ({button, hold_frames, release_frames}))),
       location: pick(data.places, c.place, i), outcome: pick(data.outcomes, c.outcome, i),
@@ -527,8 +582,23 @@ function unpack() {
       note: c.note ? c.note[i] : -1, note_changed: changed(c.note, i)}
   })
 }
+// replay decoder end
 
-const steps = unpack()
+// The page opens view.html?r=<name> and loads <name>.gz from the same folder.
+const name = new URLSearchParams(location.search).get('r') || ''
+let replay = null
+try {
+  if (!NAME.test(name)) throw new Error('This link does not name a replay.')
+  $('goal').textContent = 'Loading the replay…'
+  const response = await fetch(encodeURIComponent(name) + '.gz')
+  if (!response.ok) throw new Error('The replay file could not be loaded (HTTP ' + response.status + ').')
+  replay = parse(await inflate(new Uint8Array(await response.arrayBuffer())))
+} catch (error) {
+  $('goal').textContent = error instanceof SyntaxError ? 'This replay file is damaged.' : error.message
+  throw error
+}
+const data = replay.data
+const steps = unpack(data)
 const meta = data.meta || {}
 const last = steps.length - 1
 const rich = Boolean(data.plans || data.notes)
@@ -537,8 +607,8 @@ const flagged = new Map(milestones.map(m => [m.at, m]))
 const GLYPH = {up: '▲', down: '▼', left: '◀', right: '▶', a: 'A', b: 'B', start: 'START', select: 'SELECT'}
 const ROW = 28
 const pictures = new Map()
-let W = 160
-let H = 144
+const W = data.frames.width
+const H = data.frames.height
 let cursor = 0
 let timer = null
 let cellCount = 1
@@ -553,35 +623,22 @@ function el(tag, cls, text) {
   if (text !== undefined) node.textContent = text
   return node
 }
-function picture(src) {
-  let pending = pictures.get(src)
-  if (!pending) {
-    pending = new Promise(done => {
-      const image = new Image()
-      image.onload = () => done(image)
-      image.src = src
-    })
-    pictures.set(src, pending)
+// The last few frames painted are kept, so stepping back and forth does not decode them again.
+function picture(n) {
+  let image = pictures.get(n)
+  if (!image) {
+    image = new ImageData(replay.frame(n), W, H)
+    pictures.set(n, image)
     if (pictures.size > 6) pictures.delete(pictures.keys().next().value)
   }
-  return pending
+  return image
 }
-function paint(canvas, ref) {
-  canvas.wanted = ref
-  picture(ref.src).then(image => {
-    if (canvas.wanted !== ref) return
-    const w = ref.w || image.naturalWidth
-    const h = ref.h || image.naturalHeight
-    if (canvas.width !== w || canvas.height !== h) {
-      canvas.width = w
-      canvas.height = h
-    }
-    canvas.getContext('2d').drawImage(image, ref.x, ref.y, w, h, 0, 0, w, h)
-    if (canvas.id !== 'screen' || (w === W && h === H)) return
-    W = w
-    H = h
-    fit()
-  })
+function paint(canvas, n) {
+  if (canvas.width !== W || canvas.height !== H) {
+    canvas.width = W
+    canvas.height = H
+  }
+  canvas.getContext('2d').putImageData(picture(n), 0, 0)
 }
 function presses(actions) {
   const groups = []
@@ -798,7 +855,7 @@ $('versions').textContent = versions.join('  /  ')
 if (!versions.length) $('versions').remove()
 const policy = data.action_policy === 'manual-menu-v1' ? 'Manual menus.' : 'Assisted gameplay.'
 if (meta.goal) {
-  $('goal').append(el('b', '', 'Goal'), meta.goal)
+  $('goal').replaceChildren(el('b', '', 'Goal'), meta.goal)
   $('goal').onclick = () => $('goal').classList.toggle('open')
 } else {
   $('goal').textContent = policy + ' ' + count(steps.length) + ' recorded decisions.'

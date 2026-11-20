@@ -6,6 +6,7 @@ reported (goal, score, map name, command outcome), not model plans or notes.
 """
 import base64
 import csv
+import gzip
 import hashlib
 import html
 import io
@@ -16,6 +17,7 @@ from pathlib import Path
 import re
 import tempfile
 
+import numpy as np
 from PIL import Image
 
 from .core import digest
@@ -61,7 +63,10 @@ def sha(value):
 
 PNG_PREFIX = 'data:image/png' + chr(59) + 'base64,'
 BUTTONS = (None, 'a', 'b', 'up', 'down', 'left', 'right', 'start', 'select')
-SHEET_SIDE = 16
+TILE_SIDE = 8
+REPLAY_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]{0,199}\Z')
+# Every replay opens in one shared page, replays/view.html, which loads replays/<name>.gz.
+REPLAY_LINK = 'replays/view.html?r='
 
 
 def optional_text(value, maximum):
@@ -90,58 +95,102 @@ def png(value):
     return PNG_PREFIX + base64.b64encode(output.getvalue()).decode()
 
 
-def sheet_png(sheet):
-    """Encode a sheet as the smallest PNG that decodes to the same pixels."""
-    colours = len(sheet.getcolors(256) or [])
-    choices = []
-    if colours:
-        bits = next(depth for depth in (1, 2, 4, 8) if colours <= 1 << depth)
-        choices.append((sheet.quantize(colours, dither=Image.Dither.NONE), {'bits': bits}))
-    # The palette form is checked against the source pixels. Full colour is the fallback.
-    choices.append((sheet, {}))
-    for image, options in choices:
-        output = io.BytesIO()
-        image.save(output, format='PNG', optimize=True, **options)
-        with Image.open(io.BytesIO(output.getvalue())) as check:
-            if check.convert('RGB').tobytes() == sheet.tobytes():
-                return PNG_PREFIX + base64.b64encode(output.getvalue()).decode()
-    raise ValueError('Screens did not survive encoding')
+def tile_screens(screens):
+    """Cut screens into tiles and store each distinct tile once. See docs/replay-format.md.
 
-
-def frame_sheets(images, keys):
-    """Pack each distinct screen once, in first use order, into sprite sheets.
-
-    Returns the frame number of every source key and the sheet description.
-    A sheet holds at most 256 screens so a browser decodes a few megabytes at
-    a time, not the whole run.
+    `screens` are same size RGB images in frame order. Returns the frame
+    header and the body: every distinct tile as palette indices, row by row,
+    then each screen's tile numbers in reading order.
     """
-    order = []
-    seen = {}
-    index = {}
+    palette = {}
+    tiles = {}
+    numbers = []
     size = None
-    for key in keys:
-        image = screen(images[key])
+    side = TILE_SIDE
+    for image in screens:
         size = size or image.size
         if image.size != size:
             raise ValueError('Replay screens differ in size')
-        mark = hashlib.sha256(image.tobytes()).digest()
-        if mark not in seen:
-            seen[mark] = len(order)
-            order.append(key)
-        index[key] = seen[mark]
+        width, height = size
+        if width % side or height % side:
+            raise ValueError('Replay screens are not a whole number of tiles')
+        rgb = np.asarray(image.convert('RGB'), dtype=np.uint32)
+        packed = rgb[..., 0] << 16 | rgb[..., 1] << 8 | rgb[..., 2]
+        values, local = np.unique(packed, return_inverse=True)
+        lookup = np.array([palette.setdefault(int(value), len(palette)) for value in values])
+        if len(palette) > 256:
+            raise ValueError('Replay screens use more than 256 colours')
+        index = lookup[local.reshape(packed.shape)].astype(np.uint8)
+        raw = index.reshape(height // side, side, width // side, side).swapaxes(1, 2).tobytes()
+        area = side * side
+        numbers.extend(tiles.setdefault(raw[k:k + area], len(tiles)) for k in range(0, len(raw), area))
+    if size is None:
+        raise ValueError('Replay has no screens')
     width, height = size
-    columns = max(1, min(SHEET_SIDE, 4096 // width))
-    per_sheet = columns * max(1, min(SHEET_SIDE, 4096 // height))
-    sheets = []
-    for first in range(0, len(order), per_sheet):
-        group = [screen(images[key]) for key in order[first:first + per_sheet]]
-        rows = -(-len(group) // columns)
-        sheet = Image.new('RGB', (columns * width, rows * height), group[0].getpixel((0, 0)))
-        for slot, image in enumerate(group):
-            sheet.paste(image, (slot % columns * width, slot // columns * height))
-        sheets.append(sheet_png(sheet))
-    return index, {'width': width, 'height': height, 'columns': columns, 'per_sheet': per_sheet,
-                   'count': len(order), 'sheets': sheets}
+    wide = len(tiles) > 1 << 16
+    frames = {'width': width, 'height': height, 'tile_side': side, 'palette': [f'{value:06x}' for value in palette],
+              'tiles': len(tiles), 'count': len(numbers) // (width // side * (height // side)), 'index_bytes': 4 if wide else 2}
+    return frames, b''.join(tiles) + np.array(numbers, dtype='<u4' if wide else '<u2').tobytes()
+
+
+def frame_tiles(images, keys):
+    """Tile each distinct screen once, in first use order.
+
+    Returns the frame number of every source key, the frame header and the body.
+    """
+    seen = {}
+    index = {}
+
+    def distinct():
+        for key in keys:
+            image = screen(images[key])
+            mark = hashlib.sha256(image.tobytes()).digest()
+            fresh = mark not in seen
+            index[key] = seen.setdefault(mark, len(seen))
+            if fresh:
+                yield image
+
+    frames, body = tile_screens(distinct())
+    return index, frames, body
+
+
+def replay_file(payload, body):
+    """The bytes of one format 3 replay file: gzip of the header length, the JSON header and the body."""
+    header = json.dumps(payload, ensure_ascii=True, allow_nan=False, separators=(',', ':')).encode()
+    return gzip.compress(len(header).to_bytes(4, 'little') + header + body, compresslevel=9, mtime=0)
+
+
+def read_replay(raw):
+    """Split the bytes of a format 3 replay file into its header and body, checking the body's length."""
+    data = gzip.decompress(raw)
+    size = int.from_bytes(data[:4], 'little')
+    payload = json.loads(data[4:4 + size])
+    frames = payload['frames']
+    if payload.get('format') != 3:
+        raise ValueError('Expected a format 3 replay')
+    side = frames['tile_side']
+    cells = frames['width'] // side * (frames['height'] // side)
+    if len(data) != 4 + size + frames['tiles'] * side * side + frames['count'] * cells * frames['index_bytes']:
+        raise ValueError('Replay body has the wrong length')
+    return payload, data[4 + size:]
+
+
+def replay_stub(name):
+    """The page left at a replay's old address. It opens the shared viewer and keeps the position in the link."""
+    target = REPLAY_LINK.removeprefix('replays/') + name
+    return ('<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>PokeBench replay</title>\n'
+            f"<script>location.replace('{target}' + location.hash)</script>\n"
+            f'<noscript><meta http-equiv="refresh" content="0, url={target}"></noscript>\n'
+            f'</head>\n<body><p><a href="{target}">Open the replay</a></p></body>\n</html>\n')
+
+
+def write_replay(folder, name, payload, body):
+    """Write a replay's data file and the page at its old address. Returns the viewer link."""
+    if not REPLAY_NAME.fullmatch(name):
+        raise ValueError('Invalid replay name')
+    (folder/(name + '.gz')).write_bytes(replay_file(payload, body))
+    (folder/(name + '.html')).write_text(replay_stub(name))
+    return REPLAY_LINK + name
 
 
 def replay_meta(run, details):
@@ -224,11 +273,11 @@ def safe_metadata(manifest):
 def replay_payload(path, attempt, details=None):
     """Extract verified screen boundaries, executed gamepad actions and harness facts.
 
-    The result is replay format 2. Screens are packed into sprite sheets and
-    steps are stored as columns. A step's first screen is the previous step's
-    last screen unless `breaks` says otherwise. The harness's map name and the
-    outcome it reported for each command are included. Model plans, notes and
-    requested commands are not.
+    Returns the header and body of replay format 3, see docs/replay-format.md.
+    Screens are stored as tiles and steps as columns. A step's first screen is
+    the previous step's last screen unless `breaks` says otherwise. The
+    harness's map name and the outcome it reported for each command are
+    included. Model plans, notes and requested commands are not.
     """
     source = path.read_text()
     match = re.search(r'<script[^>]*id="data"[^>]*>(.*?)</script>', source, re.S)
@@ -249,7 +298,7 @@ def replay_payload(path, attempt, details=None):
     policy = resolve({}, run.get('action_policy', ASSISTED))
     if 'action_policy' in attempt and policy != attempt['action_policy']:
         raise ValueError('Replay action policy differs from its scored attempt')
-    index, frames = frame_sheets(run['images'], dict.fromkeys(step[key] for step in source for key in ('before', 'after')))
+    index, frames, body = frame_tiles(run['images'], dict.fromkeys(step[key] for step in source for key in ('before', 'after')))
     places = {}
     outcomes = {}
 
@@ -276,11 +325,11 @@ def replay_payload(path, attempt, details=None):
         if running != total:
             steps['cumulative'] = totals
             break
-    return {'format': 2, 'model': identifier(attempt['model']), 'completed': bool(attempt['completed']),
+    return {'format': 3, 'model': identifier(attempt['model']), 'completed': bool(attempt['completed']),
             'action_policy': policy,
             'benchmark': identifier(attempt.get('benchmark', 'unrecorded')),
             'meta': replay_meta(run, details), 'places': list(places), 'outcomes': list(outcomes),
-            'steps': steps, 'frames': frames}
+            'steps': steps, 'frames': frames}, body
 
 
 def clean_task(task):
@@ -558,6 +607,7 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
     config = {entry['id']: entry for entry in read(config_path)}
     output.mkdir(parents=True)
     (output/'replays').mkdir()
+    (output/'replays'/'view.html').write_text(REPLAY)
     (output/'benchmarks').mkdir()
     public = {'updated_at': public_text(feed['updated_at'], 100), 'release_status': 'development', 'cohorts': []}
     replay_count = 0
@@ -606,11 +656,10 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
                     raise ValueError('Replay symlinks are not publishable')
                 versions = {'package': a['metadata'].get('package_version'), 'benchmark': a['metadata'].get('benchmark'),
                             'core': a['metadata'].get('core_version')}
-                payload = replay_payload(path, {**attempt, 'action_policy': a['action_policy']},
-                                         {'harness': a['metadata'].get('harness'), 'versions': versions})
+                payload, body = replay_payload(path, {**attempt, 'action_policy': a['action_policy']},
+                                               {'harness': a['metadata'].get('harness'), 'versions': versions})
                 stem = hashlib.sha256((source_id+'/'+run_id).encode()).hexdigest()[:20]
-                a['replay'] = 'replays/'+stem+'.html'
-                (output/a['replay']).write_text(REPLAY.replace('__DATA__', json_text(payload)))
+                a['replay'] = write_replay(output/'replays', stem, payload, body)
                 replay_count += 1
             c['attempts'].append(a)
             all_rows.append(a)
@@ -697,7 +746,9 @@ def _export_public(feed_path, config_path, output, report=None, release_root=Non
         if not path.is_file():
             continue
         raw = path.read_bytes()
-        if path.suffix != '.pdf' and PRIVATE.search(raw.decode()):
+        # A replay file's body is only tile pixels and tile numbers, so its header holds all of its text.
+        text = json_text(read_replay(raw)[0]) if path.suffix == '.gz' else raw.decode() if path.suffix != '.pdf' else ''
+        if PRIVATE.search(text):
             raise ValueError('Private data found in public export')
         files.append({'path': str(path.relative_to(output)), 'bytes': len(raw), 'sha256': hashlib.sha256(raw).hexdigest()})
     manifest = {'format': 1, 'project': 'PokeBench', 'status': 'development',
@@ -725,8 +776,8 @@ METHODOLOGY = '''<h1>How PokeBench works</h1>
 <p><a href="results.json">Download results JSON</a> · <a href="results.csv">Download attempts CSV</a> · <a href="manifest.json">Download publication manifest</a></p>'''
 
 
-# The replay page reads format 2 and the older one image per screen format,
-# so replays published before the change still open.
+# The shared replay viewer, written once as replays/view.html. It reads format 3 files.
+# scripts/check_replay_tiles.py checks a new export against replays published in format 2.
 REPLAY_ASSETS = Path(__file__).with_name('replay_assets')
 REPLAY = (REPLAY_ASSETS / 'replay.html').read_text().replace(
     '__FACE__', (REPLAY_ASSETS / 'pokesim-panel.woff2.b64').read_text().strip())

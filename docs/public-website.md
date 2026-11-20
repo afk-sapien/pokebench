@@ -40,8 +40,9 @@ local replay HTML, raw notes, prompts, provider transcripts, account session
 identifiers, credentials, ROMs, emulator states or generated game catalogs.
 Known private path and credential markers fail closed. A replay must match its
 scored model, source attempt and outcome, and its source must have recorded
-replay verification. Public replay pages are regenerated from this restricted
-payload. Their images are decoded and reencoded to remove PNG metadata.
+replay verification. Public replay files are regenerated from this restricted
+payload. Their screens are decoded and stored as palette tiles, so no image
+metadata survives. See docs/replay-format.md.
 
 Replay screenshots show decision boundaries, not every video frame. Controls
 stay in place and offer 2, 8 or 20 decisions per second, arrow keys and a scrubber.

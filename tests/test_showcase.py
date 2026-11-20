@@ -1,11 +1,10 @@
 import json
-from pathlib import Path
 import shutil
-import subprocess
 
 import pytest
 
-from pokeagent_bench.showcase import existing_link, export_public, long_row, short_snapshot
+from pokeagent_bench.showcase import existing_link, export_public, long_row, short_snapshot, write_site
+from pokeagent_bench.showcase_stats import score_interval
 
 
 def test_partial_scores_keep_failures_and_exclude_pending(tmp_path):
@@ -158,21 +157,25 @@ def test_community_rows_are_labeled_and_kept_out_of_the_cost_comparison(tmp_path
     from pokeagent_bench.showcase import community_reports
     row = {'id': 'cell-0001', 'task_id': 't', 'score_group': 't', 'category': 'battle', 'model': 'official',
            'mode': 'gameplay', 'state': 'finished', 'value': 0.0, 'tokens': 100}
+    suite = {'benchmark': 'red-v0.63-short-guard', 'tasks': [
+        {'id': 't', 'category': 'battle', 'evaluation_spec_sha256': 'spec', 'variants': [{'variant': 'default', 'fixture_sha256': 'fx'}]}]}
     report = {'format': 'pokebench-verified-report-v1', 'verified': True, 'suite': 'short', 'model': 'local-model',
               'label': 'Community, replay verified, model unverified', 'handle': 'octocat', 'attempts_declared': 2,
-              'harness': {'benchmark': 'red-v0.61-fair-harness'}, 'bundle_sha256': 'abc',
-              'cells': [dict(row, model='local-model', value=1.0, tokens=500, notes='private')]}
+              'harness': {'benchmark': 'red-v0.63-short-guard'}, 'bundle_sha256': 'abc',
+              'cells': [dict(row, model='local-model', value=1.0, tokens=500, notes='private', variant='default',
+                             evaluation_spec_sha256='spec', fixture_sha256='fx')]}
     (tmp_path / 'community').mkdir()
     for name, value in (('a', report), ('b', dict(report, verified=False)), ('c', dict(report, suite='smoke'))):
         (tmp_path / 'community' / f'{name}.json').write_text(json.dumps(value))
     assert community_reports(tmp_path) == [report]
-    result = short_snapshot({'cells': [row], 'tasks': [], 'categories': ['battle']}, tmp_path, community=[report])
+    result = short_snapshot({'cells': [row], 'tasks': [], 'categories': ['battle']}, tmp_path, community=[report], suite=suite)
     added, official = result['models']
     assert added['id'] == 'community/octocat/local-model' and added['label'] == 'local-model'
     assert added['community'] == {'label': 'Community, replay verified, model unverified', 'handle': 'octocat',
                                   'model': 'local-model', 'attempts': 2, 'bundle_sha256': 'abc'}
     assert added['score'] == 1.0 and added['tokens'] == 500 and added['cost']['low'] is None
-    assert 'community' not in official
+    assert added['suite'] == {'benchmark': 'red-v0.63-short-guard', 'tasks': 1, 'source': 'bundle abc'}
+    assert 'community' not in official and 'suite' not in official
     cell = result['cells'][1]
     assert cell['revision'] == 'Community' and cell['replay'] is None and 'notes' not in cell
     assert [m['id'] for m in result['efficiency']['models']] == ['official']
@@ -185,26 +188,92 @@ def test_only_existing_local_replays_are_linked(tmp_path):
     assert existing_link(tmp_path, '../outside.html') is None
 
 
-@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
 def test_score_interval_resamples_tasks_within_categories():
-    stats = Path(__file__).parents[1] / 'src/pokeagent_bench/showcase_assets/showcase-stats.js'
     rows = [{'task_id': f'b{i}', 'category': 'battle', 'state': 'finished', 'value': i % 2} for i in range(10)]
     rows += [{'task_id': 'n', 'category': 'navigation', 'state': 'finished', 'value': 1},
              {'task_id': 'p', 'category': 'navigation', 'state': 'pending', 'value': None}]
     same = [dict(r, value=1) for r in rows if r['state'] == 'finished']
     ignored = rows + [{'task_id': 'q', 'category': 'preparation', 'state': 'finished', 'value': 0},
                       {'task_id': 'r', 'category': 'objectives', 'state': 'finished', 'value': 0, 'retired': True}]
-    script = (f'const {{scoreInterval}} = require({json.dumps(str(stats))})\n'
-              f'console.log(JSON.stringify([scoreInterval({json.dumps(rows)}), scoreInterval({json.dumps(rows)}), '
-              f'scoreInterval({json.dumps(same)}), scoreInterval([]), scoreInterval({json.dumps(ignored)}), '
-              f'scoreInterval({json.dumps(ignored)}, 2000, 20261026, [])]))')
-    first, again, perfect, empty, skipped, counted = json.loads(
-        subprocess.run(['node', '-e', script], check=True, capture_output=True, text=True).stdout)
+    first, again, skipped = score_interval(rows), score_interval(rows), score_interval(ignored)
+    counted = score_interval(ignored, 2000, 20261026, [])
     assert first == again == skipped
     assert 0.5 < first['low'] < 0.75 < first['high'] < 1.0
+    perfect = score_interval(same)
     assert perfect['low'] == perfect['high'] == 1.0
-    assert empty is None
+    assert score_interval([]) is None
     assert counted['high'] < first['high']
+    # The values the page's own scoreInterval gave for these rows before the interval moved to the build.
+    method = {'draws': 2000, 'method': 'stratified-task-bootstrap-v1'}
+    assert first == dict(method, low=0.6, high=0.9)
+    assert counted == dict(method, low=0.39999999999999997, high=0.6)
+
+
+def site_data():
+    def cell(model, task, category, **extra):
+        return {'model': model, 'task_id': task, 'category': category, 'variant': 'default', 'state': 'finished', 'value': 1,
+                'token_limit': 100, **extra}
+    # Two ids that clean to the same file name, a task in a score group, a retired task and a task no row ran.
+    models = [{'id': 'org/model:7b', 'label': 'A', 'suite': {'tasks': 3}}, {'id': 'org-model-7b', 'label': 'B'}]
+    tasks = [{'id': 'nav one', 'category': 'navigation'}, {'id': 'battle', 'category': 'battle'},
+             {'id': 'old', 'category': 'objectives', 'retired': True}, {'id': 'unrun', 'category': 'navigation'}]
+    cells = [cell('org-model-7b', 'battle', 'battle', score_group='fights', state='pending', value=None),
+             cell('org/model:7b', 'nav one', 'navigation'), cell('org/model:7b', 'battle', 'battle', score_group='fights', value=0),
+             cell('org/model:7b', 'old', 'objectives', retired=True, token_limit=50)]
+    return {'short': {'models': models, 'tasks': tasks, 'cells': cells, 'unranked_categories': ['preparation']}, 'long': []}
+
+
+def test_site_summary_holds_no_attempts_and_the_attempt_files_hold_each_once(tmp_path):
+    import hashlib
+    source = site_data()
+    stale = tmp_path / 'showcase-cells' / 'model' / 'gone.json'
+    stale.parent.mkdir(parents=True)
+    stale.write_text('[]')
+    data = write_site(source, tmp_path)
+    assert json.loads((tmp_path / 'showcase-data.json').read_text()) == data
+    assert data['short']['cells'] == source['short']['cells']
+    summary = json.loads((tmp_path / 'showcase-summary.json').read_text())
+    assert 'cells' not in summary['short'] and summary['long'] == []
+    first, second = summary['short']['models']
+    for row, full in zip(summary['short']['models'], data['short']['models']):
+        assert row['ci'] == full['ci'] == score_interval([c for c in source['short']['cells'] if c['model'] == row['id']], unranked=['preparation'])
+    assert (first['ran'], second['ran']) == ('1110', '0100')
+    assert first['token_cap'] == 200 and 'token_cap' not in second
+    nav, battle, old, unrun = summary['short']['tasks']
+    assert battle['score_group'] == 'fights' and 'score_group' not in nav
+    assert battle['coverage'] == {'finished': 1, 'attempts': 2} and unrun['coverage'] == {'finished': 0, 'attempts': 0}
+
+    def load(url):
+        path, version = url.split('?v=')
+        text = (tmp_path / path).read_text()
+        assert hashlib.sha256(text.encode()).hexdigest()[:12] == version
+        return json.loads(text)
+    # The two ids that clean to one name each get a file of their own.
+    assert first['cells'].split('?')[0] != second['cells'].split('?')[0]
+    assert all(m['cells'].startswith('showcase-cells/model/org-model-7b') for m in (first, second))
+    key = lambda c: (c['model'], c['task_id'])
+    for kind in ('models', 'tasks'):
+        loaded = [c for row in summary['short'][kind] for c in load(row['cells'])]
+        assert sorted(loaded, key=key) == sorted(source['short']['cells'], key=key)
+    # A task's file lists its attempts in row order.
+    assert [c['model'] for c in load(battle['cells'])] == ['org/model:7b', 'org-model-7b']
+    assert not stale.exists()
+    # A row that leaves the page takes its file with it, and a stored interval is kept.
+    source['short']['models'] = [dict(source['short']['models'][0], ci={'low': 0, 'high': 1})]
+    source['short']['cells'] = [c for c in source['short']['cells'] if c['model'] == 'org/model:7b']
+    write_site(source, tmp_path)
+    again = json.loads((tmp_path / 'showcase-summary.json').read_text())
+    assert again['short']['models'][0]['ci'] == {'low': 0, 'high': 1}
+    # With no other id to clash with, the name needs no hash.
+    assert [p.name for p in (tmp_path / 'showcase-cells' / 'model').iterdir()] == ['org-model-7b.json']
+
+
+def test_site_refuses_a_task_split_across_score_groups(tmp_path):
+    source = site_data()
+    source['short']['cells'][0]['score_group'] = 'other'
+    with pytest.raises(ValueError, match='more than one score group'):
+        write_site(source, tmp_path)
+    assert not (tmp_path / 'showcase-summary.json').exists()
 
 
 def test_public_page_omits_report_link_without_report(tmp_path):
