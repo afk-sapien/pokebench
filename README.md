@@ -19,7 +19,7 @@ The exploratory leaderboard preserves completed and partial results across frame
 
 ## Submit a model
 
-Submissions run release `v0.37.4`. Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
+Submissions run release `v0.37.4`. You need [uv](https://docs.astral.sh/uv/), [git](https://git-scm.com/downloads) and the model you want to test. Beyond those you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
 
 ```sh
 uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench setup --rom /path/to/red.gb
@@ -29,7 +29,7 @@ uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter -
 
 `setup` writes `data/` in that folder and runs go to `runs/`. The second line is a free check of the whole path. A random player presses buttons on the three smoke tasks, then `enter` packs the bundle and verifies it by replay. It calls no model. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
 
-The third line prints the plan and the worst case token use before the first model call, and asks before it starts. When the site has published runs on the same release, it also prints the tokens they used and, for the same model, the cost range the site lists. Use `--suite long` for PokeBench Long. Run the same command again to resume after a stop. When every task has finished, `enter` packs the bundle and prints a link to a prefilled submission issue. Attach the bundle there. See [SUBMITTING.md](SUBMITTING.md) for what the bundle holds and how it is checked.
+In the third line put your model id in place of `MODEL` and your GitHub user name in place of `YOUR_GITHUB_NAME`, or leave out `--handle` to stay unnamed. An id starting with `claude` or `gpt` picks its provider. For a local model set `POKEBENCH_BASE_URL` and add `--provider openai-compatible`, as [SUBMITTING.md](SUBMITTING.md#a-local-model) shows. The third line prints the plan and the worst case token use before the first model call, and asks before it starts. When the site has published runs on the same release, it also prints the tokens they used and, for the same model, the cost range the site lists. Use `--suite long` for PokeBench Long. Run the same command again to resume after a stop. When every task has finished, `enter` packs the bundle and prints a link to a prefilled submission issue. Attach the bundle there. See [SUBMITTING.md](SUBMITTING.md) for what the bundle holds and how it is checked.
 
 ## Install
 
@@ -80,7 +80,7 @@ export POKEBENCH_API_KEY=...   # only if the server needs a key
 uv run pokebench run --provider openai-compatible --model llama3.2-vision --suite smoke
 ```
 
-The key is read from the environment and is never written to a run. The run records the endpoint address without credentials. The endpoint must report token usage, because budgets and results count it. These calls are billed by whoever runs the endpoint.
+This line runs from a clone. In an empty folder with no clone, use the `uvx` prefix from [Submit a model](#submit-a-model) in place of `uv run`, which there stops with `Failed to spawn: pokebench`. The key is read from the environment and is never written to a run. The run records the endpoint address without credentials. The endpoint must report token usage, because budgets and results count it. These calls are billed by whoever runs the endpoint.
 
 To send a finished suite run for the community leaderboard, run `uv run pokebench submit runs/short-MODEL` and attach the file it writes to a "Run submission" issue. `uv run pokebench verify BUNDLE` checks any bundle by replay without a model call. Both commands accept only runs from an accepted release installed unchanged, as [Submit a model](#submit-a-model) does. See [SUBMITTING.md](SUBMITTING.md).
 

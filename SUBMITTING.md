@@ -2,7 +2,7 @@
 
 Run release `v0.37.4`, installed unchanged. `submit` and `verify` refuse a run from any other code.
 
-Apart from [uv](https://docs.astral.sh/uv/) and the model you want to test, you bring one thing: your own Pokemon Red ROM. The README names the exact file and its hash. PokeBench ships no ROM, save or game table, and `setup` refuses any other ROM. A maintainer checks each result by replay and then decides whether to publish it.
+You need [uv](https://docs.astral.sh/uv/), [git](https://git-scm.com/downloads) and the model you want to test. uv fetches the release with git, so without git the first command stops with `Git executable not found`. uv brings its own Python if your machine has none. Beyond those you bring one thing: your own Pokemon Red ROM. The README names the exact file and its hash. PokeBench ships no ROM, save or game table, and `setup` refuses any other ROM. A maintainer checks each result by replay and then decides whether to publish it.
 
 ## The three commands
 
@@ -16,11 +16,26 @@ uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter -
 
 1. `setup` checks the ROM hash and writes `data/` in the folder.
 2. The smoke line is free. A random player plays the three smoke tasks and calls no model. `enter` then packs the bundle and verifies it, which checks the whole path on your machine. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
-3. The last line runs your model. It prints the plan, the worst case token use and any published usage for this release, then asks before the first model call. Run the same command again to resume after a stop. When every task has finished it packs the bundle and prints a link to a prefilled "Run submission" issue.
+3. The last line runs your model. Put your model id in place of `MODEL` and your GitHub user name in place of `YOUR_GITHUB_NAME`. The handle goes on the leaderboard row exactly as typed, so leave out `--handle` to stay unnamed. The command prints the plan, the worst case token use and any published usage for this release, then asks before the first model call. Run the same command again to resume after a stop. When every task has finished it packs the bundle and prints a link to a prefilled "Run submission" issue.
 
-Use `--suite long` for PokeBench Long. For a local or third party model add `--provider openai-compatible` as the README shows. For a Claude model the plan names the Claude Code build. To pin the build this release used, copy it to `data/toolchains/claude-2.1.323/bin/claude` first, as the README explains. `enter` only chains `run --suite` and `submit`, and you can run those two yourself.
+A model id starting with `claude` uses your Claude Code login and one starting with `gpt` uses your Codex login. Any other id needs `--provider`, or the command stops with `Suite runs need --provider codex, claude or openai-compatible`.
 
-Attach the bundle to the issue and fill in its fields. GitHub takes attachments up to 25 MB. A full Short bundle is about 5 MB and a Long bundle about 3 MB.
+### A local model
+
+A local or third party model runs through any OpenAI compatible chat endpoint. Point `POKEBENCH_BASE_URL` at it and add `--provider openai-compatible`.
+
+```sh
+export POKEBENCH_BASE_URL=http://localhost:11434/v1
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite short --provider openai-compatible --model MODEL --handle YOUR_GITHUB_NAME
+```
+
+The model must accept images, and the endpoint must report token usage, or the run cannot be scored. PokeBench asks for JSON output with `response_format` set to a JSON schema. Set `POKEBENCH_API_KEY` only if your server wants a key. It goes to that server and is never written to the run or the bundle. A local model costs nothing but your own compute.
+
+Start the server first and check that it answers, for example with `curl $POKEBENCH_BASE_URL/models`, because the plan does not contact it. Without `POKEBENCH_BASE_URL` the first two tasks fail and the run stops with `Set POKEBENCH_BASE_URL to an OpenAI compatible endpoint`. With the server down the first task fails, the summary says `navigation-forest-crossing failed and is not retried`, and its `error.json` says `Model endpoint failed: ConnectError`. A failed task is never retried and a run that has one cannot be packed. When this happens at the start no tokens were spent, so delete the run folder, for example `runs/short-MODEL`, and start again. Later in a run, delete only the folder the message names.
+
+Use `--suite long` for PokeBench Long. For a Claude model the plan names the Claude Code build. To pin the build this release used, copy it to `data/toolchains/claude-2.1.323/bin/claude` first, as the README explains. `enter` only chains `run --suite` and `submit`, and you can run those two yourself.
+
+`enter` writes the bundle next to the run, as `runs/short-MODEL.pokebench.zip` or `runs/long-MODEL.pokebench.zip`. In those names every character other than a letter, a digit or a dot becomes `-`, so `qwen2.5vl:7b` gives `runs/short-qwen2.5vl-7b`. Attach it to the issue and fill in its fields. GitHub takes attachments up to 25 MB. The Claude Haiku 5.5 bundles on this release are 7.8 MB for Short and 0.5 MB for Long.
 
 To work from a clone instead, check out the tag, run `uv sync --locked --extra dev` and use `uv run pokebench` in place of the `uvx` prefix.
 
@@ -47,10 +62,10 @@ Maintainers add an entry at the freeze by following the [release checklist](docs
 ## How a bundle is checked
 
 ```sh
-uv run pokebench verify MODEL-SUITE.pokebench.zip
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench verify runs/short-MODEL.pokebench.zip
 ```
 
-Anyone can run this. It needs the ROM and a finished `setup`, calls no model and trusts nothing in the bundle.
+Anyone can run this, in the folder where `setup` ran. It needs the ROM, calls no model and trusts nothing in the bundle. From a clone of the tag, `uv run pokebench verify` does the same. `uv run` outside a clone stops with `Failed to spawn: pokebench`.
 
 - The archive is read in memory. Only known file names are accepted and nothing is extracted.
 - The task list must be the complete suite as this checkout defines it, with the same start states, task definitions and limits.
@@ -59,18 +74,18 @@ Anyone can run this. It needs the ROM and a finished `setup`, calls no model and
 - A run over its decision or token limit fails.
 - A run that paused after a provider error with no model reply and was resumed is accepted. Those calls count no tokens, and the report shows how many there were.
 
-One failed run fails the whole bundle. The result is written to `MODEL-SUITE.pokebench.verified.json`.
+One failed run fails the whole bundle. The result is written next to the bundle, as `runs/short-MODEL.pokebench.verified.json`.
 
 ### How long it takes
 
-Replay is nearly all of the time, and it runs on one CPU core. These were measured on a desktop PC at low priority, by replaying existing private runs the same way `verify` does, from only the manifest, the input log, the result and the start state.
+Replay is nearly all of the time, and it runs on one CPU core. These are full `verify` runs of the published Claude Haiku 5.5 bundles on a clean `v0.37.4` checkout, on one core of a desktop PC at low priority.
 
-| Suite | Size of the run | Replay time |
+| Suite | Size of the run | Verify time |
 | --- | --- | --- |
-| Short | 40 gameplay tasks, 31,717 inputs, 0.85 million frames | 16 min 37 s |
-| Long | 1 run, 22,645 inputs, 0.6 million frames | 6 min 12 s |
+| Short | 46 runs, 51,008 inputs, 1.37 million frames | 18 min 13 s |
+| Long | 1 run, 4,192 inputs, 0.11 million frames | 1 min 3 s |
 
-Every run replayed without a mismatch. The time grows with the number of frames played, so a model that uses its whole budget on every task takes longer. The two League battles alone took 4 min 39 s of the Short total. These runs were recorded on the earlier v0.59 harness, so they timed the replay step and not a full `verify` of an accepted bundle. The other checks in `verify` read a few megabytes and take seconds.
+Both bundles verified with no mismatch. The time grows with the number of frames played, so a model that gets further in Long, or uses its whole budget on every Short task, takes longer.
 
 ## What the check cannot show
 
@@ -93,7 +108,7 @@ uv run pokebench intake 12
 One command adds a report from your own `verify` run to the local site data.
 
 ```sh
-uv run pokebench community-add MODEL-short.pokebench.verified.json --web /path/to/local/site
+uv run pokebench community-add runs/short-MODEL.pokebench.verified.json --web /path/to/local/site
 ```
 
 It accepts only verified Short and Long reports from the accepted harness version. The next local site build shows the row on the matching panel with the community label, the submitter's name, the declared attempts and self reported tokens. It has no cost estimate and no replay link, and it stays out of the cost comparison. Putting the row on the live site is a separate step that needs the owner's yes.
