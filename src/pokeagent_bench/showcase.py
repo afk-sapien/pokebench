@@ -755,18 +755,20 @@ REPLAY_DETAILS = ('label', 'score', 'maximum', 'badges', 'stop_reason', 'decisio
 
 
 def public_replay(web, relative, model, output, details=None):
-    """Write a public replay with screenshots, controller actions and harness facts only."""
+    """Write a public replay with screenshots, controller actions and harness facts only.
+
+    Returns the viewer link. The data file is replays/<name>.gz and the page
+    at the old address, replays/<name>.html, opens the viewer.
+    """
     import re
-    from .public_site import REPLAY, json_text, replay_payload
+    from .public_site import replay_payload, write_replay
     path = web / relative
     match = re.search(r'<script[^>]*id="data"[^>]*>(.*?)</script>', path.read_text(), re.S)
     runs = json.loads(match[1]).get('runs', []) if match else []
     if len(runs) != 1 or runs[0].get('model') != model:
         raise ValueError(f'Replay does not match its result: {relative}')
-    payload = replay_payload(path, {'id': runs[0]['id'], 'model': model, 'completed': runs[0].get('completed')}, details)
-    target = 'replays/' + relative.removesuffix('.html').replace('/', '--') + '.html'
-    (output / target).write_text(REPLAY.replace('__DATA__', json_text(payload)))
-    return target
+    payload, body = replay_payload(path, {'id': runs[0]['id'], 'model': model, 'completed': runs[0].get('completed')}, details)
+    return write_replay(output / 'replays', relative.removesuffix('.html').replace('/', '--'), payload, body)
 
 
 def public_image(web, relative, output):
@@ -786,11 +788,13 @@ def export_public(web, output, *, report=None):
     verified screenshots and executed controller actions only. Local run
     reports and the detailed analysis page are not published.
     """
+    from .public_site import REPLAY
     web, output = Path(web), Path(output)
     data = load(web / 'showcase-data.json')
     output.mkdir()
     (output / 'replays').mkdir()
     (output / 'images').mkdir()
+    (output / 'replays' / 'view.html').write_text(REPLAY)
     for cell in data['short']['cells']:
         cell['replay'] = public_replay(web, cell['replay'], cell['model'], output) if cell.get('replay') else None
     by_label = {label: model for model, label in LABELS.items()}
@@ -799,7 +803,8 @@ def export_public(web, output, *, report=None):
             run['report'] = None
             details = {key: run.get(key) for key in REPLAY_DETAILS}
             run['replay'] = public_replay(web, run['replay'], by_label[run['label']], output, details) if run.get('replay') else None
-            run['replay_mb'] = round((output / run['replay']).stat().st_size / 1e6, 1) if run['replay'] else None
+            size = (output / (run['replay'].replace('view.html?r=', '') + '.gz')).stat().st_size if run['replay'] else 0
+            run['replay_mb'] = max(0.1, round(size / 1e6, 1)) if run['replay'] else None
             run['image'] = public_image(web, run['image'], output) if run.get('image') else None
     data['report'] = None
     if report:

@@ -1,4 +1,5 @@
 import base64
+import gzip
 import hashlib
 import io
 import json
@@ -8,7 +9,8 @@ import subprocess
 from PIL import Image, PngImagePlugin
 import pytest
 
-from pokeagent_bench.public_site import REPLAY, export_public, png, public_text, replay_payload, safe_metadata
+from pokeagent_bench.public_site import (REPLAY, export_public, png, public_text, replay_file, replay_payload, replay_stub,
+                                         safe_metadata, write_replay)
 
 
 def screenshot():
@@ -47,7 +49,7 @@ def test_replay_is_allowlisted_and_bound_to_attempt(tmp_path):
     path = tmp_path/'replay.html'
     replay(path)
     attempt = {'id': 'cell-1', 'model': 'gpt-6-astra', 'completed': True}
-    payload = replay_payload(path, attempt)
+    payload, _ = replay_payload(path, attempt)
     encoded = json.dumps(payload)
     assert 'private' not in encoded
     assert 'gameplay_input' not in encoded
@@ -89,28 +91,53 @@ def rich_replay(path, frames=3, **changes):
 ATTEMPT = {'id': 'cell-1', 'model': 'gpt-6-astra', 'completed': False}
 
 
-def frame(frames, number):
-    """Cut one screen back out of the published sprite sheets."""
-    sheet, slot = divmod(number, frames['per_sheet'])
-    raw = base64.b64decode(frames['sheets'][sheet].split(',')[1])
-    left = slot % frames['columns'] * frames['width']
-    top = slot // frames['columns'] * frames['height']
-    return Image.open(io.BytesIO(raw)), (left, top, left + frames['width'], top + frames['height'])
+def node():
+    found = shutil.which('node')
+    if not found:
+        pytest.skip('Node is not installed')
+    return found
 
 
-def test_replay_sheets_keep_every_pixel_and_store_each_screen_once(tmp_path):
-    colours = rich_replay(tmp_path/'replay.html', frames=300)
-    payload = replay_payload(tmp_path/'replay.html', ATTEMPT)
+def decoded(raw):
+    """Run the viewer's own decoder on the bytes of a replay file.
+
+    Returns the header, the unpacked steps and the sha256 of each frame's RGBA pixels.
+    """
+    block = REPLAY[REPLAY.index('// replay decoder begin'):REPLAY.index('// replay decoder end')]
+    script = block + '''
+const hash = bytes => require('crypto').createHash('sha256').update(bytes).digest('hex')
+inflate(new Uint8Array(require('fs').readFileSync(0))).then(bytes => {
+  const {data, frame} = parse(bytes)
+  const frames = Array.from({length: data.frames.count}, (_, n) => hash(frame(n)))
+  console.log(JSON.stringify({data, steps: data.steps.decision ? unpack(data) : null, frames}))
+}).catch(error => {
+  console.log(JSON.stringify({error: error.message}))
+})
+'''
+    result = subprocess.run([node(), '-e', script], input=raw, capture_output=True, check=True)
+    return json.loads(result.stdout)
+
+
+def rgba(image):
+    return hashlib.sha256(image.convert('RGBA').tobytes()).hexdigest()
+
+
+def picture(value):
+    return Image.open(io.BytesIO(base64.b64decode(value.split(',')[1])))
+
+
+def test_replay_tiles_keep_every_pixel_and_store_each_screen_once(tmp_path):
+    colours = rich_replay(tmp_path/'replay.html', frames=200)
+    payload, body = replay_payload(tmp_path/'replay.html', ATTEMPT)
     frames = payload['frames']
-    assert payload['format'] == 2
-    assert frames['count'] == 300
-    assert (frames['columns'], frames['per_sheet'], len(frames['sheets'])) == (16, 256, 2)
-    for number in (0, 17, 255, 256, 299):
-        sheet, box = frame(frames, number)
-        assert sheet.mode == 'RGB' or sheet.mode == 'P'
-        assert sheet.info == {} or set(sheet.info) <= {'transparency'}
-        expected = Image.open(io.BytesIO(base64.b64decode(shot(colours[number]).split(',')[1]))).convert('RGB')
-        assert sheet.convert('RGB').crop(box).tobytes() == expected.tobytes()
+    assert payload['format'] == 3
+    # 200 screens plus one repeat of the first. Each is white with one colour tile.
+    assert (frames['count'], frames['tiles'], len(frames['palette'])) == (200, 201, 201)
+    assert (frames['width'], frames['height'], frames['tile_side'], frames['index_bytes']) == (160, 144, 8, 2)
+    assert len(body) == 201 * 64 + 200 * 360 * 2
+    page = decoded(replay_file(payload, body))
+    assert page['data'] == payload
+    assert page['frames'] == [rgba(picture(shot(colour))) for colour in colours]
     steps = payload['steps']
     assert steps['start'] == 0
     assert steps['screen'][:3] == [1, 2, 3]
@@ -119,12 +146,48 @@ def test_replay_sheets_keep_every_pixel_and_store_each_screen_once(tmp_path):
     assert 'cumulative' not in steps
 
 
+def test_tiles_use_four_byte_numbers_past_65536_tiles():
+    import numpy as np
+    from pokeagent_bench.public_site import tile_screens
+    rng = np.random.default_rng(7)
+    shades = np.array([[15, 56, 15], [48, 98, 48], [139, 172, 15], [155, 188, 15]], dtype=np.uint8)
+    screens = [Image.fromarray(shades[rng.integers(0, 4, (144, 160))]) for _ in range(185)]
+    frames, body = tile_screens(screens)
+    assert frames['tiles'] > 1 << 16 and frames['index_bytes'] == 4
+    page = decoded(replay_file({'format': 3, 'steps': {}, 'frames': frames}, body))
+    assert page['frames'] == [rgba(image) for image in screens]
+
+
+def test_replay_file_is_deterministic_and_reads_back(tmp_path):
+    from pokeagent_bench.public_site import read_replay
+    rich_replay(tmp_path/'replay.html')
+    payload, body = replay_payload(tmp_path/'replay.html', ATTEMPT)
+    raw = replay_file(payload, body)
+    assert raw == replay_file(payload, body)
+    assert raw[:3] == b'\x1f\x8b\x08' and raw[4:8] == bytes(4)
+    assert read_replay(raw) == (payload, body)
+    with pytest.raises(ValueError, match='wrong length'):
+        read_replay(gzip.compress(gzip.decompress(raw)[:-1]))
+    # A server that sends the file already inflated still works.
+    assert decoded(gzip.decompress(raw))['data'] == payload
+
+
 def test_replay_uses_a_small_palette_for_game_boy_screens(tmp_path):
     rich_replay(tmp_path/'replay.html')
-    frames = replay_payload(tmp_path/'replay.html', ATTEMPT)['frames']
-    sheet, _ = frame(frames, 0)
-    assert sheet.mode == 'P'
-    assert len(sheet.getcolors()) == 4
+    frames = replay_payload(tmp_path/'replay.html', ATTEMPT)[0]['frames']
+    assert frames['palette'] == ['000063', 'ffffff', '010063', '020063']
+    assert frames['tiles'] == 4
+
+
+def test_tiles_refuse_screens_they_cannot_store():
+    from pokeagent_bench.public_site import tile_screens
+    with pytest.raises(ValueError, match='whole number of tiles'):
+        tile_screens([Image.new('RGB', (162, 144))])
+    many = [Image.new('RGB', (8, 8), (n, 0, 0)) for n in range(256)] + [Image.new('RGB', (8, 8), (0, 1, 0))]
+    with pytest.raises(ValueError, match='more than 256 colours'):
+        tile_screens(many)
+    with pytest.raises(ValueError, match='no screens'):
+        tile_screens([])
 
 
 def test_replay_packs_actions_and_harness_text_but_no_model_text(tmp_path):
@@ -132,7 +195,7 @@ def test_replay_packs_actions_and_harness_text_but_no_model_text(tmp_path):
     details = {'label': 'Astra', 'score': 85, 'maximum': 1000, 'badges': 1, 'decisions': 3,
                'milestones': [{'label': 'Reach Viridian City', 'decision': 2, 'points': 5, 'id': 'event:viridian'}],
                'harness': 'red-v0.59', 'versions': {'package': '0.7.3', 'core': 'unrecorded', 'private': '/home/x'}}
-    payload = replay_payload(tmp_path/'replay.html', ATTEMPT, details)
+    payload, _ = replay_payload(tmp_path/'replay.html', ATTEMPT, details)
     steps = payload['steps']
     assert steps['actions'] == [[['a', 8, 4, 2], [None, 0, 30, 1]], [], [['a', 8, 4, 2], [None, 0, 30, 1]]]
     assert payload['places'] == ['Pallet Town']
@@ -149,7 +212,7 @@ def test_replay_packs_actions_and_harness_text_but_no_model_text(tmp_path):
 
 def test_replay_drops_unsafe_optional_text_and_rejects_unsafe_details(tmp_path):
     rich_replay(tmp_path/'replay.html', objective='Read /home/user/private first.', stop_reason='api_key=oops')
-    payload = replay_payload(tmp_path/'replay.html', ATTEMPT)
+    payload, _ = replay_payload(tmp_path/'replay.html', ATTEMPT)
     assert payload['meta'] == {}
     with pytest.raises(ValueError):
         replay_payload(tmp_path/'replay.html', ATTEMPT, {'label': '/home/user/name'})
@@ -161,7 +224,7 @@ def test_replay_keeps_recorded_totals_when_steps_do_not_add_up(tmp_path):
     rich_replay(tmp_path/'replay.html')
     source = (tmp_path/'replay.html').read_text().replace('"cumulative_tokens": 80', '"cumulative_tokens": 500')
     (tmp_path/'replay.html').write_text(source)
-    assert replay_payload(tmp_path/'replay.html', ATTEMPT)['steps']['cumulative'] == [40, 500]
+    assert replay_payload(tmp_path/'replay.html', ATTEMPT)[0]['steps']['cumulative'] == [40, 500]
 
 
 def test_replay_rejects_mixed_screen_sizes(tmp_path):
@@ -173,50 +236,68 @@ def test_replay_rejects_mixed_screen_sizes(tmp_path):
         replay_payload(tmp_path/'replay.html', ATTEMPT)
 
 
-def test_replay_page_is_self_contained_and_follows_the_house_style():
+def test_replay_page_is_self_contained_and_follows_the_house_style(tmp_path):
     assert chr(59) not in REPLAY
-    assert '__FACE__' not in REPLAY
-    assert REPLAY.count('__DATA__') == 1
-    assert 'data.format !== 2' in REPLAY
-    for remote in ('http://', 'https://', 'src="//'):
+    assert chr(59) not in replay_stub('long-v072-astra-8k-replay')
+    assert '__FACE__' not in REPLAY and '__DATA__' not in REPLAY
+    assert 'data.format !== 3' in REPLAY and "new DecompressionStream('gzip')" in REPLAY
+    for remote in ('http://', 'https://', 'src="//', 'import '):
         assert remote not in REPLAY
+    # The page script is one module that loads its file with a top level await.
+    script = REPLAY.split('<script type="module">')[1].split('</script>')[0]
+    (tmp_path/'viewer.mjs').write_text(script)
+    subprocess.run([node(), '--check', str(tmp_path/'viewer.mjs')], check=True)
 
 
-def unpacked(payload):
-    """Run the page's own reader on a payload."""
-    node = shutil.which('node')
-    if not node:
-        pytest.skip('Node is not installed')
-    reader = REPLAY[REPLAY.index('function unpack() {'):REPLAY.index('const steps = unpack()')]
-    script = 'const data = ' + json.dumps(payload) + '\n' + reader + '\nconsole.log(JSON.stringify(unpack()))'
-    return json.loads(subprocess.run([node, '-e', script], capture_output=True, text=True, check=True).stdout)
-
-
-def test_replay_page_reads_the_new_format_and_the_published_old_one(tmp_path):
-    rich_replay(tmp_path/'replay.html', frames=4)
-    payload = replay_payload(tmp_path/'replay.html', ATTEMPT)
-    steps = unpacked(payload)
+def test_replay_page_reads_steps_and_screens(tmp_path):
+    colours = rich_replay(tmp_path/'replay.html', frames=4)
+    payload, body = replay_payload(tmp_path/'replay.html', ATTEMPT)
+    page = decoded(replay_file(payload, body))
+    steps = page['steps']
     assert [step['decision'] for step in steps] == [1, 2, 3]
     assert [step['cumulative_tokens'] for step in steps] == [40, 80, 120]
-    assert [(step['before']['x'], step['after']['x']) for step in steps] == [(0, 160), (0, 320), (320, 480)]
-    assert steps[0]['before']['src'] == payload['frames']['sheets'][0]
+    assert [(step['before'], step['after']) for step in steps] == [(0, 1), (0, 2), (2, 3)]
+    assert page['frames'] == [rgba(picture(shot(colour))) for colour in colours]
     assert steps[0]['actions'] == [{'button': 'a', 'hold_frames': 8, 'release_frames': 4}] * 2 + [
         {'button': None, 'hold_frames': 0, 'release_frames': 30}]
     assert steps[0]['location'] == 'Pallet Town'
     assert [step.get('outcome') for step in steps] == ['Moved 1 tiles.', 'Moved 2 tiles.', None]
     assert not any(step['same'] for step in steps)
 
-    old = {'model': 'gpt-6-astra', 'completed': True, 'action_policy': 'assisted-gameplay-v1', 'benchmark': 'unrecorded',
-           'images': {'one': 'data:one', 'two': 'data:two'},
-           'steps': [{'decision': 1, 'before_frame': 0, 'after_frame': 8, 'tokens': 40, 'cumulative_tokens': 40,
-                      'before': 'one', 'after': 'two', 'actions': [{'button': 'a', 'hold_frames': 8, 'release_frames': 0}]},
-                     {'decision': 2, 'before_frame': 8, 'after_frame': 16, 'tokens': 5, 'cumulative_tokens': 45,
-                      'before': 'two', 'after': 'two', 'actions': []}]}
-    steps = unpacked(old)
-    assert [(step['before']['src'], step['after']['src'], step['same']) for step in steps] == [
-        ('data:one', 'data:two', False), ('data:two', 'data:two', True)]
-    assert steps[1]['cumulative_tokens'] == 45
-    assert steps[0]['actions'] == old['steps'][0]['actions']
+
+def test_replay_page_refuses_other_formats_and_damaged_files(tmp_path):
+    rich_replay(tmp_path/'replay.html')
+    payload, body = replay_payload(tmp_path/'replay.html', ATTEMPT)
+    assert decoded(replay_file({**payload, 'format': 2}, body)) == {
+        'error': 'This replay is in format 2, and this page reads format 3.'}
+    assert decoded(replay_file(payload, body[:-1])) == {'error': 'This replay file is damaged.'}
+    bad = bytearray(body)
+    bad[0] = 9
+    assert decoded(replay_file(payload, bytes(bad))) == {'error': 'This replay file is damaged.'}
+
+
+def test_old_replay_address_opens_the_viewer_at_the_same_decision(tmp_path):
+    rich_replay(tmp_path/'replay.html')
+    payload, body = replay_payload(tmp_path/'replay.html', ATTEMPT)
+    link = write_replay(tmp_path, 'main-v066-astra--replays--focused-v066-cell-0007', payload, body)
+    assert link == 'replays/view.html?r=main-v066-astra--replays--focused-v066-cell-0007'
+    stub = (tmp_path/'main-v066-astra--replays--focused-v066-cell-0007.html').read_text()
+    assert '<meta http-equiv="refresh" content="0, url=view.html?r=main-v066-astra--replays--focused-v066-cell-0007">' in stub
+    script = stub.split('<script>')[1].split('</script>')[0]
+    run = "const location = {hash: '#d=40&theme=light', replace: url => console.log(url)}\n" + script
+    result = subprocess.run([node(), '-e', run], capture_output=True, text=True, check=True)
+    assert result.stdout.strip() == 'view.html?r=main-v066-astra--replays--focused-v066-cell-0007#d=40&theme=light'
+    for name in ('../index', 'a/b', '', '.hidden', 'x' * 201, 'a b'):
+        with pytest.raises(ValueError, match='Invalid replay name'):
+            write_replay(tmp_path, name, {}, b'')
+
+
+def test_viewer_only_loads_a_plain_replay_name():
+    block = REPLAY[REPLAY.index('// replay decoder begin'):REPLAY.index('// replay decoder end')]
+    names = ['long-v072-astra-8k-replay', 'a.b_c-1', '../index', 'a/b', '', '.hidden', 'x' * 201, 'https:x', 'a%2fb']
+    script = block + f'\nconsole.log(JSON.stringify({json.dumps(names)}.map(name => NAME.test(name))))'
+    result = subprocess.run([node(), '-e', script], capture_output=True, text=True, check=True)
+    assert json.loads(result.stdout) == [True, True] + [False] * 7
 
 
 def test_metadata_does_not_copy_configuration_paths_or_credentials():
@@ -251,9 +332,16 @@ def test_complete_static_export_contains_only_public_data(tmp_path):
     manifest = export_public(feed, config, out)
     assert manifest['tasks'] == manifest['attempts'] == manifest['replays'] == 1
     assert (out/'benchmarks'/'task.html').exists()
+    assert (out/'replays'/'view.html').read_text() == REPLAY
+    link = json.loads((out/'results.json').read_text())['cohorts'][0]['attempts'][0]['replay']
+    stem = link.removeprefix('replays/view.html?r=')
+    assert sorted(p.name for p in (out/'replays').iterdir()) == sorted([stem + '.gz', stem + '.html', 'view.html'])
+    assert f'href="../{link}"' in (out/'benchmarks'/'task.html').read_text()
     for item in manifest['files']:
         raw = (out/item['path']).read_bytes()
         assert hashlib.sha256(raw).hexdigest() == item['sha256']
+        if item['path'].endswith('.gz'):
+            raw = gzip.decompress(raw)
         assert b'SECRET' not in raw
         assert b'/home/' not in raw
     index = (out/'index.html').read_text()
