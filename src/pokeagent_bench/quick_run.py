@@ -12,8 +12,9 @@ from . import BENCHMARK_VERSION
 from .benchmark_tracks import LONG, NAMES, SHORT, for_category
 from .catalog_batch import plan, report, run_batch
 from .catalog_execution import PROVIDERS, inventory
-from .core import write_json
+from .core import counted, write_json
 from .interrupts import pause_on_interrupt
+from .providers import SetupError
 from .recovery import NO_REPLY, STOPPED
 
 # benchmark, reference token budget, fixed task list (None means every ready task).
@@ -169,15 +170,15 @@ def expected(manifest, data, problem, release=BENCHMARK_VERSION):
     return lines
 
 
-def estimate(manifest, budget, output, used=0, done=0, price=None, expected_lines=()):
+def estimate(manifest, budget, output, used=0, done=0, price=None, expected_lines=(), endpoint_lines=()):
     cells = manifest['cells']
     suite = manifest['suite']
     model = f'{cells[0]["provider"]}:{cells[0]["model"]}'
     tasks = len({cell['task_id'] for cell in cells})
-    lines = [f'Suite {suite} ({NAMES[manifest["benchmark"]]}), model {model}',
-             f'Runs: {len(cells)} over {tasks} task{"s" if tasks > 1 else ""}, one at a time.']
+    lines = [f'Suite {suite} ({NAMES[manifest["benchmark"]]}), model {model}', *endpoint_lines,
+             f'Runs: {len(cells)} over {counted(tasks, "task")}, one at a time.']
     if done:
-        lines.append(f'Resuming: {done} of {len(cells)} runs already finished, {millions(used)} tokens used.')
+        lines.append(f'Resuming: {done} of {counted(len(cells), "run")} already finished, {millions(used)} tokens used.')
     if manifest.get('held_tasks'):
         lines.append('Left out, fixture needs revalidation: ' + ', '.join(manifest['held_tasks']))
     worst = sum(cell['token_limit'] for cell in cells)
@@ -202,7 +203,8 @@ def estimate(manifest, budget, output, used=0, done=0, price=None, expected_line
 def summary(result, output, next_step=True):
     row = result['models'][0]
     lines = ['', f'{row["name"]}, model {row["provider"]}:{row["model"]}',
-             f'Finished {row["completed"]} of {row["planned"]} runs, {row["evaluation_errors"]} errors.']
+             f'Finished {row["completed"]} of {counted(row["planned"], "run")}, '
+             f'{counted(row["evaluation_errors"], "error")}.']
     if row['benchmark'] == LONG:
         for run in row['campaign_runs']:
             campaign = run.get('campaign')
@@ -242,6 +244,12 @@ def summary(result, output, next_step=True):
     if next_step and all(cell['state'] == 'finished' for cell in result['cells']):
         lines.append(f'Next, pack the bundle: pokebench submit {output} --handle YOUR_GITHUB_NAME')
     return '\n'.join(lines)
+
+
+def stopped_on_failure(result):
+    """True when a task failed, or the suite stopped short for any reason other than a Ctrl-C pause."""
+    states = [cell['state'] for cell in result['cells']]
+    return 'evaluation_error' in states or (not result.get('paused_by_user') and any(s != 'finished' for s in states))
 
 
 def progress(row, position, total):
@@ -296,7 +304,17 @@ def run_suite(args, *, ask=None, next_step=True):
         manifest = new_plan(args.suite, fixtures, provider, model)
     lines = (['The random player calls no model and uses no tokens.'] if provider == 'random'
              else expected(manifest, *published()))
-    print(estimate(manifest, budget, output, used, done, args.input_price, lines), flush=True)
+    endpoint_lines = []
+    if provider == 'openai-compatible' and done < len(manifest['cells']):
+        # Check the endpoint before asking to start, so a missing URL or a stopped server costs no task.
+        from .openai_compatible_provider import probe
+        try:
+            endpoint_lines = probe(model)
+        except SetupError as error:
+            if not args.dry_run:
+                raise
+            endpoint_lines = [f'Not ready to run: {error}.']
+    print(estimate(manifest, budget, output, used, done, args.input_price, lines, endpoint_lines), flush=True)
     if provider == 'claude':
         from .claude_provider import pin_cli
         print(pin_cli(args.data), flush=True)
@@ -317,6 +335,7 @@ def run_suite(args, *, ask=None, next_step=True):
         else:
             result = report(output)
             result.update(token_budget=budget, tokens_used=sum(row['tokens'] for row in result['cells']))
+        result['paused_by_user'] = bool(guard and guard.requested)
     result['suite'] = args.suite
     print(summary(result, output, next_step), flush=True)
     return output, result, rom, fixtures

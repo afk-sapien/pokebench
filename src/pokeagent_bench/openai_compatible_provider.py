@@ -10,7 +10,50 @@ from urllib.parse import urlsplit
 import httpx
 
 from .bounded_provider import BoundedGameplayProvider
-from .providers import ProviderError
+from .providers import ProviderError, SetupError
+
+PROBE_SECONDS = 10
+
+
+def endpoint_settings():
+    """The base URL, the address a run records and the key, read from POKEBENCH_BASE_URL and POKEBENCH_API_KEY."""
+    base = os.environ.get('POKEBENCH_BASE_URL', '').rstrip('/')
+    parts = urlsplit(base)
+    if parts.scheme not in ('http', 'https') or not parts.hostname:
+        raise SetupError('Set POKEBENCH_BASE_URL to an OpenAI compatible endpoint, '
+                         'for example http://localhost:11434/v1')
+    # Recorded in the run, so it leaves out any credentials in the URL.
+    endpoint = f'{parts.scheme}://{parts.hostname}' + (f':{parts.port}' if parts.port else '') + parts.path
+    return base, endpoint, os.environ.get('POKEBENCH_API_KEY')
+
+
+def probe(model, *, transport=None):
+    """Check that the endpoint answers before a suite run asks to start, and return the plan lines.
+
+    It reads the model list only, so no model runs and no tokens are spent.
+    """
+    base, endpoint, key = endpoint_settings()
+    try:
+        with httpx.Client(transport=transport, follow_redirects=False) as client:
+            response = client.get(base + '/models', timeout=PROBE_SECONDS,
+                                  headers={'Authorization': 'Bearer ' + key} if key else {})
+    except httpx.HTTPError as error:
+        raise SetupError(f'The model endpoint {endpoint} did not answer ({type(error).__name__}). '
+                         'Start the server or fix POKEBENCH_BASE_URL') from None
+    if response.status_code in (401, 403):
+        raise SetupError(f'The model endpoint {endpoint} refused the request with HTTP {response.status_code}. '
+                         'Set POKEBENCH_API_KEY to a key it accepts')
+    lines = [f'Model endpoint {endpoint} answered.']
+    try:
+        rows = response.json()['data'] if response.status_code == 200 else []
+        listed = sorted({row['id'] for row in rows if isinstance(row, dict) and isinstance(row.get('id'), str)})
+    except (ValueError, KeyError, TypeError):
+        listed = []
+    # A server that lists its models but not this one usually means a typo in --model.
+    if listed and model not in listed:
+        lines.append(f'It does not list {model}. It lists ' + ', '.join(listed[:5])
+                     + (' and more.' if len(listed) > 5 else '.'))
+    return lines
 
 
 class OpenAICompatibleProvider(BoundedGameplayProvider):
@@ -27,15 +70,8 @@ class OpenAICompatibleProvider(BoundedGameplayProvider):
             usage_accounting='reported-prompt-plus-completion-tokens-per-call-v1')
 
     def _initialize_cli(self):
-        base = os.environ.get('POKEBENCH_BASE_URL', '').rstrip('/')
-        parts = urlsplit(base)
-        if parts.scheme not in ('http', 'https') or not parts.hostname:
-            raise ValueError('Set POKEBENCH_BASE_URL to an OpenAI compatible endpoint, '
-                             'for example http://localhost:11434/v1')
+        base, self.endpoint, self.key = endpoint_settings()
         self.url = base + '/chat/completions'
-        # Recorded in the run, so it leaves out any credentials in the URL.
-        self.endpoint = f'{parts.scheme}://{parts.hostname}' + (f':{parts.port}' if parts.port else '') + parts.path
-        self.key = os.environ.get('POKEBENCH_API_KEY')
         self.cli_version = None
 
     def decide(self, observation, notes, recent, limits, timeout):
@@ -59,6 +95,11 @@ class OpenAICompatibleProvider(BoundedGameplayProvider):
         try:
             response = self.server.post(self.url, json=body, timeout=max(1, deadline - time.monotonic()),
                                         headers={'Authorization': 'Bearer ' + self.key} if self.key else {})
+        except (httpx.ConnectError, httpx.ConnectTimeout) as error:
+            # The connection never opened, so nothing was sent or spent. The run asks again, then pauses at this
+            # decision, and the same command resumes it.
+            raise ProviderError(f'Could not connect to the model endpoint ({type(error).__name__}). Nothing was sent',
+                                details={'kind': 'provider_error', 'no_reply': True}) from None
         except httpx.HTTPError as error:
             raise ProviderError(f'Model endpoint failed: {type(error).__name__}. Usage may be unreported') from None
         if response.status_code != 200:

@@ -29,4 +29,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [Fixture path in Long bundles v0.37.3](release-v0373.md)
 - [PyBoy RS 0.1.7 and PokeSim Core 0.12.3](pyboy-rs-017.md)
 - [New emulator and core pins v0.37.4](release-v0374.md)
+- [PyBoy RS 0.1.9 and PokeSim Core 0.12.4](pyboy-rs-019.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

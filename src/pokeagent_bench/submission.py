@@ -20,7 +20,7 @@ import zipfile
 from . import BENCHMARK_VERSION, __version__
 from .catalog_batch import report
 from .catalog_execution import select_scenario
-from .core import Limits, digest, encoded, write_json
+from .core import Limits, counted, digest, encoded, write_json
 from .quick_run import SUITES, millions, new_plan
 
 FORMAT = 'pokebench-submission-v1'
@@ -41,6 +41,8 @@ CONTENTS = {
     'result.json': 'score, stop reason, token counts, timings',
 }
 HANDLE = re.compile(r'[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?')
+# The docs and messages show this where your own name goes.
+PLACEHOLDER = 'YOUR_GITHUB_NAME'
 PRIVATE = re.compile(
     r'/home/|/Users/|/root/|/mnt/|/tmp/|/var/|file://|[A-Za-z]:\\+Users\\'
     r'|sk-[A-Za-z0-9_-]{16,}|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_\w{20,}|AKIA[0-9A-Z]{16}'
@@ -144,6 +146,15 @@ def public_manifest(manifest, endpoint_host):
     return manifest
 
 
+def check_handle(handle):
+    """Refuse the placeholder and anything that is not a GitHub user name. enter checks before a run starts."""
+    if handle is not None and handle.strip().upper() == PLACEHOLDER:
+        raise ValueError(f'{PLACEHOLDER} is a placeholder. Pass your own GitHub user name with --handle, '
+                         'or leave --handle out to submit without credit')
+    if handle is not None and not HANDLE.fullmatch(handle):
+        raise ValueError('The handle must be a GitHub user name')
+
+
 def collect(run, *, handle=None, attempts=1, endpoint_host=False):
     """Read a finished suite run and return the bundle files as bytes."""
     run = Path(run)
@@ -154,8 +165,7 @@ def collect(run, *, handle=None, attempts=1, endpoint_host=False):
     plan = json.loads((run / 'plan.json').read_text())
     if plan.get('suite') not in SUITES:
         raise ValueError('Only runs made with run --suite can be submitted')
-    if handle is not None and not HANDLE.fullmatch(handle):
-        raise ValueError('The handle must be a GitHub user name')
+    check_handle(handle)
     if type(attempts) is not int or attempts < 1:
         raise ValueError('Attempts must be a positive integer')
     models = {(cell['provider'], cell['model']) for cell in plan['cells']}
@@ -502,11 +512,12 @@ def community_add(report, web):
 
 def conclusion(result, output):
     if not result['verified']:
-        return '\n'.join(['', f'NOT VERIFIED. {len(result["problems"])} problem(s):']
+        return '\n'.join(['', f'NOT VERIFIED. {counted(len(result["problems"]), "problem")}:']
                          + ['  ' + problem for problem in result['problems']] + [f'Report: {output}'])
     row = result['summary']
     replayed = sum(cell['replay_verified'] for cell in result['cells'])
-    lines = ['', f'VERIFIED. {replayed} runs replayed from the benchmark start states and matched their logs.',
+    matched = 'start state and matched its log' if replayed == 1 else 'start states and matched their logs'
+    lines = ['', f'VERIFIED. {counted(replayed, "run")} replayed from the benchmark {matched}.',
              f'{row["name"]}, model {row["provider"]}:{row["model"]}, submitted by {result["handle"] or "unnamed"}']
     if row.get('available_category_average') is not None:
         lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100.')

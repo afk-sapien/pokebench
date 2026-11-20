@@ -241,7 +241,10 @@ def test_rerunning_the_suite_command_finishes_a_cell_cut_by_a_provider_error(tmp
     monkeypatch.setattr('pokeagent_bench.game.RedEngine', factory)
     words = ['pokebench', 'run', '--model', 'claude-sonnet-5-5', '--suite', 'smoke', '--output', 'out']
     monkeypatch.setattr('sys.argv', words)
-    assert main() == 0
+    # The suite stopped short, so a script sees exit 1. The same command resumes it.
+    with pytest.raises(SystemExit) as stopped:
+        main()
+    assert stopped.value.code == 1
     text = capsys.readouterr().out
     assert f'{cut} paused after a provider error with no model reply' in text
     assert 'Not every run finished' in text

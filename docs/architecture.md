@@ -78,7 +78,9 @@ runs past the output cap as a metered invalid reply instead of a provider error,
 in [the v0.37.2 notes](history/release-v0372.md). Package 0.37.3 keeps a local folder out
 of the rebound fixtures and the bundles, as listed in
 [the v0.37.3 notes](history/release-v0373.md). Package 0.37.4 pins PyBoy RS 0.1.7 and
-PokeSim Core 0.12.3, as listed in [the v0.37.4 notes](history/release-v0374.md).
+PokeSim Core 0.12.3, as listed in [the v0.37.4 notes](history/release-v0374.md). The
+next package pins PyBoy RS 0.1.9 and PokeSim Core 0.12.4, as listed in
+[the 0.1.9 note](history/pyboy-rs-019.md).
 `red-v0.62-milestone-short`, package
 0.37.0, added the seven milestone tasks to Short, scored Long by the v2 milestone list
 and shipped the rebuilt fixture pack, as listed in
@@ -92,7 +94,7 @@ source hashes so locally edited builds remain distinct.
 
 ## References
 
-- [PokeSim Core 0.12.3](https://github.com/afk-sapien/pokesim/releases/tag/pokecore-v0.12.3), released from the PokeSim repository, and [PyBoy RS 0.1.7](https://github.com/afk-sapien/pyboy-rs/releases/tag/v0.1.7). [The 0.1.7 note](history/pyboy-rs-017.md) records the replay proof for both pins. The older pokesim-core repository is archived.
+- [PokeSim Core 0.12.4](https://github.com/afk-sapien/pokesim/releases/tag/pokecore-v0.12.4), released from the PokeSim repository, and [PyBoy RS 0.1.9](https://github.com/afk-sapien/pyboy-rs/releases/tag/v0.1.9). [The 0.1.9 note](history/pyboy-rs-019.md) records the replay proof for both pins. The older pokesim-core repository is archived.
 
 - [PokeSim source](https://github.com/afk-sapien/PokeSim)
 - [PyBoy API](https://docs.pyboy.dk/)
