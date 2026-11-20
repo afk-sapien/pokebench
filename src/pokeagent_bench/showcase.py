@@ -14,11 +14,15 @@ from .evaluation_catalog import retired_tasks, task_definition
 from .focused_analysis import grouped_scores
 from .reporting_labels import ARCHIVES, HARNESS_FAULTS, LONG_PAIR_BLOCKS, NOTES, RETRY_RULE
 from .showcase_costs import PRICING, comparison, run_cost, sum_cost
+from .showcase_stats import score_interval
 
 LABELS = {'claude-fable-5-1': 'Fable 5.1', 'gpt-6-astra': 'Astra', 'gpt-5.6-sol': 'Sol', 'gpt-5.6-terra': 'Terra',
           'gpt-5.6-luna': 'Luna', 'claude-opus-5-5': 'Opus',
           'claude-sonnet-5-5': 'Sonnet', 'claude-haiku-5-5': 'Haiku'}
-ASSETS = ('showcase.css', 'showcase-stats.js', 'showcase.js')
+ASSETS = ('showcase.css', 'showcase.js')
+# The page loads the summary. Attempts sit in one file per row and one per task, fetched when opened.
+SUMMARY = 'showcase-summary.json'
+ATTEMPTS = 'showcase-cells'
 CELL_FIELDS = ('id', 'task_id', 'category', 'score_group', 'model', 'variant', 'mode',
                'state', 'value', 'tokens', 'decisions', 'stop_reason', 'decision_limit',
                'token_limit', 'evaluation_spec_sha256', 'fixture_sha256')
@@ -639,13 +643,104 @@ def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None):
             'report': existing_link(web, 'technical-report.pdf')}
 
 
+def compact(value):
+    return json.dumps(value, ensure_ascii=True, allow_nan=False, separators=(',', ':')) + '\n'
+
+
+def replace_text(path, text):
+    temporary = path.with_name(path.name + '.tmp')
+    temporary.write_text(text)
+    temporary.replace(path)
+
+
+def file_names(ids):
+    """Map each id to a file name of safe characters, adding a hash of the id where two names would match."""
+    plain = {key: re.sub(r'[^A-Za-z0-9._-]', '-', key) for key in ids}
+    taken = Counter(plain.values())
+    return {key: name if taken[name] == 1 else f'{name}-{hashlib.sha256(key.encode()).hexdigest()[:8]}' for key, name in plain.items()}
+
+
+def site_files(data):
+    """Split the showcase data into the summary the page loads and the attempt files it fetches when opened.
+
+    The summary keeps every row, score, label and cost, and holds no attempts. In their place each row has
+    its score interval, its attempt file and a string with a 1 for every task, in task order, that it has an
+    attempt on. A row on the stored suite also has its token cap. Each task has its attempt file, its
+    finished count and its score group when that differs from its id. Each path ends in a hash of its file,
+    so a changed file is fetched again.
+    """
+    short = data['short']
+    tasks, models = short.get('tasks', []), short.get('models', [])
+    order = {m['id']: i for i, m in enumerate(models)}
+    by_model, by_task = defaultdict(list), defaultdict(list)
+    for cell in short['cells']:
+        by_model[cell['model']].append(cell)
+        by_task[cell['task_id']].append(cell)
+    files = {}
+
+    def add(kind, name, rows):
+        path = f'{ATTEMPTS}/{kind}/{name}.json'
+        files[path] = compact(rows)
+        return f'{path}?v={hashlib.sha256(files[path].encode()).hexdigest()[:12]}'
+
+    names = file_names(order)
+    rows = []
+    for m in models:
+        cells = by_model[m['id']]
+        ran = {c['task_id'] for c in cells}
+        row = dict(m, cells=add('model', names[m['id']], cells), ran=''.join('1' if t['id'] in ran else '0' for t in tasks))
+        if m.get('suite'):
+            row['token_cap'] = sum(c.get('token_limit') or 0 for c in cells if not c.get('retired'))
+        rows.append(row)
+    names = file_names([t['id'] for t in tasks])
+    listed = []
+    for t in tasks:
+        cells = sorted(by_task[t['id']], key=lambda c: order.get(c['model'], len(order)))
+        group = {c.get('score_group') or c['task_id'] for c in cells}
+        if len(group) > 1:
+            raise ValueError(f'{t["id"]} has attempts in more than one score group: {", ".join(sorted(group))}')
+        task = dict(t, cells=add('task', names[t['id']], cells),
+                    coverage={'finished': sum(c['state'] == 'finished' for c in cells), 'attempts': len(cells)})
+        if group and group != {t['id']}:
+            task['score_group'] = group.pop()
+        listed.append(task)
+    summary = dict(data, schema='pokebench-showcase-summary-v1',
+                   short=dict({k: v for k, v in short.items() if k != 'cells'}, models=rows, tasks=listed))
+    return summary, files
+
+
+def write_site(data, folder):
+    """Write the full data file, the attempt files and, last, the summary the page loads.
+
+    Each Short row gets its score interval first, so the page computes none. The summary goes last, so it
+    never names a file that is not there yet. Attempt files that no row or task names any more are removed.
+    Returns the full data as written.
+    """
+    folder = Path(folder)
+    short = data['short']
+    by_model = defaultdict(list)
+    for cell in short['cells']:
+        by_model[cell['model']].append(cell)
+    unranked = short.get('unranked_categories', [])
+    models = [m if 'ci' in m else dict(m, ci=score_interval(by_model[m['id']], unranked=unranked)) for m in short.get('models', [])]
+    data = dict(data, short=dict(short, models=models))
+    summary, files = site_files(data)
+    replace_text(folder / 'showcase-data.json', json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n')
+    for relative, text in files.items():
+        (folder / relative).parent.mkdir(parents=True, exist_ok=True)
+        replace_text(folder / relative, text)
+    if (folder / ATTEMPTS).is_dir():
+        kept = {folder / relative for relative in files}
+        for path in (folder / ATTEMPTS).rglob('*'):
+            if path.is_file() and path not in kept:
+                path.unlink()
+    replace_text(folder / SUMMARY, compact(summary))
+    return data
+
+
 def export(base, web, *, install=False, sources=None, maintainer=None):
     base, web = Path(base), Path(web)
-    data = build(base, web, sources=sources, maintainer=maintainer)
-    text = json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n'
-    temporary = web / 'showcase-data.json.tmp'
-    temporary.write_text(text)
-    temporary.replace(web / 'showcase-data.json')
+    data = write_site(build(base, web, sources=sources, maintainer=maintainer), web)
     if install:
         assets = Path(__file__).with_name('showcase_assets')
         for name in ASSETS:
@@ -710,7 +805,7 @@ def export_public(web, output, *, report=None):
     if report:
         shutil.copy2(report, output / 'technical-report.pdf')
         data['report'] = 'technical-report.pdf'
-    (output / 'showcase-data.json').write_text(json.dumps(data, ensure_ascii=True, allow_nan=False) + '\n')
+    data = write_site(data, output)
     assets = Path(__file__).with_name('showcase_assets')
     for name in ASSETS:
         shutil.copy2(assets / name, output / name)

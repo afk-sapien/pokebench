@@ -13,7 +13,8 @@ import pytest
 
 from pokeagent_bench import showcase
 from pokeagent_bench.showcase import (MAINTAINER_FORMAT, MAINTAINER_REVISION, RERUN_FORMAT, SOURCES, SUITE_FILE, build,
-                                     community_reports, freeze, long_snapshot, maintainer_sources, short_snapshot)
+                                     community_reports, freeze, long_snapshot, maintainer_sources, short_snapshot,
+                                     write_site)
 from pokeagent_bench.showcase_costs import PRICING, comparison
 
 OPUS, SOL = 'claude-opus-5-5', 'gpt-5.6-sol'
@@ -279,28 +280,55 @@ def test_stored_suite_lists_the_v037_short_tasks():
 
 RENDER = r'''
 const fs = require('fs')
-const [stats, app, dataPath] = process.argv.slice(2)
+const path = require('path')
+const [app, folder, opened, actions] = process.argv.slice(2)
 const els = {}
 const el = id => els[id] ||= {innerHTML: '', textContent: '', value: '', hidden: false, tabIndex: 0, children: [], dataset: {},
-  setAttribute() {}, addEventListener() {}, scrollIntoView() {}, focus() {}}
-global.document = {getElementById: el, querySelectorAll: () => []}
+  listeners: {}, setAttribute() {}, addEventListener(type, fn) { this.listeners[type] = fn }, scrollIntoView() {}, focus() {}}
+// The tasks open in the page. Each action then opens a task or picks a row, as a visitor would.
+let open = JSON.parse(opened)
+global.document = {getElementById: el, querySelectorAll: selector => selector === '.task[open]' ? open.map(task => ({dataset: {task}})) : []}
 global.location = {hash: ''}
 global.history = {replaceState() {}}
 global.window = {addEventListener() {}}
 global.setInterval = () => 0
-const data = JSON.parse(fs.readFileSync(dataPath, 'utf8'))
-global.fetch = async () => ({ok: true, json: async () => data})
-global.scoreInterval = require(stats).scoreInterval
+const fetched = []
+global.fetch = async url => {
+  fetched.push(url)
+  const file = path.join(folder, url.split('?')[0])
+  return {ok: fs.existsSync(file), json: async () => JSON.parse(fs.readFileSync(file, 'utf8'))}
+}
 eval(fs.readFileSync(app, 'utf8'))
-setTimeout(() => console.log(JSON.stringify(Object.fromEntries(Object.entries(els).map(([k, v]) => [k, {html: v.innerHTML, text: v.textContent, hidden: v.hidden}])))), 0)
+const settle = () => new Promise(done => setTimeout(done, 0))
+;(async () => {
+  await settle()
+  for (const action of JSON.parse(actions)) {
+    if (action.toggle) {
+      open = [...open, action.toggle]
+      els.tasks.listeners.toggle({target: {open: true, dataset: {task: action.toggle}}})
+    }
+    if (action.close) {
+      open = open.filter(task => task !== action.close)
+      els.tasks.listeners.toggle({target: {open: false, dataset: {task: action.close}}})
+    }
+    if (action.pick) els.ranking.listeners.click({target: {closest: () => ({dataset: {model: action.pick}})}})
+    await settle()
+  }
+  const page = Object.fromEntries(Object.entries(els).map(([k, v]) => [k, {html: v.innerHTML, text: v.textContent, hidden: v.hidden}]))
+  console.log(JSON.stringify({...page, fetched}))
+})()
 '''
 
 
-def render(tmp_path, data):
+def render(tmp_path, data, opened=None, actions=()):
+    """Render the page from the files the site writes. With no list given, every task is open."""
+    folder = tmp_path / 'render-site'
+    folder.mkdir(exist_ok=True)
+    write_site(dict(data, updated_at='2026-11-15T00:00:00+00:00'), folder)
+    opened = [t['id'] for t in data['short']['tasks']] if opened is None else opened
     write(tmp_path / 'render.js', RENDER)
-    write(tmp_path / 'render-data.json', dict(data, updated_at='2026-11-15T00:00:00+00:00'))
-    output = subprocess.run(['node', str(tmp_path / 'render.js'), str(ASSETS / 'showcase-stats.js'), str(ASSETS / 'showcase.js'),
-                             str(tmp_path / 'render-data.json')], check=True, capture_output=True, text=True).stdout
+    output = subprocess.run(['node', str(tmp_path / 'render.js'), str(ASSETS / 'showcase.js'), str(folder), json.dumps(opened),
+                             json.dumps(list(actions))], check=True, capture_output=True, text=True).stdout
     page = json.loads(output)
     assert page['snapshot']['text'] == 'All trials finished'
     return page
@@ -325,6 +353,47 @@ def test_page_labels_task_sets_only_when_rows_differ(site, tmp_path):
     assert mixed['tasks']['html'].count('Not run.') == 2
     assert 'Added in red-v0.62' in mixed['tasks']['html'] and 'its 3 ordered milestones' in mixed['tasks']['html']
     assert '66.7%' in mixed['tasks']['html'] and 'fixed before the reruns' in mixed['short-cost']['html']
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_page_loads_attempts_only_for_the_task_or_row_a_visitor_opens(site, tmp_path):
+    data = site.built({OPUS: {'short': 'v037-pass'}})
+    tasks = [t['id'] for t in data['short']['tasks']]
+    coverage = lambda page: re.findall(r'<span class="task-coverage">([^<]*)</span>', page['tasks']['html'])
+    every = render(tmp_path, data)
+    closed = render(tmp_path, data, opened=[])
+    # The summary alone fills the ranking, the counts and each task's coverage line.
+    assert closed['fetched'] == ['showcase-summary.json'] and 'Watch ↗' not in closed['tasks']['html']
+    assert closed['tasks']['html'].count('Loading attempts…') == len(tasks) and coverage(closed) == coverage(every)
+    assert closed['tasks']['html'].count('Not run.') == 2 and closed['ranking'] == every['ranking']
+    opened = render(tmp_path, data, opened=[], actions=[{'toggle': tasks[0]}])
+    assert [url.split('?')[0] for url in opened['fetched'][1:]] == [f'showcase-cells/task/{tasks[0]}.json']
+    body = opened['tasks']['html'].split('</details>')
+    assert 'Loading attempts…' not in body[0] and all('Loading attempts…' in part for part in body[1:-1])
+    # Picking a row loads that row's file alone and fills every task from it.
+    picked = render(tmp_path, data, opened=[], actions=[{'pick': SOL}])
+    assert [url.split('?')[0] for url in picked['fetched'][1:]] == ['showcase-cells/model/gpt-5.6-sol.json']
+    assert 'Loading' not in picked['tasks']['html'] and 'Opus' not in picked['tasks']['html']
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_page_says_when_attempts_fail_and_loads_them_again_when_reopened(site, tmp_path):
+    data = site.built({})
+    task = data['short']['tasks'][0]['id']
+    render(tmp_path, data, opened=[])
+    missing = tmp_path / 'render-site' / 'showcase-cells' / 'task' / f'{task}.json'
+    write(tmp_path / 'render.js', RENDER.replace("fs.existsSync(file)", f"fs.existsSync(file) && !file.endsWith({json.dumps(missing.name)})"))
+    asked = lambda page: [url.split('?')[0] for url in page['fetched']].count(f'showcase-cells/task/{task}.json')
+
+    def run(actions):
+        output = subprocess.run(['node', str(tmp_path / 'render.js'), str(ASSETS / 'showcase.js'), str(tmp_path / 'render-site'),
+                                 json.dumps([task]), json.dumps(actions)], check=True, capture_output=True, text=True).stdout
+        return json.loads(output)
+    # A browser fires toggle again for a task a render draws open. That is not a visitor opening it, so nothing is asked again.
+    page = run([{'toggle': task}])
+    assert page['tasks']['html'].count('Attempts could not be loaded.') == 1 and asked(page) == 1
+    page = run([{'toggle': task}, {'close': task}, {'toggle': task}])
+    assert page['tasks']['html'].count('Attempts could not be loaded.') == 1 and asked(page) == 2
 
 
 HAIKU = 'claude-haiku-5-5'
@@ -613,6 +682,9 @@ def test_real_site_data_is_unchanged_with_no_entries(tmp_path):
     data = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))
     for value in (stored, data):
         value.pop('updated_at')
+    # The written file adds each row's score interval, which the build leaves to the writer.
+    for row in stored['short']['models']:
+        row.pop('ci', None)
     assert data == stored
     frozen = showcase.load(SOURCES / 'frozen.json')
     assert freeze(copy.deepcopy(data['short'])) == {k: frozen[k] for k in ('comparison_starts', 'current_starts')}
