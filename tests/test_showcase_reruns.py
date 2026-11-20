@@ -612,3 +612,6 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
     assert row['maintainer']['packages'] == ['0.37.1', '0.37.2'] and row['maintainer']['release'] == 'v0.37.4'
     # 46 kept attempts, summed: about 17.2 hours of play.
     assert row['maintainer']['wall_seconds'] == 61934
+    # Every row is ranked now, so the note sets the row apart from the earlier rows, not from the ranked ones.
+    assert row['maintainer']['detail'] == ('Run by the maintainers on a newer harness than the earlier rows. '
+                                           'Ranked with the rows on the current set.')

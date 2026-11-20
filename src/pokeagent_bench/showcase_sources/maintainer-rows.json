@@ -1,6 +1,6 @@
 {
  "format": "pokebench-maintainer-rows-v1",
- "note": "Rows the maintainers ran on a newer harness than the ranked rows. Each sits beside that model's earlier row and moves no other row. report is a verified report under the data folder, and report_sha256 pins it. runs is the run folder the report was packed from, which gives the cost and the harness. replaced maps a kept earlier attempt folder to the reason it was run again. A row is shown only when the report, its hash and the run folder all agree with the stored Short suite.",
+ "note": "Rows the maintainers ran on a newer harness than the earlier rows. Each is ranked in the current set, keeps that model's earlier row in the earlier set and moves no other row. report is a verified report under the data folder, and report_sha256 pins it. runs is the run folder the report was packed from, which gives the cost and the harness. replaced maps a kept earlier attempt folder to the reason it was run again. A row is shown only when the report, its hash and the run folder all agree with the stored Short suite.",
  "rows": [
   {
    "id": "claude-haiku-5-5@red-v0.63",
@@ -14,7 +14,7 @@
    },
    "release": "v0.37.4",
    "label": "Maintainer run, replay verified",
-   "detail": "Run by the maintainers on a newer harness than the ranked rows. Ranked with the rows on the current set."
+   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked with the rows on the current set."
   }
  ]
 }
