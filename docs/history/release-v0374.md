@@ -16,4 +16,4 @@ Resume needs the same emulator, the same core and the same harness code the run 
 
 ## Runs from earlier releases
 
-The entries for `v0.36.0`, `v0.37.0`, `v0.37.1`, `v0.37.2` and `v0.37.3` all stay in [accepted_harness.json](../../src/pokeagent_bench/accepted_harness.json), and the `v0.37.4` entry is added after them. A finished `v0.37.1`, `v0.37.2` or `v0.37.3` run is checked on the `v0.37.4` checkout. Both bundles of the Claude Haiku 5.5 rerun, run on `v0.37.1` and `v0.37.2` and packed on `v0.37.2`, verify on the `v0.37.4` tag, Short 46 of 46 cells and Long 1 of 1, with unchanged bundle hashes.
+The entries for `v0.36.0`, `v0.37.0`, `v0.37.1`, `v0.37.2` and `v0.37.3` all stay in [accepted_harness.json](../../src/pokeagent_bench/accepted_harness.json), and the `v0.37.4` entry is added after them. A finished `v0.37.1`, `v0.37.2` or `v0.37.3` run is checked on the `v0.37.4` checkout. The Claude Haiku 5.5 rerun ran on `v0.37.1` and `v0.37.2`. Its Short bundle was packed on `v0.37.2` and its Long bundle on `v0.37.3`. Both verify on the `v0.37.4` tag, Short 46 of 46 cells and Long 1 of 1, with unchanged bundle hashes.

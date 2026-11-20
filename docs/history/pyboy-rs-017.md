@@ -26,7 +26,7 @@ Every replay below ran `scripts/verify_emulator_pair.py` with no check relaxed, 
 
 ### Haiku rerun bundles
 
-The 46 Short runs and the Long run of the Claude Haiku 5.5 rerun were recorded under 0.1.5. Short ran 6 tasks on `v0.37.1` and 40 on `v0.37.2`, Long ran on `v0.37.2`, and both bundles were packed on `v0.37.2`. They were replayed under the old pins and the new pins at the same time, one process each, on the same machine.
+The 46 Short runs and the Long run of the Claude Haiku 5.5 rerun were recorded under 0.1.5. Short ran 6 tasks on `v0.37.1` and 40 on `v0.37.2` and was packed on `v0.37.2`. Long ran on `v0.37.2` and was packed on `v0.37.3`. They were replayed under the old pins and the new pins at the same time, one process each, on the same machine.
 
 - 47 of 47 pass under both, 1,482,130 frames and 55,200 actions. Every row is the same under both builds, apart from its time.
 - The Long run is 111,864 frames, 4,192 actions and a score of 13 under both.
