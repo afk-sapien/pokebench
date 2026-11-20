@@ -449,6 +449,32 @@ def test_page_gives_a_maintainer_row_no_rank_and_names_it_in_the_notes(site, tmp
     assert '<strong>2</strong><span>models</span>' in render(tmp_path, data)['short-stats']['html']
 
 
+def test_submit_section_pins_one_release_and_links_the_guide_on_main():
+    page = (ASSETS / 'index.html').read_text()
+    section = page.split('<section id="submit"', 1)[1].split('</section>', 1)[0]
+    assert '<a href="#submit">Submit</a>' in page
+    commands = re.findall(r'<code>(uvx [^<]*)</code>', section)
+    tags = {re.search(r'pokebench@(v[\d.]+) pokebench ', c)[1] for c in commands}
+    assert len(commands) == 4 and len(tags) == 1 and f'from release {tags.pop()}, installed unchanged' in section
+    assert [c.split(' pokebench ', 1)[1].split()[:3] for c in commands] == [
+        ['setup', '--rom', '/path/to/red.gb'], ['enter', '--suite', 'smoke'], ['enter', '--suite', 'short'], ['enter', '--suite', 'short']]
+    assert 'href="https://github.com/afk-sapien/pokebench/blob/main/SUBMITTING.md"' in section
+    assert '—' not in section and ';' not in section.replace('&amp;', '')
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_submit_cost_reads_the_current_set_caps_and_its_priced_runs(site, tmp_path):
+    data = site.built({}, [maintainer_entry(site.base)])
+    row = next(m for m in data['short']['models'] if m.get('maintainer'))
+    worst = sum(c['token_limit'] for c in data['short']['cells'] if c['model'] == row['id'] and not c.get('retired'))
+    html = render(tmp_path, data)['submit-cost']['html']
+    assert f'up to {worst / 1e6:.1f}M tokens, input plus output' in html
+    assert f'{HAIKU} used {row["tokens"] / 1e6:.1f}M, an estimated ${row["cost"]["low"]:.2f}' in html
+    assert '<strong>Local model:</strong> free.' in html and '—' not in html.replace('–', '')
+    # With no priced row on a stored set the page keeps its static text.
+    assert 'submit-cost' not in render(tmp_path, site.built({}))
+
+
 REAL = os.environ.get('POKEBENCH_SITE_DATA')
 
 

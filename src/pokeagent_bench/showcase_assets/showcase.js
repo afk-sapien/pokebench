@@ -245,6 +245,17 @@ for (const kind of ['short','long']) {
   })
 }
 
+// The hosted cost guide: the token caps of a Short run on the current set and what the priced runs on it used.
+function renderSubmitCost() {
+  const s = data.short
+  const runs = s.models.filter(m => m.suite && !m.community && m.cost?.low != null)
+  if (!runs.length) return
+  // One decimal, as the plan prints it.
+  const tokens = x => (x / 1e6).toFixed(1) + 'M'
+  const worst = s.cells.filter(c => c.model === runs[0].id && !c.retired).reduce((total, c) => total + (c.token_limit || 0), 0)
+  const used = runs.map(m => `${esc(m.maintainer ? m.maintainer.model : m.id)} used ${tokens(m.tokens)}, an estimated ${costRange(m.cost)} at API list prices`).join('. ')
+  $('submit-cost').innerHTML = `<p><strong>Local model:</strong> free. It uses only your own computer.</p><p><strong>Hosted model:</strong> up to ${tokens(worst)} tokens, input plus output, the sum of every task's own cap. Published runs on this task set: ${used}. Through a Claude Code or Codex login the run counts against that account's usage like any other session.</p>`
+}
 function renderStatus() {
   const remaining = data.short.planned - data.short.finished
   $('snapshot').textContent = view === 'long' ? `${selectedLongRuns().filter(r => r.state === 'finished').length}/${selectedLongRuns().length} runs finished at this allowance` : remaining ? `${remaining} trials remaining · Results updating` : 'All trials finished'
@@ -260,6 +271,7 @@ async function refresh(first = false) {
     renderTasks()
     renderLong()
     renderStatus()
+    renderSubmitCost()
     $('updated').textContent = 'Updated ' + new Date(data.updated_at).toLocaleString()
     if ($('report-link')) $('report-link').hidden = !data.report
     $('load-error').hidden = true
