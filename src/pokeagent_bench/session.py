@@ -180,7 +180,10 @@ class Session:
             task_id = scenario.get('task_id') or self.objective['task_id']
             task = task_definition(task_id)
             self.manifest['evaluation_spec_sha256'] = digest(encoded(task))
-            self.manifest['benchmark_track'] = 'pokebench-long' if self.campaign_tracking else 'pokebench'
+            from .evaluation_catalog import candidate_tasks
+            # A candidate task's runs are never Short results.
+            self.manifest['benchmark_track'] = ('pokebench-long' if self.campaign_tracking else
+                                                'candidate' if task_id in candidate_tasks() else 'pokebench')
             self.manifest['scoring_protocol'] = self.evaluator.version if self.campaign_tracking else 'catalog-tasks-v1'
             if isinstance(self.evaluator, MilestoneEvaluator):
                 from .milestone_runtime import PROTOCOL

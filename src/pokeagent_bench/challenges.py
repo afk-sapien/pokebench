@@ -30,8 +30,10 @@ def validate_objective(value):
         raise ValueError("An objective needs a short player-facing description")
     if kind == 'catalog-task':
         import json
-        from .evaluation_catalog import catalog_files
-        tasks = {task['id']: task for path in catalog_files() for task in json.loads(path.read_text())['evals']}
+        from .evaluation_catalog import candidate_files, catalog_files
+        # Candidate tasks run through the same catalog evaluator. No released suite lists them.
+        tasks = {task['id']: task for path in catalog_files() + candidate_files()
+                 for task in json.loads(path.read_text())['evals']}
         if objective['task_id'] not in tasks or objective['task_id'] == 'campaign-full-game':
             raise ValueError('Unknown task for catalog execution')
     elif kind == 'guarded-milestones':
