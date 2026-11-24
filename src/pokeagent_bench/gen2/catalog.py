@@ -19,10 +19,15 @@ from .evaluator import validate_milestones
 
 CATALOG = Path(__file__).with_name('catalog.json')
 CATEGORY = 'gen2'
+# The pret/pokecrystal revision behind every event number, map ID and source link here. Core's
+# pokecore.gen2.mapfacts and PokeSim's Gen II data bundle are both generated from it.
+PRET_POKECRYSTAL = '5beda23ffa505f62e1dad7e3d7c214d1737b3358'
+SOURCE_PREFIX = f'https://github.com/pret/pokecrystal/blob/{PRET_POKECRYSTAL}/'
 ROUTES = ('story', 'kabuto')
 REFERENCE_MULTIPLE = 5
 TOKENS_PER_DECISION = 15000
 FIXTURE_KEYS = {'state_sha256', 'actions_sha256', 'actions', 'frames', 'decisions'}
+CAPTURE_KEYS = {'route', 'maps', 'after', 'before', 'frame_cap'}
 
 
 def actions_digest(actions):
@@ -58,8 +63,12 @@ def _flags(values):
 
 
 def validate_capture(identifier, capture):
-    if not isinstance(capture, dict) or set(capture) != {'route', 'maps', 'after', 'before', 'frame_cap'}:
+    """A capture rule. The optional entry counts the run's entries into the start maps from
+    elsewhere, and the start waits for that entry. It defaults to the first."""
+    if not isinstance(capture, dict) or not CAPTURE_KEYS <= set(capture) <= CAPTURE_KEYS | {'entry'}:
         raise ValueError(f'{identifier}: a capture names its route, maps, events and frame cap')
+    if 'entry' in capture and (type(capture['entry']) is not int or capture['entry'] < 2):
+        raise ValueError(f'{identifier}: a capture entry is a later entry, 2 or more')
     if capture['route'] not in ROUTES:
         raise ValueError(f'{identifier}: unknown capture route')
     if not capture['maps'] or not all(_place(place) for place in capture['maps']):
@@ -100,6 +109,8 @@ def validate_task(task):
         values = task.get(field)
         if not isinstance(values, list) or not values or any(not isinstance(v, str) or not v.strip() for v in values):
             raise ValueError(f'{identifier}: {field} must be a nonempty text list')
+    if not all(source.startswith(SOURCE_PREFIX) for source in task['sources']):
+        raise ValueError(f'{identifier}: sources cite pret/pokecrystal at the pinned revision {PRET_POKECRYSTAL}')
     if task['difficulty'] not in ('easy', 'medium', 'hard', 'stretch') or task['tested_skill'] not in SKILLS:
         raise ValueError(f'{identifier}: unknown difficulty or tested skill')
     if task['mode'] != 'gameplay' or task['action_policy'] != ASSISTED:
@@ -124,6 +135,8 @@ def validate_task(task):
 def validate_catalog(catalog):
     if catalog.get('category') != CATEGORY or catalog.get('game') != 'pokemon-crystal':
         raise ValueError('Not the Gen II prep catalog')
+    if catalog.get('pret_pokecrystal') != PRET_POKECRYSTAL:
+        raise ValueError(f'The Gen II catalog is pinned to pret/pokecrystal {PRET_POKECRYSTAL}')
     tasks = catalog.get('evals')
     if not isinstance(tasks, list) or not tasks:
         raise ValueError('The Gen II catalog needs tasks')

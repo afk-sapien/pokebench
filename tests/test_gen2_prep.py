@@ -92,12 +92,30 @@ def test_every_gen2_task_validates_and_pins_its_start_and_reference():
     (lambda task: task['capture'].update(route='elsewhere'), 'capture route'),
     (lambda task: task['objective'].update(description='Something else'), 'agent goal'),
     (lambda task: task.update(milestones=[]), 'ordered milestones'),
+    (lambda task: task.update(sources=['https://github.com/pret/pokecrystal/blob/master/maps/IcePath1F.asm']),
+     'pinned revision'),
+    (lambda task: task['capture'].update(entry=1), 'later entry'),
 ])
 def test_gen2_task_validation_refuses_drift(change, message):
     task = catalog.task_definition(TASK_IDS[0])
     change(task)
     with pytest.raises(ValueError, match=message):
         catalog.validate_task(task)
+
+
+def test_tasks_pin_the_pret_revision_that_core_and_the_data_bundle_use(tmp_path):
+    from pokecore.gen2 import mapfacts
+    from pokeagent_bench.gen2.curation import check_pret_revision
+    assert f'pret/pokecrystal {catalog.PRET_POKECRYSTAL}' in mapfacts.__doc__
+    recorded = json.loads(catalog.CATALOG.read_text())
+    assert recorded['pret_pokecrystal'] == catalog.PRET_POKECRYSTAL
+    with pytest.raises(ValueError, match='pinned to pret/pokecrystal'):
+        catalog.validate_catalog(recorded | {'pret_pokecrystal': '0' * 40})
+    (tmp_path / 'manifest.json').write_text(json.dumps({'source_revision': catalog.PRET_POKECRYSTAL}))
+    assert check_pret_revision(tmp_path) == catalog.PRET_POKECRYSTAL
+    (tmp_path / 'manifest.json').write_text(json.dumps({'source_revision': '0' * 40}))
+    with pytest.raises(ValueError, match='not the pinned'):
+        check_pret_revision(tmp_path)
 
 
 @pytest.mark.parametrize('check', [

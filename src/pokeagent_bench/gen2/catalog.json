@@ -2,6 +2,7 @@
   "category": "gen2",
   "title": "Pokemon Crystal preparation tasks, in no released suite",
   "game": "pokemon-crystal",
+  "pret_pokecrystal": "5beda23ffa505f62e1dad7e3d7c214d1737b3358",
   "evals": [
     {
       "id": "gen2-ruins-kabuto-panel",
@@ -42,8 +43,8 @@
         "The clock is locked to emulated frames and saved next to the start. Time of day is recorded with the fixture."
       ],
       "sources": [
-        "https://github.com/pret/pokecrystal/blob/master/maps/RuinsOfAlphKabutoChamber.asm",
-        "https://github.com/pret/pokecrystal/blob/master/engine/games/unown_puzzle.asm"
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/RuinsOfAlphKabutoChamber.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/engine/games/unown_puzzle.asm"
       ],
       "open_questions": [
         "The assisted executor has no Gen II puzzle screen yet. The panel is played with raw buttons until it does."
@@ -121,8 +122,8 @@
         "The rival battle on 1F is part of the task. Wild encounters stay on."
       ],
       "sources": [
-        "https://github.com/pret/pokecrystal/blob/master/maps/BurnedTower1F.asm",
-        "https://github.com/pret/pokecrystal/blob/master/maps/BurnedTowerB1F.asm"
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/BurnedTower1F.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/BurnedTowerB1F.asm"
       ],
       "open_questions": [
         "Check in a pilot whether the rival battle dominates the task for weak models.",
@@ -205,9 +206,9 @@
         "Trainers and wild encounters stay on. Lance heals the party once during the scene."
       ],
       "sources": [
-        "https://github.com/pret/pokecrystal/blob/master/maps/TeamRocketBaseB1F.asm",
-        "https://github.com/pret/pokecrystal/blob/master/maps/TeamRocketBaseB2F.asm",
-        "https://github.com/pret/pokecrystal/blob/master/maps/TeamRocketBaseB3F.asm"
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/TeamRocketBaseB1F.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/TeamRocketBaseB2F.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/TeamRocketBaseB3F.asm"
       ],
       "open_questions": [
         "Check in a pilot whether the security camera trap makes the cap bind before the passwords.",
@@ -295,8 +296,8 @@
         "Trainers and wild encounters stay on. Rocket grunts guard the switch room and the warehouse."
       ],
       "sources": [
-        "https://github.com/pret/pokecrystal/blob/master/maps/GoldenrodUndergroundSwitchRoomEntrances.asm",
-        "https://github.com/pret/pokecrystal/blob/master/maps/GoldenrodUndergroundWarehouse.asm"
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/GoldenrodUndergroundSwitchRoomEntrances.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/GoldenrodUndergroundWarehouse.asm"
       ],
       "open_questions": [
         "Check in a pilot whether the shutter switch order is the main failure."
@@ -346,7 +347,7 @@
         "task_id": "gen2-ice-path",
         "description": "Cross the Ice Path from Route 44 and come out in Blackthorn City."
       },
-      "start": "Ice Path 1F, first settled frame after entering from Route 44. No boulder has been pushed into a hole.",
+      "start": "Ice Path 1F, first settled frame of the PokeSim story run's second entry from Route 44. On its first entry the run picks up HM07 Waterfall, then walks back to Mahogany Town, where it visits the Pokemon Center and the Mart and swaps a Gyarados into the party. No boulder has been pushed into a hole.",
       "success": [
         "Leave the Ice Path into Blackthorn City."
       ],
@@ -357,8 +358,8 @@
       "variants": [
         "One start. Timing variants are added only if a pilot shows start sensitivity."
       ],
-      "token_limit": 38700000,
-      "decision_limit": 2580,
+      "token_limit": 22200000,
+      "decision_limit": 1480,
       "existing_task": null,
       "requirements": [
         "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
@@ -369,27 +370,29 @@
       "task_family": "Sliding ice floors and boulders dropped through holes",
       "agent_goal": "Cross the Ice Path from Route 44 and come out in Blackthorn City.",
       "scenario_details": [
-        "Party, bag and badges are whatever the PokeSim story run holds when it first enters the Ice Path.",
+        "Party, bag and badges are whatever the PokeSim story run holds when it enters the Ice Path the second time.",
+        "The start is the second entry so that the scripted reference is a direct crossing. From the first entry the reference would include the walk back to Mahogany Town.",
         "Wild encounters stay on. Strength is available."
       ],
       "sources": [
-        "https://github.com/pret/pokecrystal/blob/master/maps/IcePathB1F.asm",
-        "https://github.com/pret/pokecrystal/blob/master/maps/IcePathB2FMahoganySide.asm"
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/IcePathB1F.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/IcePathB2FMahoganySide.asm"
       ],
       "open_questions": [
         "Check in a pilot whether sliding ice is readable from the screen text the harness gives."
       ],
       "measures": "Plan slides on ice that stop only at walls or rocks, and push boulders through holes to make stopping points on the floor below.",
       "fixture": {
-        "state_sha256": "79b120a371944b29f2d7b0c186f331a067e819eb2bf13abed35452619c7dec0a",
-        "actions_sha256": "3ba0f03cd602367b79f3b42f07bfad6e6295b15cadce4c4c171bde66700c09e7",
-        "actions": 2325,
-        "frames": 73388,
-        "decisions": 516
+        "state_sha256": "a49fdf6df4bc982cfe881ed4c59d5775cfbf503733a7682f2b77aa0ec3be4942",
+        "actions_sha256": "af4a3855e665bb2b57b52f9f760ef9e73f35070380751e920f37167617438eec",
+        "actions": 1159,
+        "frames": 37424,
+        "decisions": 296
       },
       "capture": {
         "route": "story",
         "maps": [[3, 61]],
+        "entry": 2,
         "after": [],
         "before": [1801, 1802, 1803, 1804],
         "frame_cap": 400000
@@ -456,8 +459,8 @@
         "Gym trainers stay on."
       ],
       "sources": [
-        "https://github.com/pret/pokecrystal/blob/master/maps/BlackthornGym1F.asm",
-        "https://github.com/pret/pokecrystal/blob/master/maps/BlackthornGym2F.asm"
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/BlackthornGym1F.asm",
+        "https://github.com/pret/pokecrystal/blob/5beda23ffa505f62e1dad7e3d7c214d1737b3358/maps/BlackthornGym2F.asm"
       ],
       "open_questions": [
         "Check in a pilot whether the Clair battle or the boulders decide most failures.",

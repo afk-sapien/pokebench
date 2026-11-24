@@ -3,7 +3,8 @@
 PokeSim's Gen II story policy at its pinned tag plays from power-on on the frame-locked
 clock. When the run first settles on a task's start map with the task's events in the
 named state, for two actions in a row with no battle and no script running, the script
-saves initial.state and its clock lock. The run then keeps playing and records every native
+saves initial.state and its clock lock. A task whose capture names a later entry waits until
+the run has entered its start maps from elsewhere that many times. The run then keeps playing and records every native
 action until the task's success check holds on two different frames. That recording is the
 task's scripted reference. The Kabuto panel task needs its own run, which leaves the story
 for the Ruins of Alph once the Zephyr Badge and the Togepi egg are in hand.
@@ -142,6 +143,8 @@ def run_route(route, tasks, args, names, log):
     waiting = {task['id']: task for task in tasks}
     ready, recorders, results = set(), {}, []
     attempts = {task['id']: [] for task in tasks}
+    entries = {task['id']: 0 for task in tasks}
+    place = None
     frame, steps, turned = 0, 0, route != 'kabuto'
     started = time.monotonic()
     while (waiting or recorders) and frame < ROUTE_FRAME_CAPS[route]:
@@ -167,9 +170,12 @@ def run_route(route, tasks, args, names, log):
                     waiting[identifier] = recorder.task
                     continue
                 results.append(result | {'attempts': attempts[identifier]})
-        place = [engine.byte(emulator.memory, 'wMapGroup'), engine.byte(emulator.memory, 'wMapNumber')]
+        last, place = place, [engine.byte(emulator.memory, 'wMapGroup'), engine.byte(emulator.memory, 'wMapNumber')]
+        for task in tasks:
+            if place in task['capture']['maps'] and last not in task['capture']['maps']:
+                entries[task['id']] += 1
         for identifier, task in list(waiting.items()):
-            if place not in task['capture']['maps']:
+            if place not in task['capture']['maps'] or entries[identifier] < task['capture'].get('entry', 1):
                 ready.discard(identifier)
                 continue
             flags = task['capture']['after'] + task['capture']['before']
@@ -180,7 +186,8 @@ def run_route(route, tasks, args, names, log):
             else:
                 recorders[identifier] = Recorder(task, args.output / identifier, emulator, frame, names)
                 del waiting[identifier]
-                log({'route': route, 'task': identifier, 'captured': frame, 'start': recorders[identifier].start})
+                log({'route': route, 'task': identifier, 'captured': frame, 'entry': entries[identifier],
+                     'start': recorders[identifier].start})
     wall = time.monotonic() - started
     final = engine.facts(emulator)
     emulator.stop(save=False)

@@ -66,6 +66,18 @@ def manifest_digest(folder):
     return hashlib.sha256((Path(folder) / 'manifest.json').read_bytes()).hexdigest()
 
 
+def check_pret_revision(folder):
+    """Refuse a Gen II data bundle, or a Core, generated from another pret/pokecrystal revision."""
+    from pokecore.gen2 import mapfacts
+    from .catalog import PRET_POKECRYSTAL
+    bundle = json.loads((Path(folder) / 'manifest.json').read_text()).get('source_revision')
+    if bundle != PRET_POKECRYSTAL:
+        raise ValueError(f'{folder} was generated from pret/pokecrystal {bundle}, not the pinned {PRET_POKECRYSTAL}')
+    if f'pret/pokecrystal {PRET_POKECRYSTAL}' not in (mapfacts.__doc__ or ''):
+        raise ValueError(f'Core Gen II map facts were not generated from pret/pokecrystal {PRET_POKECRYSTAL}')
+    return PRET_POKECRYSTAL
+
+
 class PokeSimDriver:
     """PokeSim's Gen II story policy at the pinned tag, asked once per action as play_gen2 does."""
 
@@ -73,6 +85,7 @@ class PokeSimDriver:
         """data_root holds gen2/crystal game data. PokeSim's shared strategy tables come from its
         Gen I folder, found through GAME_DATA_DIR, or game-data next to data_root's parent."""
         checkout = Path(checkout).resolve()
+        revision = check_pret_revision(Path(data_root) / 'gen2' / 'crystal')
         if str(checkout) not in sys.path:
             sys.path.insert(0, str(checkout))
         shared = Path(os.environ.get('GAME_DATA_DIR') or Path(data_root).resolve().parent.parent / 'game-data')
@@ -85,7 +98,8 @@ class PokeSimDriver:
         self.data = GameData.load(Path(data_root), 'crystal')
         self.policy = Policy(self.data, seed=seed, starter=starter)
         self.provenance = {'pokesim_tag': POKESIM_TAG, 'pokesim_commit': POKESIM_COMMIT,
-                           'pokesim_source_sha256': source_digest(checkout), 'seed': seed, 'starter': starter,
+                           'pokesim_source_sha256': source_digest(checkout), 'pret_pokecrystal': revision,
+                           'seed': seed, 'starter': starter,
                            'game_data_manifest_sha256': manifest_digest(Path(data_root) / 'gen2' / 'crystal'),
                            'strategy_bundle': json.loads((shared / 'current.json').read_text())['bundle']}
 

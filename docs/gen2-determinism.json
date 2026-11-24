@@ -11,13 +11,14 @@
   },
   "python": "3.12.12",
   "source": {
-    "seconds": 9.605679949047044,
+    "seconds": 9.387680170009844,
     "frames": 120000,
     "steps": 3653,
     "source": {
       "pokesim_tag": "pokecore-v0.12.3",
       "pokesim_commit": "37fff4cf3092b968d515e38163d32398596135a2",
       "pokesim_source_sha256": "09df5f63c4b60cc22f7874d97f79b375bf520293eb57e0d15615ce579fedd45b",
+      "pret_pokecrystal": "5beda23ffa505f62e1dad7e3d7c214d1737b3358",
       "seed": 1,
       "starter": "cyndaquil",
       "game_data_manifest_sha256": "ed7474f13ec0bc6721f8c74697848f8017f1bb901d1ae8c17cc72e45d24f303c",
@@ -93,10 +94,10 @@
   },
   "passed": true,
   "process_seconds": {
-    "A": 10.35,
-    "B": 9.4,
-    "C": 3.27,
-    "D": 3.34,
-    "E": 0.15
+    "A": 10.13,
+    "B": 9.29,
+    "C": 3.26,
+    "D": 3.26,
+    "E": 0.14
   }
 }
