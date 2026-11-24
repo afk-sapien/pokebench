@@ -8,7 +8,7 @@ from PIL import Image
 import pytest
 
 from pokeagent_bench.codex_provider import CodexProvider
-from pokeagent_bench.continuous_provider import ContinuousCodexProvider
+from pokeagent_bench.continuous_provider import ContinuousCodexProvider, exhausted_window
 from pokeagent_bench.providers import ProviderError
 from pokeagent_bench.visual_feedback import VisualFeedback
 
@@ -24,12 +24,17 @@ def provider(monkeypatch):
 
 
 class Server:
-    def __init__(self, events):
+    def __init__(self, events, answers=None):
         self.events = deque(events)
         self.requests = []
+        self.answers = answers or {}
 
     def request(self, method, params, deadline):
         self.requests.append((method, params))
+        if method in self.answers:
+            if isinstance(self.answers[method], Exception):
+                raise self.answers[method]
+            return self.answers[method]
         return {} if method == "thread/compact/start" else {"turn": {"id": "t1"}}
 
     def event(self, deadline):
@@ -56,9 +61,9 @@ def events(*, compact=False, usage=True, total=100, outside=False):
     return result
 
 
-def ready(provider, items):
+def ready(provider, items, answers=None):
     provider.thread_id = "thread"
-    provider.server = Server(items)
+    provider.server = Server(items, answers)
     return provider
 
 
@@ -291,6 +296,75 @@ def test_failed_turn_retains_capacity_error_and_exact_identity(provider):
         'thread_id': 'thread', 'turn_id': 't1', 'status': 'failed',
         'error': {'message': 'Selected model is at capacity', 'codexErrorInfo': 'serverOverloaded'}}
     assert len(provider.server.requests) == 1
+
+
+def refused(info, *, reply=False, message="You've hit your usage limit.", limits=None):
+    """A turn that fails with codexErrorInfo, before any model item unless reply is set."""
+    stream = [event for event in events(usage=False) if reply or event["method"] != "item/completed"]
+    if limits is not None:
+        stream.insert(-1, {"method": "account/rateLimits/updated", "params": {"rateLimits": limits}})
+    stream[-1]["params"]["turn"].update(status="failed", error={"message": message, "codexErrorInfo": info})
+    return stream
+
+
+def window(used, resets):
+    return {"usedPercent": used, "windowDurationMins": 10080, "resetsAt": resets}
+
+
+def test_a_weekly_limit_before_any_reply_is_a_subscription_limit_with_its_reset(provider):
+    snapshot = {"primary": window(40, 1_000), "secondary": window(100, 9_000)}
+    ready(provider, refused("usageLimitExceeded"),
+          {"account/rateLimits/read": {"rateLimits": snapshot, "rateLimitsByLimitId": {"codex": snapshot}}})
+    with pytest.raises(ProviderError) as caught:
+        provider._complete("turn/start", {}, time.monotonic() + 10)
+    assert str(caught.value) == "Codex subscription usage limit reached"
+    details = caught.value.details
+    assert (details["kind"], details["no_reply"], details["provider_code"]) == ("subscription_limit", True, "usageLimitExceeded")
+    assert (details["limit_type"], details["resets_at"]) == ("secondary", 9_000)
+    assert details["text"] == "You've hit your usage limit."
+    # Reading the limits calls no model, and the turn is never sent twice.
+    assert [method for method, _ in provider.server.requests] == ["turn/start", "account/rateLimits/read"]
+
+
+def test_a_limit_falls_back_to_the_last_pushed_snapshot_when_the_read_fails(provider):
+    ready(provider, refused({"usageLimitExceeded": None}, limits={"primary": window(100, 5_000)}),
+          {"account/rateLimits/read": ProviderError("App Server closed")})
+    with pytest.raises(ProviderError) as caught:
+        provider._complete("turn/start", {}, time.monotonic() + 10)
+    assert (caught.value.details["kind"], caught.value.details["limit_type"], caught.value.details["resets_at"]) == (
+        "subscription_limit", "primary", 5_000)
+
+
+def test_a_limit_with_no_used_up_window_has_an_unknown_reset(provider):
+    ready(provider, refused("usageLimitExceeded"), {"account/rateLimits/read": {}})
+    with pytest.raises(ProviderError) as caught:
+        provider._complete("turn/start", {}, time.monotonic() + 10)
+    assert caught.value.details["kind"] == "subscription_limit"
+    assert (caught.value.details["limit_type"], caught.value.details["resets_at"]) == (None, None)
+
+
+def test_capacity_before_any_reply_is_retried_as_no_reply(provider):
+    ready(provider, refused("serverOverloaded", message="Selected model is at capacity"))
+    with pytest.raises(ProviderError) as caught:
+        provider._complete("turn/start", {}, time.monotonic() + 10)
+    assert str(caught.value) == "Codex model is at capacity"
+    assert (caught.value.details["kind"], caught.value.details["no_reply"]) == ("provider_error", True)
+    assert len(provider.server.requests) == 1
+
+
+@pytest.mark.parametrize("info", ["usageLimitExceeded", "serverOverloaded", "other", None])
+def test_a_failure_after_a_reply_or_of_unknown_cause_keeps_usage_uncertain(provider, info):
+    ready(provider, refused(info, reply=info in ("usageLimitExceeded", "serverOverloaded")))
+    with pytest.raises(ProviderError) as caught:
+        provider._complete("turn/start", {}, time.monotonic() + 10)
+    assert str(caught.value) == "App Server turn failed. Usage may be unreported"
+    assert "no_reply" not in caught.value.details
+    assert len(provider.server.requests) == 1
+
+
+def test_exhausted_window_picks_the_used_up_window_that_resets_last():
+    assert exhausted_window([{"primary": window(100, 10), "secondary": window(100, 20)}]) == ("secondary", 20)
+    assert exhausted_window([None, "bad", {"primary": window(99.9, 10), "secondary": {"usedPercent": 100}}]) == (None, None)
 
 
 def test_timeout_retains_turn_identity_without_duplicate_request(provider):

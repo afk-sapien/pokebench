@@ -10,7 +10,7 @@ import urllib.request
 
 from . import BENCHMARK_VERSION
 from .benchmark_tracks import LONG, NAMES, SHORT, for_category
-from .catalog_batch import plan, report, run_batch
+from .catalog_batch import plan, report, resumable, run_batch
 from .catalog_execution import PROVIDERS, inventory
 from .core import counted, write_json
 from .interrupts import pause_on_interrupt
@@ -232,8 +232,13 @@ def summary(result, output, next_step=True):
                 lines.append(f'{cell["task_id"]} paused. Its checkpoint is kept and the same command resumes it.')
         if cell['state'] == 'evaluation_error':
             folder = Path(output) / cell['id']
-            lines.append(f'{cell["task_id"]} failed and is not retried. The reason is in {folder / "error.json"}. '
-                         f'Delete {folder} and run the same command again to retry it.')
+            if resumable(folder):
+                lines.append(f'{cell["task_id"]} stopped on a provider error. Its checkpoint is kept and the same '
+                             'command resumes it, with the failed call charged at its token reserve. '
+                             f'The reason is in {folder / "error.json"}.')
+            else:
+                lines.append(f'{cell["task_id"]} failed and is not retried. The reason is in {folder / "error.json"}. '
+                             f'Delete {folder} and run the same command again to retry it.')
     if any(cell['state'] == 'evaluation_error' for cell in result['cells']) and not row['accounting_complete']:
         lines.append('Some token usage of a failed task is unknown, so the token total may be low.')
     if any(cell['state'] not in ('finished', 'evaluation_error') for cell in result['cells']):
@@ -255,28 +260,6 @@ def stopped_on_failure(result):
 def progress(row, position, total):
     value = '' if row['value'] is None else f' score {100 * row["value"]:.0f}'
     print(f'[{position}/{total}] {row["task_id"]} {row["state"]}{value}, {millions(row["tokens"])} tokens', flush=True)
-
-
-def recover(output, rom, guard=None):
-    """Finish a run that was interrupted mid task, using its saved checkpoint. Return False after a Ctrl-C pause."""
-    from .cli import execute, parser
-    for row in report(output)['cells']:
-        folder = output / row['id']
-        if not folder.is_dir() or row['state'] in ('finished', 'evaluation_error'):
-            continue
-        if guard and guard.requested:
-            return False
-        if not any(folder.iterdir()):
-            folder.rmdir()
-        elif (folder / 'recovery.json').is_file():
-            print(f'Resuming {row["task_id"]} from its checkpoint.', flush=True)
-            result = execute(parser().parse_args(['resume', '--rom', str(rom), '--run', str(folder)]))
-            if isinstance(result, dict) and result.get('state') == 'paused':
-                if guard and guard.requested:
-                    return False
-                raise ValueError(f'{row["task_id"]} paused again after a provider error with no model reply. '
-                                 'No tokens were spent on it. Run the same command again later')
-    return True
 
 
 def run_suite(args, *, ask=None, next_step=True):
@@ -327,14 +310,10 @@ def run_suite(args, *, ask=None, next_step=True):
         output.mkdir(parents=True)
         write_json(output / 'plan.json', manifest)
     total = len(manifest['cells'])
-    # One guard covers the resumed task and the batch, so Ctrl-C pauses the task and starts nothing after it.
+    # One guard covers the resumed tasks and the batch, so Ctrl-C pauses the task and starts nothing after it.
     with pause_on_interrupt() as guard:
-        if recover(output, rom, guard):
-            result = run_batch(fixtures, rom, game_data, output, budget=budget, resume=True, benchmark=benchmark,
-                               on_cell=lambda row: progress(row, int(row['id'][-4:]), total))
-        else:
-            result = report(output)
-            result.update(token_budget=budget, tokens_used=sum(row['tokens'] for row in result['cells']))
+        result = run_batch(fixtures, rom, game_data, output, budget=budget, resume=True, benchmark=benchmark,
+                           on_cell=lambda row: progress(row, int(row['id'][-4:]), total))
         result['paused_by_user'] = bool(guard and guard.requested)
     result['suite'] = args.suite
     print(summary(result, output, next_step), flush=True)

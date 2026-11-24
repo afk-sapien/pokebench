@@ -26,21 +26,35 @@ MAX_RESET_WAIT = 6 * 3600
 RESET_WAITS = 2
 
 
+def reset_epoch(value):
+    """A reset time given as ISO text or epoch seconds, in epoch seconds, or None."""
+    try:
+        if isinstance(value, str) and not value.replace(".", "", 1).isdigit():
+            moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
+            return (moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)).timestamp()
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
 def until_reset(error, now=None):
     """Seconds to wait for a subscription limit to reset, or None when the run should pause instead."""
     if error.details.get("kind") != "subscription_limit":
         return None
-    value = error.details.get("resets_at")
-    try:
-        if isinstance(value, str) and not value.replace(".", "", 1).isdigit():
-            moment = datetime.fromisoformat(value.replace("Z", "+00:00"))
-            at = (moment if moment.tzinfo else moment.replace(tzinfo=timezone.utc)).timestamp()
-        else:
-            at = float(value)
-    except (TypeError, ValueError):
+    at = reset_epoch(error.details.get("resets_at"))
+    if at is None:
         return None
     seconds = max(0.0, at - (time.time() if now is None else now)) + RESET_MARGIN
     return seconds if seconds <= MAX_RESET_WAIT else None
+
+
+def limit_pause(error, decision):
+    """What to tell the operator when a subscription limit pauses the run instead of waiting."""
+    at = reset_epoch(error.details.get("resets_at"))
+    when = (f"It resets at {datetime.fromtimestamp(at, timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
+            if at is not None else "Its reset time is unknown")
+    return (f"{error} at decision {decision}. {when}. The run pauses with its checkpoint kept and nothing spent "
+            "on this decision. Run the same command again after the reset.")
 
 
 def wait(seconds, guard):
@@ -251,6 +265,8 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                         stopped = wait(RETRY_DELAYS[retries], guard)
                         retries += 1
                     else:
+                        if error.details.get("kind") == "subscription_limit":
+                            print(limit_pause(error, decision_index), flush=True)
                         break
                     # Ctrl-C during the wait pauses here. The failed attempt spent nothing, so the run resumes.
                     if stopped:
@@ -266,8 +282,9 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
             if error is not None:
                 session.usage["accounting_complete"] = False
                 session.usage["model_seconds"] += time.monotonic() - started
+                # The estimate for this decision becomes its token reserve if the same command reruns the decision.
                 write_json(session.output / "error.json", {"kind": "provider_error", "message": str(error),
-                    "details": error.details})
+                    "details": error.details, "token_reserve": estimate if type(estimate) is int and estimate > 0 else None})
                 session.finish("provider_error")
                 break
             duration = time.monotonic() - started

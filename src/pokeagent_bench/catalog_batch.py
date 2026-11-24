@@ -61,6 +61,74 @@ def accounting_complete(result):
         for key in ('input_tokens', 'output_tokens'))
 
 
+def reserved(result):
+    """True when the only unknown usage of a finished task is failed calls already charged at their reserve."""
+    usage = result.get('usage', {})
+    return (type(usage.get('unreported_token_reserve')) is int and usage['unreported_token_reserve'] > 0
+            and all(type(usage.get(key)) is int and usage[key] >= 0 for key in ('input_tokens', 'output_tokens')))
+
+
+def resumable(folder):
+    """True when a task stopped by a provider error mid decision can resume from its checkpoint."""
+    folder = Path(folder)
+    try:
+        result, error = _read(folder / 'result.json'), _read(folder / 'error.json')
+        phase = _read(folder / 'pending.json').get('phase')
+    except (OSError, ValueError, AttributeError):
+        return False
+    from .recovery import IN_FLIGHT
+    return (result.get('stop_reason') == 'provider_error' and error.get('kind') == 'provider_error'
+            and phase == IN_FLIGHT and (folder / 'recovery.json').is_file())
+
+
+def recover(output, rom, guard=None):
+    """Finish tasks a pause or a provider error stopped mid task, from their checkpoints.
+
+    A task stopped by a provider error after the model may have run keeps that attempt in provider-error-NN
+    and resumes with the failed call charged at its token reserve. Each task resumes at most once per command,
+    so a provider that keeps failing cannot loop. Return False after a Ctrl-C pause.
+    """
+    from .cli import execute, parser
+    from .recovery import reopen
+    output = Path(output)
+    for row in report(output)['cells']:
+        folder = output / row['id']
+        if not folder.is_dir():
+            continue
+        if guard and guard.requested:
+            return False
+        if not any(folder.iterdir()):
+            folder.rmdir()
+            continue
+        try:
+            attempt = reopen(rom, folder)
+        except ValueError as error:
+            if row['state'] not in ('finished', 'evaluation_error'):
+                raise
+            # This code cannot continue the stopped run exactly, so it stays a failed task.
+            print(f'{row["task_id"]} stopped on a provider error and cannot resume here: {error}', flush=True)
+            continue
+        if attempt is None and row['state'] in ('finished', 'evaluation_error'):
+            continue
+        if not (folder / 'recovery.json').is_file():
+            continue
+        if attempt is not None:
+            print(f'Resuming {row["task_id"]} from its checkpoint after a provider error. The failed attempt is kept '
+                  f'in {attempt}.', flush=True)
+        else:
+            print(f'Resuming {row["task_id"]} from its checkpoint.', flush=True)
+        result = execute(parser().parse_args(['resume', '--rom', str(rom), '--run', str(folder)]))
+        if isinstance(result, dict) and result.get('state') == 'paused':
+            if guard and guard.requested:
+                return False
+            raise ValueError(f'{row["task_id"]} paused again after a provider error with no model reply. '
+                             'No tokens were spent on it. Run the same command again later')
+        if isinstance(result, dict) and result.get('stop_reason') == 'provider_error':
+            raise ValueError(f'{row["task_id"]} stopped on a provider error again. Each attempt is kept in its '
+                             'folder. Run the same command again later')
+    return True
+
+
 def cell_result(path):
     path = Path(path)
     raw = _read(path / 'result.json') if (path / 'result.json').is_file() else None
@@ -151,23 +219,26 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
         manifest = plan(fixtures, models or [], tasks, repeats, benchmark=benchmark or SHORT)
         output.mkdir(parents=True, exist_ok=False)
         write_json(output / 'plan.json', manifest)
-    current_report = report(output)
-    write_json(output / 'report.json', current_report)
-    # Check every existing cell before any new paid work, including later cells.
-    # A failed cell is never run again, so its unknown usage stays reported without blocking later tasks.
-    for row in current_report['cells']:
-        destination = output / row['id']
-        if not destination.exists():
-            continue
-        if row['state'] not in ('finished', 'evaluation_error'):
-            raise ValueError(f'Unfinished cell needs recovery before resume: {row["id"]} ({row["state"]}). '
-                             'Resume its saved session first')
-        if row['state'] == 'finished' and not row.get('accounting_complete', False):
-            raise ValueError(f'Uncertain token usage needs reconciliation before resume: {row["id"]}')
-    used = sum(row['tokens'] for row in current_report['cells'])
-    failed_in_row = 0
     with pause_on_interrupt() as guard:
-        for cell in kept(manifest['cells']):
+        # Paused tasks and tasks a provider error stopped mid decision resume from their checkpoints first.
+        recovered = recover(output, rom, guard) if resume else True
+        current_report = report(output)
+        write_json(output / 'report.json', current_report)
+        # Check every existing cell before any new paid work, including later cells.
+        # Any other failed cell is never run again, so its unknown usage stays reported without blocking later tasks.
+        for row in current_report['cells']:
+            destination = output / row['id']
+            if not destination.exists() or not recovered:
+                continue
+            if row['state'] not in ('finished', 'evaluation_error'):
+                raise ValueError(f'Unfinished cell needs recovery before resume: {row["id"]} ({row["state"]}). '
+                                 'Resume its saved session first')
+            if (row['state'] == 'finished' and not row.get('accounting_complete', False)
+                    and not reserved(cell_result(destination))):
+                raise ValueError(f'Uncertain token usage needs reconciliation before resume: {row["id"]}')
+        used = sum(row['tokens'] for row in current_report['cells'])
+        failed_in_row = 0
+        for cell in kept(manifest['cells']) if recovered else ():
             destination = output / cell['id']
             if cell_result(destination) is not None:
                 continue

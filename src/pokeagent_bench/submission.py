@@ -404,7 +404,7 @@ def check_cell(cell, files, fixtures, rom, work, replay):
         raise ValueError('Run did not finish')
     if result.get('score_max') != maximum:
         raise ValueError('Maximum score differs from the benchmark')
-    # A provider error with no model reply spent nothing, and its decision ran again after a resume.
+    # Each provider error row is a decision that ran again after a resume. One with unknown usage was charged its reserve.
     errors = result.get('provider_errors', [])
     if not isinstance(errors, list) or not all(isinstance(row, dict) for row in errors):
         raise ValueError('Provider error record is malformed')

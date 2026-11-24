@@ -17,6 +17,25 @@ from .providers import ProviderError
 from .rules import NICKNAME_RULE
 from .visual_feedback import public_context
 
+# codexErrorInfo values for a turn the service refused before the model ran, seen in stored runs and the 0.147 client.
+# serverOverloaded reads "Selected model is at capacity". Other failures may come after tokens were spent.
+REFUSED_BEFORE_REPLY = ("usageLimitExceeded", "serverOverloaded")
+
+
+def exhausted_window(snapshots):
+    """(primary or secondary, reset time in epoch seconds) of the used-up window that resets last, or (None, None)."""
+    found = []
+    for snapshot in snapshots:
+        for name in ("primary", "secondary"):
+            window = snapshot.get(name) if isinstance(snapshot, dict) else None
+            if (isinstance(window, dict) and isinstance(window.get("usedPercent"), (int, float))
+                    and window["usedPercent"] >= 100 and isinstance(window.get("resetsAt"), (int, float))):
+                found.append((window["resetsAt"], name))
+    if not found:
+        return None, None
+    resets_at, name = max(found)
+    return name, resets_at
+
 
 class ContinuousCodexProvider(CodexProvider):
     allowed_track = "visual"
@@ -158,6 +177,35 @@ object labels, automatic navigation or human help are available.
         if result.get("model") != self.model or result.get("reasoningEffort") != self.reasoning_effort:
             raise ProviderError("Unexpected model or reasoning effort")
 
+    # The latest Codex rate-limit snapshot the App Server sent. It names when each usage window resets.
+    rate_limits = None
+
+    def read_rate_limits(self, deadline):
+        """Ask the App Server for its current rate-limit snapshots. This calls no model. Return [] when it cannot say."""
+        try:
+            result = self.server.request("account/rateLimits/read", {}, deadline)
+        except ProviderError:
+            return []
+        if not isinstance(result, dict):
+            return []
+        by_id = result.get("rateLimitsByLimitId")
+        return [result.get("rateLimits"), *(by_id.values() if isinstance(by_id, dict) else ())]
+
+    def turn_failure(self, turn_id, turn, replied, deadline):
+        """The error for a failed turn. A turn refused before the model answered spent nothing, so it can run again."""
+        error = turn.get("error") if isinstance(turn.get("error"), dict) else {}
+        info = error.get("codexErrorInfo")
+        code = info if isinstance(info, str) else next(iter(info), None) if isinstance(info, dict) else None
+        details = {"thread_id": self.thread_id, "turn_id": turn_id, "status": turn["status"], "error": turn.get("error")}
+        if replied or code not in REFUSED_BEFORE_REPLY:
+            return ProviderError("App Server turn failed. Usage may be unreported", details=details)
+        details.update(provider_code=code, no_reply=True, text=str(error.get("message") or "")[:200] or None)
+        if code == "serverOverloaded":
+            return ProviderError("Codex model is at capacity", details={**details, "kind": "provider_error"})
+        limit_type, resets_at = exhausted_window([*self.read_rate_limits(deadline), self.rate_limits])
+        return ProviderError("Codex subscription usage limit reached", details={
+            **details, "kind": "subscription_limit", "limit_type": limit_type, "resets_at": resets_at})
+
     def _complete(self, method, params, deadline):
         before = dict(self.total_usage)
         response = self.server.request(method, params, deadline)
@@ -165,6 +213,8 @@ object labels, automatic navigation or human help are available.
         message = None
         usage = None
         compacted = False
+        # Any reasoning, message or usage for this turn means the model ran and may have spent tokens.
+        replied = False
         while True:
             try:
                 event = self.server.event(deadline)
@@ -174,6 +224,8 @@ object labels, automatic navigation or human help are available.
             kind, data = event.get("method"), event.get("params", {})
             if data.get("threadId") not in (None, self.thread_id):
                 continue
+            if kind == "account/rateLimits/updated" and isinstance(data.get("rateLimits"), dict):
+                self.rate_limits = data["rateLimits"]
             if kind == "turn/started" and turn_id is None:
                 turn_id = data["turn"]["id"]
             if kind == "thread/tokenUsage/updated" and data.get("turnId") == turn_id:
@@ -182,15 +234,15 @@ object labels, automatic navigation or human help are available.
                 item = data["item"]
                 if item["type"] not in ("userMessage", "agentMessage", "reasoning", "contextCompaction"):
                     raise ProviderError("Outside tool attempted. Trial is invalid")
+                if item["type"] in ("agentMessage", "reasoning"):
+                    replied = True
                 if kind == "item/completed" and item["type"] == "agentMessage":
                     message = item["text"]
                 if kind == "item/completed" and item["type"] == "contextCompaction":
                     compacted = True
             if kind == "turn/completed" and data["turn"]["id"] == turn_id:
                 if data["turn"]["status"] != "completed":
-                    raise ProviderError("App Server turn failed. Usage may be unreported",
-                        details={"thread_id": self.thread_id, "turn_id": turn_id,
-                                 "status": data["turn"]["status"], "error": data["turn"].get("error")})
+                    raise self.turn_failure(turn_id, data["turn"], replied or usage is not None, deadline)
                 break
         if usage is None:
             raise ProviderError("Missing turn usage, including compaction. Trial stopped")

@@ -427,7 +427,8 @@ class Session:
                   "actions": self.actions, "usage": self._public_usage(), "trace_head": self.trace_head,
                   "updated_at": datetime.now(timezone.utc).isoformat()}
         if getattr(self, "provider_errors", None):
-            # Provider failures with no model reply. Each used no tokens and its decision ran again.
+            # Provider failures whose decision ran again. A row with usage "unknown" was charged its token_reserve.
+            # Every other row had no model reply and used no tokens.
             result["provider_errors"] = self.provider_errors
         if self.campaign_tracking:
             from .campaign_report import enrich_current_profile
