@@ -1,0 +1,102 @@
+{
+  "protocol": "gen2-determinism-v1",
+  "rom_sha1": "f2f52230b536214ef7c9924f483392993e226cfb",
+  "core": {
+    "version": "0.12.3",
+    "direct_url": {
+      "url": "https://github.com/afk-sapien/pokesim/releases/download/pokecore-v0.12.3/pokecore-0.12.3-py3-none-any.whl",
+      "archive_info": {}
+    },
+    "source_sha256": "0f9799502e71a07023f51a053f6d2aeda74e7ca197fa6ac8a5b56219842f66d5"
+  },
+  "python": "3.12.12",
+  "source": {
+    "seconds": 9.605679949047044,
+    "frames": 120000,
+    "steps": 3653,
+    "source": {
+      "pokesim_tag": "pokecore-v0.12.3",
+      "pokesim_commit": "37fff4cf3092b968d515e38163d32398596135a2",
+      "pokesim_source_sha256": "09df5f63c4b60cc22f7874d97f79b375bf520293eb57e0d15615ce579fedd45b",
+      "seed": 1,
+      "starter": "cyndaquil",
+      "game_data_manifest_sha256": "ed7474f13ec0bc6721f8c74697848f8017f1bb901d1ae8c17cc72e45d24f303c",
+      "strategy_bundle": "cf6dd68e659c0c90cfd4e2b77a1f2f5843a87e8be3c29bb3dc6b6bb6cd19a22e"
+    },
+    "final_map": [
+      24,
+      5
+    ],
+    "final_party": 1
+  },
+  "steps": 3653,
+  "mid_step": 1789,
+  "mid_clock": {
+    "clock": 1700001004.562378,
+    "elapsed": 1003.2397041320801,
+    "format": "gen2-frame-clock-v1",
+    "hours": 10,
+    "lock": {
+      "base": 1700000000.0,
+      "follow_frames": true,
+      "frames": 60000,
+      "offset": 0.0
+    },
+    "minutes": 16,
+    "state_sha256": "6cfb2eb4e2080d48a0e1d2723a25b6ff9b0d8f65383f4475182de2e8c8492fd7",
+    "time_of_day": 1,
+    "timezero": 1700000001.3226738
+  },
+  "clock_follows_frames_every_step": true,
+  "final_step": {
+    "frame": "72b836709c286e7a7624070ab8ec9bbe2997df3312467cbd774329d67e67f0de",
+    "wram": "87ff1b005a60b3206a606f65e5ac1100b5c53fb4a81ecd82fa82618c17d7cfdd",
+    "hram": "cc01a112ec1ce5250a18aa2be73bd8fc1bcbf137ce201387a2104b9364d63ca8",
+    "clock": 1700002009.1247559,
+    "frames": 120000
+  },
+  "runs": {
+    "B": {
+      "compared_steps": 3653,
+      "first_step": 1,
+      "last_step": 3653,
+      "mismatched_steps": [],
+      "mismatches": 0,
+      "state_at_load_matches_A": null
+    },
+    "C": {
+      "compared_steps": 1864,
+      "first_step": 1790,
+      "last_step": 3653,
+      "mismatched_steps": [],
+      "mismatches": 0,
+      "state_at_load_matches_A": true
+    },
+    "D": {
+      "compared_steps": 1864,
+      "first_step": 1790,
+      "last_step": 3653,
+      "mismatched_steps": [],
+      "mismatches": 0,
+      "state_at_load_matches_A": true
+    }
+  },
+  "refusals": {
+    "accepted_lock_reads_at_or_after_save": true,
+    "accepted_clock": 1700001004.562378,
+    "save_clock": 1700001004.562378,
+    "no_lock_file": "<output>/refusals/no-lock has no initial.clock.json. A Gen II start without its clock lock is refused",
+    "lock_before_save_time": "The clock lock reads 1700001003.5578156, before the save time 1700001004.562378. Refused",
+    "lock_not_following_frames": "<output>/refusals/unlocked/initial.clock.json: the clock lock must follow emulated frames",
+    "lock_for_another_state": "<output>/refusals/other-state/initial.clock.json belongs to a different state",
+    "other_rom": "Unsupported ROM. The Gen II prep tasks need Pokemon - Crystal Version (USA, Europe) (Rev 1), SHA-1 f2f52230b536214ef7c9924f483392993e226cfb. <output>/refusals/not-crystal.gbc has SHA-1 3b71f43ff30f4b15b5cd85dd9e95ebc7e84eb5a3."
+  },
+  "passed": true,
+  "process_seconds": {
+    "A": 10.35,
+    "B": 9.4,
+    "C": 3.27,
+    "D": 3.34,
+    "E": 0.15
+  }
+}

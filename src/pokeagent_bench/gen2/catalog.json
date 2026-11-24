@@ -1,0 +1,500 @@
+{
+  "category": "gen2",
+  "title": "Pokemon Crystal preparation tasks, in no released suite",
+  "game": "pokemon-crystal",
+  "evals": [
+    {
+      "id": "gen2-ruins-kabuto-panel",
+      "title": "Solve the Kabuto panel in the Ruins of Alph",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "gen2-ruins-kabuto-panel",
+        "description": "Solve the stone picture panel in this chamber of the Ruins of Alph and follow where it leads."
+      },
+      "start": "Ruins of Alph Kabuto Chamber, first settled frame after entering from outside. The panel is unsolved.",
+      "success": [
+        "Reach the Ruins of Alph inner chamber after the Kabuto panel is solved."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the inner chamber.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Timing variants are added only if a pilot shows start sensitivity."
+      ],
+      "token_limit": 7125000,
+      "decision_limit": 475,
+      "existing_task": null,
+      "requirements": [
+        "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
+        "A scripted reference reaches every milestone from the saved start."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Solve a sliding picture puzzle on a separate screen",
+      "agent_goal": "Solve the stone picture panel in this chamber of the Ruins of Alph and follow where it leads.",
+      "scenario_details": [
+        "Party, bag and badges are whatever the PokeSim story run holds when it first enters the chamber, shortly after the Zephyr Badge.",
+        "The clock is locked to emulated frames and saved next to the start. Time of day is recorded with the fixture."
+      ],
+      "sources": [
+        "https://github.com/pret/pokecrystal/blob/master/maps/RuinsOfAlphKabutoChamber.asm",
+        "https://github.com/pret/pokecrystal/blob/master/engine/games/unown_puzzle.asm"
+      ],
+      "open_questions": [
+        "The assisted executor has no Gen II puzzle screen yet. The panel is played with raw buttons until it does."
+      ],
+      "measures": "Read a scrambled picture, plan tile moves on a 4 by 4 board with an empty border and finish the image.",
+      "fixture": {
+        "state_sha256": "d230f5c5be5f0fa3ec4bb1bbe6c7ed940428d0c43cb362be9eb9a5899b2b538d",
+        "actions_sha256": "a4d462512aecc37715aaeb0ee65689d0c37e17c557893653f27307b970c9b7bf",
+        "actions": 169,
+        "frames": 5206,
+        "decisions": 95
+      },
+      "capture": {
+        "route": "kabuto",
+        "maps": [[3, 24]],
+        "after": [],
+        "before": [673],
+        "frame_cap": 300000
+      },
+      "milestones": [
+        {
+          "id": "panel",
+          "description": "Stand at the stone panel on the chamber's back wall.",
+          "check": {"map": [3, 24], "near": [3, 3]}
+        },
+        {
+          "id": "solved",
+          "description": "Complete the Kabuto picture.",
+          "check": {"event": 673}
+        },
+        {
+          "id": "inner-chamber",
+          "description": "Reach the inner chamber below.",
+          "check": {"map": [3, 27]}
+        }
+      ]
+    },
+    {
+      "id": "gen2-burned-tower-beasts",
+      "title": "Wake the legendary beasts in the Burned Tower",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "gen2-burned-tower-beasts",
+        "description": "Explore the Burned Tower in Ecruteak City, find a way to its basement and see what rests there."
+      },
+      "start": "Burned Tower 1F, first settled frame of the first entry from Ecruteak City that the PokeSim story run survives. The rival is unbeaten, the floor has not collapsed and the beasts are asleep.",
+      "success": [
+        "The three legendary beasts are released in the basement."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the beasts are released.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Timing variants are added only if a pilot shows start sensitivity."
+      ],
+      "token_limit": 2175000,
+      "decision_limit": 145,
+      "existing_task": null,
+      "requirements": [
+        "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
+        "A scripted reference reaches every milestone from the saved start."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Trigger a scripted fall through a collapsing floor and finish a multi-room scene",
+      "agent_goal": "Explore the Burned Tower in Ecruteak City, find a way to its basement and see what rests there.",
+      "scenario_details": [
+        "Party, bag and badges are whatever the PokeSim story run holds when it enters the tower for the start.",
+        "The story run's first entry lost the rival battle and blacked out, so that recording moved to blackouts/ and the start is the next entry, after the Pokemon Center healed the party.",
+        "The rival battle on 1F is part of the task. Wild encounters stay on."
+      ],
+      "sources": [
+        "https://github.com/pret/pokecrystal/blob/master/maps/BurnedTower1F.asm",
+        "https://github.com/pret/pokecrystal/blob/master/maps/BurnedTowerB1F.asm"
+      ],
+      "open_questions": [
+        "Check in a pilot whether the rival battle dominates the task for weak models.",
+        "Event 1733 stayed clear after the lost rival battle of the first entry and was set after the won battle of the second, so the rival milestone reads it as a win. The pret script would settle this."
+      ],
+      "measures": "Find the scripted rival encounter, win it, fall through the floor and walk the basement to the beasts.",
+      "fixture": {
+        "state_sha256": "a0a009542cdfc1d70ce1ca589ccf7cc05e61330f15d865b61b8166760ff8ed64",
+        "actions_sha256": "757461a5475f854debf331f52cd9b4d2e85a06d76c36d82112790cd0fc98665a",
+        "actions": 728,
+        "frames": 22304,
+        "decisions": 29
+      },
+      "capture": {
+        "route": "story",
+        "maps": [[3, 13]],
+        "after": [],
+        "before": [1733, 818, 123],
+        "frame_cap": 400000
+      },
+      "milestones": [
+        {
+          "id": "rival",
+          "description": "Win the rival battle on 1F.",
+          "check": {"event": 1733}
+        },
+        {
+          "id": "floor-collapse",
+          "description": "The 1F floor collapses after the rival battle.",
+          "check": {"event": 818}
+        },
+        {
+          "id": "basement",
+          "description": "Reach the Burned Tower basement.",
+          "check": {"map": [3, 14]}
+        },
+        {
+          "id": "beasts",
+          "description": "Release the three legendary beasts.",
+          "check": {"event": 123}
+        }
+      ]
+    },
+    {
+      "id": "gen2-rocket-hideout",
+      "title": "Clear the Team Rocket hideout under Mahogany Town",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "gen2-rocket-hideout",
+        "description": "Work with Lance to shut down Team Rocket's hideout under the Mahogany Town shop."
+      },
+      "start": "Team Rocket Base B1F, first settled frame after taking the stairs from the Mahogany Town shop. The hideout is not cleared.",
+      "success": [
+        "The hideout is cleared after the last Electrode is defeated."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the hideout is cleared.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Timing variants are added only if a pilot shows start sensitivity."
+      ],
+      "token_limit": 13425000,
+      "decision_limit": 895,
+      "existing_task": null,
+      "requirements": [
+        "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
+        "A scripted reference reaches every milestone from the saved start."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Multi-floor dungeon with a security trap, passwords and a locked door",
+      "agent_goal": "Work with Lance to shut down Team Rocket's hideout under the Mahogany Town shop.",
+      "scenario_details": [
+        "Party, bag and badges are whatever the PokeSim story run holds when it first enters the hideout.",
+        "Trainers and wild encounters stay on. Lance heals the party once during the scene."
+      ],
+      "sources": [
+        "https://github.com/pret/pokecrystal/blob/master/maps/TeamRocketBaseB1F.asm",
+        "https://github.com/pret/pokecrystal/blob/master/maps/TeamRocketBaseB2F.asm",
+        "https://github.com/pret/pokecrystal/blob/master/maps/TeamRocketBaseB3F.asm"
+      ],
+      "open_questions": [
+        "Check in a pilot whether the security camera trap makes the cap bind before the passwords.",
+        "Turning off the cameras (event 739) is not a milestone. The reference does it, but without the pret source on disk it is not shown to be required."
+      ],
+      "measures": "Get past the security cameras, learn two passwords from grunts, open the boss room and the transmitter room, and defeat the Electrode.",
+      "fixture": {
+        "state_sha256": "2dd0f6556507391cb03b0cd6817647119d76c0c5474a72dfe6c5f246d58362d2",
+        "actions_sha256": "39cc44770812ba41a8b64eda28c0f36adc70059aacd850f0bf6a229ea04b7170",
+        "actions": 3557,
+        "frames": 112344,
+        "decisions": 179
+      },
+      "capture": {
+        "route": "story",
+        "maps": [[3, 49]],
+        "after": [],
+        "before": [34],
+        "frame_cap": 600000
+      },
+      "milestones": [
+        {
+          "id": "second-floor",
+          "description": "Take the stairs down to B2F.",
+          "check": {"map": [3, 50]}
+        },
+        {
+          "id": "passwords",
+          "description": "Learn both passwords from the grunts on B3F.",
+          "check": {"events": [769, 770]}
+        },
+        {
+          "id": "office-door",
+          "description": "Open the door to the boss's office with the two passwords.",
+          "check": {"event": 771}
+        },
+        {
+          "id": "transmitter-door",
+          "description": "Open the door to the transmitter room.",
+          "check": {"event": 768}
+        },
+        {
+          "id": "cleared",
+          "description": "Clear the hideout.",
+          "check": {"event": 34}
+        }
+      ]
+    },
+    {
+      "id": "gen2-radio-tower-basement",
+      "title": "Rescue the director under Goldenrod City",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "gen2-radio-tower-basement",
+        "description": "Use the Basement Key under Goldenrod City, get through the locked underground rooms and get the Card Key from the real Radio Tower director."
+      },
+      "start": "Goldenrod City underground, first settled frame after the false director on Radio Tower 5F hands over the Basement Key. The basement door is still locked.",
+      "success": [
+        "The real director gives the Card Key in the underground warehouse."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before the Card Key.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Timing variants are added only if a pilot shows start sensitivity."
+      ],
+      "token_limit": 9900000,
+      "decision_limit": 660,
+      "existing_task": null,
+      "requirements": [
+        "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
+        "A scripted reference reaches every milestone from the saved start."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Shutter switch puzzle with a locked door and trainers",
+      "agent_goal": "Use the Basement Key under Goldenrod City, get through the locked underground rooms and get the Card Key from the real Radio Tower director.",
+      "scenario_details": [
+        "Party, bag and badges are whatever the PokeSim story run holds after the false director battle.",
+        "Trainers and wild encounters stay on. Rocket grunts guard the switch room and the warehouse."
+      ],
+      "sources": [
+        "https://github.com/pret/pokecrystal/blob/master/maps/GoldenrodUndergroundSwitchRoomEntrances.asm",
+        "https://github.com/pret/pokecrystal/blob/master/maps/GoldenrodUndergroundWarehouse.asm"
+      ],
+      "open_questions": [
+        "Check in a pilot whether the shutter switch order is the main failure."
+      ],
+      "measures": "Open the basement door, work three shutter switches in the right order and reach the warehouse.",
+      "fixture": {
+        "state_sha256": "f8f051e9d435541afd700f7b7b9cd18a74759606e14124dae7633bf726f4ebff",
+        "actions_sha256": "6fdedefa66dad55dbddb403915567b5caa1bd0730b76878efd4cd319ac28dc23",
+        "actions": 2894,
+        "frames": 87596,
+        "decisions": 132
+      },
+      "capture": {
+        "route": "story",
+        "maps": [[3, 53], [3, 54]],
+        "after": [1395],
+        "before": [73, 74],
+        "frame_cap": 400000
+      },
+      "milestones": [
+        {
+          "id": "basement-door",
+          "description": "Open the basement door with the Basement Key.",
+          "check": {"event": 73}
+        },
+        {
+          "id": "warehouse",
+          "description": "Reach the underground warehouse.",
+          "check": {"map": [3, 56]}
+        },
+        {
+          "id": "card-key",
+          "description": "Receive the Card Key from the director.",
+          "check": {"event": 74}
+        }
+      ]
+    },
+    {
+      "id": "gen2-ice-path",
+      "title": "Cross the Ice Path to Blackthorn City",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "gen2-ice-path",
+        "description": "Cross the Ice Path from Route 44 and come out in Blackthorn City."
+      },
+      "start": "Ice Path 1F, first settled frame after entering from Route 44. No boulder has been pushed into a hole.",
+      "success": [
+        "Leave the Ice Path into Blackthorn City."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Blackthorn City.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Timing variants are added only if a pilot shows start sensitivity."
+      ],
+      "token_limit": 38700000,
+      "decision_limit": 2580,
+      "existing_task": null,
+      "requirements": [
+        "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
+        "A scripted reference reaches every milestone from the saved start."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Sliding ice floors and boulders dropped through holes",
+      "agent_goal": "Cross the Ice Path from Route 44 and come out in Blackthorn City.",
+      "scenario_details": [
+        "Party, bag and badges are whatever the PokeSim story run holds when it first enters the Ice Path.",
+        "Wild encounters stay on. Strength is available."
+      ],
+      "sources": [
+        "https://github.com/pret/pokecrystal/blob/master/maps/IcePathB1F.asm",
+        "https://github.com/pret/pokecrystal/blob/master/maps/IcePathB2FMahoganySide.asm"
+      ],
+      "open_questions": [
+        "Check in a pilot whether sliding ice is readable from the screen text the harness gives."
+      ],
+      "measures": "Plan slides on ice that stop only at walls or rocks, and push boulders through holes to make stopping points on the floor below.",
+      "fixture": {
+        "state_sha256": "79b120a371944b29f2d7b0c186f331a067e819eb2bf13abed35452619c7dec0a",
+        "actions_sha256": "3ba0f03cd602367b79f3b42f07bfad6e6295b15cadce4c4c171bde66700c09e7",
+        "actions": 2325,
+        "frames": 73388,
+        "decisions": 516
+      },
+      "capture": {
+        "route": "story",
+        "maps": [[3, 61]],
+        "after": [],
+        "before": [1801, 1802, 1803, 1804],
+        "frame_cap": 400000
+      },
+      "milestones": [
+        {
+          "id": "first-basement",
+          "description": "Reach Ice Path B1F.",
+          "check": {"map": [3, 62]}
+        },
+        {
+          "id": "lowest-floor",
+          "description": "Reach Ice Path B3F, the only link between the two halves of B2F.",
+          "check": {"map": [3, 65]}
+        },
+        {
+          "id": "blackthorn-side",
+          "description": "Reach the Blackthorn side of B2F.",
+          "check": {"map": [3, 64]}
+        },
+        {
+          "id": "blackthorn",
+          "description": "Come out in Blackthorn City.",
+          "check": {"map": [5, 10]}
+        }
+      ]
+    },
+    {
+      "id": "gen2-blackthorn-gym",
+      "title": "Reach and beat Clair in the Blackthorn Gym",
+      "difficulty": "hard",
+      "tested_skill": "navigation",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "gen2-blackthorn-gym",
+        "description": "Get across the lava floor of the Blackthorn City gym and defeat the leader, Clair."
+      },
+      "start": "Blackthorn Gym 1F, first settled frame after entering from Blackthorn City. Clair is unbeaten and no boulder has dropped.",
+      "success": [
+        "Defeat Clair."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Clair is beaten.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Timing variants are added only if a pilot shows start sensitivity."
+      ],
+      "token_limit": 12375000,
+      "decision_limit": 825,
+      "existing_task": null,
+      "requirements": [
+        "Capture the start with scripts/prepare_gen2_fixtures.py from a fresh game on the frame-locked clock.",
+        "A scripted reference reaches every milestone from the saved start."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Boulder puzzle across two floors followed by a gym leader battle",
+      "agent_goal": "Get across the lava floor of the Blackthorn City gym and defeat the leader, Clair.",
+      "scenario_details": [
+        "Party, bag and badges are whatever the PokeSim story run holds when it first enters the gym.",
+        "Gym trainers stay on."
+      ],
+      "sources": [
+        "https://github.com/pret/pokecrystal/blob/master/maps/BlackthornGym1F.asm",
+        "https://github.com/pret/pokecrystal/blob/master/maps/BlackthornGym2F.asm"
+      ],
+      "open_questions": [
+        "Check in a pilot whether the Clair battle or the boulders decide most failures.",
+        "The three dropped boulders (events 1798 to 1800) are not a milestone. Standing next to Clair needs the path they make, so it stands in for them."
+      ],
+      "measures": "Push boulders on 2F into holes so they fill gaps on 1F, then win a hard gym battle.",
+      "fixture": {
+        "state_sha256": "aff117e919cb07289f6c5d1f51b0813c86d779a6322f0dc1502faf30bbda0e51",
+        "actions_sha256": "ee48fdfeedeacade7fc6cbf328902ccc561ce1a0d4754a419abff643fc0c00f3",
+        "actions": 2199,
+        "frames": 66160,
+        "decisions": 165
+      },
+      "capture": {
+        "route": "story",
+        "maps": [[5, 1]],
+        "after": [],
+        "before": [1220, 1798, 1799, 1800],
+        "frame_cap": 400000
+      },
+      "milestones": [
+        {
+          "id": "upper-floor",
+          "description": "Reach the gym's upper floor.",
+          "check": {"map": [5, 2]}
+        },
+        {
+          "id": "reach-clair",
+          "description": "Stand next to Clair at the back of 1F.",
+          "check": {"map": [5, 1], "near": [5, 3]}
+        },
+        {
+          "id": "clair",
+          "description": "Defeat Clair.",
+          "check": {"event": 1220}
+        }
+      ]
+    }
+  ]
+}
