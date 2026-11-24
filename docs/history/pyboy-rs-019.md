@@ -39,9 +39,26 @@ The Long run is 111,864 frames, 4,192 actions and a score of 13, the same as und
 
 Each of the 58 set-up fixtures in the 0.37.4 data was loaded in a fresh process under each install and run for 60 frames with no input, once under PyBoy RS 0.1.7 with Core 0.12.3 and once under 0.1.9 with Core 0.12.4. The screen after frames 1, 2 and 60, the work RAM and the saved state after frame 60 are identical in all 58.
 
-### Not run yet
+### Full sweep
 
-The full sweep of the 0.1.7 note was not run for this change. That is the other 43 Haiku Short cells, the 16 published Long runs and the 400 published Short runs. It needs the machine for about 80 minutes with six workers.
+The full sweep of the [0.1.7 note](pyboy-rs-017.md) then ran under 0.1.9 at commit `e9298e8`, on November 23 and 24 from 23:11 to 00:17, in four processes at nice 10. It covers the other 43 Haiku Short cells, the 16 published Long runs and the 400 published Short runs.
+
+| Recorded under | Runs | Passed | Actions | Frames |
+| --- | ---: | ---: | ---: | ---: |
+| 0.1.5, Haiku Short cells 4 to 46 | 43 | 43 | 47,465 | 1,278,650 |
+| 0.1.1, published Long runs | 16 | 16 | 473,075 | 12,930,007 |
+| 0.1.1, published Short runs | 400 | 300 | 223,099 | 6,119,911 |
+
+1. With the three cells and the Long run above, all 46 Haiku Short cells and the Haiku Long run pass, 1,482,130 frames and 55,200 actions. These are the totals of the 0.1.7 note.
+2. The largest Long run is long-v072-astra-8k, with 2,222,534 frames, 80,799 actions and a score of 710, as under 0.1.5 and 0.1.7.
+3. The 300 Short runs that pass have the frame and action totals of the 0.1.7 note.
+
+The other 100 Short runs are refused before any frame runs, for the reasons the 0.1.7 note gives.
+
+1. 80 are preparation cells, refused with "Unknown catalog task".
+2. 20 stop with "The catalog specification changed since this run started". These are the 18 focused-pass-v056 cells plus cell-0046 of main-v066-astra and main-v067-fable, the same 20 as in the 0.1.7 note.
+
+The 0.1.7 note also replayed these 100 with the specification check skipped. That second pass was not repeated here, because no frame runs before either refusal, so the emulator plays no part in them.
 
 ## Checks
 
