@@ -4,9 +4,9 @@ import signal
 
 import pytest
 
-from pokeagent_bench import catalog_batch, catalog_execution, interrupts, quick_run
+from pokeagent_bench import catalog_batch, catalog_execution, interrupts, own_release, quick_run, submission
 from pokeagent_bench.cli import main, parser
-from pokeagent_bench.core import write_json
+from pokeagent_bench.core import core_provenance, emulator_manifest, write_json
 from pokeagent_bench.recovery import NO_REPLY, STOPPED
 
 # No model is called here. The task runner is replaced by one that writes a finished result.
@@ -208,6 +208,67 @@ def test_interrupted_task_continues_from_its_checkpoint(data, runs, monkeypatch,
     quick_run.run_suite(parser().parse_args(['run', *words]))
     assert [path.resolve() for path in resumed] == [cell]
     assert 'Finished 3 of 3 runs' in capsys.readouterr().out
+
+
+def paused_cell(data, release, *, source='older', agent=None):
+    """Leave the second task paused, with a manifest from the build that release and source name."""
+    cell = data.parent / 'out' / 'cell-0002'
+    write_json(cell / 'result.json', {'state': 'interrupted', 'usage': {'input_tokens': 900, 'output_tokens': 100}})
+    (cell / 'recovery.json').write_text('{}')
+    write_json(cell / 'manifest.json', {**submission.this_harness(), 'source_sha256': source, 'release': release,
+                                        'core': core_provenance(), **emulator_manifest(),
+                                        'agent': agent or {'provider': 'codex', 'model': 'gpt-6-sol'}})
+
+
+def test_rerun_on_a_new_release_prints_the_own_release_command(data, runs, monkeypatch, capsys):
+    words = ('--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out')
+    assert command(monkeypatch, *words) == 0
+    paused_cell(data, {'tag': 'v0.37.4', 'install': own_release.install('v0.37.4')})
+    monkeypatch.setattr(catalog_batch, 'recover', lambda *args: pytest.fail('resumed on another build'))
+    capsys.readouterr()
+    assert command(monkeypatch, *words) == 2
+    text = capsys.readouterr()
+    # Refused before the estimate, so nothing is asked, started or spent.
+    assert text.out == ''
+    assert text.err == (f'Error: {SMOKE[1]} was made by v0.37.4 and differs from this build in its source. A run '
+                        'resumes only on the build that started it. Run the same command on v0.37.4:\n  uvx --from '
+                        'git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench run --model gpt-6-sol '
+                        '--suite smoke --output out\n')
+    assert len(runs) == 3
+    # The batch command refuses the same way before it resumes anything.
+    with pytest.raises(own_release.OtherRelease, match='@v0.37.4'):
+        catalog_batch.run_batch(data / 'fixtures', data.parent / 'red.gb', data / 'game-data', 'out', resume=True)
+
+
+def test_unknown_source_is_refused_without_handoff(data, runs, monkeypatch, capsys):
+    words = ('--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out')
+    assert command(monkeypatch, *words) == 0
+    paused_cell(data, None)
+    monkeypatch.setattr(catalog_batch, 'recover', lambda *args: pytest.fail('resumed on another build'))
+    capsys.readouterr()
+    assert command(monkeypatch, *words) == 2
+    text = capsys.readouterr()
+    assert text.out == ''
+    assert text.err == (f'Error: Resume requires the original manifest and exact runtime source. {SMOKE[1]} was made '
+                        'by a build that is not a release and differs from this one in its source. Check out that '
+                        'build to resume it\n')
+    assert len(runs) == 3
+
+
+def test_a_missing_claude_build_is_named_before_the_estimate(data, runs, monkeypatch, capsys):
+    words = ('--model', 'claude-sonnet-5-5', '--suite', 'smoke', '--output', 'out')
+    assert command(monkeypatch, *words) == 0
+    paused_cell(data, None, source=submission.this_harness()['source_sha256'],
+                agent={'provider': 'claude-code', 'model': 'claude-sonnet-5-5', 'cli_version': '2.1.300 (Claude Code)'})
+    monkeypatch.setattr('pokeagent_bench.claude_provider.installed_version', lambda executable='claude': '2.1.400')
+    monkeypatch.setattr(catalog_batch, 'recover', lambda *args: pytest.fail('resumed without its Claude Code'))
+    capsys.readouterr()
+    assert command(monkeypatch, *words) == 2
+    text = capsys.readouterr()
+    assert text.out == ''
+    copy = (data / 'toolchains' / 'claude-2.1.300' / 'bin' / 'claude').resolve()
+    assert text.err == (f'Error: {SMOKE[1]} cannot resume here. It needs Claude Code 2.1.300, which is neither pinned '
+                        f'here nor on PATH. Copy that build to {copy}, then run the same command again\n')
 
 
 def test_long_suite_uses_the_published_decision_limit_and_effort(data, runs, monkeypatch, capsys):

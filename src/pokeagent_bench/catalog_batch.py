@@ -103,7 +103,8 @@ def recover(output, rom, guard=None):
         try:
             attempt = reopen(rom, folder)
         except ValueError as error:
-            if row['state'] not in ('finished', 'evaluation_error'):
+            # A run from another release goes back to that release, so the whole command stops here.
+            if row['state'] not in ('finished', 'evaluation_error') or getattr(error, 'tag', None):
                 raise
             # This code cannot continue the stopped run exactly, so it stays a failed task.
             print(f'{row["task_id"]} stopped on a provider error and cannot resume here: {error}', flush=True)
@@ -215,6 +216,9 @@ def run_batch(fixtures, rom, game_data, output, *, models=None, tasks=None, repe
             validate(benchmark)
             if any(for_category(cell['category']) != benchmark for cell in manifest['cells']):
                 raise ValueError('Saved batch belongs to a different benchmark')
+        # Refuse before any resume when a task came from another build, naming the run's own release.
+        from .own_release import check_run
+        check_run(output)
     else:
         manifest = plan(fixtures, models or [], tasks, repeats, benchmark=benchmark or SHORT)
         output.mkdir(parents=True, exist_ok=False)

@@ -103,7 +103,13 @@ def run(session, provider, *, input_price=None, output_price=None, pause_after_d
                                       "max_output_tokens": getattr(provider, "max_output_tokens", None),
                                       "input_price_per_million": input_price, "output_price_per_million": output_price}
     if session.resume_state:
-        if any(session.manifest["agent"].get(key) != value for key, value in identity.items()):
+        changed = [key for key, value in identity.items() if session.manifest["agent"].get(key) != value]
+        if changed == ["cli_version"]:
+            used = session.manifest["agent"].get("cli_version")
+            hint = (f". Copy that build to toolchains/claude-{used.split()[0]}/bin/claude in the data folder"
+                    if provider.provider == "claude-code" and isinstance(used, str) and used.split() else "")
+            raise ValueError(f"Resume requires the CLI build this run used, {used}, not {identity['cli_version']}{hint}")
+        if changed:
             raise ValueError("Resume requires the original provider configuration")
         saved = session.resume_state
         recent = saved["recent"]

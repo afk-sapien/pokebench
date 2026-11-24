@@ -10,8 +10,10 @@ from pokeagent_bench.bounded_provider import BoundedGameplayProvider
 from pokeagent_bench.claude_provider import (CLAUDE_CLI, ClaudeCodeProvider, installed_version, pin_cli,
                                              subscription_environment, usage_delta)
 from pokeagent_bench.codex_provider import CodexProvider
-from pokeagent_bench.core import Limits
+from pokeagent_bench.core import Limits, core_provenance, emulator_manifest
+from pokeagent_bench.own_release import cli_missing, install, refusal
 from pokeagent_bench.providers import ProviderError
+from pokeagent_bench.submission import this_harness
 
 MODEL = 'claude-sonnet-5-5'
 
@@ -71,6 +73,36 @@ def test_a_pinned_copy_of_another_build_is_refused(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match='reports Claude Code 2.1.325, not 2.1.323'):
         pin_cli(tmp_path / 'data')
     assert pin_cli(tmp_path / 'elsewhere' / 'setup').startswith('Claude Code was not found on PATH')
+
+
+def test_handoff_refuses_when_the_recorded_cli_build_is_missing(tmp_path, monkeypatch):
+    elsewhere = fake_cli(tmp_path / 'elsewhere', '2.1.999')
+    monkeypatch.setenv('PATH', f'{elsewhere}{os.pathsep}/usr/bin{os.pathsep}/bin')
+    monkeypatch.setattr('sys.argv', ['pokebench', 'run', '--suite', 'short', '--output', 'out'])
+    data = tmp_path / 'store' / 'setup'
+    data.mkdir(parents=True)
+    manifest = {**this_harness(), 'source_sha256': 'older', 'core': core_provenance(), **emulator_manifest(),
+                'release': {'tag': 'v0.37.4', 'install': install('v0.37.4')},
+                'agent': {'provider': 'claude-code', 'model': MODEL, 'cli_version': '2.1.300 (Claude Code)'}}
+    missing = cli_missing(manifest, data)
+    copy = data.resolve() / 'toolchains' / 'claude-2.1.300' / 'bin' / 'claude'
+    assert missing == (f'It needs Claude Code 2.1.300, which is neither pinned here nor on PATH. '
+                       f'Copy that build to {copy}')
+    assert str(refusal(manifest, 'battle-first-rival', missing)) == (
+        'battle-first-rival was made by v0.37.4 and differs from this build in its source. A run resumes only on the '
+        f'build that started it. {missing}. Then run the same command on v0.37.4:\n  uvx --from '
+        'git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench run --suite short --output out')
+    # A copy next to the data folder is enough, and so is that build on PATH.
+    fake_cli(tmp_path / 'store' / 'toolchains' / 'claude-2.1.300' / 'bin', '2.1.300')
+    assert cli_missing(manifest, data) is None
+    other = tmp_path / 'other' / 'setup'
+    other.mkdir(parents=True)
+    assert cli_missing(manifest, other) is not None
+    monkeypatch.setenv('PATH', str(fake_cli(tmp_path / 'path', '2.1.300')))
+    assert cli_missing(manifest, other) is None
+    # Only Claude Code runs with a recorded build are checked.
+    assert cli_missing({**manifest, 'agent': {'provider': 'codex', 'cli_version': 'codex-cli 0.9.0'}}, other) is None
+    assert cli_missing({**manifest, 'agent': {'provider': 'claude-code', 'cli_version': None}}, other) is None
 
 
 def test_prompt_schema_and_bounded_policy_match_codex(monkeypatch):

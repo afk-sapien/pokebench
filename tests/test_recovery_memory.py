@@ -1,10 +1,12 @@
 from copy import deepcopy
 import json
+import shlex
 
 import pytest
 
 from conftest import FakeEngine
-from pokeagent_bench.core import Limits, digest, encoded
+from pokeagent_bench import own_release, submission
+from pokeagent_bench.core import Limits, core_provenance, digest, emulator_manifest, encoded
 from pokeagent_bench.memory import CONFIG, search, validate
 from pokeagent_bench.recovery import atomic, lock_run, pack, resume, unpack
 from pokeagent_bench.runner import run
@@ -129,6 +131,76 @@ def test_recovery_refuses_unsafe_continuation(tmp_path, corruption, match):
         resume(rom, root, engine_factory=factory)
     lease = lock_run(root)
     lease.close()
+
+
+def test_source_change_alone_refuses_resume(tmp_path, monkeypatch):
+    # A build that is no release records none in its manifest, and no accepted entry matches it.
+    monkeypatch.setattr(own_release, 'release', lambda: None)
+    session, rom, _ = setup_run(tmp_path)
+    assert json.loads((session.output / 'manifest.json').read_text())['release'] is None
+    real = submission.this_harness()
+    monkeypatch.setattr(submission, 'this_harness', lambda: {**real, 'source_sha256': 'edited'})
+    monkeypatch.setattr(submission, 'accepted_harness', lambda: [])
+    with pytest.raises(own_release.OtherRelease, match='exact runtime source') as caught:
+        resume(rom, session.output, engine_factory=factory)
+    assert caught.value.tag is None
+    assert 'not a release and differs from this one in its source. Check out that build' in str(caught.value)
+    assert 'uvx' not in str(caught.value)
+    lease = lock_run(session.output)
+    lease.close()
+
+
+def test_other_release_refusal_names_the_tag(tmp_path, monkeypatch):
+    here = {**submission.this_harness(), 'core': core_provenance(), **emulator_manifest()}
+    assert own_release.differences(here) == []
+    older_core = {**here, 'core': {**here['core'], 'version': '0.11.0'}}
+    assert own_release.differences(older_core) == [f'Core (run 0.11.0, here {here["core"]["version"]})']
+    older_emulator = {**here, 'emulator': {**here['emulator'], 'version': '0.1.5'}}
+    assert own_release.differences(older_emulator) == [
+        f'emulator exact runtime fingerprint (run {here["emulator"]["backend"]} 0.1.5, here {here["emulator"]["backend"]} '
+        f'{here["emulator"]["version"]})']
+    # Runs from before the release field are matched to their accepted entry.
+    entry = next(entry for entry in submission.accepted_harness() if entry['package_version'] == '0.37.4')
+    assert own_release.run_release(dict(entry)) == 'v0.37.4'
+    assert own_release.run_release({**entry, 'source_sha256': 'edited'}) is None
+
+    tag = {'tag': 'v0.37.4', 'install': own_release.install('v0.37.4')}
+    monkeypatch.setattr(own_release, 'release', lambda: tag)
+    session, rom, _ = setup_run(tmp_path)
+    assert json.loads((session.output / 'manifest.json').read_text())['release'] == tag
+    real = submission.this_harness()
+    monkeypatch.setattr(submission, 'this_harness', lambda: {**real, 'source_sha256': 'newer'})
+    words = ['resume', '--rom', str(rom), '--run', str(session.output)]
+    monkeypatch.setattr('sys.argv', ['pokebench', *words])
+    with pytest.raises(own_release.OtherRelease) as caught:
+        resume(rom, session.output, engine_factory=factory)
+    assert caught.value.tag == 'v0.37.4'
+    assert str(caught.value) == (
+        'This run was made by v0.37.4 and differs from this build in its source. A run resumes only on the build '
+        'that started it. Run the same command on v0.37.4:\n  '
+        + shlex.join(['uvx', '--from', 'git+https://github.com/afk-sapien/pokebench@v0.37.4', 'pokebench', *words]))
+    lease = lock_run(session.output)
+    lease.close()
+
+
+def test_resume_names_the_cli_build_the_run_used(tmp_path):
+    class Pinned(Provider):
+        provider = 'claude-code'
+        cli_version = '2.1.300 (Claude Code)'
+
+    class Newer(Pinned):
+        cli_version = '2.1.400 (Claude Code)'
+
+    rom = tmp_path / 'test.gb'
+    rom.write_bytes(b'fake rom')
+    session = Session(FakeEngine(), tmp_path / 'run', {'rom_sha256': digest(rom.read_bytes())},
+                      track='visual', limits=Limits(max_model_calls=4), journal=True, clock=lambda: 100)
+    assert run(session, Pinned(), pause_after_decisions=2)['state'] == 'paused'
+    restored = resume(rom, session.output, engine_factory=factory)
+    with pytest.raises(ValueError, match=r'the CLI build this run used, 2\.1\.300 \(Claude Code\), not 2\.1\.400 '
+                                         r'\(Claude Code\)\. Copy that build to toolchains/claude-2\.1\.300/bin/claude'):
+        run(restored, Newer())
+    restored.close()
 
 
 def test_committed_pending_and_writer_lock(tmp_path):

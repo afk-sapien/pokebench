@@ -159,6 +159,7 @@ class Session:
         if not self.objective and not self.campaign_tracking and (self.evaluator.initial_keys or self.evaluator.baseline["hall_of_fame"]):
             raise ValueError("Scored runs require an opening scenario without earned milestones")
         output.mkdir(parents=True, exist_ok=False)
+        from .own_release import release
         from .recovery import lock_run
         self.run_lease = lock_run(output)
         (output / "initial.state").write_bytes(engine.save())
@@ -168,6 +169,7 @@ class Session:
                          "python_version": platform.python_version(), "platform": platform.platform(),
                          "source_sha256": digest(encoded({path.name: digest(path.read_bytes())
                                                           for path in sorted(Path(__file__).parent.glob("*.py"))})),
+                         "release": release(),
                          "created_at": datetime.now(timezone.utc).isoformat(),
                          "action_policy": self.action_policy, "tested_skill": self.tested_skill,
                          "track": track, "goal": goal, "limits": asdict(self.limits),

@@ -10,7 +10,7 @@ from pathlib import Path
 import threading
 import time
 
-from .core import Limits, core_provenance, digest, encoded, validate_emulator_manifest
+from .core import Limits, digest, encoded
 from .scoring import Evaluator
 from .challenges import ChallengeEvaluator
 from .campaign_runtime import CampaignTracker
@@ -139,14 +139,15 @@ def load_checkpoint(rom, root):
     if saved['format'] != 1:
         raise ValueError('Unsupported recovery checkpoint format')
     manifest = json.loads((root / 'manifest.json').read_text())
-    source = digest(encoded({p.name: digest(p.read_bytes()) for p in sorted(Path(__file__).parent.glob('*.py'))}))
-    if saved['manifest'] != manifest or manifest['source_sha256'] != source:
+    if saved['manifest'] != manifest:
         raise ValueError('Resume requires the original manifest and exact runtime source')
+    # A run from another build resumes only on that build. The refusal names its release and the command.
+    from .own_release import refusal
+    other = refusal(manifest)
+    if other is not None:
+        raise other
     from .evaluation_catalog import validate_run_spec
     validate_run_spec(manifest)
-    validate_emulator_manifest(manifest)
-    if manifest['core'] != core_provenance():
-        raise ValueError('Resume requires the original core and emulator versions')
     if digest(Path(rom).read_bytes()) != manifest['scenario']['rom_sha256']:
         raise ValueError('Resume ROM checksum mismatch')
     if saved['session']['reason'] not in (None, 'paused'):

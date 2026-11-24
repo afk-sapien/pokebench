@@ -281,6 +281,10 @@ def run_suite(args, *, ask=None, next_step=True):
         current = report(output)
         used = sum(row['tokens'] for row in current['cells'])
         done = sum(row['state'] == 'finished' for row in current['cells'])
+        if done < len(manifest['cells']):
+            # Before the estimate, so a run from another release or a missing Claude Code build costs nothing.
+            from .own_release import check_run
+            check_run(output, args.data)
     elif output.exists():
         raise ValueError(f'{output} already exists and is not a suite run. Choose another --output')
     else:
