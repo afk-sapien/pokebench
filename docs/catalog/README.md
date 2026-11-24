@@ -77,6 +77,56 @@ uv run python scripts/reference_milestone_tasks.py --rom ROM --game-data GAME_DA
   --fixtures FIXTURES --output OUTPUT --tasks navigation-victory-road navigation-seafoam-islands
 ```
 
+## Harder candidates, not in Short
+
+Five harder Red tasks sit in a separate candidate catalog, `src/pokeagent_bench/catalogs/candidates/`.
+Short, Long and the fixture pack never load it, and a suite run refuses a candidate task id. A
+run of a candidate task records the track `candidate`, so it is never a Short result.
+`tests/test_red_candidates.py` checks that the released catalog, the suites, the fixture pack
+and every released specification hash still match main.
+
+Each candidate is a hard milestone task. Its catalog entry pins its start and its scripted
+reference: the start state digest, the digest and count of the reference's native inputs,
+the replayed frames and the decisions. The decision cap is five times the reference
+decisions, rounded half up to two significant figures. The token budget is 15,000 tokens per
+allowed decision. No model has run these tasks yet.
+
+| Task | Category | Start | Milestones | Reference decisions | Cap |
+| --- | --- | --- | --- | --- | --- |
+| Open both trash can locks in the Vermilion Gym and reach Lt. Surge | Navigation | Gym door, both locks shut, trainers beaten, one level 25 Wartortle | 3 | 70 | 350 |
+| Reach the Safari Zone secret house and get HM03 in one entry | Navigation | Center area entrance, 500 steps, 200 money, one level 50 Nidoking | 3 | 73 | 370 |
+| Fetch a drink for the thirsty guard and enter Saffron City | Quests | Route 7 gate, no drink given, empty bag and PC, 500 money, one level 40 Jolteon | 3 | 68 | 340 |
+| Defeat the Elite Four and the Champion with no items and no faint | Battle | Lorelei's room, empty bag, five level 55 Pokemon | 5 | 109 | 550 |
+| Defeat the Champion's six with three Pokemon, no items and no faint | Battle | First Champion battle menu, empty bag, three level 60 Pokemon | 2 | 22 | 110 |
+
+Two opt-in fields of the milestone runtime stop a run early, and no released task sets
+either. With `no_faint` a run stops the moment any party member faints, not only on a
+blackout. Both battle candidates set it. `fail_on` lists checks, in the same form as a
+milestone's, that stop the run when one holds on two different frames. The Safari Zone task
+sets it for the Safari Zone gate, because the player cannot pay for a second entry. A stopped
+run keeps the milestones it already earned, and a start that already breaks a rule is
+refused. Adding these fields changes the harness source hash.
+
+The released Elite Four task is unchanged. The no-faint version starts weaker, with five
+level 55 Pokemon and no Snorlax against six level 56 Pokemon in the released start. On the
+released start the greedy reference wins with five faints. The candidate reference adds one
+rule to it. When the opponent's strongest move could knock out the active Pokemon, it heals
+with Recover if it moves first, or else switches to the party member that best takes the
+hit. On the new start it wins with no faint, healing twice and switching 11 times. With
+the same party at levels 50 to 54 it loses.
+
+`scripts/prepare_candidate_fixtures.py` builds the starts, and two builds give the same state
+digests. `scripts/reference_candidate_tasks.py` plays each reference with the assisted
+commands a model gets, one decision per command, and writes the proof next to the start.
+Neither makes model calls.
+
+```sh
+uv run python scripts/prepare_candidate_fixtures.py --root DATA --archive STATES --rom ROM \
+  --game-data GAME_DATA --output FIXTURES
+uv run python scripts/reference_candidate_tasks.py --rom ROM --game-data GAME_DATA \
+  --fixtures FIXTURES --output OUTPUT --tasks battle-elite-four-no-items-no-faint
+```
+
 ## Inspect the catalog
 
 ```sh

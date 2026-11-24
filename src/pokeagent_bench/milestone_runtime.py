@@ -5,6 +5,11 @@ predicate over RAM facts: map, position, event flags, bag items, badges, story f
 League wins. The model sees only the task goal, never the milestones or their checks.
 A run earns one point per milestone, in order, and keeps them if it later blacks out
 or runs out of decisions. The score maximum is the number of milestones.
+
+Two task fields are opt-in, and no released task sets either. With "no_faint" a run stops
+when any party member faints, not only on a blackout. "fail_on" lists checks, in the same
+form as a milestone's, that stop the run when one holds on two different game frames.
+A stopped run keeps the milestones it already earned.
 """
 from copy import deepcopy
 from functools import cache
@@ -77,10 +82,29 @@ def validate_milestones(milestones):
     return milestones
 
 
+def validate_rules(task):
+    """The opt-in stop rules: no_faint is true when present, and fail_on lists described checks."""
+    if 'no_faint' in task and task['no_faint'] is not True:
+        raise ValueError('no_faint is true when present')
+    if 'fail_on' in task:
+        rules = task['fail_on']
+        if not isinstance(rules, list) or not rules:
+            raise ValueError('fail_on lists at least one check')
+        for rule in rules:
+            if not isinstance(rule, dict) or set(rule) != {'description', 'check'}:
+                raise ValueError('A fail_on rule has a description and a check')
+            if not isinstance(rule['description'], str) or not rule['description'].strip():
+                raise ValueError('A fail_on rule needs a description')
+            validate_check(rule['check'])
+    return task
+
+
 @cache
 def _events(task_id):
     from .evaluation_catalog import task_definition
-    return tuple(sorted({row['check']['event'] for row in task_definition(task_id)['milestones'] if 'event' in row['check']}))
+    task = task_definition(task_id)
+    rows = task['milestones'] + task.get('fail_on', [])
+    return tuple(sorted({row['check']['event'] for row in rows if 'event' in row['check']}))
 
 
 def milestone_evidence(engine, task_id):
@@ -97,8 +121,18 @@ def blackout(state):
     return state['battle'] == 255 or bool(state['party']) and not any(mon['hp'] for mon in state['party'])
 
 
+def fainted(state):
+    """Any party member at 0 HP. Red writes a faint into the party data before it asks for the next Pokemon."""
+    return any(not mon['hp'] for mon in state['party'])
+
+
 class MilestoneEvaluator:
     """One point per milestone, earned in order, each confirmed on two different game frames."""
+
+    # A checkpoint saved before the opt-in stop rules existed restores without them and keeps their defaults.
+    no_faint = False
+    fail_on = ()
+    failing = None
 
     def __init__(self, initialfacts, objective, task=None):
         if set(objective) != {'kind', 'task_id', 'description'} or objective['kind'] != 'catalog-task':
@@ -122,11 +156,20 @@ class MilestoneEvaluator:
         self.last_frame = None
         self.disqualified = False
         self.disqualification_reason = None
+        validate_rules(task)
+        self.no_faint = task.get('no_faint', False)
+        self.fail_on = deepcopy(task.get('fail_on', []))
+        self.failing = None
         if blackout(self.baseline):
             raise ValueError('Task cannot start blacked out')
+        if self.no_faint and fainted(self.baseline):
+            raise ValueError('A task that fails on any faint cannot start with a fainted Pokemon')
         for milestone in self.milestones:
             if self.holds(milestone['check'], self.baseline):
                 raise ValueError(f'Milestone {milestone["id"]} is already met at the start')
+        for rule in self.fail_on:
+            if self.holds(rule['check'], self.baseline):
+                raise ValueError(f'Fail rule already holds at the start: {rule["description"]}')
 
     def holds(self, check, state):
         if 'map' in check and (state['map_id'] != check['map'] or state['battle']):
@@ -171,6 +214,17 @@ class MilestoneEvaluator:
             return []
         if blackout(facts):
             self.reject('Blackout during the task')
+            return []
+        if self.no_faint and fainted(facts):
+            self.reject('A party member fainted')
+            return []
+        broken = next((rule for rule in self.fail_on if self.holds(rule['check'], facts)), None)
+        if broken is None:
+            self.failing = None
+        elif self.failing is None:
+            self.failing = frame
+        else:
+            self.reject(broken['description'])
             return []
         milestone = self.milestones[len(self.awarded)]
         if not self.holds(milestone['check'], facts):

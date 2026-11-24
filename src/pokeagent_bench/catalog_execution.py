@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 
 from .core import Limits, digest, encoded, write_json
-from .evaluation_catalog import load_catalog, task_definition
+from .evaluation_catalog import candidate_tasks, load_candidates, load_catalog, task_definition
 
 # random is the free player of the smoke suite. It calls no model, and its runs are never results.
 PROVIDERS = ('codex', 'claude', 'openai-compatible', 'random')
@@ -22,11 +22,16 @@ def scenarios(fixtures, task_id):
     return ([root] if primary.is_file() else []) + children
 
 
-def inventory(fixtures, *, category=None):
-    """Report actual frozen fixtures without mistaking old reuse candidates for them."""
+def inventory(fixtures, *, category=None, candidates=False):
+    """Report actual frozen fixtures without mistaking old reuse candidates for them.
+
+    With candidates, report the candidate catalog instead. Released suites never ask for it."""
     root = Path(fixtures)
     result = []
-    for group in load_catalog(category):
+    groups = load_candidates() if candidates else load_catalog(category)
+    for group in groups:
+        if candidates and category is not None and group['category'] != category:
+            continue
         for task in group['evals']:
             rows = []
             for path in scenarios(root, task['id']):
@@ -68,7 +73,7 @@ def select_scenario(fixtures, task_id, variant='default'):
     matches = [path for path in candidates if (path.name == task_id and variant == 'default') or path.name == variant]
     if not matches:
         raise ValueError(f'No fixture for {task_id}, variant {variant}')
-    listed = inventory(fixtures)
+    listed = inventory(fixtures, candidates=task_id in candidate_tasks())
     row = next(row for row in listed['tasks'] if row['id'] == task_id)
     selected = next(v for v in row['variants'] if v['path'] == str(matches[0]))
     if selected['issues']:
