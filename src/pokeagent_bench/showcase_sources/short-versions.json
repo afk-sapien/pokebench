@@ -1,13 +1,13 @@
 {
  "format": "pokebench-short-versions-v1",
- "note": "Each Short suite version the page shows, newest first, with its run and task count. The page gives each version a table of its own. The red-v0.64-harder-short entry is copied from short_suites.json and docs/history/harder-short-v064.md on main, which say it is not released yet. The entry for the stored suite must match short-red-v0.63.json. A version that no row has run lists the rows of the newest version that has rows, without a rank.",
+ "note": "Each Short suite version the page shows, newest first, with its run and task count. The page gives each version a table of its own. The red-v0.64-harder-short entry is copied from short_suites.json and docs/history/harder-short-v064.md on main, which say it is not released yet. The entry for the stored suite must match short-red-v0.63.json. A version gets a ranked table once at least one row has run it. A version that no row has run gets no table, and its note is shown below the ranked version tables, above the earlier set.",
  "versions": [
   {
    "benchmark": "red-v0.64-harder-short",
    "runs": 51,
    "tasks": 49,
    "released": false,
-   "note": "This version is not released yet. It adds five harder tasks to red-v0.63-short-guard, and no model has run it.",
+   "note": "The next Short suite version, red-v0.64-harder-short, adds five harder tasks. It is not released yet, and no model has run it.",
    "added": [
     "battle-champion-no-items-no-faint",
     "battle-elite-four-no-items-no-faint",

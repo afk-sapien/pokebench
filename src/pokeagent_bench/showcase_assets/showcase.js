@@ -11,6 +11,8 @@ const categoryNames = {navigation:'Navigation',battle:'Battles',operations:'Menu
 const reason = x => ({completed:'Completed',model_call_budget:'Decision limit',token_budget:'Token limit',challenge_failed:'Task failed',provider_error:'Evaluation error',loop_budget:'No-progress limit',loop_token_budget:'No-progress limit'}[x] || (x || '').replaceAll('_',' '))
 const shortTag = t => (t || '').match(/^[a-z]+-v\d+(?:\.\d+)*/)?.[0] || t || ''
 const harnessCell = h => `<span class="harness-revision">${esc(h?.revisions?.join(' + ') || 'Unknown')}</span><span class="harness-version" title="${esc((h?.versions || []).join(', '))}">${esc(h?.label || '')}</span>`
+// The reasoning effort a maintainer row's attempts recorded. A row that recorded none shows nothing.
+const effortLine = n => n?.effort ? `<span class="harness-effort">${esc(n.effort)}</span>` : ''
 const communityNote = c => c ? `<span class="community-note">${esc(c.label)}<br>Submitted by ${esc(c.handle || 'unnamed')}. ${count(c.attempts || 1)} declared attempt${(c.attempts || 1) === 1 ? '' : 's'}</span>` : ''
 const maintainerNote = n => n ? `<span class="community-note maintainer-note" title="${esc(`Ran on package ${n.packages.join(' and ')}. Replay verified on ${n.release}. Report sha256 ${n.report_sha256}.`)}">${esc(n.label)}<br>${esc(n.detail)}</span>` : ''
 const noteLabel = code => data.short.label_text?.[code] || {label: code.replaceAll('_',' '), detail: ''}
@@ -48,18 +50,19 @@ const unranked = c => (data.short.unranked_categories || []).includes(c)
 // A row's task set: the stored suite for a rerun row, else the scored earlier tasks its own attempts cover.
 const taskSet = m => m.suite ? `${m.suite.tasks}-task ${shortTag(m.suite.benchmark)}` : `${taskIds([m]).size}-task earlier`
 const splitSets = () => (data.short.models.some(m => m.suite) && data.short.models.some(m => !m.suite)) || new Set(data.short.models.map(taskSet)).size > 1
-// With rows on a stored suite, each Short suite version is a table of its own, newest first, and the earlier set is last.
-// A version newer than every version a row ran lists the rows of the newest one, with no rank.
+// With rows on a stored suite, each Short suite version that at least one row has run is a table of its own, newest first.
+// A version no row has run gets no table. Its note follows the version tables, and the earlier set is last.
 // Every other page is one table with no title.
 function rankGroups() {
   const s = data.short
   if (!s.versions) return [{rows: s.models}]
   const groups = s.versions.map(v => ({...v, title: `${v.name}, ${count(v.runs)} runs over ${count(v.tasks)} tasks`,
     rows: s.models.filter(m => v.benchmark ? m.suite?.benchmark === v.benchmark : !m.suite)}))
-  const newest = groups.findIndex(g => g.benchmark && g.rows.length)
-  groups.forEach((g, i) => { if (newest > i && !g.rows.length) Object.assign(g, {rows: groups[newest].rows, waiting: true}) })
-  return groups.filter(g => g.rows.length)
+  const ran = groups.filter(g => g.benchmark && g.rows.length)
+  const notes = groups.filter(g => g.benchmark && !g.rows.length && g.note).map(g => ({note: g.note}))
+  return [...ran, ...notes, ...groups.filter(g => !g.benchmark && g.rows.length)]
 }
+const rankTables = () => rankGroups().filter(g => g.rows)
 const andList = names => names.length > 1 ? names.slice(0, -1).join(', ') + ' and ' + names.at(-1) : names.join('')
 const modelOf = m => m.community ? m.community.model : m.maintainer ? m.maintainer.model : m.id
 const setNote = m =>`<span class="note-label" title="${esc(m.suite ? `Scored on the ${m.suite.tasks} tasks of ${m.suite.benchmark}, from ${m.suite.source}.` : 'Scored on the earlier task set. Kept until this model has a complete rerun.')} Rows on different task sets are not strictly comparable.">${esc(taskSet(m))} set</span>`
@@ -93,8 +96,8 @@ function renderSuiteNote() {
   const reruns = fresh.filter(m => !m.maintainer && !m.community)
   const extra = fresh.filter(m => m.maintainer)
   const community = fresh.filter(m => m.community)
-  const grouped = rankGroups().length > 1
-  const parts = [grouped ? 'Task sets differ between rows, so each Short suite version is ranked in a table of its own, newest first, and the earlier set is ranked last.' : 'Task sets differ between rows.']
+  const grouped = rankTables().length > 1
+  const parts = [grouped ? 'Task sets differ between rows, so each Short suite version a row has run is ranked in a table of its own, newest first, and the earlier set is ranked last.' : 'Task sets differ between rows.']
   if (reruns.length) parts.push(`${names(reruns)} ${reruns.length === 1 ? 'has' : 'have'} been rerun on the ${suitesOf(reruns)} Short suite.`)
   if (extra.length) parts.push(`${names(extra)} ${extra.length === 1 ? 'is a maintainer run' : 'are maintainer runs'} on the ${suitesOf(extra)} Short suite, ranked in the table of that version. ${extra.length === 1 ? 'That model\'s' : 'Each model\'s'} earlier row keeps its place in the earlier set.`)
   if (community.length) parts.push(`${names(community)} ${community.length === 1 ? 'is a community run' : 'are community runs'} on the ${suitesOf(community)} Short suite, ranked in the table of that version with ${community.length === 1 ? 'its' : 'their'} own label.`)
@@ -140,18 +143,16 @@ function renderRank() {
   const rankCell = (m, rank) => `<span class="rank">${m.complete ? String(rank).padStart(2,'0') : '●'}</span>`
   const table = (caption, body) => `<div class="table-scroll"><table class="leaderboard"><caption class="sr-only">${esc(caption)}</caption>${head}<tbody>${body}</tbody></table></div>`
   // Each table is ranked on its own, so a row on one version moves no rank in another.
-  // A version no row has run lists the rows it waits on, with no rank and no scores.
+  // A version no row has run is its note alone, with no table and no rows.
   $('ranking').innerHTML = rankGroups().map(group => {
+    if (!group.rows) return `<p class="version-note small">${esc(group.note)}</p>`
     let rank = 0
-    const body = group.rows.map(m => group.waiting ? waiting(m) : row(m, m.complete ? ++rank : rank)).join('')
+    const body = group.rows.map(m => row(m, m.complete ? ++rank : rank)).join('')
     if (!group.title) return table('PokeBench model scores and task coverage', body)
-    return `<section class="rank-set"><h3 class="set-title">${esc(group.title)}</h3>${group.note ? `<p class="set-note small">${esc(group.note)}</p>` : ''}${table(`PokeBench scores on ${group.title}`, body)}</section>`
+    return `<section class="rank-set"><h3 class="set-title">${esc(group.title)}</h3>${table(`PokeBench scores on ${group.title}`, body)}</section>`
   }).join('')
-  function waiting(m) {
-    return `<tr class="not-run-row"><td><span class="rank"></span><span class="model-name">${esc(m.label)}</span><span class="model-id">${esc(modelOf(m))}</span></td><td colspan="${s.categories.length + 4}"><span class="small">Not yet run on this version</span></td></tr>`
-  }
   function row(m, rank) {
-    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td>${rankCell(m, rank)}<button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(modelOf(m))}</span>${communityNote(m.community)}${maintainerNote(m.maintainer)}</td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(m.ci)}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}${split ? setNote(m) : ''}</td>${s.categories.map(c => categoryCell(m, c)).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}${modelNotes(m.labels)}</td><td>${harnessCell(m.harness)}</td>${m.community ? `<td>${million(m.tokens)} tokens<small class="partial-label">SELF REPORTED</small></td>` : `<td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td>`}</tr>`
+    return `<tr class="${m.complete ? '' : 'partial-row'} ${model === m.id ? 'selected-model' : ''}"><td>${rankCell(m, rank)}<button class="model-name" data-model="${esc(m.id)}" aria-pressed="${model === m.id}">${esc(m.label)}</button><span class="model-id">${esc(modelOf(m))}</span>${communityNote(m.community)}${maintainerNote(m.maintainer)}</td><td><span class="score-value">${pct(m.score)}</span><span class="scorebar"><i style="width:${(m.score || 0) * 100}%"></i></span><span class="score-ci">${ciText(m.ci)}</span>${m.complete ? '' : '<span class="partial-label">PROVISIONAL</span>'}${split ? setNote(m) : ''}</td>${s.categories.map(c => categoryCell(m, c)).join('')}<td>${m.finished}/${m.planned}${m.errors ? `<span class="partial-label">${m.errors} errors</span>` : ''}${modelNotes(m.labels)}</td><td>${harnessCell(m.harness)}${effortLine(m.maintainer)}</td>${m.community ? `<td>${million(m.tokens)} tokens<small class="partial-label">SELF REPORTED</small></td>` : `<td title="${million(m.tokens)} reported tokens">${costCell(m.cost)}</td>`}</tr>`
   }
   renderCost('short')
   renderWeights()

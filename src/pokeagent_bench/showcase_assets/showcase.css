@@ -181,15 +181,15 @@ thead {border-top:1px solid #bfc6b5}
 .leaderboard td:not(:first-child) {white-space:nowrap}
 .leaderboard td:first-child {min-width:184px}
 .leaderboard tbody tr:hover {background:#eeeFE7}
-/* Each Short suite version is a table of its own. Its title sits above the table, so it stays in view while the table scrolls sideways on a phone. */
+/* Each Short suite version a row has run is a table of its own. Its title sits above the table, so it stays in view while the table scrolls sideways on a phone. */
 .rank-set + .rank-set {margin-top:34px}
 .set-title {font:600 11px monospace}
 .set-title {letter-spacing:.5px}
 .set-title {color:#3d4a33}
 .set-title {margin:0 0 8px}
-.set-note {margin:0 0 10px}
-.leaderboard tbody tr.not-run-row:hover {background:none}
-.not-run-row .model-name {color:#70776a}
+/* A version no row has run is a note between the tables, in place of a table of its own. */
+.version-note {margin:18px 0 0}
+.version-note + .rank-set {margin-top:34px}
 .model-name {font-weight:bold}
 .model-name {font-size:15px}
 .model-name {padding:0}
@@ -208,6 +208,10 @@ thead {border-top:1px solid #bfc6b5}
 .harness-version {color:#798071}
 .harness-version {display:block}
 .harness-version {margin-top:4px}
+.harness-effort {font:9px monospace}
+.harness-effort {color:#798071}
+.harness-effort {display:block}
+.harness-effort {margin-top:2px}
 .rank {display:inline-block}
 .rank {width:27px}
 .rank {font:11px monospace}

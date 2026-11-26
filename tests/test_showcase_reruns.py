@@ -25,7 +25,9 @@ NEXT = 'red-v0.64-harder-short'
 VERSIONS = {'format': VERSIONS_FORMAT, 'versions': [
     {'benchmark': NEXT, 'runs': 5, 'tasks': 4, 'released': False, 'note': 'This version is not released yet.'},
     {'benchmark': NEW, 'runs': 4, 'tasks': 3, 'released': True}]}
-TITLES = [f'{NEXT}, 5 runs over 4 tasks', f'{NEW}, 4 runs over 3 tasks', 'Earlier set, 4 runs over 3 tasks']
+# No row has run the newer version, so it has no table, only its note between the two tables.
+TITLES = [f'{NEW}, 4 runs over 3 tasks', 'Earlier set, 4 runs over 3 tasks']
+NEXT_NOTE = '<p class="version-note small">This version is not released yet.</p>'
 CATEGORIES = ['navigation', 'battle', 'operations', 'preparation', 'objectives']
 OLD_STARTS = [('navigation-one', 'navigation', 'default'), ('battle-one', 'battle', 'default'),
               ('battle-one', 'battle', 'variant-b'), ('preparation-one', 'preparation', 'default')]
@@ -353,10 +355,10 @@ def test_page_labels_task_sets_only_when_rows_differ(site, tmp_path):
     assert groups(same['ranking']['html'])[0][0] == ''
     mixed = render(tmp_path, site.built({OPUS: {'short': 'v037-pass'}}))
     found = groups(mixed['ranking']['html'])
-    # The newer version no row has run lists the rerun row it waits on, with no rank.
-    assert [(title, [rank for rank, _ in rows]) for title, rows in found] == list(zip(TITLES, [[''], ['01'], ['01']]))
-    assert 'Opus' in found[0][1][0][1] and 'Not yet run on this version' in found[0][1][0][1]
-    assert 'Opus' in found[1][1][0][1] and 'Opus' not in found[2][1][0][1]
+    # The newer version no row has run has no table and lists no row, only its note.
+    assert [(title, [rank for rank, _ in rows]) for title, rows in found] == list(zip(TITLES, [['01'], ['01']]))
+    assert 'Opus' in found[0][1][0][1] and 'Opus' not in found[1][1][0][1] and NEXT not in mixed['ranking']['html']
+    assert mixed['ranking']['html'].count(NEXT_NOTE) == 1
     assert '3-task red-v0.63 set</span>' in mixed['ranking']['html'] and '3-task earlier set</span>' in mixed['ranking']['html']
     assert not mixed['suite-note']['hidden'] and 'The sets share 2 tasks.' in mixed['suite-note']['text']
     assert 'the 3-task red-v0.63 set: Navigation 2 tasks, 12.5 points each' in mixed['weight-note']['text']
@@ -455,7 +457,7 @@ def test_a_maintainer_row_sits_beside_the_ranked_rows_and_moves_none_of_them(sit
     assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Ranked in the table of its suite version.', 'model': HAIKU,
                                  'release': 'v0.37.4', 'packages': ['0.37.2'], 'verified_on': '0.37.4',
                                  'report_sha256': maintainer_entry(site.base)['report_sha256'], 'bundle_sha256': 'bundle',
-                                 'wall_seconds': None}
+                                 'effort': None, 'wall_seconds': None}
     cells = by(a['cells'], EXTRA, keep=True)
     assert [c['id'] for c in cells] == ['cell-0301', 'cell-0302', 'cell-0303', 'cell-0304']
     assert {(c['source'], c['revision'], c['harness'], c['replay']) for c in cells} == {(RUNS, MAINTAINER_REVISION, NEW, None)}
@@ -587,7 +589,8 @@ def test_the_checked_in_versions_list_puts_the_unreleased_harder_suite_first():
     versions = short_versions(SOURCES / VERSIONS_FILE, suite)
     assert [(v['name'], v['runs'], v['tasks'], v['released']) for v in versions] == [
         (NEXT, 51, 49, False), (NEW, 46, 44, True)]
-    assert versions[0]['note'].startswith('This version is not released yet.') and 'note' not in versions[1]
+    assert versions[0]['note'] == ('The next Short suite version, red-v0.64-harder-short, adds five harder tasks. '
+                                   'It is not released yet, and no model has run it.') and 'note' not in versions[1]
     # The harder suite is the stored suite and five more tasks, one start each.
     added = showcase.load(SOURCES / VERSIONS_FILE)['versions'][0]['added']
     assert len(set(added)) == 5 and set(added).isdisjoint(t['id'] for t in suite['tasks'])
@@ -595,8 +598,7 @@ def test_the_checked_in_versions_list_puts_the_unreleased_harder_suite_first():
 
 def groups(html):
     """The ranking as [(table title, [(rank, row html)])], in page order. A table alone has the empty title."""
-    tables = re.findall(r'(?:<h3 class="set-title">([^<]*)</h3>)?(?:<p class="set-note small">[^<]*</p>)?'
-                        r'<div class="table-scroll"><table class="leaderboard">(.*?)</table></div>', html)
+    tables = re.findall(r'(?:<h3 class="set-title">([^<]*)</h3>)?<div class="table-scroll"><table class="leaderboard">(.*?)</table></div>', html)
     return [(unescape(title), [(re.search(r'<span class="rank"[^>]*>([^<]*)</span>', row)[1], row) for row in body.split('<tr ')[1:]])
             for title, body in tables]
 
@@ -604,22 +606,25 @@ def groups(html):
 @pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
 def test_page_ranks_each_suite_version_in_its_own_table_newest_first(site, tmp_path):
     page = render(tmp_path, site.built({}, [maintainer_entry(site.base)]))
-    found = groups(page['ranking']['html'])
+    html = page['ranking']['html']
+    found = groups(html)
     assert [title for title, _ in found] == TITLES
-    assert [[rank for rank, _ in rows] for _, rows in found] == [[''], ['01'], ['01', '02']]
-    # The version no row has run lists the rows it waits on, with its note and no scores or button.
-    waiting = found[0][1][0][1]
-    assert 'Haiku (red-v0.63)' in waiting and 'Not yet run on this version' in waiting and f'colspan="{len(CATEGORIES) + 4}"' in waiting
-    assert 'data-model' not in waiting and '%' not in waiting
-    assert page['ranking']['html'].count('<p class="set-note small">This version is not released yet.</p>') == 1
+    assert [[rank for rank, _ in rows] for _, rows in found] == [['01'], ['01', '02']]
+    # The board leads with the stored suite's ranked table. The version no row has run is its note alone, directly
+    # below that table and above the earlier set, with no table and no rows.
+    assert html.startswith(f'<section class="rank-set"><h3 class="set-title">{TITLES[0]}</h3>') and html.count(NEXT_NOTE) == 1
+    assert f'</table></div></section>{NEXT_NOTE}<section class="rank-set"><h3 class="set-title">{TITLES[1]}</h3>' in html
+    assert NEXT not in html and 'Not yet run' not in html and 'not-run-row' not in html
     # Each table has the full head, so every column keeps its title.
-    assert page['ranking']['html'].count('<th>Model</th>') == 3 and page['ranking']['html'].count('<th>') == 3 * (len(CATEGORIES) + 5)
-    extra = found[1][1][0][1]
+    assert html.count('<th>Model</th>') == 2 and html.count('<th>') == 2 * (len(CATEGORIES) + 5)
+    extra = found[0][1][0][1]
     assert 'Haiku (red-v0.63)' in extra and 'maintainer-note' in extra and 'Maintainer run, replay verified' in extra
     assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra and 'Ranked in the table of its suite version.' in extra
-    assert not any('Haiku' in row for _, row in found[2][1]) and '—</span>' not in page['ranking']['html']
+    assert not any('Haiku' in row for _, row in found[1][1]) and '—</span>' not in html
+    # These attempts record no effort, so no row shows one.
+    assert 'harness-effort' not in html
     note = page['suite-note']['text']
-    assert note.startswith('Task sets differ between rows, so each Short suite version is ranked in a table of its own, '
+    assert note.startswith('Task sets differ between rows, so each Short suite version a row has run is ranked in a table of its own, '
                            'newest first, and the earlier set is ranked last.')
     assert ('Haiku (red-v0.63) is a maintainer run on the red-v0.63 Short suite, ranked in the table of that version. '
             "That model's earlier row keeps its place in the earlier set.") in note
@@ -640,7 +645,61 @@ def test_page_ranks_each_suite_version_in_its_own_table_newest_first(site, tmp_p
     assert '<strong>2</strong><span>models</span>' in render(tmp_path, data)['short-stats']['html']
 
 
-LOCAL = 'community/octocat/local-model'
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_a_version_gets_its_table_once_a_row_has_run_it(site, tmp_path):
+    data = site.built({}, [maintainer_entry(site.base)])
+    for row in data['short']['models']:
+        if row.get('suite'):
+            row['suite']['benchmark'] = NEXT
+    html = render(tmp_path, data)['ranking']['html']
+    # The newer version now has a row, so it leads with its own table and its note is gone.
+    # The stored suite has no row left and no note, so it shows nothing.
+    assert [(title, [rank for rank, _ in rows]) for title, rows in groups(html)] == [
+        (f'{NEXT}, 5 runs over 4 tasks', ['01']), (TITLES[1], ['01', '02'])]
+    assert 'version-note' not in html and html.count('<h3 class="set-title">') == 2
+
+
+def set_efforts(base, efforts):
+    """Record each kept Haiku attempt's reasoning effort in its manifest, as agent.reasoning_effort. None leaves it out."""
+    for number, effort in zip(range(301, 305), efforts):
+        path = base / RUNS / f'cell-{number:04d}/manifest.json'
+        manifest = json.loads(path.read_text())
+        manifest['agent'].pop('reasoning_effort', None)
+        if effort is not None:
+            manifest['agent']['reasoning_effort'] = effort
+        write(path, manifest)
+
+
+def effort_row(site):
+    return next(m for m in site.built({}, [maintainer_entry(site.base)])['short']['models'] if m.get('maintainer'))
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_a_maintainer_row_shows_the_one_effort_every_attempt_recorded(site, tmp_path):
+    maintainer_entry(site.base)
+    set_efforts(site.base, ['low'] * 4)
+    data = site.built({}, [maintainer_entry(site.base)])
+    row = next(m for m in data['short']['models'] if m.get('maintainer'))
+    assert row['maintainer']['effort'] == 'low effort'
+    found = groups(render(tmp_path, data)['ranking']['html'])
+    # It sits in the Harness column under the harness version. The earlier rows show no effort.
+    assert ('<span class="harness-version" title="red-v0.63-short-guard">red-v0.63</span>'
+            '<span class="harness-effort">low effort</span></td>') in found[0][1][0][1]
+    assert not any('harness-effort' in html for _, html in found[1][1])
+
+
+def test_a_maintainer_row_gives_counts_when_its_attempts_record_mixed_efforts(site):
+    maintainer_entry(site.base)
+    set_efforts(site.base, ['low', 'medium', 'low', 'low'])
+    assert effort_row(site)['maintainer']['effort'] == 'Effort: low in 3 runs, medium in 1'
+    # An attempt that records no effort is counted too, after the recorded values.
+    set_efforts(site.base, ['medium', 'low', 'low', None])
+    assert effort_row(site)['maintainer']['effort'] == 'Effort: low in 2 runs, medium in 1, not recorded in 1'
+    assert showcase.effort_text(['high', 'low']) == 'Effort: high in 1 run, low in 1'
+    assert showcase.effort_text([None, '']) is None and showcase.effort_text([]) is None
+
+
+LOCAL ='community/octocat/local-model'
 
 
 def community_report(site, **change):
@@ -670,9 +729,9 @@ def test_a_community_row_on_the_stored_suite_ranks_in_the_current_set_with_its_o
     found = groups(render(tmp_path, data)['ranking']['html'])
     assert [title for title, _ in found] == TITLES
     # Every task passed, so the community row outscores Haiku and takes 01 of the stored suite's table.
-    current = [(rank, 'Haiku (red-v0.63)' in html, 'Community, replay verified, model unverified' in html) for rank, html in found[1][1]]
+    current = [(rank, 'Haiku (red-v0.63)' in html, 'Community, replay verified, model unverified' in html) for rank, html in found[0][1]]
     assert current == [('01', False, True), ('02', True, False)]
-    assert not any('local-model' in html for _, html in found[2][1])
+    assert not any('local-model' in html for _, html in found[1][1])
     note = render(tmp_path, data)['suite-note']['text']
     assert 'local-model is a community run on the red-v0.63 Short suite, ranked in the table of that version with its own label.' in note
 
@@ -833,6 +892,8 @@ def test_real_rows_under_a_root_rank_beside_haiku_and_move_no_earlier_row(tmp_pa
         ids[2]: ('Sonnet (red-v0.63)', 46, 46, SONNET_SCORE)}
     assert [rows[k]['suite']['source'] for k in ids[1:]] == [f'{SECOND}/runs/short-{m}' for m in (TERRA, SONNET)]
     assert all(rows[k]['maintainer']['packages'] == ['0.37.4'] for k in ids[1:])
+    # Every kept attempt of all three rows recorded low effort.
+    assert {k: r['maintainer']['effort'] for k, r in rows.items()} == dict.fromkeys(ids, 'low effort')
     assert [e for e in after['attempts']['log'] if e['model'] in ids[1:]] == []
     assert [(v['name'], v['runs'], v['tasks']) for v in after['versions']] == [
         (NEXT, 51, 49), (NEW, 46, 44), ('Earlier set', 49, 47)]

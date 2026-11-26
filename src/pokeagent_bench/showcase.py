@@ -233,7 +233,8 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
     stays out of the cost comparison. community lists verified reports that ran the stored suite, as build keeps
     them with community_mismatch. They are labeled against that suite and also stay out of the cost comparison.
     versions lists the Short suite versions newest first, as short_versions reads them. With rows on the stored
-    suite, the panel gets one heading per version and one for the earlier set, and the page draws a table for each.
+    suite, the panel lists every version and then the earlier set. The page draws a table for each version at least
+    one row has run and for the earlier set, and shows a version no row has run as its note alone.
     """
     reruns = reruns or {}
     shared, frozen_starts = frozen_sets(frozen) if frozen else (None, None)
@@ -568,6 +569,23 @@ def adopt_long(base, model, run_id, suite):
     return LONG_NAMES[model], None
 
 
+def effort_text(values):
+    """The reasoning effort a row's attempts recorded, as the page shows it.
+
+    One value in every attempt reads 'low effort'. Mixed values, or a value some attempts lack, read with counts,
+    most first, as 'Effort: low in 40 runs, medium in 6'. With no value recorded it is None, and the page shows nothing.
+    """
+    counts = Counter(None if value in (None, '') else str(value) for value in values)
+    if not set(counts) - {None}:
+        return None
+    if len(counts) == 1:
+        return f'{next(iter(counts))} effort'
+    ordered = sorted(counts.items(), key=lambda item: (-item[1], item[0] is None, str(item[0])))
+    parts = [f'{"not recorded" if value is None else value} in {n}' for value, n in ordered]
+    parts[0] += ' run' if ordered[0][1] == 1 else ' runs'
+    return 'Effort: ' + ', '.join(parts)
+
+
 MAINTAINER_FORMAT = 'pokebench-maintainer-rows-v1'
 MAINTAINER_KEYS = {'id', 'model', 'suite', 'report', 'report_sha256', 'runs', 'replaced', 'release', 'label', 'detail'}
 # A row may also name a root, a folder the build is given by name, so the checked-in file holds no absolute path.
@@ -632,7 +650,7 @@ def adopt_maintainer(base, entry, suite, where='the data folder'):
     if root is None:
         return None, f'{entry["runs"]} is not a folder under {where}.'
     rows = report.get('cells', [])
-    walls = []
+    walls, efforts = [], []
     why = suite_mismatch(rows, suite)
     if why:
         return None, why
@@ -651,6 +669,7 @@ def adopt_maintainer(base, entry, suite, where='the data folder'):
         if harness_tag(run) != suite['benchmark']:
             return None, f'{c["id"]} recorded harness {harness_tag(run)}, not {suite["benchmark"]}.'
         walls.append(result.get('wall_seconds'))
+        efforts.append(manifest.get('agent', {}).get('reasoning_effort'))
     for folder in entry['replaced']:
         if inside(base, folder) is None or not re.match(r'cell-\d+', Path(folder).name):
             return None, f'{folder} is not a kept cell folder under {where}.'
@@ -658,6 +677,8 @@ def adopt_maintainer(base, entry, suite, where='the data folder'):
     note = {'label': entry['label'], 'detail': entry['detail'], 'model': entry['model'], 'release': entry['release'],
             'packages': packages, 'verified_on': report['harness'].get('package_version'),
             'report_sha256': entry['report_sha256'], 'bundle_sha256': report.get('bundle_sha256'),
+            # The effort each kept attempt's manifest recorded, as agent.reasoning_effort.
+            'effort': effort_text(efforts),
             # The kept attempts' own play time, summed. Replaced attempts and pauses between attempts are not in it.
             'wall_seconds': round(sum(walls)) if all(isinstance(w, (int, float)) for w in walls) else None}
     # runs is the name the page shows, which starts with the root's name and never holds its folder.

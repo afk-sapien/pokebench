@@ -21,6 +21,8 @@ The build reads the existing focused analysis, the additional Astra and Fable Sh
 
 `src/pokeagent_bench/showcase_sources/maintainer-rows.json` lists rows the maintainers ran on a newer harness. Each names a verified report, its SHA-256, the run folder the report was packed from and any kept attempt that was run again. A row is shown only when the report, its hash and the run folder all agree with the stored Short suite. Otherwise it is left off the site and the build prints `<id>: left off the site. <reason>`. A maintainer row stays out of the cost comparison and moves no other row.
 
+The Harness column of a maintainer row also shows the reasoning effort its kept attempts recorded, read at build time from `agent.reasoning_effort` in each attempt's manifest. When every attempt records the same value it reads `low effort`. When they differ, or some record none, it gives counts, most first, such as `Effort: low in 40 runs, medium in 6`. When no attempt records a value, nothing is shown. The earlier rows show no effort.
+
 The paths in a row are relative to the data folder. A row whose runs live elsewhere names a `root`, and the build is given that root's folder by name:
 
 ```sh
@@ -30,7 +32,7 @@ uv run python scripts/export_showcase.py --data /path/to/private/data --web /pat
 
 Repeat `--root` for each root. The checked-in file holds only the root's name, and the page shows each such row's source as `<root>/<runs>`, never the folder. A row whose root is not given is left off with the reason `Its root <name> was not given.`
 
-`short-versions.json` lists the Short suite versions newest first, each with its run and task count. Its entry for the stored suite must match `short-red-v0.63.json`. With rows on the stored suite, the Short board draws one table per version, headed by its name and counts, then one table for the earlier set, which counts the scored starts its rows ran. Each table ranks its own rows from 01. A version newer than every version a row ran, such as one not released yet, lists the rows of the newest version that has them as `Not yet run on this version`, with its note and no rank. With no row on the stored suite, the board is one table with no heading.
+`short-versions.json` lists the Short suite versions newest first, each with its run and task count. Its entry for the stored suite must match `short-red-v0.63.json`. With rows on the stored suite, the Short board draws a table for each version at least one row has run, newest first, headed by its name and counts. A version no row has run, such as one not released yet, gets no table. Its note is shown below the version tables in place of one. The earlier set comes last, in a table that counts the scored starts its rows ran. Each table ranks its own rows from 01. The page counts the rows of each version when it draws the board, so a version's table appears with its first row and its note is then no longer shown. With no row on the stored suite, the board is one table with no heading.
 
 ## Public site
 
