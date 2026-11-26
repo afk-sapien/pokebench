@@ -93,7 +93,21 @@ def test_dry_run_prints_the_estimate_and_starts_nothing(data, runs, monkeypatch,
     assert 'Reference budget 60.0M' in text
     assert 'stops after two thirds of its token cap without a new milestone' in text
     assert 'costs about $120.00 and the worst case about $8.70' in text
+    assert 'Suite version: none. These runs match no recorded Short suite version' in text
+    assert 'Added the starts' not in text
     assert runs == [] and not (data.parent / 'runs').exists()
+
+
+def test_a_new_run_first_adds_the_starts_an_older_setup_lacks(data, runs, monkeypatch, capsys):
+    from pokeagent_bench import local_setup
+    task = 'battle-champion-no-items-no-faint'
+    quick_run.inventory(data / 'fixtures')['tasks'].append(
+        {'id': task, 'category': 'battle', 'mode': 'challenge', 'runnable': False, 'variants': []})
+    added = []
+    monkeypatch.setattr(local_setup, 'add_missing_starts', lambda rom, fixtures: added.append(fixtures) or [task])
+    assert command(monkeypatch, '--model', 'claude-sonnet-5-5', '--suite', 'short', '--dry-run') == 0
+    assert [path.name for path in added] == ['fixtures']
+    assert f'Added the starts of 1 task from the fixture pack: {task}' in capsys.readouterr().out
 
 
 def test_reference_budget_only_warns_and_every_task_gets_its_own_caps(data, runs, monkeypatch, capsys):

@@ -6,7 +6,7 @@ League wins. The model sees only the task goal, never the milestones or their ch
 A run earns one point per milestone, in order, and keeps them if it later blacks out
 or runs out of decisions. The score maximum is the number of milestones.
 
-Two task fields are opt-in, and no released task sets either. With "no_faint" a run stops
+Two task fields are opt-in, and most tasks set neither. With "no_faint" a run stops
 when any party member faints, not only on a blackout. "fail_on" lists checks, in the same
 form as a milestone's, that stop the run when one holds on two different game frames.
 A stopped run keeps the milestones it already earned.

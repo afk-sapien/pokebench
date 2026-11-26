@@ -15,7 +15,7 @@ AFFECTED = {
     'navigation-silph-co': tuple(f'SILPH_CO_{floor}F' for floor in range(2, 12)),
     # The route only. Trainers off it, such as on Nugget Bridge, still battle.
     'navigation-pewter-to-lavender': ('ROUTE_3', 'MT_MOON', 'ROUTE_4', 'ROUTE_9', 'ROUTE_10', 'ROCK_TUNNEL'),
-    # Candidate tasks, outside the released catalog. The gym trainers only, so Lt. Surge is not beaten.
+    # The gym trainers only, so Lt. Surge is not beaten.
     'navigation-vermilion-gym-switches': ('VERMILION_GYM',),
     # The Safari Zone has no trainers. Only its wild encounters are turned off.
     'navigation-safari-zone-secret-house': (),

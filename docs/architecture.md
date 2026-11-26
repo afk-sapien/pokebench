@@ -69,8 +69,15 @@ campaign has been used to claim gameplay capability or calibrated budgets.
 Core releases are adopted explicitly by changing the wheel URL and SHA-256, then
 regenerating `uv.lock`. Run the test suite and replay existing private ROM traces
 before upgrading. Any change to observations, scoring, prompts, or budgets also
-requires a benchmark version change. The current tag is `red-v0.63-short-guard`,
-released as package 0.37.4. Package 0.37.1 stops each Short task after two thirds of its
+requires a benchmark version change, and so does any change to the tasks of a suite.
+The current benchmark version is `red-v0.64-harder-short`. It adds five harder tasks to
+Short, so Short has 51 runs over 49 tasks, as listed in
+[the harder Short note](history/harder-short-v064.md). It is not released yet, so it has
+no accepted harness entry and no tag, and the package version stays 0.37.4.
+[short_suites.json](../src/pokeagent_bench/short_suites.json) records each Short suite
+version with its exact runs, and a Short score belongs to the version whose runs it holds.
+The last released tag is `red-v0.63-short-guard`, 46 runs over 44 tasks, released as
+package 0.37.4. Its runs stay valid for that set and are ranked separately. Package 0.37.1 stops each Short task after two thirds of its
 token cap without a new milestone, draws ledges and the Mansion 3F gap truthfully, pauses
 on Ctrl-C and waits out a near subscription reset, as listed in
 [the v0.37.1 notes](history/release-v0371.md). Package 0.37.2 treats a Claude reply that

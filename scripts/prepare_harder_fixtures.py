@@ -1,4 +1,6 @@
-"""Build the candidate task starts in a private directory. No model calls.
+"""Maintainer tool: build the starts of the five harder Short tasks in a private directory. No model calls.
+
+Users never run this. `pokebench setup` unpacks these starts from the fixture pack with the rest.
 
 Each start loads a released League source or a saved adventure state, then writes an explicit
 party, bag, money, badges, event flags and the few raw RAM bytes each recipe lists. Nothing
@@ -13,7 +15,7 @@ from pokeagent_bench.catalog_fixtures import (
     command, load_source, read, save, set_bag, set_event, set_party, snapshot, walk_to,
 )
 from pokeagent_bench.core import digest, write_json
-from pokeagent_bench.evaluation_catalog import load_candidates
+from pokeagent_bench.evaluation_catalog import task_definition
 from pokeagent_bench.navigation_conditions import AFFECTED, prepare
 from pokecore.gen1 import W_BADGES
 
@@ -139,13 +141,12 @@ def main():
     args = parser.parse_args()
     current = read(args.game_data / 'current.json')['bundle']
     strategy = read(args.game_data / 'bundles' / current / 'strategy.json')
-    entries = {task['id']: task for group in load_candidates() for task in group['evals']}
     args.output.mkdir(parents=True, exist_ok=True)
     report = {}
     for key in args.tasks or sorted(RECIPES):
-        report[key] = build(args, key, entries[key], strategy)
+        report[key] = build(args, key, task_definition(key), strategy)
         print('Built', key, flush=True)
-    write_json(args.output / 'candidate-build.json', report)
+    write_json(args.output / 'harder-build.json', report)
 
 
 if __name__ == '__main__':

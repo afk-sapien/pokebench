@@ -35,7 +35,6 @@ def task(**changes):
 
 
 def clear():
-    catalog.candidate_tasks.cache_clear()
     catalog.milestone_tasks.cache_clear()
     catalog.retired_tasks.cache_clear()
     runtime._events.cache_clear()

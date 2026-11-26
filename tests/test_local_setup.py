@@ -28,7 +28,8 @@ def private_tree(tmp_path):
     folder = root / 'task' / 'default'
     folder.mkdir(parents=True)
     (folder / 'initial.state').write_bytes(STUB_ROM[1000:9000] + b'save data')
-    (folder / 'scenario.json').write_text(json.dumps({'folder': str(folder), 'origin': '/home/someone/work/run'}))
+    (folder / 'scenario.json').write_text(json.dumps({'folder': str(folder), 'origin': '/home/someone/work/run',
+                                                      'run': '/tmp/agent-1000/-home-someone-work/replay'}))
     (folder / 'notes.txt').write_text('private notes')
     return root
 
@@ -53,9 +54,10 @@ def test_pack_round_trip_restores_files_and_hides_private_paths(tmp_path, rom, p
     assert (built / 'task' / 'default' / 'initial.state').read_bytes() == state.read_bytes()
     assert not list(built.rglob('notes.txt'))
     scenario = json.loads((built / 'task' / 'default' / 'scenario.json').read_text())
-    assert scenario == {'folder': str(built / 'task' / 'default'), 'origin': 'private:/work/run'}
+    assert scenario == {'folder': str(built / 'task' / 'default'), 'origin': 'private:/work/run', 'run': 'private:'}
     everything = b''.join(path.read_bytes() for path in built.rglob('*.json'))
     assert str(private_tree.parent).encode() not in everything and b'/home/' not in everything
+    assert b'someone' not in everything
 
 
 def test_a_sibling_folder_of_the_fixture_root_is_never_filled_with_a_local_path(tmp_path, rom, private_tree):
@@ -170,3 +172,34 @@ def test_setup_command_builds_once_and_reports(tmp_path, rom, private_tree, monk
     assert main() == 0
     assert json.loads(capsys.readouterr().out)['built'] == []
     assert calls == [None]
+
+
+def test_setup_adds_the_starts_of_new_tasks_to_an_older_setup_and_keeps_its_own(tmp_path, rom, private_tree,
+                                                                                    monkeypatch):
+    newer = private_tree / 'newer' / 'default'
+    newer.mkdir(parents=True)
+    (newer / 'initial.state').write_bytes(STUB_ROM[2000:6000])
+    (newer / 'scenario.json').write_text(json.dumps({'folder': str(newer)}))
+    local_setup.build_pack(rom, private_tree, tmp_path / 'pack')
+    monkeypatch.setattr(local_setup, 'PACK', tmp_path / 'pack')
+    monkeypatch.setattr(catalog_execution, 'inventory', lambda fixtures: {'runnable': 2, 'tasks': []})
+    output = tmp_path / 'data'
+    (output / 'game-data').mkdir(parents=True)
+    (output / 'game-data' / 'current.json').write_text('{}')
+    older = output / 'fixtures' / 'task' / 'default'
+    older.mkdir(parents=True)
+    (older / 'initial.state').write_bytes(b'the start this setup already had')
+    report = local_setup.setup(rom, output)
+    assert report['built'] == [] and report['starts_added'] == ['newer']
+    assert (output / 'fixtures' / 'newer' / 'default' / 'initial.state').read_bytes() == STUB_ROM[2000:6000]
+    restored = json.loads((output / 'fixtures' / 'newer' / 'default' / 'scenario.json').read_text())
+    assert restored == {'folder': str(output.resolve() / 'fixtures' / 'newer' / 'default')}
+    assert (older / 'initial.state').read_bytes() == b'the start this setup already had'
+    assert local_setup.setup(rom, output)['starts_added'] == []
+    data = bytearray((tmp_path / 'pack' / 'fixtures.pack').read_bytes())
+    data[len(data) // 2] ^= 0xFF
+    (tmp_path / 'pack' / 'fixtures.pack').write_bytes(bytes(data))
+    (output / 'fixtures' / 'newer').rename(tmp_path / 'moved')
+    with pytest.raises(ValueError, match='damaged'):
+        local_setup.setup(rom, output)
+    assert not (output / 'fixtures' / 'newer').exists()

@@ -17,7 +17,7 @@ import tempfile
 from urllib.parse import urlsplit
 import zipfile
 
-from . import BENCHMARK_VERSION, __version__
+from . import BENCHMARK_VERSION, __version__, suite_versions
 from .catalog_batch import report
 from .catalog_execution import select_scenario
 from .core import Limits, counted, digest, encoded, write_json
@@ -204,12 +204,27 @@ def collect(run, *, handle=None, attempts=1, endpoint_host=False):
     hosts.discard(None)
     if hosts:
         summary['endpoint_host'] = sorted(hosts)[0]
+    if plan['suite'] == 'short':
+        summary['suite_version'] = suite_version(plan['cells'])
     files['submit.json'] = encoded(summary)
     return files, summary
 
 
+def suite_version(cells):
+    """The Short suite version these runs make up, with its counts, or None when they match none."""
+    entry = suite_versions.identify(cells)
+    return None if entry is None else {key: entry[key] for key in ('benchmark', 'run_count', 'task_count')}
+
+
+def version_line(version):
+    if version is None:
+        return 'Suite version: none. These runs match no recorded Short suite version, so they are not a ranked result.'
+    return f'Suite version {suite_versions.label(version)}.'
+
+
 def describe(files, summary):
     lines = [f'Bundle for suite {summary["suite"]}, model {summary["provider"]}:{summary["model"]}',
+             *([version_line(summary['suite_version'])] if 'suite_version' in summary else []),
              f'Harness {summary["harness"]["benchmark"]}, package {summary["harness"]["package_version"]}',
              'GitHub handle: ' + (summary['handle'] or 'not given. Add --handle NAME to be credited'),
              f'Attempts declared: {summary["attempts_declared"]}',
@@ -459,6 +474,9 @@ def verify(bundle, rom, fixtures, output=None, *, replay=None):
               'bundle_sha256': digest(bundle.read_bytes()), 'self_reported': list(SELF_REPORTED)}
     if plan['suite'] == 'smoke':
         result['note'] = 'Setup check only. Not a leaderboard result.'
+    if plan['suite'] == 'short':
+        # From the verifier's own plan, so a bundle cannot claim another suite version.
+        result['suite_version'] = suite_version(plan['cells'])
     if scored:
         result['summary'] = scored['models'][0]
         result['cells'] = [{**row, 'replay_verified': True,
@@ -519,6 +537,8 @@ def conclusion(result, output):
     matched = 'start state and matched its log' if replayed == 1 else 'start states and matched their logs'
     lines = ['', f'VERIFIED. {counted(replayed, "run")} replayed from the benchmark {matched}.',
              f'{row["name"]}, model {row["provider"]}:{row["model"]}, submitted by {result["handle"] or "unnamed"}']
+    if 'suite_version' in result:
+        lines.append(version_line(result['suite_version']))
     if row.get('available_category_average') is not None:
         lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100.')
     for run in row.get('campaign_runs', []):

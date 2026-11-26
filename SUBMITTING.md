@@ -59,6 +59,12 @@ Each entry names a harness version, a package version and a hash of the package 
 
 Maintainers add an entry at the freeze by following the [release checklist](docs/release-checklist.md).
 
+### Short suite versions
+
+A Short score belongs to the suite version whose runs it holds exactly, matched by task, variant, task specification digest and start state digest. [short_suites.json](src/pokeagent_bench/short_suites.json) lists every version. The current one is `red-v0.64-harder-short`, 51 runs over 49 tasks. It adds five harder tasks to `red-v0.63-short-guard`, 46 runs over 44 tasks, and keeps those 46 runs unchanged.
+
+Runs made on `red-v0.63-short-guard`, the set behind the Haiku, Terra and Sonnet runs, stay valid for that set and are ranked separately. A `v0.37.4` bundle holds that set and is checked on the `v0.37.4` checkout. No release carries `red-v0.64-harder-short` yet, so `v0.37.4` stays the release to run until one is listed in accepted_harness.json. `submit`, `verify` and the run summary each print the suite version with its run count. Runs that match no recorded version print `Suite version: none` and are not a ranked result.
+
 ## How a bundle is checked
 
 ```sh
@@ -68,7 +74,7 @@ uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench verify 
 Anyone can run this, in the folder where `setup` ran. It needs the ROM, calls no model and trusts nothing in the bundle. From a clone of the tag, `uv run pokebench verify` does the same. `uv run` outside a clone stops with `Failed to spawn: pokebench`.
 
 - The archive is read in memory. Only known file names are accepted and nothing is extracted.
-- The task list must be the complete suite as this checkout defines it, with the same start states, task definitions and limits.
+- The task list must be the complete suite as this checkout defines it, with the same start states, task definitions and limits. For Short the report names the suite version from the verifier's own plan, never from the bundle.
 - Each run must use the suite's reasoning effort: low for Short and smoke, medium for Long, as the leaderboard runs did.
 - Each run is replayed from the verifier's own start state. The recorded inputs must reproduce the recorded game facts, and the score is recomputed from the replay.
 - A run over its decision or token limit fails.
@@ -82,7 +88,7 @@ Replay is nearly all of the time, and it runs on one CPU core. These are full `v
 
 | Suite | Size of the run | Verify time |
 | --- | --- | --- |
-| Short | 46 runs, 51,008 inputs, 1.37 million frames | 18 min 13 s |
+| Short, `red-v0.63-short-guard` | 46 runs, 51,008 inputs, 1.37 million frames | 18 min 13 s |
 | Long | 1 run, 4,192 inputs, 0.11 million frames | 1 min 3 s |
 
 Both bundles verified with no mismatch. The time grows with the number of frames played, so a model that gets further in Long, or uses its whole budget on every Short task, takes longer.

@@ -1,13 +1,16 @@
 # Five-category Gen 1 benchmark plan
 
-Across both benchmarks, the catalog has **44 primary tasks and one inventory variant** across five
-categories: 10 navigation, 14 battle, 10 operations plus one variant, 9 quests and one campaign. Every task case has a checked starting save and a runtime
-evaluator. The seven [milestone tasks](#milestone-tasks) join the local fixture pack
-with the next harness version. Difficulty remains provisional until model trials.
+Across both benchmarks, the catalog has **49 primary tasks and one inventory variant** across five
+categories: 12 navigation, 16 battle, 10 operations plus one variant, 10 quests and one campaign. Every task case has a checked starting save and a runtime
+evaluator. The twelve [milestone tasks](#milestone-tasks) ship in the local fixture pack.
+Difficulty remains provisional until model trials.
 Historical results and the old fixture set remain available.
 
-**PokeBench** contains the 43 focused tasks and one inventory variant in four
-categories. Its score averages them equally: navigation, battle, operations and
+**PokeBench** contains the 48 focused tasks and one inventory variant in four
+categories, 51 runs over 49 tasks under Short suite version `red-v0.64-harder-short`.
+A Short score belongs to its suite version. Runs made on `red-v0.63-short-guard`, 46 runs
+over 44 tasks and the set behind the Haiku, Terra and Sonnet runs, stay valid for that set
+and are ranked separately. See [Short suite versions](#short-suite-versions). Its score averages them equally: navigation, battle, operations and
 quests. The 10 preparation tasks left Short on 14 November 2026. Their stored
 attempts stay in the run data, but no report or page reads them. **PokeBench Long** contains only the continuous campaign. They use
 separate batches, token ceilings and reports. See [track commands](../history/benchmark-tracks-v053.md).
@@ -36,7 +39,7 @@ links and records. The portal calls this category Quests, and the CLI also accep
 
 ## Milestone tasks
 
-Seven Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
+Twelve Short tasks are longer, such as a whole dungeon or a full League run. Each sits in
 its usual category and weighs the same as any other task in that category's average.
 
 Each one lists ordered milestones in its catalog entry, for example the floors of a
@@ -52,7 +55,8 @@ already meets a milestone is refused.
 
 Each milestone task has a checked start state and a scripted reference run that reaches
 every milestone. Its decision cap is about five times the reference, and its token budget
-is 15,000 tokens per allowed decision. No model has run these tasks yet.
+is 15,000 tokens per allowed decision. The seven tasks below joined Short with
+`red-v0.62-milestone-short`.
 
 | Task | Category | Start | Milestones | Reference decisions | Cap |
 | --- | --- | --- | --- | --- | --- |
@@ -77,19 +81,19 @@ uv run python scripts/reference_milestone_tasks.py --rom ROM --game-data GAME_DA
   --fixtures FIXTURES --output OUTPUT --tasks navigation-victory-road navigation-seafoam-islands
 ```
 
-## Harder candidates, not in Short
+## Harder Short tasks
 
-Five harder Red tasks sit in a separate candidate catalog, `src/pokeagent_bench/catalogs/candidates/`.
-Short, Long and the fixture pack never load it, and a suite run refuses a candidate task id. A
-run of a candidate task records the track `candidate`, so it is never a Short result.
-`tests/test_red_candidates.py` checks that the released catalog, the suites, the fixture pack
-and every released specification hash still match main.
+Five harder milestone tasks joined Short with `red-v0.64-harder-short`. They sit in the
+released navigation, battle and quests catalogs, `run --suite short` plans them, and their
+runs record the track `pokebench`. `setup` and `run --suite short` add their starts to an
+older `data/fixtures` folder from the hash-checked pack, so no separate step is needed.
+`tests/test_harder_tasks.py` checks their pins, caps, stop rules and shipped starts.
 
-Each candidate is a hard milestone task. Its catalog entry pins its start and its scripted
-reference: the start state digest, the digest and count of the reference's native inputs,
-the replayed frames and the decisions. The decision cap is five times the reference
-decisions, rounded half up to two significant figures. The token budget is 15,000 tokens per
-allowed decision. No model has run these tasks yet.
+Each catalog entry pins its start and its scripted reference: the start state digest, the
+digest and count of the reference's native inputs, the replayed frames and the decisions.
+The decision cap is five times the reference decisions, rounded half up to two significant
+figures. The token budget is 15,000 tokens per allowed decision. No model has run these
+tasks yet.
 
 | Task | Category | Start | Milestones | Reference decisions | Cap |
 | --- | --- | --- | --- | --- | --- |
@@ -99,9 +103,9 @@ allowed decision. No model has run these tasks yet.
 | Defeat the Elite Four and the Champion with no items and no faint | Battle | Lorelei's room, empty bag, five level 55 Pokemon | 5 | 109 | 550 |
 | Defeat the Champion's six with three Pokemon, no items and no faint | Battle | First Champion battle menu, empty bag, three level 60 Pokemon | 2 | 22 | 110 |
 
-Two opt-in fields of the milestone runtime stop a run early, and no released task sets
-either. With `no_faint` a run stops the moment any party member faints, not only on a
-blackout. Both battle candidates set it. `fail_on` lists checks, in the same form as a
+Two opt-in fields of the milestone runtime stop a run early, and only these tasks set
+them. With `no_faint` a run stops the moment any party member faints, not only on a
+blackout. Both harder battle tasks set it. `fail_on` lists checks, in the same form as a
 milestone's, that stop the run when one holds on two different frames. The Safari Zone task
 sets it for the Safari Zone gate, because the player cannot pay for a second entry. A stopped
 run keeps the milestones it already earned, and a start that already breaks a rule is
@@ -109,23 +113,42 @@ refused. Adding these fields changes the harness source hash.
 
 The released Elite Four task is unchanged. The no-faint version starts weaker, with five
 level 55 Pokemon and no Snorlax against six level 56 Pokemon in the released start. On the
-released start the greedy reference wins with five faints. The candidate reference adds one
+released start the greedy reference wins with five faints. The harder reference adds one
 rule to it. When the opponent's strongest move could knock out the active Pokemon, it heals
 with Recover if it moves first, or else switches to the party member that best takes the
 hit. On the new start it wins with no faint, healing twice and switching 11 times. With
 the same party at levels 50 to 54 it loses.
 
-`scripts/prepare_candidate_fixtures.py` builds the starts, and two builds give the same state
-digests. `scripts/reference_candidate_tasks.py` plays each reference with the assisted
-commands a model gets, one decision per command, and writes the proof next to the start.
-Neither makes model calls.
+`scripts/prepare_harder_fixtures.py` is the maintainer step that built the starts, and two
+builds give the same state digests. `scripts/reference_harder_tasks.py` plays each reference
+with the assisted commands a model gets, one decision per command, and writes the proof next
+to the start. Neither makes model calls. Users never run them, because the starts and proofs
+ship in the fixture pack.
 
 ```sh
-uv run python scripts/prepare_candidate_fixtures.py --root DATA --archive STATES --rom ROM \
+uv run python scripts/prepare_harder_fixtures.py --root DATA --archive STATES --rom ROM \
   --game-data GAME_DATA --output FIXTURES
-uv run python scripts/reference_candidate_tasks.py --rom ROM --game-data GAME_DATA \
+uv run python scripts/reference_harder_tasks.py --rom ROM --game-data GAME_DATA \
   --fixtures FIXTURES --output OUTPUT --tasks battle-elite-four-no-items-no-faint
 ```
+
+## Short suite versions
+
+[short_suites.json](../../src/pokeagent_bench/short_suites.json) records every Short suite
+version with its benchmark name, run count, task count and each run's task, variant,
+`evaluation_spec_sha256` and `fixture_sha256`. A Short score belongs to the version whose
+runs it holds exactly. `tests/test_suite_versions.py` checks that the current catalog matches
+the current entry.
+
+| Version | Runs | Tasks | Runs made on it |
+| --- | --- | --- | --- |
+| `red-v0.63-short-guard` | 46 | 44 | Haiku, Terra and Sonnet |
+| `red-v0.64-harder-short` | 51 | 49 | None yet |
+
+`red-v0.64-harder-short` keeps all 46 runs of `red-v0.63-short-guard` with the same digests
+and adds the five harder tasks. Runs on the older set stay valid for that set and are ranked
+separately. The plan, the run summary, the bundle and the verified report each name the suite
+version with its run count.
 
 ## Inspect the catalog
 

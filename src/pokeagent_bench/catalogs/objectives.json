@@ -667,6 +667,70 @@
       ],
       "active": false,
       "retirement_reason": "Retired before any model ran it. Its two halves are already Short tasks, the Rocket Hideout in objectives-quest-trainer and the Tower rescue in objectives-prerequisite-chain, and the combined run needed a cap the size of a Long run. Retained only for historical references."
+    },
+    {
+      "id": "objectives-saffron-gate-drink",
+      "title": "Fetch a drink for the thirsty guard and enter Saffron City",
+      "difficulty": "hard",
+      "tested_skill": "campaign",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "objectives-saffron-gate-drink",
+        "description": "Get into Saffron City. The guards in its gates turn travelers away, so find out what they want, get it and pass a gate into the city. Do not nickname Pokemon."
+      },
+      "start": "Inside the gate between Route 7 and Saffron City, just east of the Route 7 door. No guard has been given a drink, the bag and the PC item storage are empty and the player has 500 money.",
+      "success": [
+        "Stand in Saffron City outside battle."
+      ],
+      "failure": [
+        "The decision cap or the token budget is reached before Saffron City.",
+        "The party blacks out. Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 5100000,
+      "decision_limit": 340,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start inside the Route 7 gate with no drink given to any guard, an empty bag, empty PC item storage and 500 money.",
+        "A scripted reference reaches every milestone with the same controls the model gets."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Learn what a blocker wants from its own text, buy it elsewhere in town and bring it back",
+      "agent_goal": "Get into Saffron City. The guards in its gates turn travelers away, so find out what they want, get it and pass a gate into the city. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Party: Jolteon level 40 with Thunderbolt, Double Kick, Quick Attack and Thunder Wave. Full HP, no status and full PP.",
+        "Empty bag, empty PC item storage and 500 money. The guard asks for a drink. Drinks are sold only from the vending machines on the Celadon Department Store roof, at 200 to 350 money each. Giving any one guard a drink opens all four Saffron gates.",
+        "Wild Pokemon appear in the grass of Route 7 as normal. No route hints are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/Route7Gate.asm",
+        "https://github.com/pret/pokered/blob/master/engine/events/saffron_guards.asm",
+        "https://github.com/pret/pokered/blob/master/engine/events/vending_machine.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMartRoof.asm",
+        "https://github.com/pret/pokered/blob/master/data/maps/objects/CeladonMart1F.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Check in the pilot whether models read the guard's hint and look for drinks, or try the other gates first."
+      ],
+      "measures": "Read a blocker's request from its dialogue, find the only shop that sells the item, climb a department store to its roof, buy from a vending machine within the money held and return to pass the gate.",
+      "milestones": [
+        {"id": "department-store", "description": "Enter the Celadon Department Store.", "check": {"map": 122}},
+        {"id": "roof", "description": "Reach the Celadon Department Store roof with the vending machines.", "check": {"map": 126}},
+        {"id": "saffron-city", "description": "Give a guard a drink and enter Saffron City.", "check": {"map": 10}}
+      ],
+      "fixture": {
+        "state_sha256": "7e5a838cb878840a4242facabbf5f7220135c2ed3bac5f59ddfd3f6613e2724c",
+        "actions_sha256": "e5b91e9c2b295df07060c0c33cd4302723682913d1ea1530b9819d9263e83aff",
+        "actions": 415,
+        "frames": 10752,
+        "decisions": 68
+      }
     }
   ]
 }

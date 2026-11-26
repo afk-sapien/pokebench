@@ -1,12 +1,11 @@
-"""The harder Red candidates: they leave the released suite alone, and their caps, pins and stop rules hold.
+"""The five harder Short tasks: their caps follow their pinned references, and their stop rules hold.
 
-The candidates live in their own catalog folder, which Short, Long and the fixture pack never read.
-Their two stop rules, no_faint and fail_on, are opt-in fields of the milestone runtime that no
-released task sets. The runtime change does change the harness source hash.
+They are released Short tasks under red-v0.64-harder-short. Each pins the digest of its start and of
+its reference inputs, and its caps are set from that reference. Their two stop rules, no_faint and
+fail_on, are opt-in fields of the milestone runtime that no other task sets.
 
-The tests that need the Red ROM or the built starts skip without them. Set POKEBENCH_ROM to the Red
-ROM and POKEBENCH_CANDIDATE_FIXTURES to the folder scripts/prepare_candidate_fixtures.py wrote, after
-scripts/reference_candidate_tasks.py has written each reference proof next to its start.
+The tests that need the Red ROM skip without it. Set POKEBENCH_ROM to the Red ROM. They unpack the
+shipped fixture pack, the same way setup does, and check each start and reference proof against the pins.
 """
 from copy import deepcopy
 import json
@@ -15,43 +14,25 @@ from pathlib import Path
 
 import pytest
 
-from pokeagent_bench import catalog_batch, catalog_execution, local_setup, recovery
+from pokeagent_bench import catalog_execution, local_setup, recovery
 from pokeagent_bench import evaluation_catalog as catalog
 from pokeagent_bench import milestone_runtime as runtime
-from pokeagent_bench.benchmark_tracks import LONG, SHORT, for_category
+from pokeagent_bench.benchmark_tracks import SHORT, for_category
 from pokeagent_bench.core import digest, encoded
-from pokeagent_bench.evaluation_catalog import CATEGORIES, catalog_files, load_catalog
-from pokeagent_bench.quick_run import SUITES
+from pokeagent_bench.evaluation_catalog import catalog_files, load_catalog
 from pokeagent_bench.session import Session
 from pokeagent_bench.submission import this_harness
 
 ROOT = Path(__file__).resolve().parents[1]
-RELEASED = json.loads((ROOT / 'tests/fixtures/candidate-released-specs.json').read_text())
 ROM = os.environ.get('POKEBENCH_ROM')
-FIXTURES = os.environ.get('POKEBENCH_CANDIDATE_FIXTURES')
-needs_starts = pytest.mark.skipif(not ROM or not FIXTURES,
-                                  reason='The Red ROM and the candidate starts are not distributed. Set POKEBENCH_ROM '
-                                         'and POKEBENCH_CANDIDATE_FIXTURES')
-CANDIDATES = frozenset({'navigation-vermilion-gym-switches', 'objectives-saffron-gate-drink',
-                        'navigation-safari-zone-secret-house', 'battle-champion-no-items-no-faint',
-                        'battle-elite-four-no-items-no-faint'})
-TASK_IDS = sorted(CANDIDATES)
-
-
-def released_now():
-    tasks = {}
-    for group in load_catalog(include_retired=True):
-        for task in group['evals']:
-            tasks[task['id']] = {'active': task.get('active', True), 'category': group['category'],
-                                 'spec_sha256': digest(encoded(task)), 'track': for_category(group['category'])}
-    return {'catalog_files': sorted(path.name for path in catalog_files()), 'categories': list(CATEGORIES),
-            'packed': sorted(local_setup.PACKED), 'tasks': tasks,
-            'suites': {name: [benchmark, budget, list(fixed) if fixed else None]
-                       for name, (benchmark, budget, fixed) in SUITES.items()}}
+needs_rom = pytest.mark.skipif(not ROM, reason='The Red ROM is not distributed. Set POKEBENCH_ROM')
+HARDER = frozenset({'navigation-vermilion-gym-switches', 'objectives-saffron-gate-drink',
+                    'navigation-safari-zone-secret-house', 'battle-champion-no-items-no-faint',
+                    'battle-elite-four-no-items-no-faint'})
+TASK_IDS = sorted(HARDER)
 
 
 def clear():
-    catalog.candidate_tasks.cache_clear()
     catalog.milestone_tasks.cache_clear()
     catalog.retired_tasks.cache_clear()
     runtime._events.cache_clear()
@@ -65,94 +46,76 @@ def packaged_caches():
     clear()
 
 
-def test_released_catalog_suites_and_fixture_pack_match_main():
-    now = released_now()
-    for key in ('catalog_files', 'categories', 'packed', 'suites'):
-        assert now[key] == RELEASED[key], key
-    assert now['tasks'].keys() == RELEASED['tasks'].keys()
-    changed = sorted(name for name, row in now['tasks'].items() if row != RELEASED['tasks'][name])
-    assert not changed, f'released specifications changed: {changed}'
+def released():
+    return {task['id']: (group['category'], task) for group in load_catalog(include_retired=True)
+            for task in group['evals']}
 
 
-def test_short_and_long_task_lists_match_main():
-    for track in (SHORT, LONG):
-        listed = sorted(task['id'] for group in load_catalog() if for_category(group['category']) == track
-                        for task in group['evals'])
-        recorded = sorted(name for name, row in RELEASED['tasks'].items() if row['track'] == track and row['active'])
-        assert listed == recorded
-        assert not CANDIDATES & set(listed)
+def test_only_the_five_harder_tasks_pin_a_reference_and_set_a_stop_rule():
+    tasks = released()
+    assert {name for name, (_, task) in tasks.items() if 'fixture' in task} == HARDER
+    assert {name for name, (_, task) in tasks.items() if task.get('no_faint')} == {
+        'battle-elite-four-no-items-no-faint', 'battle-champion-no-items-no-faint'}
+    assert {name for name, (_, task) in tasks.items() if 'fail_on' in task} == {'navigation-safari-zone-secret-house'}
+    assert 'no_faint' not in catalog.task_definition('battle-elite-four-no-items')
 
 
-def test_candidate_catalog_is_never_loaded_by_the_released_suites(tmp_path):
-    released_folder = catalog_files()[0].parent
-    assert {path.parent for path in catalog.candidate_files()} == {released_folder / 'candidates'}
-    assert not set(catalog.candidate_files()) & set(catalog_files())
-    released = {task['id'] for group in load_catalog(include_retired=True) for task in group['evals']}
-    assert catalog.candidate_tasks() == CANDIDATES and not released & CANDIDATES
-    assert not {row['id'] for row in catalog_execution.inventory(tmp_path)['tasks']} & CANDIDATES
-    assert {row['id'] for row in catalog_execution.inventory(tmp_path, candidates=True)['tasks']} == CANDIDATES
-    for benchmark in (SHORT, LONG):
-        with pytest.raises(ValueError, match='Tasks are not in'):
-            catalog_batch.plan(tmp_path, ['codex:model'], tasks=[TASK_IDS[0]], benchmark=benchmark)
+def test_the_harder_tasks_are_short_tasks_in_the_released_catalogs():
+    short = {task['id'] for group in load_catalog() if for_category(group['category']) == SHORT
+             for task in group['evals']}
+    assert HARDER <= short
+    assert not (ROOT / 'src/pokeagent_bench/catalogs/candidates').exists()
 
 
-def test_no_released_task_sets_a_stop_rule_and_the_released_elite_four_is_kept():
-    for group in load_catalog(include_retired=True):
-        for task in group['evals']:
-            assert 'no_faint' not in task and 'fail_on' not in task, task['id']
-    released = catalog.task_definition('battle-elite-four-no-items')
-    assert digest(encoded(released)) == RELEASED['tasks']['battle-elite-four-no-items']['spec_sha256']
-    assert catalog.task_definition('battle-elite-four-no-items-no-faint')['no_faint'] is True
-
-
-def test_candidate_catalogs_are_data_outside_the_harness_hash():
+def test_the_catalogs_stay_data_outside_the_harness_hash():
     package = ROOT / 'src/pokeagent_bench'
     hashed = {path.name: digest(path.read_bytes()) for path in sorted(package.glob('*.py'))}
     assert this_harness()['source_sha256'] == digest(encoded(hashed))
-    assert not list((package / 'catalogs/candidates').glob('*.py'))
+    assert all(path.suffix == '.json' for path in catalog_files())
 
 
-def test_every_candidate_validates_with_caps_set_from_its_reference():
-    groups = catalog.load_candidates()
-    assert sorted(group['category'] for group in groups) == ['battle', 'navigation', 'objectives']
-    for group in groups:
-        for task in group['evals']:
-            pins = task['fixture']
-            assert task['difficulty'] == 'hard' and len(task['milestones']) >= 2
-            assert task['decision_limit'] == catalog.candidate_cap(pins['decisions'])
-            assert task['token_limit'] == catalog.CANDIDATE_TOKENS_PER_DECISION * task['decision_limit']
-            assert task['agent_goal'] == task['objective']['description']
-            assert task.get('no_faint', False) is (group['category'] == 'battle')
-            assert task['id'] in catalog.milestone_tasks()
+def test_every_harder_task_validates_with_caps_set_from_its_reference():
+    tasks = released()
+    for name in TASK_IDS:
+        category, task = tasks[name]
+        pins = task['fixture']
+        assert catalog.validate_reference_pins(deepcopy(task)) == task
+        assert task['difficulty'] == 'hard' and len(task['milestones']) >= 2
+        assert task['decision_limit'] == catalog.reference_cap(pins['decisions'])
+        assert task['token_limit'] == catalog.TOKENS_PER_DECISION * task['decision_limit']
+        assert task['agent_goal'] == task['objective']['description']
+        assert task.get('no_faint', False) is (category == 'battle')
+        assert name in catalog.milestone_tasks()
 
 
-def test_candidate_text_has_no_em_dash_or_semicolon():
-    for path in catalog.candidate_files():
-        text = path.read_text()
-        assert chr(0x2014) not in text and chr(0x3B) not in text, path.name
+def test_harder_task_text_has_no_em_dash_or_semicolon():
+    tasks = released()
+    for name in TASK_IDS:
+        text = json.dumps(tasks[name][1], ensure_ascii=False)
+        assert chr(0x2014) not in text and chr(0x3B) not in text, name
 
 
 @pytest.mark.parametrize('decisions, cap', [
     (70, 350), (73, 370), (68, 340), (109, 550), (22, 110), (1, 5), (21, 110), (199, 1000), (2009, 10000),
     (2100, 11000),
 ])
-def test_the_candidate_cap_is_five_times_the_reference_to_two_figures_rounded_half_up(decisions, cap):
-    assert catalog.candidate_cap(decisions) == cap
+def test_the_reference_cap_is_five_times_the_reference_to_two_figures_rounded_half_up(decisions, cap):
+    assert catalog.reference_cap(decisions) == cap
 
 
 @pytest.mark.parametrize('change, message', [
     (lambda task: task.update(decision_limit=task['decision_limit'] + 1), 'decision cap'),
     (lambda task: task.update(token_limit=task['token_limit'] - 1), 'token budget'),
-    (lambda task: task['fixture'].pop('frames'), 'candidates pin'),
+    (lambda task: task['fixture'].pop('frames'), 'a pinned task pins'),
     (lambda task: task['fixture'].update(actions_sha256='0' * 63), 'SHA-256'),
     (lambda task: task['fixture'].update(decisions=0), 'positive integers'),
-    (lambda task: task.update(difficulty='medium'), 'hard milestone tasks'),
+    (lambda task: task.pop('milestones'), 'only milestone tasks'),
 ])
-def test_candidate_validation_refuses_drift(change, message):
+def test_reference_pin_validation_refuses_drift(change, message):
     task = deepcopy(catalog.task_definition(TASK_IDS[0]))
     change(task)
     with pytest.raises(ValueError, match=message):
-        catalog.validate_candidate(task)
+        catalog.validate_reference_pins(task)
 
 
 @pytest.mark.parametrize('rules, message', [
@@ -168,51 +131,34 @@ def test_stop_rules_refuse_bad_values(rules, message):
 
 
 @pytest.fixture
-def candidate_root(tmp_path, monkeypatch):
-    """The packaged catalogs and candidates, copied so a test can change one candidate file."""
+def catalog_root(tmp_path, monkeypatch):
+    """The packaged catalogs, copied so a test can change one task."""
     root = tmp_path / 'catalogs'
-    (root / 'candidates').mkdir(parents=True)
+    root.mkdir()
     for path in catalog_files():
         (root / path.name).write_bytes(path.read_bytes())
-    for path in catalog.candidate_files():
-        (root / 'candidates' / path.name).write_bytes(path.read_bytes())
     monkeypatch.setattr(catalog, '_root', lambda: root)
     clear()
-    yield root / 'candidates'
+    yield root
     clear()
 
 
-def edit(path, change):
+def edit_safari(root, change):
+    path = root / 'navigation.json'
     group = json.loads(path.read_text())
-    change(group)
+    change(next(task for task in group['evals'] if task['id'] == 'navigation-safari-zone-secret-house'))
     path.write_text(json.dumps(group))
 
 
-def reuse_released_id(group):
-    group['evals'][0]['id'] = group['evals'][0]['objective']['task_id'] = 'battle-elite-four-no-items'
+def test_the_catalog_loader_refuses_a_bad_stop_rule(catalog_root):
+    edit_safari(catalog_root, lambda task: task.update(fail_on=[{'check': {'map': 156}}]))
+    with pytest.raises(ValueError, match='description and a check'):
+        load_catalog()
 
 
-@pytest.mark.parametrize('name, change, message', [
-    ('battle.json', lambda group: group.pop('candidate'), 'says it is a candidate'),
-    ('battle.json', reuse_released_id, 'reuse a released task id'),
-    ('navigation.json', lambda group: group['evals'][1].update(fail_on=[{'check': {'map': 156}}]),
-     'description and a check'),
-])
-def test_candidate_loader_refuses_bad_files(candidate_root, name, change, message):
-    edit(candidate_root / name, change)
-    with pytest.raises(ValueError, match=message):
-        catalog.load_candidates()
-
-
-def test_a_candidate_file_is_named_for_its_category(candidate_root):
-    (candidate_root / 'battle.json').rename(candidate_root / 'league.json')
-    with pytest.raises(ValueError, match='names its category'):
-        catalog.load_candidates()
-
-
-def test_fail_on_event_flags_are_read_with_the_milestone_flags(candidate_root):
+def test_fail_on_event_flags_are_read_with_the_milestone_flags(catalog_root):
     rule = {'description': 'Got HM03 some other way.', 'check': {'event': 2176}}
-    edit(candidate_root / 'navigation.json', lambda group: group['evals'][1]['fail_on'].append(rule))
+    edit_safari(catalog_root, lambda task: task['fail_on'].append(rule))
     assert runtime._events('navigation-safari-zone-secret-house') == (2176,)
 
 
@@ -288,7 +234,7 @@ def test_stop_rules_survive_a_checkpoint_and_an_older_checkpoint_keeps_the_defau
     assert restored.observe(facts(map_id=156, party=ONE_DOWN), 1, 0) == [] and not restored.disqualified
 
 
-def test_session_records_the_candidate_track_and_stops_on_a_faint(tmp_path, monkeypatch, engine):
+def test_session_records_the_short_track_and_stops_on_a_faint(tmp_path, monkeypatch, engine):
     task = catalog.task_definition('battle-champion-no-items-no-faint')
     state = facts(['Lorelei', 'Bruno', 'Agatha', 'Lance'], map_id=120, party=[{'hp': 148}, {'hp': 136}, {'hp': 226}])
     monkeypatch.setattr(runtime, 'milestone_evidence', lambda engine, task_id: deepcopy(state))
@@ -297,7 +243,7 @@ def test_session_records_the_candidate_track_and_stops_on_a_faint(tmp_path, monk
     session = Session(engine, tmp_path / 'run', scenario, goal='challenge')
     try:
         assert session.score_max == 2
-        assert session.manifest['benchmark_track'] == 'candidate'
+        assert session.manifest['benchmark_track'] == 'pokebench'
         assert session.manifest['evaluation_spec_sha256'] == digest(encoded(task))
         state['party'] = [{'hp': 148}, {'hp': 0}, {'hp': 226}]
         session.wait('wait-1', 3)
@@ -309,13 +255,21 @@ def test_session_records_the_candidate_track_and_stops_on_a_faint(tmp_path, monk
         session.close()
 
 
-@needs_starts
+@pytest.fixture(scope='module')
+def shipped(tmp_path_factory):
+    """The shipped fixture pack, unpacked with the user's ROM the way setup does."""
+    fixtures = tmp_path_factory.mktemp('shipped') / 'fixtures'
+    local_setup.unpack_fixtures(local_setup.check_rom(ROM), fixtures)
+    return fixtures
+
+
+@needs_rom
 @pytest.mark.parametrize('task_id', TASK_IDS)
-def test_each_built_start_and_reference_proof_match_the_pins(task_id):
+def test_each_shipped_start_and_reference_proof_match_the_pins(shipped, task_id):
     from pokeagent_bench.game import RedEngine
     task = catalog.task_definition(task_id)
     pins = task['fixture']
-    folder = catalog_execution.select_scenario(Path(FIXTURES), task_id)
+    folder = catalog_execution.select_scenario(shipped, task_id)
     state = (folder / 'initial.state').read_bytes()
     scenario = json.loads((folder / 'scenario.json').read_text())
     proof = json.loads((folder / 'reference-validation.json').read_text())

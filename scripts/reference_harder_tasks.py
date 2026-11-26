@@ -1,6 +1,6 @@
-"""Scripted references for the candidate tasks. No model calls.
+"""Maintainer tool: scripted references for the five harder Short tasks. No model calls.
 
-The candidates reuse the milestone reference driver, so a reference issues only the assisted
+These tasks reuse the milestone reference driver, so a reference issues only the assisted
 commands a model gets and counts one decision per command. Battles add one rule to the greedy
 battler. When the opponent's strongest move could knock out the active Pokemon, it heals with
 Recover if it moves first, or else switches to the party member that best takes the hit. Any faint

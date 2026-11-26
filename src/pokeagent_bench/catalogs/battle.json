@@ -652,6 +652,144 @@
         {"id": "route-4-east", "description": "Leave Mt. Moon onto Route 4 east of the cave.", "check": {"map": 15, "area": [24, 0, 89, 17]}},
         {"id": "cerulean-city", "description": "Reach Cerulean City.", "check": {"map": 3}}
       ]
+    },
+    {
+      "id": "battle-elite-four-no-items-no-faint",
+      "title": "Defeat the Elite Four and the Champion with no items and no faint",
+      "difficulty": "hard",
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "battle-elite-four-no-items-no-faint",
+        "description": "Defeat Lorelei, Bruno, Agatha, Lance and the Champion, then complete the Hall of Fame registration. The bag is empty, so nothing heals the party between battles. The task fails the moment any of your Pokemon faints. Do not nickname Pokemon."
+      },
+      "start": "Lorelei's room at the Pokemon League, just inside the door. All eight badges are owned, no Elite Four member or Champion has been defeated and the Hall of Fame is empty.",
+      "success": [
+        "Lorelei, Bruno, Agatha, Lance and the Champion are defeated with no party member fainting.",
+        "Hall of Fame registration completes in the Hall of Fame room."
+      ],
+      "failure": [
+        "Any party member faints.",
+        "The decision cap or the token budget is reached before the Hall of Fame.",
+        "Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 8250000,
+      "decision_limit": 550,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start in Lorelei's room with no League win recorded and an empty bag.",
+        "A scripted reference reaches every milestone with the same controls the model gets, and no party member faints."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Win five League battles in a row with no healing items and no faint, managing HP and PP across the run",
+      "agent_goal": "Defeat Lorelei, Bruno, Agatha, Lance and the Champion, then complete the Hall of Fame registration. The bag is empty, so nothing heals the party between battles. The task fails the moment any of your Pokemon faints. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Party, all level 55, full HP, no status and full PP: Jolteon with Thunderbolt, Thunder, Double Kick and Quick Attack. Alakazam with Psychic, Psybeam, Recover and Reflect. Lapras with Ice Beam, Surf, Body Slam and Thunderbolt. Rhydon with Earthquake, Rock Slide, Body Slam and Horn Attack. Venusaur with Razor Leaf, Mega Drain, Body Slam and Sleep Powder.",
+        "Empty bag and no money to spend, and the League doors lock behind the player, so HP and PP carry from one battle to the next. Recover is the only healing.",
+        "Any faint ends the run, so a Pokemon in danger has to be switched out or healed in time. No one-hit knockout, fixed-damage, Hyper Beam or Explosion moves. No battle hints are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/LoreleisRoom.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/BrunosRoom.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/AgathasRoom.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/LancesRoom.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/ChampionsRoom.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/HallOfFame.asm",
+        "https://github.com/pret/pokered/blob/master/data/trainers/parties.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Check in the pilot whether models switch out a Pokemon in danger before it faints, or keep attacking with it."
+      ],
+      "measures": "Win the five League battles in order with one weaker fixed party, no items and no faint, choosing type-effective moves, switching out a Pokemon before it can be knocked out and spreading HP and PP over the whole run.",
+      "no_faint": true,
+      "milestones": [
+        {"id": "lorelei", "description": "Defeat Lorelei.", "check": {"elite": "Lorelei"}},
+        {"id": "bruno", "description": "Defeat Bruno.", "check": {"elite": "Bruno"}},
+        {"id": "agatha", "description": "Defeat Agatha.", "check": {"elite": "Agatha"}},
+        {"id": "lance", "description": "Defeat Lance.", "check": {"elite": "Lance"}},
+        {"id": "hall-of-fame", "description": "Defeat the Champion and complete the Hall of Fame registration.",
+         "check": {"map": 118, "champion": true, "hall_of_fame": true}}
+      ],
+      "fixture": {
+        "state_sha256": "f1b53f0da2f53624c938cea01bf3db4709e9e556a6e465cd9a2cadcb88f2d028",
+        "actions_sha256": "eb972d0c8040ffe8af5a86452bb3274de6b2690ff9f98731c95f3a84f4cb5e3b",
+        "actions": 2594,
+        "frames": 70062,
+        "decisions": 109
+      }
+    },
+    {
+      "id": "battle-champion-no-items-no-faint",
+      "title": "Defeat the Champion's six with three Pokemon, no items and no faint",
+      "difficulty": "hard",
+      "tested_skill": "battle-strategy",
+      "mode": "gameplay",
+      "action_policy": "assisted-gameplay-v1",
+      "objective": {
+        "kind": "catalog-task",
+        "task_id": "battle-champion-no-items-no-faint",
+        "description": "Defeat the Champion, then complete the Hall of Fame registration. You have three Pokemon against six and the bag is empty. The task fails the moment any of your Pokemon faints. Do not nickname Pokemon."
+      },
+      "start": "The Champion battle in the Champion's room, at the first battle menu. Lorelei, Bruno, Agatha and Lance are beaten, the Champion is not and the Hall of Fame is empty.",
+      "success": [
+        "The Champion is defeated with no party member fainting.",
+        "Hall of Fame registration completes in the Hall of Fame room."
+      ],
+      "failure": [
+        "Any party member faints.",
+        "The decision cap or the token budget is reached before the Hall of Fame.",
+        "Infrastructure errors are recorded separately."
+      ],
+      "variants": [
+        "One start. Pilot timing variants are added only if the pilot shows start sensitivity."
+      ],
+      "token_limit": 1650000,
+      "decision_limit": 110,
+      "existing_task": null,
+      "requirements": [
+        "Capture the native start at the first battle menu against the Champion, with the four Elite Four wins recorded, no Champion win and an empty bag.",
+        "A scripted reference reaches every milestone with the same controls the model gets, and no party member faints."
+      ],
+      "status": "specified",
+      "calibration": "pending",
+      "task_family": "Win one long battle against a larger team with no items and no faint",
+      "agent_goal": "Defeat the Champion, then complete the Hall of Fame registration. You have three Pokemon against six and the bag is empty. The task fails the moment any of your Pokemon faints. Do not nickname Pokemon.",
+      "scenario_details": [
+        "Party, all level 60, full HP, no status and full PP: Jolteon with Thunderbolt, Thunder, Double Kick and Quick Attack. Alakazam with Psychic, Psybeam, Recover and Reflect. Lapras with Ice Beam, Surf, Body Slam and Thunderbolt.",
+        "The Champion leads with Pidgeot and also has Alakazam, Rhydon, Arcanine, Exeggutor and Blastoise, at levels 59 to 65. Empty bag and no money. Recover is the only healing.",
+        "Any faint ends the run, so a Pokemon in danger has to be switched out or healed in time. No battle hints are supplied."
+      ],
+      "sources": [
+        "https://github.com/pret/pokered/blob/master/scripts/ChampionsRoom.asm",
+        "https://github.com/pret/pokered/blob/master/scripts/HallOfFame.asm",
+        "https://github.com/pret/pokered/blob/master/data/trainers/parties.asm",
+        "https://github.com/pret/pokered/blob/master/engine/battle/core.asm"
+      ],
+      "open_questions": [
+        "Check in the pilot whether the cap of five times the reference binds for strong models.",
+        "Check in the pilot whether models switch before a knockout, and whether Hypnosis or a critical hit decides most failures."
+      ],
+      "measures": "Beat six stronger opponents in one battle with three Pokemon and no items, choosing type-effective moves, healing with Recover and switching out a Pokemon before it can be knocked out.",
+      "no_faint": true,
+      "milestones": [
+        {"id": "champion", "description": "Defeat the Champion.", "check": {"champion": true}},
+        {"id": "hall-of-fame", "description": "Complete the Hall of Fame registration.",
+         "check": {"map": 118, "champion": true, "hall_of_fame": true}}
+      ],
+      "fixture": {
+        "state_sha256": "ef83b193171a2be589899c182675a5c9294b16a9f41a06af24c254c006b10940",
+        "actions_sha256": "f7c95a69a9ada8e62ec1ef7d44ecd01306a2c011230cdc967c47cb8a45988f40",
+        "actions": 705,
+        "frames": 18864,
+        "decisions": 22
+      }
     }
   ]
 }

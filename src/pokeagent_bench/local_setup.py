@@ -99,6 +99,7 @@ def build_pack(rom, fixtures, output):
 
     Folder paths inside the fixture root become a token that setup fills in again.
     Every other absolute path is provenance only and is reduced to a private marker.
+    A temporary folder path is dropped whole, since its later parts can name the user.
     """
     rom_bytes = check_rom(rom)
     root = Path(fixtures).resolve()
@@ -111,6 +112,7 @@ def build_pack(rom, fixtures, output):
             data = path.read_bytes()
             if path.suffix == '.json':
                 text = data.decode().replace(str(root), TOKEN)
+                text = re.sub(r'(?:file://)?/tmp/[^"\\]*', 'private:', text)
                 text = re.sub(r'(?:file://)?/(?:home|Users)/[^/"\\]+', 'private:', text)
                 data = text.encode()
             states += path.suffix == '.state'
@@ -130,8 +132,13 @@ def build_pack(rom, fixtures, output):
     return summary
 
 
-def unpack_fixtures(rom_bytes, destination, pack=None):
-    """Rebuild the fixture folder from the pack and the user's own ROM."""
+def unpack_fixtures(rom_bytes, destination, pack=None, *, add=False):
+    """Rebuild the fixture folder from the pack and the user's own ROM.
+
+    With add, the folder may exist already and only the top-level folders it lacks are written. A setup
+    from an older release so gains the starts of tasks added since, and every start it has stays as it is.
+    The whole pack is checked against its hash either way.
+    """
     pack = Path(pack or PACK)
     if not (pack / 'fixtures.pack').is_file():
         raise ValueError('This checkout has no fixture pack, so benchmark fixtures cannot be built')
@@ -146,12 +153,18 @@ def unpack_fixtures(rom_bytes, destination, pack=None):
     if sha256(raw) != summary['tree_sha256']:
         raise ValueError('The fixture pack is damaged: checksum mismatch')
     destination = Path(destination).resolve()
-    destination.mkdir(parents=True)
+    destination.mkdir(parents=True, exist_ok=add)
+    present = {path.name for path in destination.iterdir()}
+    added = set()
     with tarfile.open(fileobj=io.BytesIO(raw)) as tree:
         for member in tree:
             target = (destination / member.name).resolve()
             if not member.isfile() or destination not in target.parents:
                 raise ValueError('The fixture pack holds an unexpected entry')
+            top = member.name.split('/', 1)[0]
+            if top in present:
+                continue
+            added.add(top)
             data = tree.extractfile(member).read()
             if target.suffix == '.json':
                 # Only a whole folder name is filled. The pack also holds the token glued to a sibling
@@ -159,7 +172,12 @@ def unpack_fixtures(rom_bytes, destination, pack=None):
                 data = FOLDER_TOKEN.sub(lambda _: destination.as_posix().encode(), data)
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(data)
-    return summary
+    return {**summary, 'added': sorted(added)}
+
+
+def add_missing_starts(rom, fixtures):
+    """Unpack into an existing fixture folder the starts it lacks. Return the folders added."""
+    return unpack_fixtures(check_rom(rom), fixtures, add=True)['added']
 
 
 def setup(rom, output, reference_archive=None):
@@ -172,6 +190,10 @@ def setup(rom, output, reference_archive=None):
     if not fixtures.exists():
         unpack_fixtures(rom_bytes, fixtures)
         built.append('fixtures')
+        added = []
+    else:
+        # A setup from an older release gains the starts of tasks added since. Its own starts stay.
+        added = unpack_fixtures(rom_bytes, fixtures, add=True)['added']
     if not (game_data / 'current.json').is_file():
         build_game_data(game_data, reference_archive)
         built.append('game-data')
@@ -183,4 +205,4 @@ def setup(rom, output, reference_archive=None):
     # A task is held back when its definition changed after its fixture was last validated.
     held = sorted(row['id'] for row in report['tasks'] if not row['runnable'])
     return {'rom': ROM_NAME, 'fixtures': str(fixtures), 'game_data': str(game_data), 'built': built,
-            'tasks_ready': report['runnable'], 'tasks_held': held}
+            'starts_added': added, 'tasks_ready': report['runnable'], 'tasks_held': held}

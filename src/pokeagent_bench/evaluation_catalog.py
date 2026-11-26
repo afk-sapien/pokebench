@@ -70,6 +70,8 @@ def validate_category(category):
         # The campaign keeps its own milestone list, scored by the campaign evaluator.
         if 'milestones' in evaluation and key != 'campaign':
             validate_milestone_task(evaluation)
+        if 'fixture' in evaluation:
+            validate_reference_pins(evaluation)
     by_id = {task['id']: task for task in evaluations}
     for task in evaluations:
         parent = task.get('variant_of')
@@ -89,6 +91,39 @@ def validate_milestone_task(task):
         raise ValueError(f'{identifier}: milestone tasks use their own catalog evaluator')
     validate_milestones(task['milestones'])
     validate_rules(task)
+
+
+# A task that pins its start and its scripted reference gets caps set from that reference.
+REFERENCE_MULTIPLE = 5
+TOKENS_PER_DECISION = 15_000
+REFERENCE_PINS = ('state_sha256', 'actions_sha256', 'actions', 'frames', 'decisions')
+
+
+def reference_cap(decisions):
+    """Five times the reference decisions, rounded half up to two significant figures."""
+    value = REFERENCE_MULTIPLE * decisions
+    unit = 10 ** max(0, len(str(value)) - 2)
+    return (value + unit // 2) // unit * unit
+
+
+def validate_reference_pins(task):
+    """A pinned milestone task names its start digest and its reference, and its caps follow from that reference."""
+    identifier = task['id']
+    if 'milestones' not in task:
+        raise ValueError(f'{identifier}: only milestone tasks pin a reference')
+    pins = task['fixture']
+    if not isinstance(pins, dict) or set(pins) != set(REFERENCE_PINS):
+        raise ValueError(f'{identifier}: a pinned task pins ' + ', '.join(REFERENCE_PINS))
+    if not all(isinstance(pins[key], str) and re.fullmatch(r'[0-9a-f]{64}', pins[key])
+               for key in ('state_sha256', 'actions_sha256')):
+        raise ValueError(f'{identifier}: pinned digests are SHA-256 hex')
+    if not all(type(pins[key]) is int and pins[key] > 0 for key in ('actions', 'frames', 'decisions')):
+        raise ValueError(f'{identifier}: pinned counts are positive integers')
+    if task['decision_limit'] != reference_cap(pins['decisions']):
+        raise ValueError(f'{identifier}: the decision cap is five times the reference decisions, to two figures')
+    if task['token_limit'] != TOKENS_PER_DECISION * task['decision_limit']:
+        raise ValueError(f'{identifier}: the token budget is 15,000 per allowed decision')
+    return task
 
 
 def _root():
@@ -114,71 +149,11 @@ def load_catalog(category=None, *, include_retired=False):
     return groups
 
 
-CANDIDATE_REFERENCE_MULTIPLE = 5
-CANDIDATE_TOKENS_PER_DECISION = 15_000
-CANDIDATE_PINS = ('state_sha256', 'actions_sha256', 'actions', 'frames', 'decisions')
-
-
-def candidate_files():
-    """The candidate catalog files. They sit below the released catalog, which never reads them.
-    A catalog root with no candidates folder has no candidates."""
-    folder = _root() / 'candidates'
-    return [path for path in folder.iterdir() if path.name.endswith('.json')] if folder.is_dir() else []
-
-
-def candidate_cap(decisions):
-    """Five times the reference decisions, rounded half up to two significant figures."""
-    value = CANDIDATE_REFERENCE_MULTIPLE * decisions
-    unit = 10 ** max(0, len(str(value)) - 2)
-    return (value + unit // 2) // unit * unit
-
-
-def validate_candidate(task):
-    """A candidate is a hard milestone task with pinned start and reference, and caps set from that reference."""
-    identifier = task['id']
-    if task['difficulty'] != 'hard' or 'milestones' not in task:
-        raise ValueError(f'{identifier}: candidates are hard milestone tasks')
-    pins = task.get('fixture')
-    if not isinstance(pins, dict) or set(pins) != set(CANDIDATE_PINS):
-        raise ValueError(f'{identifier}: candidates pin ' + ', '.join(CANDIDATE_PINS))
-    if not all(isinstance(pins[key], str) and re.fullmatch(r'[0-9a-f]{64}', pins[key])
-               for key in ('state_sha256', 'actions_sha256')):
-        raise ValueError(f'{identifier}: pinned digests are SHA-256 hex')
-    if not all(type(pins[key]) is int and pins[key] > 0 for key in ('actions', 'frames', 'decisions')):
-        raise ValueError(f'{identifier}: pinned counts are positive integers')
-    if task['decision_limit'] != candidate_cap(pins['decisions']):
-        raise ValueError(f'{identifier}: the decision cap is five times the reference decisions, to two figures')
-    if task['token_limit'] != CANDIDATE_TOKENS_PER_DECISION * task['decision_limit']:
-        raise ValueError(f'{identifier}: the token budget is 15,000 per allowed decision')
-    return task
-
-
-def load_candidates():
-    """Candidate tasks, kept apart from the released catalog. No suite loads them."""
-    released = {task['id'] for group in load_catalog(include_retired=True) for task in group['evals']}
-    groups = []
-    for path in sorted(candidate_files(), key=lambda path: path.name):
-        group = validate_category(json.loads(path.read_text()))
-        if path.name != group['category'] + '.json' or group.get('candidate') is not True:
-            raise ValueError(f'{path.name}: a candidate catalog names its category and says it is a candidate')
-        for task in group['evals']:
-            validate_candidate(task)
-            if task['id'] in released:
-                raise ValueError(f'{task["id"]}: a candidate cannot reuse a released task id')
-        groups.append(group)
-    return groups
-
-
-@cache
-def candidate_tasks():
-    return frozenset(task['id'] for group in load_candidates() for task in group['evals'])
-
-
 @cache
 def milestone_tasks():
     """Task ids scored by the share of their ordered milestones reached, from 0 to 1."""
     return frozenset(task['id'] for group in load_catalog(include_retired=True) if group['category'] != 'campaign'
-                     for task in group['evals'] if 'milestones' in task) | candidate_tasks()
+                     for task in group['evals'] if 'milestones' in task)
 
 
 def summary(category=None, fixtures=None, *, benchmark=None):
@@ -236,12 +211,8 @@ def retired_tasks():
 
 
 def task_definition(task_id):
-    """Return the concrete definition used by runners, fixtures and reporting. Candidates come after released tasks."""
+    """Return the concrete definition used by runners, fixtures and reporting."""
     for category in load_catalog(include_retired=True):
-        for task in category['evals']:
-            if task['id'] == task_id:
-                return task
-    for category in load_candidates():
         for task in category['evals']:
             if task['id'] == task_id:
                 return task

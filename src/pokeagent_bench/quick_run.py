@@ -8,7 +8,7 @@ from pathlib import Path
 import re
 import urllib.request
 
-from . import BENCHMARK_VERSION
+from . import BENCHMARK_VERSION, suite_versions
 from .benchmark_tracks import LONG, NAMES, SHORT, for_category
 from .catalog_batch import plan, report, resumable, run_batch
 from .catalog_execution import PROVIDERS, inventory
@@ -177,6 +177,8 @@ def estimate(manifest, budget, output, used=0, done=0, price=None, expected_line
     tasks = len({cell['task_id'] for cell in cells})
     lines = [f'Suite {suite} ({NAMES[manifest["benchmark"]]}), model {model}', *endpoint_lines,
              f'Runs: {len(cells)} over {counted(tasks, "task")}, one at a time.']
+    if suite == 'short':
+        lines.append(suite_versions.line(cells))
     if done:
         lines.append(f'Resuming: {done} of {counted(len(cells), "run")} already finished, {millions(used)} tokens used.')
     if manifest.get('held_tasks'):
@@ -214,6 +216,8 @@ def summary(result, output, next_step=True):
     elif row['category_scores'] and row['available_category_average'] is not None:
         lines.append(f'Score {100 * row["available_category_average"]:.1f} of 100, the average of these categories:')
         lines += [f'  {name:<12} {100 * value:5.1f}' for name, value in sorted(row['category_scores'].items())]
+    if result.get('suite') == 'short':
+        lines.append(suite_versions.line(result['cells']))
     lines.append(f'Tokens used {millions(result["tokens_used"])}. Reference budget {millions(result["token_budget"])}.')
     if result['tokens_used'] > result['token_budget']:
         lines.append('Warning: this run passed the reference budget. Every task still ran at its own caps.')
@@ -288,6 +292,13 @@ def run_suite(args, *, ask=None, next_step=True):
     elif output.exists():
         raise ValueError(f'{output} already exists and is not a suite run. Choose another --output')
     else:
+        if any(row.get('variants') == [] for row in inventory(fixtures)['tasks']):
+            # A setup from an older release lacks the starts of newer tasks. Setup would add them the same way.
+            from .local_setup import add_missing_starts
+            added = add_missing_starts(rom, fixtures)
+            if added:
+                print(f'Added the starts of {counted(len(added), "task")} from the fixture pack: {", ".join(added)}',
+                      flush=True)
         manifest = new_plan(args.suite, fixtures, provider, model)
     lines = (['The random player calls no model and uses no tokens.'] if provider == 'random'
              else expected(manifest, *published()))

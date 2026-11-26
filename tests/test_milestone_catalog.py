@@ -7,7 +7,8 @@ from pokeagent_bench import navigation_conditions
 TOKENS_PER_DECISION = 15_000
 SHIPPED = {'navigation-victory-road', 'navigation-seafoam-islands', 'navigation-silph-co',
            'navigation-pewter-to-lavender', 'battle-elite-four-no-items', 'battle-mt-moon-underleveled',
-           'objectives-cinnabar-gym'}
+           'objectives-cinnabar-gym', 'navigation-vermilion-gym-switches', 'navigation-safari-zone-secret-house',
+           'battle-elite-four-no-items-no-faint', 'battle-champion-no-items-no-faint', 'objectives-saffron-gate-drink'}
 
 
 def shipped():
