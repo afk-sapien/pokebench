@@ -222,7 +222,8 @@ def freeze(short):
             'current_starts': [[t, v, sorted(h)] for (t, v), h in sorted(starts.items(), key=lambda kv: order(kv[0]))]}
 
 
-def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None, frozen=None, suite=None, maintained=()):
+def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None, frozen=None, suite=None, maintained=(),
+                   versions=None):
     """Build the Short panel.
 
     reruns maps a model to an adopted v0.37 batch, as {'folder', 'web', 'cells'}. Its cells replace every
@@ -231,6 +232,8 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
     maintained lists rows from adopt_maintainer. Each is a row of its own beside the model's earlier row, and it
     stays out of the cost comparison. community lists verified reports that ran the stored suite, as build keeps
     them with community_mismatch. They are labeled against that suite and also stay out of the cost comparison.
+    versions lists the Short suite versions newest first, as short_versions reads them. With rows on the stored
+    suite, the panel gets one heading per version and one for the earlier set, and the page draws a table for each.
     """
     reruns = reruns or {}
     shared, frozen_starts = frozen_sets(frozen) if frozen else (None, None)
@@ -283,7 +286,7 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         beside[row_set['id']] = row_set
         for row in row_set['cells']:
             clean = {k: row.get(k) for k in CELL_FIELDS}
-            run = base / row_set['runs'] / row['id']
+            run = row_set['folder'] / row['id']
             # The verified report gives the cell. The run folder it came from gives the cost and the harness.
             clean.update(model=row_set['id'], replay=None, revision=MAINTAINER_REVISION, source=row_set['runs'],
                          harness_fault=None, cost=run_cost(run, row_set['model'], row.get('tokens')),
@@ -363,18 +366,31 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
             log += [e for e in attempts_log(base, [swap['folder']]) if e['model'] == model]
         for row_set in maintained:
             for folder, why in row_set['replaced'].items():
-                manifest, result = load(base / folder / 'manifest.json'), load(base / folder / 'result.json')
+                manifest, result = load(row_set['base'] / folder / 'manifest.json'), load(row_set['base'] / folder / 'result.json')
                 log.append({'batch': row_set['runs'], 'cell': re.match(r'cell-\d+', Path(folder).name)[0], 'kind': 'replaced',
                             'reason': why, 'model': row_set['id'], 'task_id': manifest.get('scenario', {}).get('task_id'),
                             'stop_reason': result.get('stop_reason'), 'decisions': result.get('usage', {}).get('calls')})
-    return {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
-            'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
-            'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
-            'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
-            'label_text': {code: {'label': label, 'detail': detail} for code, (label, detail) in NOTES.items()},
-            'attempts': {'rule': RETRY_RULE, 'log': log},
-            'efficiency': comparison([c for c in scored if c['model'] not in submitted and c['model'] not in beside],
-                                     [m for m in models if m['id'] not in submitted and m['id'] not in beside], shared)}
+    panel = {'models': models, 'tasks': tasks, 'cells': cells, 'categories': source['categories'],
+             'ranked_categories': [c for c in source['categories'] if c not in UNRANKED_CATEGORIES],
+             'unranked_categories': [c for c in source['categories'] if c in UNRANKED_CATEGORIES],
+             'finished': sum(c['state'] == 'finished' for c in scored), 'planned': len(scored),
+             'label_text': {code: {'label': label, 'detail': detail} for code, (label, detail) in NOTES.items()},
+             'attempts': {'rule': RETRY_RULE, 'log': log},
+             'efficiency': comparison([c for c in scored if c['model'] not in submitted and c['model'] not in beside],
+                                      [m for m in models if m['id'] not in submitted and m['id'] not in beside], shared)}
+    if reruns or beside or submitted:
+        if versions is None:
+            planned_runs, planned_tasks = suite_size(suite)
+            versions = [{'benchmark': suite['benchmark'], 'name': suite['benchmark'], 'runs': planned_runs, 'tasks': planned_tasks,
+                         'released': True}]
+        # The earlier rows ran no one suite version, so their heading counts the scored starts and tasks they ran.
+        earlier = {m['id'] for m in models if not m.get('suite')}
+        starts = {(c['task_id'], c['variant']) for c in scored if c['model'] in earlier}
+        panel['versions'] = [dict(v) for v in versions]
+        if earlier:
+            panel['versions'].append({'benchmark': None, 'name': 'Earlier set', 'runs': len(starts),
+                                      'tasks': len({task for task, _ in starts})})
+    return panel
 
 
 def rescored(root, result):
@@ -452,6 +468,34 @@ def long_snapshot(base, web, reruns=None):
 
 
 SUITE_FILE = 'short-red-v0.63.json'
+VERSIONS_FILE = 'short-versions.json'
+VERSIONS_FORMAT = 'pokebench-short-versions-v1'
+VERSION_KEYS = {'benchmark', 'runs', 'tasks', 'released', 'note', 'added'}
+
+
+def suite_size(suite):
+    """The runs and tasks of a stored suite: one run per start, and a task can have more than one start."""
+    return sum(len(t.get('variants', [])) for t in suite['tasks']), len(suite['tasks'])
+
+
+def short_versions(path, suite):
+    """Read the Short suite versions the page shows, newest first. The stored suite's entry must match its own file."""
+    listed = load(path)
+    if listed.get('format') != VERSIONS_FORMAT:
+        raise ValueError(f'{path} is not a {VERSIONS_FORMAT} file')
+    versions = listed.get('versions', [])
+    for entry in versions:
+        if not isinstance(entry, dict) or not {'benchmark', 'runs', 'tasks', 'released'} <= set(entry) <= VERSION_KEYS:
+            raise ValueError(f'{path}: each version names benchmark, runs, tasks and released, and may name note and added')
+    names = [v['benchmark'] for v in versions]
+    if names != sorted(names, key=tag_key, reverse=True) or len(set(names)) != len(names):
+        raise ValueError(f'{path}: the versions are not listed once each, newest first')
+    stored = next((v for v in versions if v['benchmark'] == suite['benchmark']), None)
+    if stored is None or (stored['runs'], stored['tasks']) != suite_size(suite):
+        runs, tasks = suite_size(suite)
+        raise ValueError(f'{path}: {suite["benchmark"]} must be listed with {runs} runs over {tasks} tasks, as {SUITE_FILE} holds')
+    return [{'benchmark': v['benchmark'], 'name': v['benchmark'], 'runs': v['runs'], 'tasks': v['tasks'], 'released': v['released'],
+             **({'note': v['note']} if v.get('note') else {})} for v in versions]
 
 
 def inside(base, relative):
@@ -526,6 +570,14 @@ def adopt_long(base, model, run_id, suite):
 
 MAINTAINER_FORMAT = 'pokebench-maintainer-rows-v1'
 MAINTAINER_KEYS = {'id', 'model', 'suite', 'report', 'report_sha256', 'runs', 'replaced', 'release', 'label', 'detail'}
+# A row may also name a root, a folder the build is given by name, so the checked-in file holds no absolute path.
+MAINTAINER_ROOT = 'root'
+ROOT_NAME = re.compile(r'[A-Za-z0-9][A-Za-z0-9._-]*')
+
+
+def relative_path(value):
+    """True for a path that is neither absolute nor in a home folder. A step up is caught later, as a path not under its folder."""
+    return bool(str(value)) and not Path(str(value)).is_absolute() and not str(value).startswith('~')
 
 
 def maintainer_sources(path):
@@ -534,19 +586,39 @@ def maintainer_sources(path):
     if sources.get('format') != MAINTAINER_FORMAT:
         raise ValueError(f'{path} is not a {MAINTAINER_FORMAT} file')
     for entry in sources.get('rows', []):
-        if not isinstance(entry, dict) or set(entry) != MAINTAINER_KEYS:
-            raise ValueError(f'{path}: each row names exactly {", ".join(sorted(MAINTAINER_KEYS))}')
+        if not isinstance(entry, dict) or not MAINTAINER_KEYS <= set(entry) <= MAINTAINER_KEYS | {MAINTAINER_ROOT}:
+            raise ValueError(f'{path}: each row names exactly {", ".join(sorted(MAINTAINER_KEYS))}, and may name {MAINTAINER_ROOT}')
         if entry['suite'] != 'short':
             raise ValueError(f'{path}: {entry["id"]} is a {entry["suite"]} row, and only Short rows are supported')
+        if MAINTAINER_ROOT in entry and not ROOT_NAME.fullmatch(str(entry[MAINTAINER_ROOT])):
+            raise ValueError(f'{path}: {entry["id"]} names root {entry[MAINTAINER_ROOT]!r}, which is not a plain name')
+        if not all(relative_path(p) for p in (entry['report'], entry['runs'], *entry['replaced'])):
+            raise ValueError(f'{path}: {entry["id"]} names a path that is not relative. Name a root instead.')
     return sources.get('rows', [])
 
 
-def adopt_maintainer(base, entry, suite):
-    """Return (row, None) when a verified report and the run folder it came from agree on every stored start, else (None, why)."""
+def root_map(items):
+    """Map each NAME=FOLDER item, as --root gives it, from the name to the folder."""
+    roots = {}
+    for item in items or ():
+        name, mark, folder = str(item).partition('=')
+        if not mark or not ROOT_NAME.fullmatch(name) or not folder:
+            raise ValueError(f'{item} is not NAME=FOLDER')
+        if name in roots:
+            raise ValueError(f'root {name} is given twice')
+        roots[name] = Path(folder)
+    return roots
+
+
+def adopt_maintainer(base, entry, suite, where='the data folder'):
+    """Return (row, None) when a verified report and the run folder it came from agree on every stored start, else (None, why).
+
+    base is the folder the entry's paths are relative to: the data folder, or the root the entry names.
+    """
     base = Path(base)
     report_path = base / str(entry['report'])
     if not report_path.resolve().is_relative_to(base.resolve()) or not report_path.is_file():
-        return None, f'{entry["report"]} is not a file under the data folder.'
+        return None, f'{entry["report"]} is not a file under {where}.'
     if hashlib.sha256(report_path.read_bytes()).hexdigest() != entry['report_sha256']:
         return None, f'{entry["report"]} does not match its listed sha256.'
     report = load(report_path)
@@ -558,7 +630,7 @@ def adopt_maintainer(base, entry, suite):
         return None, f'{entry["report"]} ran {report.get("harness", {}).get("benchmark")}, not {suite["benchmark"]}.'
     root = inside(base, entry['runs'])
     if root is None:
-        return None, f'{entry["runs"]} is not a folder under the data folder.'
+        return None, f'{entry["runs"]} is not a folder under {where}.'
     rows = report.get('cells', [])
     walls = []
     why = suite_mismatch(rows, suite)
@@ -581,24 +653,31 @@ def adopt_maintainer(base, entry, suite):
         walls.append(result.get('wall_seconds'))
     for folder in entry['replaced']:
         if inside(base, folder) is None or not re.match(r'cell-\d+', Path(folder).name):
-            return None, f'{folder} is not a kept cell folder under the data folder.'
+            return None, f'{folder} is not a kept cell folder under {where}.'
     packages = sorted({load(root / str(c['id']) / 'manifest.json').get('package_version') for c in rows}, key=str)
     note = {'label': entry['label'], 'detail': entry['detail'], 'model': entry['model'], 'release': entry['release'],
             'packages': packages, 'verified_on': report['harness'].get('package_version'),
             'report_sha256': entry['report_sha256'], 'bundle_sha256': report.get('bundle_sha256'),
             # The kept attempts' own play time, summed. Replaced attempts and pauses between attempts are not in it.
             'wall_seconds': round(sum(walls)) if all(isinstance(w, (int, float)) for w in walls) else None}
-    return {'id': entry['id'], 'model': entry['model'], 'runs': entry['runs'], 'cells': rows,
+    # runs is the name the page shows, which starts with the root's name and never holds its folder.
+    # folder and base are where the build reads the attempts and the kept copies.
+    shown = f'{entry[MAINTAINER_ROOT]}/{entry["runs"]}' if entry.get(MAINTAINER_ROOT) else entry['runs']
+    return {'id': entry['id'], 'model': entry['model'], 'runs': shown, 'folder': root, 'base': base, 'cells': rows,
             'replaced': entry['replaced'], 'note': note}, None
 
 
-def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None):
-    """Return the showcase data. A model keeps its earlier source unless its listed new source is complete."""
-    base, web = Path(base), Path(web)
+def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None, roots=None, versions=None):
+    """Return the showcase data. A model keeps its earlier source unless its listed new source is complete.
+
+    roots maps a root name to its folder, for maintainer rows that name a root.
+    """
+    base, web, roots = Path(base), Path(web), {name: Path(folder) for name, folder in (roots or {}).items()}
     sources = rerun_sources(sources or SOURCES / 'rerun-sources.json')
     listed = maintainer_sources(maintainer or SOURCES / 'maintainer-rows.json')
     frozen = load(frozen or SOURCES / 'frozen.json')
     suite = load(suite or SOURCES / SUITE_FILE)
+    versions = short_versions(versions or SOURCES / VERSIONS_FILE, suite)
     source = load(web / 'focused-analysis.json')
     extra = []
     for folder in ('main-v066-astra', 'main-v067-fable'):
@@ -623,7 +702,11 @@ def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None):
                 long[name] = entry['long']
     maintained = []
     for entry in listed:
-        row, why = adopt_maintainer(base, entry, suite)
+        root = entry.get(MAINTAINER_ROOT)
+        if root is not None and root not in roots:
+            print(f'{entry["id"]}: left off the site. Its root {root} was not given. Pass --root {root}=FOLDER.', file=sys.stderr)
+            continue
+        row, why = adopt_maintainer(roots[root], entry, suite, f'the {root} root') if root else adopt_maintainer(base, entry, suite)
         if row is None:
             print(f'{entry["id"]}: left off the site. {why}', file=sys.stderr)
         else:
@@ -637,7 +720,7 @@ def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None):
         else:
             community.append(report)
     return {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base, community, short, frozen, suite, maintained),
+            'short': short_snapshot(source, web, extra, base, community, short, frozen, suite, maintained, versions),
             'long': long_snapshot(base, web, long),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}
@@ -738,9 +821,9 @@ def write_site(data, folder):
     return data
 
 
-def export(base, web, *, install=False, sources=None, maintainer=None):
+def export(base, web, *, install=False, sources=None, maintainer=None, roots=None):
     base, web = Path(base), Path(web)
-    data = write_site(build(base, web, sources=sources, maintainer=maintainer), web)
+    data = write_site(build(base, web, sources=sources, maintainer=maintainer, roots=roots), web)
     if install:
         assets = Path(__file__).with_name('showcase_assets')
         for name in ASSETS:

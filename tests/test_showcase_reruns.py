@@ -12,14 +12,20 @@ import subprocess
 import pytest
 
 from pokeagent_bench import showcase
-from pokeagent_bench.showcase import (MAINTAINER_FORMAT, MAINTAINER_REVISION, RERUN_FORMAT, SOURCES, SUITE_FILE, build,
-                                     community_reports, freeze, long_snapshot, maintainer_sources, short_snapshot,
-                                     write_site)
+from pokeagent_bench.showcase import (MAINTAINER_FORMAT, MAINTAINER_REVISION, RERUN_FORMAT, SOURCES, SUITE_FILE, VERSIONS_FILE,
+                                     VERSIONS_FORMAT, build, community_reports, freeze, long_snapshot, maintainer_sources,
+                                     root_map, short_snapshot, short_versions, write_site)
 from pokeagent_bench.showcase_costs import PRICING, comparison
 
 OPUS, SOL = 'claude-opus-5-5', 'gpt-5.6-sol'
 NEW = 'red-v0.63-short-guard'
 ADDED = 'red-v0.62-milestone-short'
+# A newer version no row has run, then the stored suite: one start per variant of each task the fixture suite lists.
+NEXT = 'red-v0.64-harder-short'
+VERSIONS = {'format': VERSIONS_FORMAT, 'versions': [
+    {'benchmark': NEXT, 'runs': 5, 'tasks': 4, 'released': False, 'note': 'This version is not released yet.'},
+    {'benchmark': NEW, 'runs': 4, 'tasks': 3, 'released': True}]}
+TITLES = [f'{NEXT}, 5 runs over 4 tasks', f'{NEW}, 4 runs over 3 tasks', 'Earlier set, 4 runs over 3 tasks']
 CATEGORIES = ['navigation', 'battle', 'operations', 'preparation', 'objectives']
 OLD_STARTS = [('navigation-one', 'navigation', 'default'), ('battle-one', 'battle', 'default'),
               ('battle-one', 'battle', 'variant-b'), ('preparation-one', 'preparation', 'default')]
@@ -122,11 +128,13 @@ def site(tmp_path):
 
     write(tmp_path / 'frozen.json', dict(format='pokebench-showcase-frozen-v1', **freeze(current()['short'])))
 
-    def built(models, maintainer=()):
+    def built(models, maintainer=(), roots=None):
         write(tmp_path / 'sources.json', {'format': RERUN_FORMAT, 'models': models})
         write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': list(maintainer)})
+        write(tmp_path / 'versions.json', VERSIONS)
         data = plain(build(base, web, sources=tmp_path / 'sources.json', frozen=tmp_path / 'frozen.json',
-                           suite=tmp_path / 'suite.json', maintainer=tmp_path / 'maintainer.json'))
+                           suite=tmp_path / 'suite.json', maintainer=tmp_path / 'maintainer.json', roots=roots,
+                           versions=tmp_path / 'versions.json'))
         data.pop('updated_at')
         return data
 
@@ -339,13 +347,16 @@ def test_page_labels_task_sets_only_when_rows_differ(site, tmp_path):
     same = render(tmp_path, site.built({}))
     assert 'task' not in same['ranking']['html'].split('set</span>')[0][-40:] and ' set</span>' not in same['ranking']['html']
     assert same['suite-note']['hidden'] and 'Not run' not in same['tasks']['html']
-    # One set is one group with no title, ranked as before.
-    assert 'set-row' not in same['ranking']['html'] and re.findall(r'<span class="rank">([^<]*)</span>', same['ranking']['html']) == ['01', '02']
+    # One set is one table with no title, ranked as before.
+    assert 'set-title' not in same['ranking']['html'] and same['ranking']['html'].count('<table') == 1
+    assert re.findall(r'<span class="rank">([^<]*)</span>', same['ranking']['html']) == ['01', '02']
+    assert groups(same['ranking']['html'])[0][0] == ''
     mixed = render(tmp_path, site.built({OPUS: {'short': 'v037-pass'}}))
     found = groups(mixed['ranking']['html'])
-    assert [(title, [rank for rank, _ in rows]) for title, rows in found] == [
-        ('Current set, red-v0.63, 3 tasks', ['01']), ('Earlier set, 3 tasks', ['01'])]
-    assert 'Opus' in found[0][1][0][1] and 'Opus' not in found[1][1][0][1]
+    # The newer version no row has run lists the rerun row it waits on, with no rank.
+    assert [(title, [rank for rank, _ in rows]) for title, rows in found] == list(zip(TITLES, [[''], ['01'], ['01']]))
+    assert 'Opus' in found[0][1][0][1] and 'Not yet run on this version' in found[0][1][0][1]
+    assert 'Opus' in found[1][1][0][1] and 'Opus' not in found[2][1][0][1]
     assert '3-task red-v0.63 set</span>' in mixed['ranking']['html'] and '3-task earlier set</span>' in mixed['ranking']['html']
     assert not mixed['suite-note']['hidden'] and 'The sets share 2 tasks.' in mixed['suite-note']['text']
     assert 'the 3-task red-v0.63 set: Navigation 2 tasks, 12.5 points each' in mixed['weight-note']['text']
@@ -406,22 +417,26 @@ def report_cells():
     return [dict(c, replay_verified=True) for c in new_cells(HAIKU, 301)]
 
 
-def maintainer_entry(base, cells=None, **change):
-    """A verified report, the run folder it came from and one kept copy, as a maintainer-rows.json entry."""
-    cells = report_cells() if cells is None else cells
-    for c in report_cells():
-        if not (base / RUNS / c['id']).exists():
-            attempt(base / RUNS / c['id'], NEW, c['tokens'], HAIKU)
-            write(base / RUNS / c['id'] / 'manifest.json', {'benchmark': NEW, 'agent': {'model': HAIKU}, 'package_version': '0.37.2',
+def maintainer_entry(base, cells=None, model=HAIKU, first=301, **change):
+    """A verified report, the run folder it came from and, for Haiku, one kept copy, as a maintainer-rows.json entry."""
+    haiku = model == HAIKU
+    runs, report = (RUNS, 'release-rows/haiku.json') if haiku else (f'release-runs/short-{model}', f'release-rows/{model}.json')
+    made = [dict(c, replay_verified=True) for c in new_cells(model, first)]
+    cells = made if cells is None else cells
+    for c in made:
+        if not (base / runs / c['id']).exists():
+            attempt(base / runs / c['id'], NEW, c['tokens'], model)
+            write(base / runs / c['id'] / 'manifest.json', {'benchmark': NEW, 'agent': {'model': model}, 'package_version': '0.37.2',
                                                            'scenario': {'task_id': c['task_id']}})
-    write(base / BACKUP / 'manifest.json', {'agent': {'model': HAIKU}, 'scenario': {'task_id': 'navigation-new'}})
-    write(base / BACKUP / 'result.json', {'state': 'evaluation_error', 'stop_reason': 'provider_error', 'usage': {'calls': 40}})
-    write(base / 'release-rows/haiku.json', {'format': 'pokebench-verified-report-v1', 'verified': True, 'problems': [],
-                                             'suite': 'short', 'model': HAIKU, 'bundle_sha256': 'bundle',
-                                             'harness': {'benchmark': NEW, 'package_version': '0.37.4'}, 'cells': cells})
-    entry = {'id': EXTRA, 'model': HAIKU, 'suite': 'short', 'report': 'release-rows/haiku.json',
-             'report_sha256': hashlib.sha256((base / 'release-rows/haiku.json').read_bytes()).hexdigest(), 'runs': RUNS,
-             'replaced': {BACKUP: 'Stopped by a provider error.'}, 'release': 'v0.37.4',
+    if haiku:
+        write(base / BACKUP / 'manifest.json', {'agent': {'model': HAIKU}, 'scenario': {'task_id': 'navigation-new'}})
+        write(base / BACKUP / 'result.json', {'state': 'evaluation_error', 'stop_reason': 'provider_error', 'usage': {'calls': 40}})
+    write(base / report, {'format': 'pokebench-verified-report-v1', 'verified': True, 'problems': [],
+                          'suite': 'short', 'model': model, 'bundle_sha256': 'bundle',
+                          'harness': {'benchmark': NEW, 'package_version': '0.37.4'}, 'cells': cells})
+    entry = {'id': f'{model}@red-v0.63', 'model': model, 'suite': 'short', 'report': report,
+             'report_sha256': hashlib.sha256((base / report).read_bytes()).hexdigest(), 'runs': runs,
+             'replaced': {BACKUP: 'Stopped by a provider error.'} if haiku else {}, 'release': 'v0.37.4',
              'label': 'Maintainer run, replay verified', 'detail': 'Ranked with the rows on the current set.'}
     return dict(entry, **change)
 
@@ -486,49 +501,129 @@ def test_a_maintainer_row_its_runs_do_not_back_stays_off_the_site(site, capsys, 
     assert error.startswith(f'{EXTRA}: left off the site. ') and error.count('\n') == 1 and OFF[break_it] in error
 
 
+ROW = dict(dict.fromkeys(showcase.MAINTAINER_KEYS, 'x'), suite='short', replaced={})
+
+
 @pytest.mark.parametrize('change, why', [({'format': 'other'}, 'is not a'), ({'rows': [{'id': 'x'}]}, 'each row names exactly'),
-                                         ({'rows': [dict.fromkeys(showcase.MAINTAINER_KEYS, 'x')]}, 'only Short rows')])
+                                         ({'rows': [dict.fromkeys(showcase.MAINTAINER_KEYS, 'x')]}, 'only Short rows'),
+                                         ({'rows': [dict(ROW, other='x')]}, 'each row names exactly'),
+                                         ({'rows': [dict(ROW, root='../runs')]}, 'is not a plain name'),
+                                         ({'rows': [dict(ROW, runs='/home/someone/runs')]}, 'is not relative'),
+                                         ({'rows': [dict(ROW, report='~/report.json')]}, 'is not relative'),
+                                         ({'rows': [dict(ROW, replaced={'/data/backup/cell-0001': 'x'})]}, 'is not relative')])
 def test_the_maintainer_list_names_every_field_and_only_short_rows(tmp_path, change, why):
     write(tmp_path / 'rows.json', {'format': MAINTAINER_FORMAT, 'rows': [], **change})
     with pytest.raises(ValueError, match=why):
         maintainer_sources(tmp_path / 'rows.json')
 
 
-def test_the_checked_in_maintainer_list_holds_the_haiku_row():
+TERRA, SONNET = 'gpt-5.6-terra', 'claude-sonnet-5-5'
+SECOND = 'runs-20261123'
+
+
+def test_the_checked_in_maintainer_list_holds_the_haiku_terra_and_sonnet_rows():
     rows = maintainer_sources(SOURCES / 'maintainer-rows.json')
-    assert [(r['id'], r['model'], r['release'], r['label']) for r in rows] == [
-        (EXTRA, HAIKU, 'v0.37.4', 'Maintainer run, replay verified')]
+    assert [(r['id'], r['model'], r['release'], r.get('root')) for r in rows] == [
+        (EXTRA, HAIKU, 'v0.37.4', None), (f'{TERRA}@red-v0.63', TERRA, 'v0.37.4', SECOND),
+        (f'{SONNET}@red-v0.63', SONNET, 'v0.37.4', SECOND)]
+    # Terra and Sonnet take Haiku's label and rules, and neither ran an attempt again.
+    assert {(r['label'], r['detail'], r['suite']) for r in rows} == {(rows[0]['label'], rows[0]['detail'], 'short')}
+    assert rows[1]['replaced'] == rows[2]['replaced'] == {} and all(re.fullmatch('[0-9a-f]{64}', r['report_sha256']) for r in rows)
+    assert [(r['report'], r['runs']) for r in rows[1:]] == [(f'runs/short-{m}.pokebench.verified.json', f'runs/short-{m}') for m in (TERRA, SONNET)]
 
 
-@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_the_checked_in_sources_hold_no_absolute_path():
+    for path in SOURCES.glob('*.json'):
+        text = path.read_text()
+        assert not re.search(r'"(/|~)|/home/|/Users/|/tmp/', text), path.name
+
+
+def test_a_maintainer_row_under_a_root_is_read_there_and_shows_only_the_root_name(site, tmp_path, capsys):
+    before = site.built({})
+    second = tmp_path / 'second'
+    entry = maintainer_entry(second, model=TERRA, first=502, root='runs-x')
+    terra = f'{TERRA}@red-v0.63'
+    assert site.built({}, [entry]) == before
+    assert capsys.readouterr().err == f'{terra}: left off the site. Its root runs-x was not given. Pass --root runs-x=FOLDER.\n'
+    # The same paths under the data folder are not the row's.
+    assert site.built({}, [entry], roots={'runs-x': site.base}) == before
+    assert capsys.readouterr().err == f'{terra}: left off the site. {entry["report"]} is not a file under the runs-x root.\n'
+    data = site.built({}, [entry], roots={'runs-x': second})
+    assert capsys.readouterr().err == ''
+    b, a = before['short'], data['short']
+    assert by(a['models'], terra) == b['models'] and by(a['cells'], terra) == b['cells'] and a['efficiency'] == b['efficiency']
+    row = by(a['models'], terra, keep=True)[0]
+    assert (row['label'], row['complete'], row['suite']['source']) == ('Terra (red-v0.63)', True, f'runs-x/release-runs/short-{TERRA}')
+    assert all(c['source'] == row['suite']['source'] and c['cost']['low'] > 0 for c in by(a['cells'], terra, keep=True))
+    assert str(tmp_path) not in json.dumps(data)
+
+
+@pytest.mark.parametrize('items, why', [(['runs-x'], 'is not NAME=FOLDER'), (['../x=/data'], 'is not NAME=FOLDER'),
+                                        (['runs-x='], 'is not NAME=FOLDER'), (['a=/one', 'a=/two'], 'given twice')])
+def test_a_root_is_given_once_as_a_plain_name_and_a_folder(items, why):
+    assert root_map(['runs-x=/data/second', 'b=rel']) == {'runs-x': Path('/data/second'), 'b': Path('rel')}
+    with pytest.raises(ValueError, match=why):
+        root_map(items)
+
+
+@pytest.mark.parametrize('change, why', [
+    (lambda v: v['versions'][1].update(runs=5), f'{NEW} must be listed with 4 runs over 3 tasks'),
+    (lambda v: v['versions'].reverse(), 'newest first'), (lambda v: v['versions'].pop(), f'{NEW} must be listed'),
+    (lambda v: v['versions'][0].pop('released'), 'each version names'), (lambda v: v.update(format='x'), 'is not a')])
+def test_the_versions_list_runs_newest_first_and_agrees_with_the_stored_suite(site, tmp_path, change, why):
+    suite = json.loads((tmp_path / 'suite.json').read_text())
+    write(tmp_path / 'listed.json', VERSIONS)
+    assert [(v['name'], v['runs'], v['tasks'], v['released']) for v in short_versions(tmp_path / 'listed.json', suite)] == [
+        (NEXT, 5, 4, False), (NEW, 4, 3, True)]
+    listed = copy.deepcopy(VERSIONS)
+    change(listed)
+    write(tmp_path / 'listed.json', listed)
+    with pytest.raises(ValueError, match=why):
+        short_versions(tmp_path / 'listed.json', suite)
+
+
+def test_the_checked_in_versions_list_puts_the_unreleased_harder_suite_first():
+    suite = showcase.load(SOURCES / SUITE_FILE)
+    versions = short_versions(SOURCES / VERSIONS_FILE, suite)
+    assert [(v['name'], v['runs'], v['tasks'], v['released']) for v in versions] == [
+        (NEXT, 51, 49, False), (NEW, 46, 44, True)]
+    assert versions[0]['note'].startswith('This version is not released yet.') and 'note' not in versions[1]
+    # The harder suite is the stored suite and five more tasks, one start each.
+    added = showcase.load(SOURCES / VERSIONS_FILE)['versions'][0]['added']
+    assert len(set(added)) == 5 and set(added).isdisjoint(t['id'] for t in suite['tasks'])
+
+
 def groups(html):
-    """The ranking table as [(group title, [(rank, row html)])], in page order."""
-    found = []
-    for row in html.split('<tr ')[1:]:
-        title = re.search(r'scope="colgroup"><span>([^<]*)</span>', row)
-        if title:
-            found.append((title[1], []))
-        else:
-            found[-1][1].append((re.search(r'<span class="rank"[^>]*>([^<]*)</span>', row)[1], row))
-    return found
+    """The ranking as [(table title, [(rank, row html)])], in page order. A table alone has the empty title."""
+    tables = re.findall(r'(?:<h3 class="set-title">([^<]*)</h3>)?(?:<p class="set-note small">[^<]*</p>)?'
+                        r'<div class="table-scroll"><table class="leaderboard">(.*?)</table></div>', html)
+    return [(unescape(title), [(re.search(r'<span class="rank"[^>]*>([^<]*)</span>', row)[1], row) for row in body.split('<tr ')[1:]])
+            for title, body in tables]
 
 
 @pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
-def test_page_ranks_each_task_set_as_its_own_group_with_the_current_set_first(site, tmp_path):
+def test_page_ranks_each_suite_version_in_its_own_table_newest_first(site, tmp_path):
     page = render(tmp_path, site.built({}, [maintainer_entry(site.base)]))
     found = groups(page['ranking']['html'])
-    assert [title for title, _ in found] == ['Current set, red-v0.63, 3 tasks', 'Earlier set, 3 tasks']
-    assert [[rank for rank, _ in rows] for _, rows in found] == [['01'], ['01', '02']]
-    extra = found[0][1][0][1]
+    assert [title for title, _ in found] == TITLES
+    assert [[rank for rank, _ in rows] for _, rows in found] == [[''], ['01'], ['01', '02']]
+    # The version no row has run lists the rows it waits on, with its note and no scores or button.
+    waiting = found[0][1][0][1]
+    assert 'Haiku (red-v0.63)' in waiting and 'Not yet run on this version' in waiting and f'colspan="{len(CATEGORIES) + 4}"' in waiting
+    assert 'data-model' not in waiting and '%' not in waiting
+    assert page['ranking']['html'].count('<p class="set-note small">This version is not released yet.</p>') == 1
+    # Each table has the full head, so every column keeps its title.
+    assert page['ranking']['html'].count('<th>Model</th>') == 3 and page['ranking']['html'].count('<th>') == 3 * (len(CATEGORIES) + 5)
+    extra = found[1][1][0][1]
     assert 'Haiku (red-v0.63)' in extra and 'maintainer-note' in extra and 'Maintainer run, replay verified' in extra
     assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra and 'Ranked with the rows on the current set.' in extra
-    assert not any('Haiku' in row for _, row in found[1][1]) and '—</span>' not in page['ranking']['html']
-    assert f'colspan="{len(CATEGORIES) + 5}"' in page['ranking']['html']
+    assert not any('Haiku' in row for _, row in found[2][1]) and '—</span>' not in page['ranking']['html']
     note = page['suite-note']['text']
-    assert note.startswith('Task sets differ between rows, so each set is ranked as its own group, the current set first.')
-    assert ('Haiku (red-v0.63) is a maintainer run on the red-v0.63 Short suite, ranked in the current set. '
+    assert note.startswith('Task sets differ between rows, so each Short suite version is ranked in a table of its own, '
+                           'newest first, and the earlier set is ranked last.')
+    assert ('Haiku (red-v0.63) is a maintainer run on the red-v0.63 Short suite, ranked in the table of that version. '
             "That model's earlier row keeps its place in the earlier set.") in note
-    assert 'The rows in the earlier set keep their earlier results.' in note and 'scores in different groups are not' in note
+    assert 'The rows in the earlier set keep their earlier results.' in note and 'scores in different tables are not' in note
     assert 'not given a rank' not in note and ';' not in note and '—' not in note
     assert 'is a maintainer run on a newer harness and stays out of this comparison.' in page['short-cost']['html']
     assert 'fixed before the reruns' not in page['short-cost']['html'] and 'Verified, not published' in page['tasks']['html']
@@ -573,13 +668,13 @@ def test_a_community_row_on_the_stored_suite_ranks_in_the_current_set_with_its_o
     # Its cells are checked against the stored suite, so they carry no earlier start label.
     assert all(c['labels'] == [] and c['harness'] == NEW for c in by(a['cells'], LOCAL, keep=True))
     found = groups(render(tmp_path, data)['ranking']['html'])
-    assert [title for title, _ in found] == ['Current set, red-v0.63, 3 tasks', 'Earlier set, 3 tasks']
-    # Every task passed, so the community row outscores Haiku and takes 01 of the current set.
-    current = [(rank, 'Haiku (red-v0.63)' in html, 'Community, replay verified, model unverified' in html) for rank, html in found[0][1]]
+    assert [title for title, _ in found] == TITLES
+    # Every task passed, so the community row outscores Haiku and takes 01 of the stored suite's table.
+    current = [(rank, 'Haiku (red-v0.63)' in html, 'Community, replay verified, model unverified' in html) for rank, html in found[1][1]]
     assert current == [('01', False, True), ('02', True, False)]
-    assert not any('local-model' in html for _, html in found[1][1])
+    assert not any('local-model' in html for _, html in found[2][1])
     note = render(tmp_path, data)['suite-note']['text']
-    assert 'local-model is a community run on the red-v0.63 Short suite, ranked in the current set with its own label.' in note
+    assert 'local-model is a community run on the red-v0.63 Short suite, ranked in the table of that version with its own label.' in note
 
 
 @pytest.mark.parametrize('change, why', [
@@ -698,7 +793,9 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
     write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': []})
     before = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))['short']
     after = plain(build(base, web, sources=tmp_path / 'sources.json'))['short']
-    assert capsys.readouterr().err == ''
+    # The rows under a root are left off when it is not given, each with its reason.
+    assert capsys.readouterr().err == ''.join(f'{m}@red-v0.63: left off the site. Its root {SECOND} was not given. '
+                                              f'Pass --root {SECOND}=FOLDER.\n' for m in (TERRA, SONNET))
     assert by(after['models'], EXTRA) == before['models'] and by(after['cells'], EXTRA) == before['cells']
     assert after['efficiency'] == before['efficiency']
     row = by(after['models'], EXTRA, keep=True)[0]
@@ -709,3 +806,34 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
     # Every row is ranked now, so the note sets the row apart from the earlier rows, not from the ranked ones.
     assert row['maintainer']['detail'] == ('Run by the maintainers on a newer harness than the earlier rows. '
                                            'Ranked with the rows on the current set.')
+
+
+ROOTS = os.environ.get('POKEBENCH_SITE_ROOTS')
+# The scores the runs' own logs print, 62.9 and 63.1.
+TERRA_SCORE, SONNET_SCORE = 0.629, 0.631
+
+
+@pytest.mark.skipif(not (REAL and ROOTS), reason='set POKEBENCH_SITE_DATA and POKEBENCH_SITE_ROOTS=NAME=FOLDER to check the rows under a root')
+def test_real_rows_under_a_root_rank_beside_haiku_and_move_no_earlier_row(tmp_path, capsys):
+    base = Path(REAL)
+    web = base / 'reviews/all-results-preview'
+    roots = root_map(ROOTS.split(','))
+    write(tmp_path / 'sources.json', {'format': RERUN_FORMAT, 'models': {}})
+    write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': []})
+    before = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))['short']
+    after = plain(build(base, web, sources=tmp_path / 'sources.json', roots=roots))['short']
+    assert capsys.readouterr().err == ''
+    ids = [EXTRA, f'{TERRA}@red-v0.63', f'{SONNET}@red-v0.63']
+    assert [m for m in after['models'] if m['id'] not in ids] == before['models']
+    assert [c for c in after['cells'] if c['model'] not in ids] == before['cells'] and after['efficiency'] == before['efficiency']
+    rows = {m['id']: m for m in after['models'] if m['id'] in ids}
+    assert {k: (r['label'], r['finished'], r['planned'], round(r['score'], 3)) for k, r in rows.items()} == {
+        EXTRA: ('Haiku (red-v0.63)', 46, 46, 0.628), ids[1]: ('Terra (red-v0.63)', 46, 46, TERRA_SCORE),
+        ids[2]: ('Sonnet (red-v0.63)', 46, 46, SONNET_SCORE)}
+    assert [rows[k]['suite']['source'] for k in ids[1:]] == [f'{SECOND}/runs/short-{m}' for m in (TERRA, SONNET)]
+    assert all(rows[k]['maintainer']['packages'] == ['0.37.4'] for k in ids[1:])
+    assert [e for e in after['attempts']['log'] if e['model'] in ids[1:]] == []
+    assert [(v['name'], v['runs'], v['tasks']) for v in after['versions']] == [
+        (NEXT, 51, 49), (NEW, 46, 44), ('Earlier set', 49, 47)]
+    # The page names each root, never its folder.
+    assert not any(str(folder) in json.dumps(after) for folder in roots.values())
