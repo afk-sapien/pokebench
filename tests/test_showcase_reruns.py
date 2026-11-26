@@ -437,7 +437,7 @@ def maintainer_entry(base, cells=None, model=HAIKU, first=301, **change):
     entry = {'id': f'{model}@red-v0.63', 'model': model, 'suite': 'short', 'report': report,
              'report_sha256': hashlib.sha256((base / report).read_bytes()).hexdigest(), 'runs': runs,
              'replaced': {BACKUP: 'Stopped by a provider error.'} if haiku else {}, 'release': 'v0.37.4',
-             'label': 'Maintainer run, replay verified', 'detail': 'Ranked with the rows on the current set.'}
+             'label': 'Maintainer run, replay verified', 'detail': 'Ranked in the table of its suite version.'}
     return dict(entry, **change)
 
 
@@ -452,7 +452,7 @@ def test_a_maintainer_row_sits_beside_the_ranked_rows_and_moves_none_of_them(sit
     row = by(a['models'], EXTRA, keep=True)[0]
     assert (row['label'], row['complete'], row['harness']['label']) == ('Haiku (red-v0.63)', True, 'red-v0.63')
     assert row['suite'] == {'benchmark': NEW, 'tasks': 3, 'source': RUNS}
-    assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Ranked with the rows on the current set.', 'model': HAIKU,
+    assert row['maintainer'] == {'label': 'Maintainer run, replay verified', 'detail': 'Ranked in the table of its suite version.', 'model': HAIKU,
                                  'release': 'v0.37.4', 'packages': ['0.37.2'], 'verified_on': '0.37.4',
                                  'report_sha256': maintainer_entry(site.base)['report_sha256'], 'bundle_sha256': 'bundle',
                                  'wall_seconds': None}
@@ -616,7 +616,7 @@ def test_page_ranks_each_suite_version_in_its_own_table_newest_first(site, tmp_p
     assert page['ranking']['html'].count('<th>Model</th>') == 3 and page['ranking']['html'].count('<th>') == 3 * (len(CATEGORIES) + 5)
     extra = found[1][1][0][1]
     assert 'Haiku (red-v0.63)' in extra and 'maintainer-note' in extra and 'Maintainer run, replay verified' in extra
-    assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra and 'Ranked with the rows on the current set.' in extra
+    assert 'Ran on package 0.37.2. Replay verified on v0.37.4.' in extra and 'Ranked in the table of its suite version.' in extra
     assert not any('Haiku' in row for _, row in found[2][1]) and '—</span>' not in page['ranking']['html']
     note = page['suite-note']['text']
     assert note.startswith('Task sets differ between rows, so each Short suite version is ranked in a table of its own, '
@@ -804,8 +804,9 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
     # 46 kept attempts, summed: about 17.2 hours of play.
     assert row['maintainer']['wall_seconds'] == 61934
     # Every row is ranked now, so the note sets the row apart from the earlier rows, not from the ranked ones.
+    # Each suite version has its own table, so the note names that table rather than a current set.
     assert row['maintainer']['detail'] == ('Run by the maintainers on a newer harness than the earlier rows. '
-                                           'Ranked with the rows on the current set.')
+                                           'Ranked in the table of its suite version.')
 
 
 ROOTS = os.environ.get('POKEBENCH_SITE_ROOTS')

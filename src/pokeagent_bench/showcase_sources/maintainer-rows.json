@@ -14,7 +14,7 @@
    },
    "release": "v0.37.4",
    "label": "Maintainer run, replay verified",
-   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked with the rows on the current set."
+   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked in the table of its suite version."
   },
   {
    "id": "gpt-5.6-terra@red-v0.63",
@@ -27,7 +27,7 @@
    "replaced": {},
    "release": "v0.37.4",
    "label": "Maintainer run, replay verified",
-   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked with the rows on the current set."
+   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked in the table of its suite version."
   },
   {
    "id": "claude-sonnet-5-5@red-v0.63",
@@ -40,7 +40,7 @@
    "replaced": {},
    "release": "v0.37.4",
    "label": "Maintainer run, replay verified",
-   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked with the rows on the current set."
+   "detail": "Run by the maintainers on a newer harness than the earlier rows. Ranked in the table of its suite version."
   }
  ]
 }
