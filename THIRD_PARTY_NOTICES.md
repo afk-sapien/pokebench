@@ -33,8 +33,7 @@ Review dependency notices before creating a bundled distribution.
 Pokemon and related names belong to their respective rights holders. This is an
 unofficial research project with no affiliation or endorsement.
 
-The optional manuscript workspace uses
-[paper-scaffold](https://github.com/pgarrett-scripps/paper-scaffold), pinned to
-commit c9cb1046d710b3fab851e9984b23254b82a031bc. Its generated support files
+The optional manuscript workspace uses the author's own paper scaffold, pinned
+to commit c9cb1046d710b3fab851e9984b23254b82a031bc. Its generated support files
 retain upstream notices, and its MIT license is in `paper/LICENSE.scaffold`.
 It is installed in the manuscript's separate environment.
