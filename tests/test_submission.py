@@ -1,10 +1,11 @@
 import json
+import shutil
 import zipfile
 
 import pytest
 
 from conftest import FakeEngine
-from pokeagent_bench import submission
+from pokeagent_bench import submission, suite_versions
 from pokeagent_bench.cli import main
 from pokeagent_bench.core import Limits, digest, encoded, write_json
 from pokeagent_bench.quick_run import LONG_LIMITS
@@ -262,6 +263,92 @@ def test_missing_task_is_refused(world, bundle):
         files['plan.json'] = encoded(value)
         for name in [name for name in files if name.startswith('cell-0002/')]:
             del files[name]
+    repack(bundle, change)
+    with pytest.raises(ValueError, match='missing tasks of the suite: battle-two'):
+        check(world)
+
+
+def topped_up(world):
+    """The same two runs laid out as a top-up leaves them: the run a fresh plan puts first is in the later folder."""
+    run = world['run'].with_name('topped')
+    shutil.copytree(world['run'], run)
+    (run / 'cell-0001').rename(run / 'moved')
+    (run / 'cell-0002').rename(run / 'cell-0001')
+    (run / 'moved').rename(run / 'cell-0002')
+    value = json.loads((run / 'plan.json').read_text())
+    first, second = value['cells']
+    write_json(run / 'plan.json', {**value, 'cells': [{**second, 'id': 'cell-0001'}, {**first, 'id': 'cell-0002'}]})
+    return run
+
+
+def test_a_topped_up_run_and_a_fresh_run_of_the_same_runs_get_the_same_score(world, bundle):
+    fresh = check(world)
+    path = world['bundle'].with_name('topped.zip')
+    submission.submit(topped_up(world), path, handle='octocat')
+    result = check(world, path)
+    assert fresh['verified'] and result['verified']
+    assert result['summary'] == fresh['summary'] and result['suite_version'] == fresh['suite_version']
+    # Same runs in the same order. Only the folder each one was read from differs.
+    without = lambda report: [{key: value for key, value in cell.items() if key != 'id'} for cell in report['cells']]
+    assert without(result) == without(fresh)
+    assert [(cell['task_id'], cell['id']) for cell in result['cells']] == [('battle-one', 'cell-0002'), ('battle-two', 'cell-0001')]
+
+
+def test_a_plan_that_points_runs_at_each_others_folders_fails(world, bundle):
+    def change(files):
+        value = json.loads(files['plan.json'])
+        first, second = value['cells']
+        value['cells'] = [{**first, 'id': second['id']}, {**second, 'id': first['id']}]
+        files['plan.json'] = encoded(value)
+    repack(bundle, change)
+    result = check(world)
+    assert not result['verified'] and 'summary' not in result
+    assert result['problems'] == ['cell-0002 battle-one: Scenario differs from the benchmark fixture',
+                                  'cell-0001 battle-two: Scenario differs from the benchmark fixture']
+
+
+@pytest.mark.parametrize('name', ['cell-0001', '../cell-0002', 2])
+def test_a_plan_that_names_a_folder_twice_or_oddly_is_refused(world, bundle, name):
+    repack(bundle, edit('plan.json', lambda value: value['cells'][1].update(id=name)))
+    with pytest.raises(ValueError, match='names a run folder twice or in an unknown form'):
+        check(world)
+
+
+def versions(monkeypatch, *entries):
+    monkeypatch.setattr(suite_versions, 'versions', lambda: entries)
+
+
+def recorded(name, cells):
+    return {'benchmark': name, 'run_count': len(cells), 'task_count': len({cell['task_id'] for cell in cells}),
+            'runs': [{key: cell[key] for key in suite_versions.KEYS} for cell in cells]}
+
+
+def first_run_only(files):
+    value = json.loads(files['plan.json'])
+    value['cells'] = value['cells'][:1]
+    files['plan.json'] = encoded(value)
+    for name in [name for name in files if name.startswith('cell-0002/')]:
+        del files[name]
+
+
+def test_a_bundle_of_an_older_suite_version_verifies_as_that_version(world, bundle, monkeypatch):
+    cells = plan()['cells']
+    versions(monkeypatch, recorded('red-v0.1-old', cells[:1]), recorded(submission.BENCHMARK_VERSION, cells))
+    assert check(world)['suite_version'] == {'benchmark': submission.BENCHMARK_VERSION, 'run_count': 2, 'task_count': 2}
+    repack(bundle, first_run_only)
+    result = check(world)
+    assert result['verified'] and [cell['task_id'] for cell in result['cells']] == ['battle-one']
+    assert result['suite_version'] == {'benchmark': 'red-v0.1-old', 'run_count': 1, 'task_count': 1}
+
+
+def test_an_older_suite_version_counts_only_while_this_checkout_still_holds_its_runs(world, bundle, monkeypatch):
+    cells = plan()['cells']
+    before = [{**cells[0], 'evaluation_spec_sha256': 'spec-before'}]
+    versions(monkeypatch, recorded('red-v0.1-old', before), recorded(submission.BENCHMARK_VERSION, cells))
+
+    def change(files):
+        first_run_only(files)
+        edit('plan.json', lambda value: value['cells'][0].update(evaluation_spec_sha256='spec-before'))(files)
     repack(bundle, change)
     with pytest.raises(ValueError, match='missing tasks of the suite: battle-two'):
         check(world)

@@ -158,6 +158,16 @@ def render(packet, *, compact_inspection=False):
 
 
 def check_size(packet, text):
-    maximum = INSPECTION_BYTES if 'requested_inspection' in packet else PACKET_BYTES
-    if len(text.encode()) > maximum:
-        raise ObservationBudgetError(f'Observation text exceeds {maximum} UTF-8 bytes before a model request')
+    if 'requested_inspection' not in packet:
+        if len(text.encode()) > PACKET_BYTES:
+            raise ObservationBudgetError(f'Observation text exceeds {PACKET_BYTES} UTF-8 bytes before a model request')
+        return
+    if len(text.encode()) <= INSPECTION_BYTES:
+        return
+    # A large inspection, such as storage in a late game save, can fill most of the inspection bound by itself.
+    # When it lands on a segment snapshot or a battle update, each part keeps its own bound instead of the sum.
+    rest = render({key: value for key, value in packet.items() if key != 'requested_inspection'})
+    inspection = json.dumps(packet['requested_inspection'], ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+    if len(rest.encode()) > PACKET_BYTES or len(inspection.encode()) > INSPECTION_BYTES:
+        raise ObservationBudgetError(f'Observation text exceeds {INSPECTION_BYTES} UTF-8 bytes in the inspection or '
+                                     f'{PACKET_BYTES} outside it before a model request')

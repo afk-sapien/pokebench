@@ -435,6 +435,26 @@ def test_small_inspection_keeps_readable_tree_and_oversized_data_still_stops():
         check_size(packet, render(packet))
 
 
+def test_a_late_game_storage_inspection_on_a_segment_snapshot_still_reaches_the_model():
+    # The Elite Four and Champion saves hold a storage inspection of about 62000 bytes, and a snapshot adds about 10000.
+    obs = public()
+    obs['game']['inspection'] = {'topic': 'storage', 'active_box': 1,
+                                 'boxes': [{'box': 1, 'available': True, 'pokemon': [{'nickname': 'x' * 62000}]}]}
+    packet, _ = build(obs, 'n' * 9000, [], None, 1, 1)
+    assert packet['kind'] == 'snapshot'
+    text = render(packet)
+    assert len(text.encode()) > 64000
+    assert json.loads(text.split('(compact JSON, all fields retained)\n')[1]) == obs['game']['inspection']
+    check_size(packet, text)
+    packet['replace']['agent']['notes'] = 'n' * 32001
+    with pytest.raises(ValueError, match='Observation text exceeds 64000 UTF-8 bytes in the inspection or 32000'):
+        check_size(packet, render(packet))
+    packet['replace']['agent']['notes'] = 'n'
+    packet['requested_inspection']['boxes'][0]['pokemon'][0]['nickname'] = 'x' * 64001
+    with pytest.raises(ValueError, match='Observation text exceeds 64000 UTF-8 bytes in the inspection'):
+        check_size(packet, render(packet))
+
+
 @pytest.mark.parametrize('task_status', ['not_complete', 'complete'])
 def test_completion_feedback_reaches_rendered_snapshots_and_updates(task_status):
     obs = public()

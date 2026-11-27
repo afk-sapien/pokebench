@@ -147,6 +147,57 @@ def test_the_same_command_resumes_after_a_stop(data, runs, monkeypatch, capsys):
     assert 'Finished 3 of 3 runs' in text
 
 
+def recorded(cells, name):
+    """A Short suite version entry holding exactly these runs."""
+    from pokeagent_bench import suite_versions
+    return {'benchmark': name, 'run_count': len(cells), 'task_count': len({cell['task_id'] for cell in cells}),
+            'runs': [{key: cell[key] for key in suite_versions.KEYS} for cell in cells]}
+
+
+def test_a_short_run_of_an_older_suite_version_runs_only_the_runs_the_current_version_adds(data, runs, monkeypatch, capsys):
+    from pokeagent_bench import suite_versions
+    rows = {row['id']: row for row in quick_run.inventory(data / 'fixtures')['tasks']}
+    words = ('--model', 'claude-sonnet-5-5', '--suite', 'short', '--output', 'out')
+    # The older version lacks the task a fresh plan puts second, so the top-up puts it after the kept runs.
+    rows[SMOKE[1]]['runnable'] = False
+    assert command(monkeypatch, *words) == 0
+    old = json.loads(Path('out/plan.json').read_text())
+    rows[SMOKE[1]]['runnable'] = True
+    fresh = quick_run.new_plan('short', data / 'fixtures', 'claude', 'claude-sonnet-5-5')
+    monkeypatch.setattr(suite_versions, 'versions',
+                        lambda: (recorded(old['cells'], 'red-v0.1-old'), recorded(fresh['cells'], RELEASE)))
+    runs.clear()
+    capsys.readouterr()
+    assert command(monkeypatch, *words) == 0
+    text = capsys.readouterr().out
+    assert [task for task, _ in runs] == [SMOKE[1]]
+    assert (f'out holds red-v0.1-old, 2 runs over 2 tasks. {RELEASE} adds 1 run: {SMOKE[1]}. Only these start. '
+            'The 2 runs already there are kept as they are.') in text
+    assert 'Resuming: 2 of 3 runs already finished' in text and 'Finished 3 of 3 runs' in text
+    plan = json.loads(Path('out/plan.json').read_text())
+    assert [(cell['id'], cell['task_id']) for cell in plan['cells']] == [
+        ('cell-0001', SMOKE[0]), ('cell-0002', SMOKE[2]), ('cell-0003', SMOKE[1])]
+    assert plan['cells'][:2] == old['cells'] and plan['topped_up_from'] == 'red-v0.1-old'
+    without = lambda cell: {key: value for key, value in cell.items() if key != 'id'}
+    assert without(plan['cells'][2]) == without(fresh['cells'][1])
+    assert suite_versions.identify(plan['cells'])['benchmark'] == RELEASE
+    assert json.loads(Path('out/plan-red-v0.1-old.json').read_text()) == old
+
+
+def test_an_older_short_plan_whose_runs_changed_since_is_not_topped_up(data, monkeypatch):
+    from pokeagent_bench import suite_versions
+    fixtures = data / 'fixtures'
+    fresh = quick_run.new_plan('short', fixtures, 'claude', 'claude-sonnet-5-5')
+    old = {**fresh, 'cells': fresh['cells'][:2]}
+    # Same runs by identity, but the current suite now gives the first one other limits.
+    changed = {**old, 'cells': [{**old['cells'][0], 'token_limit': 1}, old['cells'][1]]}
+    monkeypatch.setattr(suite_versions, 'versions', lambda: (
+        recorded(old['cells'], 'red-v0.1-old'), recorded(fresh['cells'], RELEASE)))
+    assert [cell['id'] for cell in quick_run.top_up(old, fixtures)[1]] == ['cell-0003']
+    assert quick_run.top_up(changed, fixtures) == (changed, [])
+    assert quick_run.top_up(fresh, fixtures) == (fresh, [])
+
+
 def test_ctrl_c_during_a_task_starts_no_later_task_and_the_same_command_continues(data, runs, monkeypatch, capsys):
     words = ('--model', 'gpt-6-sol', '--suite', 'smoke', '--output', 'out')
     finish = catalog_batch.run_task

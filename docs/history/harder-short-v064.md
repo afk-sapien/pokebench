@@ -1,6 +1,6 @@
 # Harder Short red-v0.64
 
-The benchmark version `red-v0.64-harder-short` adds five harder tasks to Short. The owner approved adding them on 25 November 2026. Short now has **51 runs over 49 tasks**, up from 46 runs over 44 tasks under `red-v0.63-short-guard`. This version is not released yet. It has no tag and no entry in [accepted_harness.json](../../src/pokeagent_bench/accepted_harness.json), and the package version stays 0.37.4.
+The benchmark version `red-v0.64-harder-short` adds five harder tasks to Short. The owner approved adding them on 25 November 2026. Short now has **51 runs over 49 tasks**, up from 46 runs over 44 tasks under `red-v0.63-short-guard`. It is released as package 0.38.0, git tag `v0.38.0`, with its entry in [accepted_harness.json](../../src/pokeagent_bench/accepted_harness.json). See [the v0.38.0 notes](release-v0380.md).
 
 ## Scores belong to a suite version
 

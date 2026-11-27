@@ -58,10 +58,12 @@ validation errors remain visible so the model can correct invalid actions.
 ## Bounds and accounting
 
 Limit ordinary packet text to 32000 UTF-8 bytes. Explicit inspect responses may
-use up to 64000 bytes and are still metered. An oversized packet stops before a
-model call with an observation-budget reason, rather than silently deleting
-current game facts. This is an explicit limitation for unusually large storage
-inspections until a paged inspection interface is introduced.
+use up to 64000 bytes and are still metered. Since 0.38.0 a packet with an
+inspection that is larger in total is still sent when the inspection itself is
+at most 64000 bytes and the rest of the packet at most 32000. A late game
+storage inspection is about 62000 bytes, so it fits even on a segment snapshot.
+An oversized part stops before a model call with an observation-budget reason,
+rather than silently deleting current game facts.
 
 Perform budget admission after constructing the actual next packet and deciding
 whether a new segment is needed. Use a conservative byte-based text reservation,

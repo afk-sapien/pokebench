@@ -1,6 +1,6 @@
 # Submitting a run
 
-Run release `v0.37.4`, installed unchanged. `submit` and `verify` refuse a run from any other code.
+Run release `v0.38.0`, installed unchanged. `submit` and `verify` refuse a run from any other code.
 
 You need [uv](https://docs.astral.sh/uv/), [git](https://git-scm.com/downloads) and the model you want to test. uv fetches the release with git, so without git the first command stops with `Git executable not found`. uv brings its own Python if your machine has none. Beyond those you bring one thing: your own Pokemon Red ROM. The README names the exact file and its hash. PokeBench ships no ROM, save or game table, and `setup` refuses any other ROM. A maintainer checks each result by replay and then decides whether to publish it.
 
@@ -9,9 +9,9 @@ You need [uv](https://docs.astral.sh/uv/), [git](https://git-scm.com/downloads) 
 Run these in an empty folder. No clone is needed.
 
 ```sh
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench setup --rom /path/to/red.gb
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite smoke --provider random
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench setup --rom /path/to/red.gb
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench enter --suite smoke --provider random
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
 ```
 
 1. `setup` checks the ROM hash and writes `data/` in the folder.
@@ -26,7 +26,7 @@ A local or third party model runs through any OpenAI compatible chat endpoint. P
 
 ```sh
 export POKEBENCH_BASE_URL=http://localhost:11434/v1
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite short --provider openai-compatible --model MODEL --handle YOUR_GITHUB_NAME
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench enter --suite short --provider openai-compatible --model MODEL --handle YOUR_GITHUB_NAME
 ```
 
 The model must accept images, and the endpoint must report token usage, or the run cannot be scored. PokeBench asks for JSON output with `response_format` set to a JSON schema. Set `POKEBENCH_API_KEY` only if your server wants a key. It goes to that server and is never written to the run or the bundle. A local model costs nothing but your own compute.
@@ -53,7 +53,7 @@ Before writing, `submit` scans the bundle for absolute paths, key shaped text, t
 
 ## Which versions are accepted
 
-Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.37.4`. The `v0.37.1`, `v0.37.2` and `v0.37.3` entries stay listed. Their runs have the limits of `v0.37.4` and are checked on the `v0.37.4` checkout. A run paused on `v0.37.3` or older must be resumed on that same release, because resume refuses a different emulator, core or harness. The `v0.36.0` and `v0.37.0` entries stay listed so their runs keep their labels. Their Short run limits differ from `v0.37.4`, and `v0.36.0` also has a different Short suite and starts, so a bundle from either is checked on its own release's checkout.
+Only a frozen release of the harness is accepted. The list is [accepted_harness.json](src/pokeagent_bench/accepted_harness.json), and the release to run is `v0.38.0`, the first release of `red-v0.64-harder-short`. The `v0.37.1` to `v0.37.4` entries stay listed. Their Short bundles hold `red-v0.63-short-guard`, and the `v0.38.0` checkout checks them as that set. A run paused on `v0.37.4` or older must be resumed on that same release, because resume refuses a different emulator, core or harness. The `v0.36.0` and `v0.37.0` entries stay listed so their runs keep their labels. Their Short run limits differ from `v0.37.4`, and `v0.36.0` also has a different Short suite and starts, so a bundle from either is checked on its own release's checkout.
 
 Each entry names a harness version, a package version and a hash of the package source. A run must match all three, so a development build that keeps the version name but changes the code is refused. `submit` refuses any other run and names the accepted release. Install that release unchanged with the `uvx` lines above and run again.
 
@@ -63,18 +63,23 @@ Maintainers add an entry at the freeze by following the [release checklist](docs
 
 A Short score belongs to the suite version whose runs it holds exactly, matched by task, variant, task specification digest and start state digest. [short_suites.json](src/pokeagent_bench/short_suites.json) lists every version. The current one is `red-v0.64-harder-short`, 51 runs over 49 tasks. It adds five harder tasks to `red-v0.63-short-guard`, 46 runs over 44 tasks, and keeps those 46 runs unchanged.
 
-Runs made on `red-v0.63-short-guard`, the set behind the Haiku, Terra and Sonnet runs, stay valid for that set and are ranked separately. A `v0.37.4` bundle holds that set and is checked on the `v0.37.4` checkout. No release carries `red-v0.64-harder-short` yet, so `v0.37.4` stays the release to run until one is listed in accepted_harness.json. `submit`, `verify` and the run summary each print the suite version with its run count. Runs that match no recorded version print `Suite version: none` and are not a ranked result.
+Runs made on `red-v0.63-short-guard`, the set behind the Haiku, Terra and Sonnet runs, stay valid for that set and are ranked separately. `verify` on `v0.38.0` checks a bundle of exactly that set as `red-v0.63-short-guard`. Its runs still come from the verifier's own plan, cut to the 46 recorded runs, so the published bundles keep their scores.
+
+A finished `red-v0.63-short-guard` run folder does not have to run again. The same `run --suite short` or `enter --suite short` command on `v0.38.0` keeps its 46 runs in their folders, adds the five new runs after them and runs only those. The older plan is kept as `plan-red-v0.63-short-guard.json`, and the topped-up folder holds `red-v0.64-harder-short`. `verify` matches runs by task, variant and repeat, not by folder, so a topped-up run and a fresh run of the same runs get the same score. A task paused on `v0.37.4` or older is finished on its own release first.
+
+`submit`, `verify` and the run summary each print the suite version with its run count. Runs that match no recorded version print `Suite version: none` and are not a ranked result.
 
 ## How a bundle is checked
 
 ```sh
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench verify runs/short-MODEL.pokebench.zip
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench verify runs/short-MODEL.pokebench.zip
 ```
 
 Anyone can run this, in the folder where `setup` ran. It needs the ROM, calls no model and trusts nothing in the bundle. From a clone of the tag, `uv run pokebench verify` does the same. `uv run` outside a clone stops with `Failed to spawn: pokebench`.
 
 - The archive is read in memory. Only known file names are accepted and nothing is extracted.
-- The task list must be the complete suite as this checkout defines it, with the same start states, task definitions and limits. For Short the report names the suite version from the verifier's own plan, never from the bundle.
+- The task list must be the complete suite as this checkout defines it, with the same start states, task definitions and limits. For Short it can instead be exactly an older recorded suite version whose runs this checkout still holds unchanged. The report names the suite version from the verifier's own plan, never from the bundle.
+- Runs are matched by task, variant and repeat. Each one is read from the folder the bundle plan names for it, and each folder can be named once.
 - Each run must use the suite's reasoning effort: low for Short and smoke, medium for Long, as the leaderboard runs did.
 - Each run is replayed from the verifier's own start state. The recorded inputs must reproduce the recorded game facts, and the score is recomputed from the replay.
 - A run over its decision or token limit fails.

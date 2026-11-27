@@ -72,12 +72,14 @@ before upgrading. Any change to observations, scoring, prompts, or budgets also
 requires a benchmark version change, and so does any change to the tasks of a suite.
 The current benchmark version is `red-v0.64-harder-short`. It adds five harder tasks to
 Short, so Short has 51 runs over 49 tasks, as listed in
-[the harder Short note](history/harder-short-v064.md). It is not released yet, so it has
-no accepted harness entry and no tag, and the package version stays 0.37.4.
+[the harder Short note](history/harder-short-v064.md). It is released as package 0.38.0,
+git tag `v0.38.0`, as listed in [the v0.38.0 notes](history/release-v0380.md).
 [short_suites.json](../src/pokeagent_bench/short_suites.json) records each Short suite
 version with its exact runs, and a Short score belongs to the version whose runs it holds.
-The last released tag is `red-v0.63-short-guard`, 46 runs over 44 tasks, released as
-package 0.37.4. Its runs stay valid for that set and are ranked separately. Package 0.37.1 stops each Short task after two thirds of its
+The previous Short suite version is `red-v0.63-short-guard`, 46 runs over 44 tasks, last
+released as package 0.37.4. Its runs stay valid for that set and are ranked separately.
+Package 0.38.0 verifies a bundle of exactly that set as `red-v0.63-short-guard`, and tops up
+a finished run folder of that set by running only the five new runs. Package 0.37.1 stops each Short task after two thirds of its
 token cap without a new milestone, draws ledges and the Mansion 3F gap truthfully, pauses
 on Ctrl-C and waits out a near subscription reset, as listed in
 [the v0.37.1 notes](history/release-v0371.md). Package 0.37.2 treats a Claude reply that
@@ -85,8 +87,8 @@ runs past the output cap as a metered invalid reply instead of a provider error,
 in [the v0.37.2 notes](history/release-v0372.md). Package 0.37.3 keeps a local folder out
 of the rebound fixtures and the bundles, as listed in
 [the v0.37.3 notes](history/release-v0373.md). Package 0.37.4 pins PyBoy RS 0.1.7 and
-PokeSim Core 0.12.3, as listed in [the v0.37.4 notes](history/release-v0374.md). The
-next package pins PyBoy RS 0.1.9 and PokeSim Core 0.12.4, as listed in
+PokeSim Core 0.12.3, as listed in [the v0.37.4 notes](history/release-v0374.md). Package
+0.38.0 pins PyBoy RS 0.1.9 and PokeSim Core 0.12.4, as listed in
 [the 0.1.9 note](history/pyboy-rs-019.md).
 `red-v0.62-milestone-short`, package
 0.37.0, added the seven milestone tasks to Short, scored Long by the v2 milestone list

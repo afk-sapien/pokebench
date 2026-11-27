@@ -50,6 +50,7 @@ PRIVATE = re.compile(
 SECRET_NAME = re.compile(r'KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL', re.I)
 CELL_KEYS = ('id', 'task_id', 'variant', 'repeat', 'mode', 'category', 'fixture_sha256',
              'evaluation_spec_sha256', 'token_limit', 'decision_limit', 'reasoning_effort')
+CELL_ID = re.compile(r'cell-\d{4}')
 DECISION = re.compile(r'decision-(\d+)-')
 
 
@@ -329,17 +330,43 @@ def check_plan(files, fixtures):
     if provider == 'random' and suite != 'smoke':
         raise ValueError('The random player runs the smoke suite only')
     trusted = new_plan(suite, fixtures, provider, model)
-    expected = {cell['id']: {key: cell.get(key) for key in CELL_KEYS} for cell in trusted['cells']}
-    found = {str(cell.get('id')): {key: cell.get(key) for key in CELL_KEYS} for cell in cells}
+    if suite == 'short':
+        trusted = recorded_version(trusted, cells)
+    # Runs are matched by task, variant and repeat, not by folder. A run topped up from an older Short suite
+    # version keeps the folder it was made in, so the same runs can sit under other ids than a fresh plan's.
+    run = lambda cell: (str(cell.get('task_id')), str(cell.get('variant')), str(cell.get('repeat')))
+    expected = {run(cell): {key: cell.get(key) for key in CELL_KEYS if key != 'id'} for cell in trusted['cells']}
+    found = {run(cell): {key: cell.get(key) for key in CELL_KEYS if key != 'id'} for cell in cells}
     missing = sorted({row['task_id'] for key, row in expected.items() if key not in found})
     if missing:
         raise ValueError('Bundle is missing tasks of the suite: ' + ', '.join(missing))
     if len(found) != len(cells) or set(found) != set(expected):
         raise ValueError('Bundle holds runs that are not part of the suite')
+    ids = [cell.get('id') for cell in cells]
+    if not all(isinstance(name, str) and CELL_ID.fullmatch(name) for name in ids) or len(set(ids)) != len(ids):
+        raise ValueError('Bundle plan names a run folder twice or in an unknown form')
     changed = sorted({row['task_id'] for key, row in expected.items() if found[key] != row})
     if changed:
         raise ValueError('Start state, task definition or limits differ from the suite: ' + ', '.join(changed))
-    return summary, trusted
+    # Each trusted run is read from the folder the bundle packed it in. Everything else comes from this checkout.
+    folders = {run(cell): cell['id'] for cell in cells}
+    return summary, {**trusted, 'cells': [{**cell, 'id': folders[run(cell)]} for cell in trusted['cells']]}
+
+
+def recorded_version(trusted, cells):
+    """The trusted Short plan, cut to an older recorded suite version when the bundle holds exactly that version.
+
+    The bundle only picks the version. Its runs come from this checkout's own plan, and every one of them must
+    still be there with the same start state and task specification. Otherwise the current suite applies.
+    """
+    claimed = suite_versions.identify(cells)
+    if claimed is None or claimed['benchmark'] == BENCHMARK_VERSION:
+        return trusted
+    runs = {suite_versions.identity(run) for run in claimed['runs']}
+    kept = [cell for cell in trusted['cells'] if suite_versions.identity(cell) in runs]
+    if len(kept) != len(runs):
+        return trusted
+    return {**trusted, 'cells': kept, 'cell_count': len(kept)}
 
 
 def decisions_used(actions):

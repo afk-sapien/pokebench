@@ -147,7 +147,8 @@ the current entry.
 
 `red-v0.64-harder-short` keeps all 46 runs of `red-v0.63-short-guard` with the same digests
 and adds the five harder tasks. Runs on the older set stay valid for that set and are ranked
-separately. The plan, the run summary, the bundle and the verified report each name the suite
+separately. Release `v0.38.0` is the first to run it. A finished older Short folder is topped
+up in place: its 46 runs are kept and only the five new runs start. The plan, the run summary, the bundle and the verified report each name the suite
 version with its run count.
 
 ## Inspect the catalog

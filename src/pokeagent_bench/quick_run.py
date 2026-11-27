@@ -105,6 +105,32 @@ def new_plan(suite, fixtures, provider, model):
     return manifest
 
 
+def top_up(manifest, fixtures):
+    """Extend a Short plan of an older recorded suite version to the current one. Return the plan and the added runs.
+
+    The older runs keep their folders and ids, and the runs the current version adds follow them, so only the
+    added runs start. A plan that matches no older version, or whose runs the current suite no longer holds
+    unchanged, is returned as it is.
+    """
+    entry = suite_versions.identify(manifest['cells'])
+    if entry is None or entry['benchmark'] == BENCHMARK_VERSION:
+        return manifest, []
+    first = manifest['cells'][0]
+    current = new_plan('short', fixtures, first['provider'], first['model'])
+    run = lambda cell: (cell['task_id'], cell['variant'], cell['repeat'])
+    fields = lambda cell: {key: value for key, value in cell.items() if key != 'id'}
+    wanted = {run(cell): fields(cell) for cell in current['cells']}
+    if any(wanted.get(run(cell)) != fields(cell) for cell in manifest['cells']):
+        return manifest, []
+    have = {run(cell) for cell in manifest['cells']}
+    start = max(int(cell['id'][-4:]) for cell in manifest['cells'])
+    added = [{**cell, 'id': f'cell-{start + number:04d}'}
+             for number, cell in enumerate((cell for cell in current['cells'] if run(cell) not in have), 1)]
+    cells = manifest['cells'] + added
+    return {**manifest, 'cells': cells, 'cell_count': len(cells), 'held_tasks': current['held_tasks'],
+            'topped_up_from': entry['benchmark']}, added
+
+
 def millions(tokens):
     return f'{tokens / 1e6:.1f}M' if tokens >= 1e6 else f'{tokens / 1e3:.0f}K'
 
@@ -278,10 +304,26 @@ def run_suite(args, *, ask=None, next_step=True):
     fixtures, game_data, rom = locate(args.data, args.rom)
     output = args.output or Path('runs') / f'{args.suite}-{re.sub(r"[^A-Za-z0-9.]+", "-", model)}'
     used = done = 0
-    if (output / 'plan.json').is_file():
+    topped, older = [], None
+    resuming = (output / 'plan.json').is_file()
+    if resuming:
         manifest = json.loads((output / 'plan.json').read_text())
         if manifest.get('suite') != args.suite or {(c['provider'], c['model']) for c in manifest['cells']} != {(provider, model)}:
             raise ValueError(f'{output} holds a different run. Choose another --output')
+    elif output.exists():
+        raise ValueError(f'{output} already exists and is not a suite run. Choose another --output')
+    if (not resuming or args.suite == 'short') and any(row.get('variants') == [] for row in inventory(fixtures)['tasks']):
+        # A setup from an older release lacks the starts of newer tasks. Setup would add them the same way.
+        # A Short run made on an older suite version needs them before it can be topped up.
+        from .local_setup import add_missing_starts
+        added = add_missing_starts(rom, fixtures)
+        if added:
+            print(f'Added the starts of {counted(len(added), "task")} from the fixture pack: {", ".join(added)}',
+                  flush=True)
+    if resuming:
+        if args.suite == 'short':
+            older = suite_versions.identify(manifest['cells'])
+            manifest, topped = top_up(manifest, fixtures)
         current = report(output)
         used = sum(row['tokens'] for row in current['cells'])
         done = sum(row['state'] == 'finished' for row in current['cells'])
@@ -289,16 +331,7 @@ def run_suite(args, *, ask=None, next_step=True):
             # Before the estimate, so a run from another release or a missing Claude Code build costs nothing.
             from .own_release import check_run
             check_run(output, args.data)
-    elif output.exists():
-        raise ValueError(f'{output} already exists and is not a suite run. Choose another --output')
     else:
-        if any(row.get('variants') == [] for row in inventory(fixtures)['tasks']):
-            # A setup from an older release lacks the starts of newer tasks. Setup would add them the same way.
-            from .local_setup import add_missing_starts
-            added = add_missing_starts(rom, fixtures)
-            if added:
-                print(f'Added the starts of {counted(len(added), "task")} from the fixture pack: {", ".join(added)}',
-                      flush=True)
         manifest = new_plan(args.suite, fixtures, provider, model)
     lines = (['The random player calls no model and uses no tokens.'] if provider == 'random'
              else expected(manifest, *published()))
@@ -312,6 +345,11 @@ def run_suite(args, *, ask=None, next_step=True):
             if not args.dry_run:
                 raise
             endpoint_lines = [f'Not ready to run: {error}.']
+    if topped:
+        print(f'{output} holds {suite_versions.label(older)}. {BENCHMARK_VERSION} adds '
+              f'{counted(len(topped), "run")}: {", ".join(cell["task_id"] for cell in topped)}. Only these start. '
+              f'The {counted(len(manifest["cells"]) - len(topped), "run")} already there are kept as they are.',
+              flush=True)
     print(estimate(manifest, budget, output, used, done, args.input_price, lines, endpoint_lines), flush=True)
     if provider == 'claude':
         from .claude_provider import pin_cli
@@ -321,6 +359,12 @@ def run_suite(args, *, ask=None, next_step=True):
     if ask is not None and done < len(manifest['cells']) and not ask():
         print('Nothing was started.', flush=True)
         return None
+    if topped:
+        # The older plan stays next to the new one, so the folder still shows what it held before.
+        kept = output / f'plan-{older["benchmark"]}.json'
+        if not kept.exists():
+            kept.write_bytes((output / 'plan.json').read_bytes())
+        write_json(output / 'plan.json', manifest)
     if not (output / 'plan.json').is_file():
         output.mkdir(parents=True)
         write_json(output / 'plan.json', manifest)

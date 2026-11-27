@@ -31,4 +31,5 @@ Versioned design and investigation notes from development, oldest first. They re
 - [New emulator and core pins v0.37.4](release-v0374.md)
 - [PyBoy RS 0.1.9 and PokeSim Core 0.12.4](pyboy-rs-019.md)
 - [Harder Short red-v0.64](harder-short-v064.md)
+- [Harder Short release v0.38.0](release-v0380.md)
 - [v1 beta release protocol with the earlier 28-task suite](release-v1-beta.md)

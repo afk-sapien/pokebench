@@ -7,7 +7,7 @@ PokeBench evaluates how AI agents play Pokemon Red. Models choose routes, battle
 The current catalog is split into two benchmarks with separate rankings.
 
 - **PokeBench Gen 1 Short** has **49 tasks**: 48 focused tasks plus one inventory variant, across navigation, battle tactics, manual menu operations and quests. One battle task has three fixed starting variants, so each model plays **51 starts**. Twelve longer tasks score the share of their ordered milestones reached, from 0 to 1. Scores are category-balanced. This is Short suite version `red-v0.64-harder-short`, 51 runs over 49 tasks. It adds five harder tasks: the Vermilion Gym switches, the Safari Zone secret house, the Saffron gate drink, and the Elite Four and the Champion with no items and no faints.
-- **A Short score belongs to its suite version.** Runs made on `red-v0.63-short-guard`, the 46-run set over 44 tasks behind the Haiku, Terra and Sonnet runs, stay valid for that set and are ranked separately from `red-v0.64-harder-short` results. The versions and their exact runs are listed in [short_suites.json](src/pokeagent_bench/short_suites.json). See [harder Short](docs/history/harder-short-v064.md).
+- **A Short score belongs to its suite version.** Runs made on `red-v0.63-short-guard`, the 46-run set over 44 tasks behind the Haiku, Terra and Sonnet runs, stay valid for that set and are ranked separately from `red-v0.64-harder-short` results. The versions and their exact runs are listed in [short_suites.json](src/pokeagent_bench/short_suites.json). Release `v0.38.0` runs `red-v0.64-harder-short`. On a finished `red-v0.63-short-guard` run folder the same Short command keeps the 46 runs and plays only the five new ones. See [harder Short](docs/history/harder-short-v064.md) and [the v0.38.0 notes](docs/history/release-v0380.md).
 - **PokeBench Gen 1 Long** is one continuous full-game campaign with 75 scored milestones worth 1,000 points. Runs recorded before v2 keep their score on the earlier 50-milestone list. The comparison budget is 2,000 decisions and 30M tokens per model. A model still earning milestones can get more 2,000-decision chunks, each with its own 30M allowance.
 
 Short and Long scores are never averaged together. Results and replays are on the [public site](https://afk-sapien.github.io/pokebench/). See the [catalog](docs/catalog/README.md) and [long runs](docs/long-runs.md).
@@ -20,12 +20,12 @@ The exploratory leaderboard preserves completed and partial results across frame
 
 ## Submit a model
 
-Submissions run release `v0.37.4`. You need [uv](https://docs.astral.sh/uv/), [git](https://git-scm.com/downloads) and the model you want to test. Beyond those you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
+Submissions run release `v0.38.0`. You need [uv](https://docs.astral.sh/uv/), [git](https://git-scm.com/downloads) and the model you want to test. Beyond those you bring one thing: your own Pokemon Red ROM, the exact file named under [Install](#install). No clone is needed. Run these in an empty folder.
 
 ```sh
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench setup --rom /path/to/red.gb
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite smoke --provider random
-uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench setup --rom /path/to/red.gb
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench enter --suite smoke --provider random
+uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench enter --suite short --model MODEL --handle YOUR_GITHUB_NAME
 ```
 
 `setup` writes `data/` in that folder and runs go to `runs/`. The second line is a free check of the whole path. A random player presses buttons on the three smoke tasks, then `enter` packs the bundle and verifies it by replay. It calls no model. The random player runs smoke only, and a smoke bundle is never a leaderboard result, so do not send it.
@@ -71,7 +71,7 @@ Press Ctrl-C once to stop. The task pauses after the decision in progress, no la
 
 If the Claude provider fails before the model replies, or Codex refuses a turn for its usage limit or for capacity before any model output, the call counts no tokens. The harness tries the decision again after 15 s, 1 min, 4 min and 10 min. A usage limit that names a reset within 6 hours, such as the five hour limit, makes the harness print the reset time, wait until 2 min after it and ask again. The wait does not count toward the task's wall limit, and Ctrl-C during it pauses the task. A later reset, such as a weekly limit, pauses the task. If the provider is still failing, the task pauses at its last checkpoint and the suite stops there. Run the same command later and the task resumes from that checkpoint.
 
-A task resumes only on the exact PokeBench source, Core and emulator it started on, because another build may change what a task allows or how it scores. Each run records its release. If you upgrade with a task still paused, the same command stops before the estimate, starts nothing and prints that command on the run's own release, such as `uvx --from git+https://github.com/afk-sapien/pokebench@v0.37.4 pokebench run ...` with your other options unchanged. For a Claude run it also names the Claude Code build the task used when that build is neither in `data/toolchains` nor on PATH. A run made by a build that is no release has no such command. Check out that build to resume it.
+A task resumes only on the exact PokeBench source, Core and emulator it started on, because another build may change what a task allows or how it scores. Each run records its release. If you upgrade with a task still paused, the same command stops before the estimate, starts nothing and prints that command on the run's own release, such as `uvx --from git+https://github.com/afk-sapien/pokebench@v0.38.0 pokebench run ...` with your other options unchanged. For a Claude run it also names the Claude Code build the task used when that build is neither in `data/toolchains` nor on PATH. A run made by a build that is no release has no such command. Check out that build to resume it.
 
 Model names starting with `claude` use your Claude Code login and names starting with `gpt` use your Codex login. For any other name add `--provider codex` or `--provider claude`.
 
