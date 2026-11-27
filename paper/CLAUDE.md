@@ -8,7 +8,7 @@ follow the scaffold's `docs/migrating.md` instead of improvising the order.
 
 ## Paper scaffold
 
-Built on [paper-scaffold](https://github.com/pgarrett-scripps/paper-scaffold)
+Built on the author's own paper scaffold
 5.3.2, installed as the `paper-scaffold` package that
 `pyproject.toml` pins (`just version`). The package owns the toolchain:
 `tools/`, `tests/`, `journals/`, `word/` and `docs/` are read from it, and

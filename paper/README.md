@@ -1,7 +1,9 @@
 # PokeBench technical report
 
-Built with [Paper Scaffold](https://github.com/pgarrett-scripps/paper-scaffold)
+Built with the author's own paper scaffold
 5.3.2, pinned to `c9cb1046d710b3fab851e9984b23254b82a031bc`.
+`pyproject.toml` installs it from a checkout of that commit next to this
+repository.
 The upstream MIT notice remains in `LICENSE.scaffold`.
 
 The current report covers the completed focused pass: six models, 48 task
