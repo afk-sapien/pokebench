@@ -144,6 +144,9 @@ def test_the_same_command_resumes_after_a_stop(data, runs, monkeypatch, capsys):
     assert [task for task, _ in runs] == list(SMOKE)
     text = capsys.readouterr().out
     assert 'Resuming: 1 of 3 runs already finished, 1K tokens used.' in text
+    # Only the two runs still to do can spend their caps.
+    rest = sum(catalog_batch.task_definition(task)['token_limit'] for task in SMOKE[1:])
+    assert f'Worst case {quick_run.millions(rest)} tokens for the 2 runs still to do, counting' in text
     assert 'Finished 3 of 3 runs' in text
 
 
@@ -174,6 +177,8 @@ def test_a_short_run_of_an_older_suite_version_runs_only_the_runs_the_current_ve
     assert (f'out holds red-v0.1-old, 2 runs over 2 tasks. {RELEASE} adds 1 run: {SMOKE[1]}. Only these start. '
             'The 2 runs already there are kept as they are.') in text
     assert 'Resuming: 2 of 3 runs already finished' in text and 'Finished 3 of 3 runs' in text
+    cap = catalog_batch.task_definition(SMOKE[1])['token_limit']
+    assert f'Worst case {quick_run.millions(cap)} tokens for the 1 run still to do, counting' in text
     plan = json.loads(Path('out/plan.json').read_text())
     assert [(cell['id'], cell['task_id']) for cell in plan['cells']] == [
         ('cell-0001', SMOKE[0]), ('cell-0002', SMOKE[2]), ('cell-0003', SMOKE[1])]
@@ -587,6 +592,18 @@ def test_singular_counts_read_as_one_run_and_one_task():
         {'provider': 'claude', 'model': 'm', 'task_id': 'task-1', 'token_limit': 10}]}
     assert 'Runs: 1 over 1 task, one at a time.' in quick_run.estimate(plan, 100, Path('out'))
     assert 'Resuming: 1 of 1 run already finished' in quick_run.estimate(plan, 100, Path('out'), done=1)
+
+
+def test_the_worst_case_counts_only_the_runs_still_to_do():
+    cells = [{'id': f'cell-000{n}', 'provider': 'claude', 'model': 'm', 'task_id': f'task-{n}', 'token_limit': n * 1_000_000}
+             for n in (1, 2, 3)]
+    plan = {'suite': 'smoke', 'benchmark': 'pokebench', 'cells': cells}
+    fresh = quick_run.estimate(plan, 100, Path('out'), price=1)
+    assert 'Worst case 6.0M tokens, counting input plus output.' in fresh and 'worst case about $6.00' in fresh
+    # A finished run and an evaluation error never run again, so a paused or pending run is all that is left.
+    left = quick_run.estimate(plan, 100, Path('out'), done=1, price=1, ended={'cell-0001', 'cell-0003'})
+    assert 'Worst case 2.0M tokens for the 1 run still to do, counting input plus output.' in left
+    assert 'worst case about $2.00' in left
 
 
 def test_a_finished_run_names_the_submit_step(data, runs, monkeypatch, capsys):

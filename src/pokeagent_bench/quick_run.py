@@ -196,7 +196,8 @@ def expected(manifest, data, problem, release=BENCHMARK_VERSION):
     return lines
 
 
-def estimate(manifest, budget, output, used=0, done=0, price=None, expected_lines=(), endpoint_lines=()):
+def estimate(manifest, budget, output, used=0, done=0, price=None, expected_lines=(), endpoint_lines=(), ended=()):
+    """The plan before the first model call. ended holds the ids of runs that will not run again."""
     cells = manifest['cells']
     suite = manifest['suite']
     model = f'{cells[0]["provider"]}:{cells[0]["model"]}'
@@ -209,8 +210,11 @@ def estimate(manifest, budget, output, used=0, done=0, price=None, expected_line
         lines.append(f'Resuming: {done} of {counted(len(cells), "run")} already finished, {millions(used)} tokens used.')
     if manifest.get('held_tasks'):
         lines.append('Left out, fixture needs revalidation: ' + ', '.join(manifest['held_tasks']))
-    worst = sum(cell['token_limit'] for cell in cells)
-    lines.append(f'Each task runs at its own decision and token caps. Worst case {millions(worst)} tokens, '
+    # A resumed or topped-up folder runs only its pending and paused runs, so only their caps can still be spent.
+    todo = [cell for cell in cells if cell.get('id') not in ended]
+    worst = sum(cell['token_limit'] for cell in todo)
+    scope = f' for the {counted(len(todo), "run")} still to do' if len(todo) < len(cells) else ''
+    lines.append(f'Each task runs at its own decision and token caps. Worst case {millions(worst)} tokens{scope}, '
                  'counting input plus output.')
     lines.append(f'Reference budget {millions(budget)}. Passing it prints a warning. It never stops or shortens a task.')
     if suite == 'long':
@@ -304,7 +308,7 @@ def run_suite(args, *, ask=None, next_step=True):
     fixtures, game_data, rom = locate(args.data, args.rom)
     output = args.output or Path('runs') / f'{args.suite}-{re.sub(r"[^A-Za-z0-9.]+", "-", model)}'
     used = done = 0
-    topped, older = [], None
+    topped, older, ended = [], None, set()
     resuming = (output / 'plan.json').is_file()
     if resuming:
         manifest = json.loads((output / 'plan.json').read_text())
@@ -327,6 +331,8 @@ def run_suite(args, *, ask=None, next_step=True):
         current = report(output)
         used = sum(row['tokens'] for row in current['cells'])
         done = sum(row['state'] == 'finished' for row in current['cells'])
+        # The batch never runs a finished run or an evaluation error again.
+        ended = {row['id'] for row in current['cells'] if row['state'] in ('finished', 'evaluation_error')}
         if done < len(manifest['cells']):
             # Before the estimate, so a run from another release or a missing Claude Code build costs nothing.
             from .own_release import check_run
@@ -350,7 +356,7 @@ def run_suite(args, *, ask=None, next_step=True):
               f'{counted(len(topped), "run")}: {", ".join(cell["task_id"] for cell in topped)}. Only these start. '
               f'The {counted(len(manifest["cells"]) - len(topped), "run")} already there are kept as they are.',
               flush=True)
-    print(estimate(manifest, budget, output, used, done, args.input_price, lines, endpoint_lines), flush=True)
+    print(estimate(manifest, budget, output, used, done, args.input_price, lines, endpoint_lines, ended), flush=True)
     if provider == 'claude':
         from .claude_provider import pin_cli
         print(pin_cli(args.data), flush=True)
