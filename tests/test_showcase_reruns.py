@@ -12,9 +12,9 @@ import subprocess
 import pytest
 
 from pokeagent_bench import showcase
-from pokeagent_bench.showcase import (MAINTAINER_FORMAT, MAINTAINER_REVISION, RERUN_FORMAT, SOURCES, SUITE_FILE, VERSIONS_FILE,
-                                     VERSIONS_FORMAT, build, community_reports, freeze, long_snapshot, maintainer_sources,
-                                     root_map, short_snapshot, short_versions, write_site)
+from pokeagent_bench.showcase import (MAINTAINER_FORMAT, MAINTAINER_REVISION, RERUN_FORMAT, SOURCES, SUITE_FILE, SUITE_FILES,
+                                     VERSIONS_FILE, VERSIONS_FORMAT, build, community_reports, freeze, long_snapshot,
+                                     maintainer_sources, root_map, short_snapshot, short_versions, stored_suites, write_site)
 from pokeagent_bench.showcase_costs import PRICING, comparison
 
 OPUS, SOL = 'claude-opus-5-5', 'gpt-5.6-sol'
@@ -130,12 +130,12 @@ def site(tmp_path):
 
     write(tmp_path / 'frozen.json', dict(format='pokebench-showcase-frozen-v1', **freeze(current()['short'])))
 
-    def built(models, maintainer=(), roots=None):
+    def built(models, maintainer=(), roots=None, suite=None):
         write(tmp_path / 'sources.json', {'format': RERUN_FORMAT, 'models': models})
         write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': list(maintainer)})
         write(tmp_path / 'versions.json', VERSIONS)
         data = plain(build(base, web, sources=tmp_path / 'sources.json', frozen=tmp_path / 'frozen.json',
-                           suite=tmp_path / 'suite.json', maintainer=tmp_path / 'maintainer.json', roots=roots,
+                           suite=suite or tmp_path / 'suite.json', maintainer=tmp_path / 'maintainer.json', roots=roots,
                            versions=tmp_path / 'versions.json'))
         data.pop('updated_at')
         return data
@@ -471,7 +471,7 @@ def test_a_maintainer_row_sits_beside_the_ranked_rows_and_moves_none_of_them(sit
 OFF = {'sha': 'does not match its listed sha256.', 'tokens': 'used a different token count than the report.',
        'unverified': 'is finished and not replay verified.', 'missing': 'with 1 missing, 0 not in the suite and 0 repeated.',
        'harness': f'recorded harness red-v0.61-older, not {NEW}.', 'model': 'ran a different model or task than the report.',
-       'outside': 'is not a folder under the data folder.', 'other spec': f'that {SUITE_FILE} does not list.'}
+       'outside': 'is not a folder under the data folder.', 'other spec': f'that the stored {NEW} suite does not list.'}
 
 
 @pytest.mark.parametrize('break_it', OFF)
@@ -520,18 +520,21 @@ def test_the_maintainer_list_names_every_field_and_only_short_rows(tmp_path, cha
 
 
 TERRA, SONNET = 'gpt-5.6-terra', 'claude-sonnet-5-5'
-SECOND = 'runs-20261123'
+SECOND, TOPUP = 'runs-20261123', 'topup-20261127'
+TOPPED = f'{SONNET}@red-v0.64'
 
 
-def test_the_checked_in_maintainer_list_holds_the_haiku_terra_and_sonnet_rows():
+def test_the_checked_in_maintainer_list_holds_the_haiku_terra_and_both_sonnet_rows():
     rows = maintainer_sources(SOURCES / 'maintainer-rows.json')
     assert [(r['id'], r['model'], r['release'], r.get('root')) for r in rows] == [
         (EXTRA, HAIKU, 'v0.37.4', None), (f'{TERRA}@red-v0.63', TERRA, 'v0.37.4', SECOND),
-        (f'{SONNET}@red-v0.63', SONNET, 'v0.37.4', SECOND)]
-    # Terra and Sonnet take Haiku's label and rules, and neither ran an attempt again.
+        (f'{SONNET}@red-v0.63', SONNET, 'v0.37.4', SECOND), (TOPPED, SONNET, 'v0.38.0', TOPUP)]
+    # Terra and both Sonnet rows take Haiku's label and rules, and none ran an attempt again.
     assert {(r['label'], r['detail'], r['suite']) for r in rows} == {(rows[0]['label'], rows[0]['detail'], 'short')}
-    assert rows[1]['replaced'] == rows[2]['replaced'] == {} and all(re.fullmatch('[0-9a-f]{64}', r['report_sha256']) for r in rows)
-    assert [(r['report'], r['runs']) for r in rows[1:]] == [(f'runs/short-{m}.pokebench.verified.json', f'runs/short-{m}') for m in (TERRA, SONNET)]
+    assert all(r['replaced'] == {} for r in rows[1:]) and all(re.fullmatch('[0-9a-f]{64}', r['report_sha256']) for r in rows)
+    assert [(r['report'], r['runs']) for r in rows[1:3]] == [(f'runs/short-{m}.pokebench.verified.json', f'runs/short-{m}') for m in (TERRA, SONNET)]
+    # The top-up folder holds the kept red-v0.63 attempts and the five it added, packed and verified beside it.
+    assert (rows[3]['report'], rows[3]['runs']) == (f'short-{SONNET}.pokebench.verified.json', f'short-{SONNET}')
 
 
 def test_the_checked_in_sources_hold_no_absolute_path():
@@ -584,16 +587,49 @@ def test_the_versions_list_runs_newest_first_and_agrees_with_the_stored_suite(si
         short_versions(tmp_path / 'listed.json', suite)
 
 
-def test_the_checked_in_versions_list_puts_the_unreleased_harder_suite_first():
-    suite = showcase.load(SOURCES / SUITE_FILE)
-    versions = short_versions(SOURCES / VERSIONS_FILE, suite)
+def test_the_checked_in_versions_list_puts_the_released_harder_suite_first():
+    suites = stored_suites([SOURCES / name for name in SUITE_FILES])
+    versions = short_versions(SOURCES / VERSIONS_FILE, suites)
     assert [(v['name'], v['runs'], v['tasks'], v['released']) for v in versions] == [
-        (NEXT, 51, 49, False), (NEW, 46, 44, True)]
-    assert versions[0]['note'] == ('The next Short suite version, red-v0.64-harder-short, adds five harder tasks. '
-                                   'It is not released yet, and no model has run it.') and 'note' not in versions[1]
-    # The harder suite is the stored suite and five more tasks, one start each.
+        (NEXT, 51, 49, True), (NEW, 46, 44, True)]
+    assert not any('note' in v for v in versions)
+    # The harder suite is the stored suite and five more tasks, one start each, and the versions list names them.
     added = showcase.load(SOURCES / VERSIONS_FILE)['versions'][0]['added']
-    assert len(set(added)) == 5 and set(added).isdisjoint(t['id'] for t in suite['tasks'])
+    assert len(set(added)) == 5 and set(added).isdisjoint(t['id'] for t in suites[0]['tasks'])
+    assert sorted(t['id'] for t in suites[1]['tasks'][44:]) == sorted(added)
+
+
+def test_the_stored_harder_suite_extends_the_stored_suite_and_adds_five_tasks():
+    old, harder = stored_suites([SOURCES / name for name in reversed(SUITE_FILES)])
+    stored = showcase.load(SOURCES / SUITE_FILES[1])
+    assert (harder['benchmark'], harder['package'], harder['tag'], stored['extends']) == (NEXT, '0.38.0', 'v0.38.0', NEW)
+    # The older tasks are the stored suite's, unchanged, each still added in the release that first ran it.
+    assert harder['tasks'][:44] == old['tasks'] and {t['added_in'] for t in old['tasks']} == {ADDED}
+    added = harder['tasks'][44:]
+    assert [t['id'] for t in added] == [t['id'] for t in stored['tasks']] and {t['added_in'] for t in added} == {NEXT}
+    assert all(len(t['variants']) == 1 and t['milestones'] >= 2 and t['category'] in CATEGORIES for t in added)
+    assert all(t['title'] and t['goal'] and t['start'] and re.fullmatch('[0-9a-f]{64}', t['evaluation_spec_sha256']) for t in added)
+
+
+@pytest.mark.parametrize('change, why', [
+    (lambda old, new: new.update(benchmark=NEW), f'{NEW} is stored twice'),
+    (lambda old, new: new.update(extends='red-v0.50-gone'), f'{NEXT} extends red-v0.50-gone, which is not an older stored suite'),
+    (lambda old, new: new['tasks'].append(dict(old['tasks'][0])), f'{NEXT} lists a task twice')])
+def test_a_stored_suite_extends_one_older_suite_and_lists_each_task_once(tmp_path, change, why):
+    old = {'format': 'pokebench-short-suite-v1', 'benchmark': NEW, 'added_in': ADDED,
+           'tasks': [task('one', 'battle', variants=[{'variant': 'default', 'fixture_sha256': 'a'}])]}
+    new = {'format': 'pokebench-short-suite-v1', 'benchmark': NEXT, 'extends': NEW, 'added_in': NEXT,
+           'tasks': [task('two', 'battle', added_in='red-v0.63-other', variants=[{'variant': 'default', 'fixture_sha256': 'b'}])]}
+    write(tmp_path / 'old.json', old)
+    write(tmp_path / 'new.json', new)
+    suites = stored_suites([tmp_path / 'new.json', tmp_path / 'old.json'])
+    # Oldest first, whatever order the files are given in. A task's own added_in wins over its file's.
+    assert [(s['benchmark'], [(t['id'], t['added_in']) for t in s['tasks']]) for s in suites] == [
+        (NEW, [('one', ADDED)]), (NEXT, [('one', ADDED), ('two', 'red-v0.63-other')])]
+    change(old, new)
+    write(tmp_path / 'new.json', new)
+    with pytest.raises(ValueError, match=re.escape(why)):
+        stored_suites([tmp_path / 'old.json', tmp_path / 'new.json'])
 
 
 def groups(html):
@@ -657,6 +693,79 @@ def test_a_version_gets_its_table_once_a_row_has_run_it(site, tmp_path):
     assert [(title, [rank for rank, _ in rows]) for title, rows in groups(html)] == [
         (f'{NEXT}, 5 runs over 4 tasks', ['01']), (TITLES[1], ['01', '02'])]
     assert 'version-note' not in html and html.count('<h3 class="set-title">') == 2
+
+
+def harder_suite(tmp_path):
+    """The fixture suite and a newer stored file that extends it with one harder task."""
+    write(tmp_path / 'next.json', {'format': 'pokebench-short-suite-v1', 'benchmark': NEXT, 'package': '0.38.0', 'tag': 'v0.38.0',
+                                   'extends': NEW, 'added_in': NEXT, 'tasks': [
+        task('battle-hard', 'battle', score_group='battle-hard', evaluation_spec_sha256='spec-battle-hard', milestones=2,
+             variants=[{'variant': 'default', 'fixture_sha256': 'fx-battle-hard-default-new'}])]})
+    return [tmp_path / 'suite.json', tmp_path / 'next.json']
+
+
+def topup_entry(base, kept_harness=NEW, added_harness=NEXT):
+    """A Sonnet top-up on the newer suite: four attempts its folder kept from the stored suite, then the one task it adds."""
+    runs, report = f'topup-runs/short-{SONNET}', f'topup-rows/{SONNET}.json'
+    cells = [dict(c, replay_verified=True) for c in new_cells(SONNET, 601)]
+    cells.append(dict(cells[0], id='cell-0605', task_id='battle-hard', category='battle', score_group='battle-hard', value=1.0,
+                      tokens=7000, evaluation_spec_sha256='spec-battle-hard', fixture_sha256='fx-battle-hard-default-new'))
+    for c in cells:
+        harness, package = (added_harness, '0.38.0') if c['id'] == 'cell-0605' else (kept_harness, '0.37.4')
+        attempt(base / runs / c['id'], harness, c['tokens'], SONNET)
+        write(base / runs / c['id'] / 'manifest.json', {'benchmark': harness, 'agent': {'model': SONNET}, 'package_version': package,
+                                                       'scenario': {'task_id': c['task_id']}})
+    write(base / report, {'format': 'pokebench-verified-report-v1', 'verified': True, 'problems': [], 'suite': 'short',
+                          'model': SONNET, 'bundle_sha256': 'bundle', 'harness': {'benchmark': NEXT, 'package_version': '0.38.0'},
+                          'cells': cells})
+    return {'id': TOPPED, 'model': SONNET, 'suite': 'short', 'report': report,
+            'report_sha256': hashlib.sha256((base / report).read_bytes()).hexdigest(), 'runs': runs, 'replaced': {},
+            'release': 'v0.38.0', 'label': 'Maintainer run, replay verified', 'detail': 'Ranked in the table of its suite version.'}
+
+
+@pytest.mark.skipif(not shutil.which('node'), reason='node is not installed')
+def test_a_top_up_row_keeps_its_older_attempts_and_ranks_in_the_newer_versions_table(site, tmp_path, capsys):
+    both = harder_suite(tmp_path)
+    before = site.built({}, [maintainer_entry(site.base)], suite=both)
+    data = site.built({}, [maintainer_entry(site.base), topup_entry(site.base)], suite=both)
+    assert capsys.readouterr().err == ''
+    b, a = before['short'], data['short']
+    # It moves no other row, the Haiku row on the older suite included, and stays out of the cost comparison.
+    assert by(a['models'], TOPPED) == b['models'] and by(a['cells'], TOPPED) == b['cells'] and a['efficiency'] == b['efficiency']
+    row = by(a['models'], TOPPED, keep=True)[0]
+    assert (row['label'], row['complete'], row['harness']['label']) == ('Sonnet (red-v0.64)', True, 'red-v0.63 to v0.64')
+    assert row['suite'] == {'benchmark': NEXT, 'tasks': 4, 'source': f'topup-runs/short-{SONNET}'}
+    assert (row['maintainer']['packages'], row['maintainer']['verified_on']) == (['0.37.4', '0.38.0'], '0.38.0')
+    # Each cell is labeled against the newer suite, which lists the kept starts unchanged.
+    assert all(c['labels'] == [] for c in by(a['cells'], TOPPED, keep=True))
+    hard = next(t for t in a['tasks'] if t['id'] == 'battle-hard')
+    assert (hard['suite'], hard['milestones']) == (NEXT, 2) and 'battle-hard' not in {t['id'] for t in b['tasks']}
+    page = render(tmp_path, data)
+    found = groups(page['ranking']['html'])
+    assert [(title, [rank for rank, _ in rows]) for title, rows in found] == [
+        (f'{NEXT}, 5 runs over 4 tasks', ['01']), (TITLES[0], ['01']), (TITLES[1], ['01', '02'])]
+    assert 'Sonnet (red-v0.64)' in found[0][1][0][1] and 'Haiku (red-v0.63)' in found[1][1][0][1]
+    assert 'version-note' not in page['ranking']['html'] and 'Added in red-v0.64' in page['tasks']['html']
+    note = page['suite-note']['text']
+    assert 'are maintainer runs on the red-v0.64 and red-v0.63 Short suites, each ranked in the table of its version.' in note
+    # The cost guide reads the newest version a priced row has run, so it names the top-up row alone.
+    cost = page['submit-cost']['html']
+    assert f'{SONNET} used {row["tokens"] / 1e6:.1f}M' in cost and HAIKU not in cost
+    assert f'up to {sum(c["token_limit"] for c in by(a["cells"], TOPPED, keep=True)) / 1e6:.1f}M tokens' in cost
+
+
+@pytest.mark.parametrize('change, why', [
+    ({'added_harness': NEW}, f'cell-0605 recorded harness {NEW}, not {NEXT}.'),
+    ({'kept_harness': 'red-v0.61-older'}, f'cell-0601 recorded harness red-v0.61-older, not {NEXT}.'),
+    ({'stored': 'older only'}, f'ran {NEXT}, not {NEW}.')])
+def test_a_top_up_row_stays_off_unless_each_attempt_ran_a_stored_suite_that_lists_it(site, tmp_path, capsys, change, why):
+    change = dict(change)
+    # Only the older stored suite lists the kept starts, so only its harness may stand for the newer one.
+    suite = [tmp_path / 'suite.json'] if change.pop('stored', None) else harder_suite(tmp_path)
+    before = site.built({}, suite=suite)
+    assert site.built({}, [topup_entry(site.base, **change)], suite=suite) == before
+    error = capsys.readouterr().err
+    assert error.startswith(f'{TOPPED}: left off the site. ') and error.count('\n') == 1 and why in error
 
 
 def set_efforts(base, efforts):
@@ -741,7 +850,7 @@ def test_a_community_row_on_the_stored_suite_ranks_in_the_current_set_with_its_o
     ({'cells': [dict(c, replay_verified=True) for c in new_cells('local-model', 401)][:-1]},
      'with 1 missing, 0 not in the suite and 0 repeated.'),
     ({'cells': [dict(c, replay_verified=True, fixture_sha256='fx-older') for c in new_cells('local-model', 401)]},
-     f'cell-0401 ran a task definition or start that {SUITE_FILE} does not list.')])
+     f'cell-0401 ran a task definition or start that the stored {NEW} suite does not list.')])
 def test_a_community_row_off_the_stored_suite_stays_off_the_board_with_the_reason(site, capsys, change, why):
     before = site.built({})
     community_report(site, **change)
@@ -853,8 +962,9 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
     before = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))['short']
     after = plain(build(base, web, sources=tmp_path / 'sources.json'))['short']
     # The rows under a root are left off when it is not given, each with its reason.
-    assert capsys.readouterr().err == ''.join(f'{m}@red-v0.63: left off the site. Its root {SECOND} was not given. '
-                                              f'Pass --root {SECOND}=FOLDER.\n' for m in (TERRA, SONNET))
+    assert capsys.readouterr().err == ''.join(f'{m}: left off the site. Its root {root} was not given. Pass --root {root}=FOLDER.\n'
+                                              for m, root in ((f'{TERRA}@red-v0.63', SECOND), (f'{SONNET}@red-v0.63', SECOND),
+                                                              (TOPPED, TOPUP)))
     assert by(after['models'], EXTRA) == before['models'] and by(after['cells'], EXTRA) == before['cells']
     assert after['efficiency'] == before['efficiency']
     row = by(after['models'], EXTRA, keep=True)[0]
@@ -869,8 +979,8 @@ def test_real_maintainer_rows_are_adopted_and_move_no_other_row(tmp_path, capsys
 
 
 ROOTS = os.environ.get('POKEBENCH_SITE_ROOTS')
-# The scores the runs' own logs print, 62.9 and 63.1.
-TERRA_SCORE, SONNET_SCORE = 0.629, 0.631
+# The scores the runs' own logs print, 62.9 and 63.1, and 65.5 for the Sonnet top-up on red-v0.64.
+TERRA_SCORE, SONNET_SCORE, TOPPED_SCORE = 0.629, 0.631, 0.655
 
 
 @pytest.mark.skipif(not (REAL and ROOTS), reason='set POKEBENCH_SITE_DATA and POKEBENCH_SITE_ROOTS=NAME=FOLDER to check the rows under a root')
@@ -882,10 +992,24 @@ def test_real_rows_under_a_root_rank_beside_haiku_and_move_no_earlier_row(tmp_pa
     write(tmp_path / 'maintainer.json', {'format': MAINTAINER_FORMAT, 'rows': []})
     before = plain(build(base, web, sources=tmp_path / 'sources.json', maintainer=tmp_path / 'maintainer.json'))['short']
     after = plain(build(base, web, sources=tmp_path / 'sources.json', roots=roots))['short']
-    assert capsys.readouterr().err == ''
+    # The top-up row needs its own root. Without it the row is left off and the other rows are unchanged.
+    topped = TOPUP in roots
+    assert capsys.readouterr().err == ('' if topped else
+                                       f'{TOPPED}: left off the site. Its root {TOPUP} was not given. Pass --root {TOPUP}=FOLDER.\n')
     ids = [EXTRA, f'{TERRA}@red-v0.63', f'{SONNET}@red-v0.63']
-    assert [m for m in after['models'] if m['id'] not in ids] == before['models']
-    assert [c for c in after['cells'] if c['model'] not in ids] == before['cells'] and after['efficiency'] == before['efficiency']
+    if topped:
+        row = by(after['models'], TOPPED, keep=True)[0]
+        assert (row['label'], row['finished'], row['planned'], round(row['score'], 3)) == ('Sonnet (red-v0.64)', 51, 51, TOPPED_SCORE)
+        assert row['suite'] == {'benchmark': NEXT, 'tasks': 49, 'source': f'{TOPUP}/short-{SONNET}'}
+        assert row['maintainer']['packages'] == ['0.37.4', '0.38.0'] and row['harness']['label'] == 'red-v0.63 to v0.64'
+        # The 46 kept attempts are the red-v0.63 row's own, so they score and cost the same there.
+        kept = {c['id']: c for c in after['cells'] if c['model'] == f'{SONNET}@red-v0.63'}
+        topped_cells = [c for c in after['cells'] if c['model'] == TOPPED]
+        assert len(topped_cells) == 51 and all(c['labels'] == [] for c in topped_cells)
+        assert all((c['value'], c['tokens']) == (kept[c['id']]['value'], kept[c['id']]['tokens']) for c in topped_cells if c['id'] in kept)
+    shown = [*ids, TOPPED] if topped else ids
+    assert [m for m in after['models'] if m['id'] not in shown] == before['models']
+    assert [c for c in after['cells'] if c['model'] not in shown] == before['cells'] and after['efficiency'] == before['efficiency']
     rows = {m['id']: m for m in after['models'] if m['id'] in ids}
     assert {k: (r['label'], r['finished'], r['planned'], round(r['score'], 3)) for k, r in rows.items()} == {
         EXTRA: ('Haiku (red-v0.63)', 46, 46, 0.628), ids[1]: ('Terra (red-v0.63)', 46, 46, TERRA_SCORE),

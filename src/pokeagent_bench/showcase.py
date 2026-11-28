@@ -180,8 +180,26 @@ def suite_mismatch(rows, suite):
                 f'{len(unknown)} not in the suite and {len(repeated)} repeated.')
     for c in rows:
         if c.get('evaluation_spec_sha256') != specs[c['task_id']] or c.get('fixture_sha256') not in starts[c['task_id'], c['variant']]:
-            return f'{c.get("id")} ran a task definition or start that {SUITE_FILE} does not list.'
+            return f'{c.get("id")} ran a task definition or start that the stored {suite["benchmark"]} suite does not list.'
     return None
+
+
+def as_suites(suite):
+    """A stored suite or a list of them, oldest first, as a list."""
+    return [suite] if isinstance(suite, dict) else list(suite or ())
+
+
+def suite_named(suites, benchmark):
+    """The stored suite a report or row ran, or None with the names of the stored suites."""
+    found = next((s for s in suites if s['benchmark'] == benchmark), None)
+    return found, ' or '.join(s['benchmark'] for s in suites)
+
+
+def stored_or_fail(suites, benchmark, name):
+    found, names = suite_named(suites, benchmark)
+    if found is None:
+        raise ValueError(f'{name} ran {benchmark}, and a row is shown only on the stored {names} suite.')
+    return found
 
 
 def community_id(report):
@@ -189,11 +207,15 @@ def community_id(report):
 
 
 def community_mismatch(report, suite):
-    """Why a community report did not run the stored Short suite, or None when it did. Only such a report is shown."""
+    """Why a community report did not run a stored Short suite, or None when it did. Only such a report is shown.
+
+    suite is one stored suite or a list of them, and the report is checked against the one its harness names.
+    """
     benchmark = report.get('harness', {}).get('benchmark')
-    if benchmark != suite['benchmark']:
-        return f'It ran {benchmark}, not the stored {suite["benchmark"]} suite.'
-    return suite_mismatch(report.get('cells', []), suite)
+    found, names = suite_named(as_suites(suite), benchmark)
+    if found is None:
+        return f'It ran {benchmark}, not the stored {names} suite.'
+    return suite_mismatch(report.get('cells', []), found)
 
 
 def frozen_sets(frozen):
@@ -228,15 +250,19 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
 
     reruns maps a model to an adopted v0.37 batch, as {'folder', 'web', 'cells'}. Its cells replace every
     earlier cell of that model and are never merged with them. frozen holds the stored comparison starts and
-    start hashes, so a swap moves no other row. suite is the stored v0.37 Short suite that adopted rows ran.
-    maintained lists rows from adopt_maintainer. Each is a row of its own beside the model's earlier row, and it
-    stays out of the cost comparison. community lists verified reports that ran the stored suite, as build keeps
-    them with community_mismatch. They are labeled against that suite and also stay out of the cost comparison.
-    versions lists the Short suite versions newest first, as short_versions reads them. With rows on the stored
-    suite, the panel lists every version and then the earlier set. The page draws a table for each version at least
-    one row has run and for the earlier set, and shows a version no row has run as its note alone.
+    start hashes, so a swap moves no other row. suite is the stored Short suite, or the stored suites oldest first
+    as stored_suites reads them. Reruns are on the oldest. maintained lists rows from adopt_maintainer, each on the
+    stored suite its report ran. Each is a row of its own beside the model's earlier row, and it stays out of the
+    cost comparison. community lists verified reports that ran a stored suite, as build keeps them with
+    community_mismatch. Each row is labeled against the suite it ran, and community rows also stay out of the cost
+    comparison. versions lists the Short suite versions newest first, as short_versions reads them. With rows on a
+    stored suite, the panel lists every version and then the earlier set. The page draws a table for each version at
+    least one row has run and for the earlier set, and shows a version no row has run as its note alone.
     """
     reruns = reruns or {}
+    suites = as_suites(suite)
+    # The stored suite each row on one ran, by the row's id. Its cells are labeled against that suite.
+    ran_on = dict.fromkeys(reruns, suites[0]) if reruns else {}
     shared, frozen_starts = frozen_sets(frozen) if frozen else (None, None)
     cells = []
     for row in source['cells']:
@@ -285,6 +311,7 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
     beside = {}
     for row_set in maintained:
         beside[row_set['id']] = row_set
+        ran_on[row_set['id']] = stored_or_fail(suites, row_set['benchmark'], row_set['id'])
         for row in row_set['cells']:
             clean = {k: row.get(k) for k in CELL_FIELDS}
             run = row_set['folder'] / row['id']
@@ -294,10 +321,11 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
                          harness=harness_tag(run), **cell_facts(run))
             fresh.append(clean)
     submitted = {}
-    if community and suite is None:
+    if community and not suites:
         raise ValueError('Community rows are shown only on the stored suite, so short_snapshot needs it.')
     for entry in community:
         name = community_id(entry)
+        ran_on[name] = stored_or_fail(suites, entry['harness']['benchmark'], name)
         submitted[name] = {'label': entry['label'], 'handle': entry.get('handle'), 'model': entry['model'],
                            'attempts': entry.get('attempts_declared'), 'bundle_sha256': entry['bundle_sha256']}
         for row in entry['cells']:
@@ -313,8 +341,11 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         cell['retired'] = cell['task_id'] in retired
     adopted = {id(c) for c in fresh}
     label_cells([c for c in cells if id(c) not in adopted], starts=frozen_starts)
-    if fresh:
-        label_cells(fresh, *suite_hashes(suite))
+    on_suite = defaultdict(list)
+    for c in fresh:
+        on_suite[ran_on[c['model']]['benchmark']].append(c)
+    for benchmark, rows in on_suite.items():
+        label_cells(rows, *suite_hashes(suite_named(suites, benchmark)[0]))
     scored = [c for c in cells if not c['retired']]
     by_model = defaultdict(list)
     for cell in cells:
@@ -326,7 +357,7 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         finished = sum(r['state'] == 'finished' for r in counted)
         note, kept = submitted.get(name), beside.get(name)
         # A maintainer row names its suite, so it reads apart from the same model's earlier row.
-        label = (note['model'] if note else f'{LABELS.get(kept["model"], kept["model"])} ({short_tag(suite["benchmark"])})'
+        label = (note['model'] if note else f'{LABELS.get(kept["model"], kept["model"])} ({short_tag(ran_on[name]["benchmark"])})'
                  if kept else LABELS.get(name, name))
         models.append({'id': name, 'label': label, 'score': score,
                        **({'community': note} if note else {}), **({'maintainer': kept['note']} if kept else {}),
@@ -337,7 +368,7 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
                        'labels': dict(Counter(code for r in counted for code in r['labels']))})
         if name in reruns or kept or note:
             origin = reruns[name]['folder'] if name in reruns else kept['runs'] if kept else f'bundle {note["bundle_sha256"][:12]}'
-            models[-1]['suite'] = {'benchmark': suite['benchmark'], 'tasks': len(suite['tasks']), 'source': origin}
+            models[-1]['suite'] = {'benchmark': ran_on[name]['benchmark'], 'tasks': len(ran_on[name]['tasks']), 'source': origin}
     models.sort(key=lambda m: (not m['complete'], -(m['score'] if m['score'] is not None else -1)))
     tasks = []
     for t in source['tasks']:
@@ -346,14 +377,20 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
         if task['retired']:
             task['retirement_reason'] = task_definition(t['id']).get('retirement_reason')
         tasks.append(task)
+    # The stored suites a row has run, oldest first.
+    ran = {s['benchmark'] for s in ran_on.values()}
+    used = [s for s in suites if s['benchmark'] in ran]
     if reruns or beside or submitted:
-        # Union of both task sets. Tasks only the stored suite has come from it, since this catalog lacks them.
+        # Union of the task sets. Tasks only a stored suite has come from it, since this catalog lacks them.
         # added_in names the release that first ran them, which can be older than the suite's own release.
         known = {t['id'] for t in tasks}
-        for t in suite['tasks']:
-            if t['id'] not in known:
+        for stored in used:
+            for t in stored['tasks']:
+                if t['id'] in known:
+                    continue
+                known.add(t['id'])
                 task = {k: t.get(k) for k in ('id', 'title', 'category', 'goal', 'start', 'action_policy', 'mode')}
-                task.update(retired=t['id'] in retired, suite=suite.get('added_in', suite['benchmark']))
+                task.update(retired=t['id'] in retired, suite=t.get('added_in') or stored.get('added_in', stored['benchmark']))
                 if t.get('milestones'):
                     task['milestones'] = t['milestones']
                 tasks.append(task)
@@ -381,9 +418,8 @@ def short_snapshot(source, web, extra=None, base=None, community=(), reruns=None
                                       [m for m in models if m['id'] not in submitted and m['id'] not in beside], shared)}
     if reruns or beside or submitted:
         if versions is None:
-            planned_runs, planned_tasks = suite_size(suite)
-            versions = [{'benchmark': suite['benchmark'], 'name': suite['benchmark'], 'runs': planned_runs, 'tasks': planned_tasks,
-                         'released': True}]
+            versions = [{'benchmark': s['benchmark'], 'name': s['benchmark'], 'runs': suite_size(s)[0], 'tasks': suite_size(s)[1],
+                         'released': True} for s in reversed(used)]
         # The earlier rows ran no one suite version, so their heading counts the scored starts and tasks they ran.
         earlier = {m['id'] for m in models if not m.get('suite')}
         starts = {(c['task_id'], c['variant']) for c in scored if c['model'] in earlier}
@@ -468,10 +504,37 @@ def long_snapshot(base, web, reruns=None):
     return sorted(rows, key=lambda r: -r['score'])
 
 
-SUITE_FILE = 'short-red-v0.63.json'
+# The stored Short suites, oldest first. A later file names the suite it extends and holds only the tasks it adds.
+SUITE_FILES = ('short-red-v0.63.json', 'short-red-v0.64.json')
+SUITE_FILE = SUITE_FILES[0]
 VERSIONS_FILE = 'short-versions.json'
 VERSIONS_FORMAT = 'pokebench-short-versions-v1'
 VERSION_KEYS = {'benchmark', 'runs', 'tasks', 'released', 'note', 'added'}
+
+
+def stored_suites(paths):
+    """Read stored Short suite files, oldest first.
+
+    A file that names extends holds only the tasks it adds, so its suite is the extended suite's tasks and then its
+    own. Each task names added_in, the version that first ran it, taken from the file that lists it.
+    """
+    loaded = sorted((load(path) for path in paths), key=lambda s: tag_key(s['benchmark']))
+    suites = {}
+    for suite in loaded:
+        name = suite['benchmark']
+        if name in suites:
+            raise ValueError(f'{name} is stored twice')
+        added = [dict(t, added_in=t.get('added_in') or suite.get('added_in', name)) for t in suite['tasks']]
+        base = []
+        if suite.get('extends'):
+            if suite['extends'] not in suites:
+                raise ValueError(f'{name} extends {suite["extends"]}, which is not an older stored suite')
+            base = suites[suite['extends']]['tasks']
+        ids = [t['id'] for t in base + added]
+        if len(set(ids)) != len(ids):
+            raise ValueError(f'{name} lists a task twice')
+        suites[name] = dict(suite, tasks=base + added)
+    return list(suites.values())
 
 
 def suite_size(suite):
@@ -480,7 +543,10 @@ def suite_size(suite):
 
 
 def short_versions(path, suite):
-    """Read the Short suite versions the page shows, newest first. The stored suite's entry must match its own file."""
+    """Read the Short suite versions the page shows, newest first. Each stored suite's entry must match its own files.
+
+    suite is one stored suite or a list of them.
+    """
     listed = load(path)
     if listed.get('format') != VERSIONS_FORMAT:
         raise ValueError(f'{path} is not a {VERSIONS_FORMAT} file')
@@ -491,10 +557,11 @@ def short_versions(path, suite):
     names = [v['benchmark'] for v in versions]
     if names != sorted(names, key=tag_key, reverse=True) or len(set(names)) != len(names):
         raise ValueError(f'{path}: the versions are not listed once each, newest first')
-    stored = next((v for v in versions if v['benchmark'] == suite['benchmark']), None)
-    if stored is None or (stored['runs'], stored['tasks']) != suite_size(suite):
-        runs, tasks = suite_size(suite)
-        raise ValueError(f'{path}: {suite["benchmark"]} must be listed with {runs} runs over {tasks} tasks, as {SUITE_FILE} holds')
+    for each in as_suites(suite):
+        stored = next((v for v in versions if v['benchmark'] == each['benchmark']), None)
+        if stored is None or (stored['runs'], stored['tasks']) != suite_size(each):
+            runs, tasks = suite_size(each)
+            raise ValueError(f'{path}: {each["benchmark"]} must be listed with {runs} runs over {tasks} tasks, as its stored suite holds')
     return [{'benchmark': v['benchmark'], 'name': v['benchmark'], 'runs': v['runs'], 'tasks': v['tasks'], 'released': v['released'],
              **({'note': v['note']} if v.get('note') else {})} for v in versions]
 
@@ -541,7 +608,8 @@ def adopt_short(base, model, folder, suite):
                       f'{len(unknown)} not in the suite and {len(repeated)} repeated.')
     for c in rows:
         if c.get('evaluation_spec_sha256') != specs[c['task_id']] or c.get('fixture_sha256') not in starts[c['task_id'], c['variant']]:
-            return None, f'{c["id"]} ran a task definition or start that {SUITE_FILE} does not list. Regenerate it from the tag the batch ran.'
+            return None, (f'{c["id"]} ran a task definition or start that the stored {suite["benchmark"]} suite does not list. '
+                          'Regenerate it from the tag the batch ran.')
         tag = harness_tag(root / c['id'])
         if tag != suite['benchmark']:
             return None, f'{c["id"]} recorded harness {tag}, not {suite["benchmark"]}.'
@@ -628,12 +696,28 @@ def root_map(items):
     return roots
 
 
+def kept_from_older(suites, tag, suite, cell):
+    """True when tag names a stored suite older than suite that lists the cell's task definition and start unchanged.
+
+    A top-up keeps the attempts a folder finished on the older suite and runs only the tasks the newer one adds.
+    """
+    older, _ = suite_named(suites, tag)
+    if older is None or tag_key(tag) >= tag_key(suite['benchmark']):
+        return False
+    specs, starts = suite_hashes(older)
+    return (specs.get(cell['task_id']) == cell.get('evaluation_spec_sha256')
+            and cell.get('fixture_sha256') in starts.get((cell['task_id'], cell.get('variant')), set()))
+
+
 def adopt_maintainer(base, entry, suite, where='the data folder'):
     """Return (row, None) when a verified report and the run folder it came from agree on every stored start, else (None, why).
 
-    base is the folder the entry's paths are relative to: the data folder, or the root the entry names.
+    base is the folder the entry's paths are relative to: the data folder, or the root the entry names. suite is one
+    stored suite or a list of them, and the row is checked against the one the report's harness names. Each attempt
+    recorded that suite's harness, or an older stored suite's that lists its task and start unchanged.
     """
     base = Path(base)
+    suites = as_suites(suite)
     report_path = base / str(entry['report'])
     if not report_path.resolve().is_relative_to(base.resolve()) or not report_path.is_file():
         return None, f'{entry["report"]} is not a file under {where}.'
@@ -644,8 +728,9 @@ def adopt_maintainer(base, entry, suite, where='the data folder'):
         return None, f'{entry["report"]} is not a verified report with no problems.'
     if report.get('suite') != entry['suite'] or report.get('model') != entry['model']:
         return None, f'{entry["report"]} is {report.get("suite")} {report.get("model")}, not {entry["suite"]} {entry["model"]}.'
-    if report.get('harness', {}).get('benchmark') != suite['benchmark']:
-        return None, f'{entry["report"]} ran {report.get("harness", {}).get("benchmark")}, not {suite["benchmark"]}.'
+    suite, names = suite_named(suites, report.get('harness', {}).get('benchmark'))
+    if suite is None:
+        return None, f'{entry["report"]} ran {report.get("harness", {}).get("benchmark")}, not {names}.'
     root = inside(base, entry['runs'])
     if root is None:
         return None, f'{entry["runs"]} is not a folder under {where}.'
@@ -666,8 +751,9 @@ def adopt_maintainer(base, entry, suite, where='the data folder'):
         usage = result.get('usage', {})
         if usage.get('input_tokens', 0) + usage.get('output_tokens', 0) != c.get('tokens'):
             return None, f'{c["id"]} in {entry["runs"]} used a different token count than the report.'
-        if harness_tag(run) != suite['benchmark']:
-            return None, f'{c["id"]} recorded harness {harness_tag(run)}, not {suite["benchmark"]}.'
+        tag = harness_tag(run)
+        if tag != suite['benchmark'] and not kept_from_older(suites, tag, suite, c):
+            return None, f'{c["id"]} recorded harness {tag}, not {suite["benchmark"]}.'
         walls.append(result.get('wall_seconds'))
         efforts.append(manifest.get('agent', {}).get('reasoning_effort'))
     for folder in entry['replaced']:
@@ -684,21 +770,24 @@ def adopt_maintainer(base, entry, suite, where='the data folder'):
     # runs is the name the page shows, which starts with the root's name and never holds its folder.
     # folder and base are where the build reads the attempts and the kept copies.
     shown = f'{entry[MAINTAINER_ROOT]}/{entry["runs"]}' if entry.get(MAINTAINER_ROOT) else entry['runs']
-    return {'id': entry['id'], 'model': entry['model'], 'runs': shown, 'folder': root, 'base': base, 'cells': rows,
-            'replaced': entry['replaced'], 'note': note}, None
+    return {'id': entry['id'], 'model': entry['model'], 'benchmark': suite['benchmark'], 'runs': shown, 'folder': root, 'base': base,
+            'cells': rows, 'replaced': entry['replaced'], 'note': note}, None
 
 
 def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None, roots=None, versions=None):
     """Return the showcase data. A model keeps its earlier source unless its listed new source is complete.
 
-    roots maps a root name to its folder, for maintainer rows that name a root.
+    suite is a stored suite file or a list of them, and defaults to SUITE_FILES. Reruns and Long rows are checked
+    against the oldest. roots maps a root name to its folder, for maintainer rows that name a root.
     """
     base, web, roots = Path(base), Path(web), {name: Path(folder) for name, folder in (roots or {}).items()}
     sources = rerun_sources(sources or SOURCES / 'rerun-sources.json')
     listed = maintainer_sources(maintainer or SOURCES / 'maintainer-rows.json')
     frozen = load(frozen or SOURCES / 'frozen.json')
-    suite = load(suite or SOURCES / SUITE_FILE)
-    versions = short_versions(versions or SOURCES / VERSIONS_FILE, suite)
+    paths = [SOURCES / name for name in SUITE_FILES] if suite is None else suite if isinstance(suite, (list, tuple)) else [suite]
+    suites = stored_suites(paths)
+    suite = suites[0]
+    versions = short_versions(versions or SOURCES / VERSIONS_FILE, suites)
     source = load(web / 'focused-analysis.json')
     extra = []
     for folder in ('main-v066-astra', 'main-v067-fable'):
@@ -727,7 +816,7 @@ def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None, 
         if root is not None and root not in roots:
             print(f'{entry["id"]}: left off the site. Its root {root} was not given. Pass --root {root}=FOLDER.', file=sys.stderr)
             continue
-        row, why = adopt_maintainer(roots[root], entry, suite, f'the {root} root') if root else adopt_maintainer(base, entry, suite)
+        row, why = adopt_maintainer(roots[root], entry, suites, f'the {root} root') if root else adopt_maintainer(base, entry, suites)
         if row is None:
             print(f'{entry["id"]}: left off the site. {why}', file=sys.stderr)
         else:
@@ -735,13 +824,13 @@ def build(base, web, *, sources=None, frozen=None, suite=None, maintainer=None, 
     # A community row joins the current set or stays off. It never ranks among the earlier rows.
     community = []
     for report in community_reports(web):
-        why = community_mismatch(report, suite)
+        why = community_mismatch(report, suites)
         if why:
             print(f'{community_id(report)}: left off the site. {why}', file=sys.stderr)
         else:
             community.append(report)
     return {'schema': 'pokebench-showcase-v1', 'updated_at': datetime.now(timezone.utc).isoformat(),
-            'short': short_snapshot(source, web, extra, base, community, short, frozen, suite, maintained, versions),
+            'short': short_snapshot(source, web, extra, base, community, short, frozen, suites, maintained, versions),
             'long': long_snapshot(base, web, long),
             'pricing': PRICING,
             'report': existing_link(web, 'technical-report.pdf')}

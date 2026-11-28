@@ -91,16 +91,19 @@ function renderSuiteNote() {
   const newer = taskIds(fresh, true)
   const earlier = taskIds(s.models.filter(m => !m.suite), true)
   const both = [...newer].filter(t => earlier.has(t)).length
-  const suitesOf = rows => andList([...new Set(rows.map(m => m.suite.benchmark))].map(shortTag))
+  // The versions the rows ran, newest first as the tables are.
+  const tagsOf = rows => (s.versions || []).map(v => v.benchmark).filter(b => b && rows.some(m => m.suite.benchmark === b))
+  const suitesOf = rows => `${andList(tagsOf(rows).map(shortTag))} Short suite${tagsOf(rows).length > 1 ? 's' : ''}`
+  const tableOf = rows => tagsOf(rows).length > 1 ? 'each ranked in the table of its version' : 'ranked in the table of that version'
   const names = rows => andList(rows.map(m => m.label))
   const reruns = fresh.filter(m => !m.maintainer && !m.community)
   const extra = fresh.filter(m => m.maintainer)
   const community = fresh.filter(m => m.community)
   const grouped = rankTables().length > 1
   const parts = [grouped ? 'Task sets differ between rows, so each Short suite version a row has run is ranked in a table of its own, newest first, and the earlier set is ranked last.' : 'Task sets differ between rows.']
-  if (reruns.length) parts.push(`${names(reruns)} ${reruns.length === 1 ? 'has' : 'have'} been rerun on the ${suitesOf(reruns)} Short suite.`)
-  if (extra.length) parts.push(`${names(extra)} ${extra.length === 1 ? 'is a maintainer run' : 'are maintainer runs'} on the ${suitesOf(extra)} Short suite, ranked in the table of that version. ${extra.length === 1 ? 'That model\'s' : 'Each model\'s'} earlier row keeps its place in the earlier set.`)
-  if (community.length) parts.push(`${names(community)} ${community.length === 1 ? 'is a community run' : 'are community runs'} on the ${suitesOf(community)} Short suite, ranked in the table of that version with ${community.length === 1 ? 'its' : 'their'} own label.`)
+  if (reruns.length) parts.push(`${names(reruns)} ${reruns.length === 1 ? 'has' : 'have'} been rerun on the ${suitesOf(reruns)}.`)
+  if (extra.length) parts.push(`${names(extra)} ${extra.length === 1 ? 'is a maintainer run' : 'are maintainer runs'} on the ${suitesOf(extra)}, ${tableOf(extra)}. ${extra.length === 1 ? 'That model\'s' : 'Each model\'s'} earlier row keeps its place in the earlier set.`)
+  if (community.length) parts.push(`${names(community)} ${community.length === 1 ? 'is a community run' : 'are community runs'} on the ${suitesOf(community)}, ${tableOf(community)} with ${community.length === 1 ? 'its' : 'their'} own label.`)
   parts.push(reruns.length ? 'Every other row keeps its earlier results until its own rerun is complete.' : 'The rows in the earlier set keep their earlier results.')
   $('suite-note').textContent = `${parts.join(' ')} The sets share ${both} tasks. Each row is scored only on its own set, with the categories weighted equally, so ${grouped ? 'scores in different tables' : 'ranks across different sets'} are not strictly comparable. In the task list, a row shows Not run for a task outside its set.`
 }
@@ -312,9 +315,12 @@ for (const kind of ['short','long']) {
 }
 
 // The hosted cost guide: the token caps of a Short run on the current set and what the priced runs on it used.
+// The current set is the newest suite version a priced row has run, so caps and use come from one task set.
 function renderSubmitCost() {
   const s = data.short
-  const runs = s.models.filter(m => m.suite && !m.community && m.cost?.low != null)
+  const priced = s.models.filter(m => m.suite && !m.community && m.cost?.low != null)
+  const current = (s.versions || []).find(v => v.benchmark && priced.some(m => m.suite.benchmark === v.benchmark))
+  const runs = current ? priced.filter(m => m.suite.benchmark === current.benchmark) : priced
   if (!runs.length) return
   // One decimal, as the plan prints it.
   const tokens = x => (x / 1e6).toFixed(1) + 'M'
